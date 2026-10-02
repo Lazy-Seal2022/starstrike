@@ -1,0 +1,29 @@
+{
+  "name": "starstrike",
+  "version": "0.1.0",
+  "description": "Modular 2D multiplatform spaceship shooter inspired by Starblast.io",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "phaser3",
+    "game",
+    "space-shooter",
+    "starblast",
+    "multiplatform",
+    "typescript",
+    "ecs"
+  ],
+  "author": "Lazy-Seal2022",
+  "license": "MIT",
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vite": "^6.2.0"
+  }
+}
