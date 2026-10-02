@@ -5,12 +5,14 @@ import { ShipEvolution } from "../modules/progression/ShipEvolution";
 import { SHIPS_REGISTRY } from "../core/Config";
 import { UpgradeKey } from "../types";
 import { GameScene } from "./GameScene";
+import { Minimap } from "../ui/Minimap";
 
 export class HUDScene extends Phaser.Scene {
   private shieldBar!: Phaser.GameObjects.Graphics;
   private energyBar!: Phaser.GameObjects.Graphics;
   private gemText!: Phaser.GameObjects.Text;
   private shipNameText!: Phaser.GameObjects.Text;
+  private minimap!: Minimap;
 
   private upgradeContainer!: Phaser.GameObjects.Container;
   private upgradeButtons: Map<UpgradeKey, { btn: Phaser.GameObjects.Text; costText: Phaser.GameObjects.Text }> = new Map();
@@ -40,7 +42,10 @@ export class HUDScene extends Phaser.Scene {
     // 5. Setup Event Listeners
     this.setupEventListeners();
 
-    // 6. Keyboard shortcut for Upgrade Panel
+    // 6. Tactical Radar Minimap (Top Right)
+    this.minimap = new Minimap(this, width - 136, 12);
+
+    // 7. Keyboard shortcut for Upgrade Panel
     if (this.input.keyboard) {
       this.input.keyboard.on("keydown-U", () => {
         this.toggleUpgradePanel();
@@ -51,6 +56,13 @@ export class HUDScene extends Phaser.Scene {
     this.scale.on("resize", (gameSize: Phaser.Structs.Size) => {
       this.handleResize(gameSize.width, gameSize.height);
     });
+  }
+
+  public update(): void {
+    const gameScene = this.scene.get("GameScene") as GameScene;
+    if (gameScene && gameScene.ecsWorld && this.minimap) {
+      this.minimap.update(gameScene.ecsWorld);
+    }
   }
 
   private createTopHUD(): void {
@@ -415,6 +427,9 @@ export class HUDScene extends Phaser.Scene {
     }
     if (this.evolutionContainer) {
       this.evolutionContainer.setPosition(width / 2 - 200, height / 2 - 120);
+    }
+    if (this.minimap) {
+      this.minimap.setPosition(width - 136, 12);
     }
   }
 }
