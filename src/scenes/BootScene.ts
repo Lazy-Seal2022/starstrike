@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { AssetGenerator } from "../core/AssetGenerator";
+import { soundManager } from "../core/SoundManager";
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -21,6 +22,9 @@ export class BootScene extends Phaser.Scene {
   }
 
   public create(): void {
+    // Initialize procedural audio
+    soundManager.init();
+
     // Launch main game scene and HUD overlay
     this.scene.start("GameScene");
     this.scene.launch("HUDScene");

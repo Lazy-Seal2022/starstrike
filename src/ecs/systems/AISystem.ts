@@ -10,6 +10,7 @@ import {
   LaserComponent,
   SpriteComponent,
 } from "../components";
+import { soundManager } from "../../core/SoundManager";
 
 export class AISystem implements System {
   constructor(private scene: Phaser.Scene) {}
@@ -119,5 +120,6 @@ export class AISystem implements System {
     const lPhysics = laserEntity.getComponent<PhysicsComponent>("Physics")!;
     lPhysics.vx = Math.cos(angle) * weapon.pulseSpeed;
     lPhysics.vy = Math.sin(angle) * weapon.pulseSpeed;
+    soundManager.playEnemyLaser();
   }
 }

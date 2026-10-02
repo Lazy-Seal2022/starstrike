@@ -19,6 +19,7 @@ import { AISystem } from "../ecs/systems/AISystem";
 import { WorldManager } from "../modules/world/WorldManager";
 import { GAME_CONFIG, SHIPS_REGISTRY } from "../core/Config";
 import { eventBus } from "../core/EventBus";
+import { soundManager } from "../core/SoundManager";
 
 export class GameScene extends Phaser.Scene {
   public ecsWorld!: World;
@@ -213,6 +214,7 @@ export class GameScene extends Phaser.Scene {
     energy.current -= weapon.energyCost;
     weapon.lastFiredTime = now;
     eventBus.emit("energy:changed", { current: energy.current, max: energy.max });
+    soundManager.playLaser();
 
     // Slight weapon recoil
     physics.vx -= Math.cos(transform.rotation) * 15;
