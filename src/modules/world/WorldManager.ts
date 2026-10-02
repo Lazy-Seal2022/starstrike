@@ -7,6 +7,9 @@ import {
   SpriteComponent,
   AsteroidComponent,
   GemComponent,
+  AIComponent,
+  HealthComponent,
+  WeaponComponent,
 } from "../../ecs/components";
 import { GAME_CONFIG } from "../../core/Config";
 import { eventBus } from "../../core/EventBus";
@@ -25,6 +28,34 @@ export class WorldManager {
     this.createStarfield();
     this.createWorldBoundaries();
     this.spawnInitialAsteroidField();
+    this.spawnHostileDrones(12);
+  }
+
+  private spawnHostileDrones(count: number = 12): void {
+    const halfW = GAME_CONFIG.world.width / 2;
+    const halfH = GAME_CONFIG.world.height / 2;
+
+    for (let i = 0; i < count; i++) {
+      let x = Phaser.Math.Between(-halfW + 300, halfW - 300);
+      let y = Phaser.Math.Between(-halfH + 300, halfH - 300);
+
+      // Keep drones away from initial player spawn
+      if (Math.abs(x) < 500 && Math.abs(y) < 500) {
+        x += x >= 0 ? 600 : -600;
+        y += y >= 0 ? 600 : -600;
+      }
+
+      const entity = this.world.createEntity(`drone_${i + 1}`);
+      const sprite = this.scene.add.sprite(x, y, "ship_drone");
+      sprite.setDepth(8);
+
+      entity.addComponent(new TransformComponent(x, y, Math.random() * Math.PI * 2));
+      entity.addComponent(new PhysicsComponent(240, 220, 0.985, 3.8));
+      entity.addComponent(new SpriteComponent(sprite));
+      entity.addComponent(new HealthComponent(60, 60, 4));
+      entity.addComponent(new WeaponComponent(12, 540, 650, 10));
+      entity.addComponent(new AIComponent(x, y));
+    }
   }
 
   private setupListeners(): void {

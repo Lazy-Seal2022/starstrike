@@ -9,9 +9,11 @@ export class AssetGenerator {
     this.generateShipScout(scene);
     this.generateShipFighter(scene);
     this.generateShipMiner(scene);
+    this.generateShipDrone(scene);
     this.generateAsteroids(scene);
     this.generateGems(scene);
     this.generateLaser(scene);
+    this.generateLaserEnemy(scene);
     this.generateParticles(scene);
   }
 
@@ -199,6 +201,53 @@ export class AssetGenerator {
     g.fillRoundedRect(4, 4, 16, 4, 2);
 
     g.generateTexture("laser_pulse", 24, 12);
+    g.destroy();
+  }
+
+  private static generateLaserEnemy(scene: Phaser.Scene): void {
+    if (scene.textures.exists("laser_enemy")) return;
+    const g = scene.make.graphics({ x: 0, y: 0 });
+
+    // Red/crimson enemy plasma glow
+    g.fillStyle(0xef4444, 0.7);
+    g.fillRoundedRect(0, 2, 22, 8, 4);
+
+    // Yellow/white hot energy core
+    g.fillStyle(0xfef08a, 1);
+    g.fillRoundedRect(4, 4, 14, 4, 2);
+
+    g.generateTexture("laser_enemy", 22, 12);
+    g.destroy();
+  }
+
+  private static generateShipDrone(scene: Phaser.Scene): void {
+    if (scene.textures.exists("ship_drone")) return;
+    const g = scene.make.graphics({ x: 0, y: 0 });
+    const size = 44;
+    const half = size / 2;
+
+    // Menacing Rogue Drone (Angular red hull)
+    g.fillStyle(0x450a0a, 1);
+    g.lineStyle(2, 0xef4444, 1);
+    g.beginPath();
+    g.moveTo(size - 4, half); // Nose pointing forward
+    g.lineTo(8, 6);
+    g.lineTo(16, half);
+    g.lineTo(8, size - 6);
+    g.closePath();
+    g.fillPath();
+    g.strokePath();
+
+    // Drone Red Visor Eye
+    g.fillStyle(0xff0000, 1);
+    g.fillCircle(size - 16, half, 3.5);
+
+    // Wing blasters
+    g.fillStyle(0xf87171, 1);
+    g.fillRect(10, 8, 8, 2);
+    g.fillRect(10, size - 10, 8, 2);
+
+    g.generateTexture("ship_drone", size, size);
     g.destroy();
   }
 

@@ -86,8 +86,27 @@ export class LaserComponent implements Component {
   public maxRange: number = 900;
   constructor(
     public damage: number,
-    public ownerId: string
+    public ownerId: string,
+    public isEnemy: boolean = false
   ) {}
+}
+
+export class AIComponent implements Component {
+  public readonly type = "AI";
+  public state: "patrol" | "chase" | "attack" = "patrol";
+  public patrolOriginX: number;
+  public patrolOriginY: number;
+  public patrolAngle: number = 0;
+  public sightRadius: number = 550;
+  public attackRadius: number = 380;
+  public attackCooldownMs: number = 650;
+  public lastAttackTime: number = 0;
+
+  constructor(originX: number, originY: number) {
+    this.patrolOriginX = originX;
+    this.patrolOriginY = originY;
+    this.patrolAngle = Math.random() * Math.PI * 2;
+  }
 }
 
 export class PlayerComponent implements Component {

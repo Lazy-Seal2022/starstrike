@@ -15,6 +15,7 @@ import { MovementSystem } from "../ecs/systems/MovementSystem";
 import { CombatSystem } from "../ecs/systems/CombatSystem";
 import { MiningSystem } from "../ecs/systems/MiningSystem";
 import { RegenerationSystem } from "../ecs/systems/RegenerationSystem";
+import { AISystem } from "../ecs/systems/AISystem";
 import { WorldManager } from "../modules/world/WorldManager";
 import { GAME_CONFIG, SHIPS_REGISTRY } from "../core/Config";
 import { eventBus } from "../core/EventBus";
@@ -47,6 +48,7 @@ export class GameScene extends Phaser.Scene {
     // 1. Initialize ECS World
     this.ecsWorld = new World();
     this.ecsWorld.addSystem(new MovementSystem());
+    this.ecsWorld.addSystem(new AISystem(this));
     this.ecsWorld.addSystem(new CombatSystem(this));
     this.ecsWorld.addSystem(new MiningSystem(this));
     this.ecsWorld.addSystem(new RegenerationSystem());
