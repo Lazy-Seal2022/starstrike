@@ -1,7 +1,7 @@
 import Phaser from "phaser";
-import { BootScene } from "./scenes/BootScene";
-import { GameScene } from "./scenes/GameScene";
-import { HUDScene } from "./scenes/HUDScene";
+import { BootScene } from "@/scenes/BootScene";
+import { GameScene } from "@/scenes/GameScene";
+import { HUDScene } from "@/scenes/HUDScene";
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,

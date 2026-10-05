@@ -1,6 +1,6 @@
 import Phaser from "phaser";
-import { System } from "../System";
-import { World } from "../World";
+import { System } from "@/core/ecs/System";
+import { World } from "@/core/ecs/World";
 import {
   TransformComponent,
   PhysicsComponent,
@@ -8,9 +8,9 @@ import {
   SpriteComponent,
   PlayerComponent,
   AsteroidComponent,
-} from "../components";
-import { eventBus } from "../../core/EventBus";
-import { GAME_CONFIG } from "../../core/Config";
+} from "@/components";
+import { eventBus } from "@/core/EventBus";
+import { GAME_CONFIG } from "@/config/game";
 
 export class MiningSystem implements System {
   constructor(private scene: Phaser.Scene) {

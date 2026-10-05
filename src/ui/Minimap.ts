@@ -1,7 +1,7 @@
 import Phaser from "phaser";
-import { World } from "../ecs/World";
-import { TransformComponent } from "../ecs/components";
-import { GAME_CONFIG } from "../core/Config";
+import { World } from "@/core/ecs/World";
+import { TransformComponent } from "@/components";
+import { GAME_CONFIG } from "@/config/game";
 
 export class Minimap {
   private container: Phaser.GameObjects.Container;

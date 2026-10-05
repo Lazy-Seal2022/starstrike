@@ -1,6 +1,6 @@
 import Phaser from "phaser";
-import { System } from "../System";
-import { World } from "../World";
+import { System } from "@/core/ecs/System";
+import { World } from "@/core/ecs/World";
 import {
   TransformComponent,
   PhysicsComponent,
@@ -10,8 +10,8 @@ import {
   HealthComponent,
   PlayerComponent,
   GemComponent,
-} from "../components";
-import { eventBus } from "../../core/EventBus";
+} from "@/components";
+import { eventBus } from "@/core/EventBus";
 
 export class CombatSystem implements System {
   constructor(private scene: Phaser.Scene) {}

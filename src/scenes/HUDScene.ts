@@ -1,11 +1,11 @@
 import Phaser from "phaser";
-import { eventBus } from "../core/EventBus";
-import { UpgradeManager } from "../modules/progression/UpgradeManager";
-import { ShipEvolution } from "../modules/progression/ShipEvolution";
-import { SHIPS_REGISTRY } from "../core/Config";
-import { UpgradeKey } from "../types";
-import { GameScene } from "./GameScene";
-import { Minimap } from "../ui/Minimap";
+import { eventBus } from "@/core/EventBus";
+import { UpgradeManager } from "@/features/progression/UpgradeManager";
+import { ShipEvolution } from "@/features/progression/ShipEvolution";
+import { SHIPS_REGISTRY } from "@/config/ships";
+import { UpgradeKey } from "@/core/types";
+import { GameScene } from "@/scenes/GameScene";
+import { Minimap } from "@/ui/Minimap";
 
 export class HUDScene extends Phaser.Scene {
   private shieldBar!: Phaser.GameObjects.Graphics;

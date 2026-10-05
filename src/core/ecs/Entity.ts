@@ -1,4 +1,4 @@
-import { Component } from "./Component";
+import { Component } from "@/core/ecs/Component";
 
 export class Entity {
   public readonly id: string;

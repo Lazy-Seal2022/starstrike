@@ -1,14 +1,15 @@
-import { Entity } from "../../ecs/Entity";
+import { Entity } from "@/core/ecs/Entity";
 import {
   PlayerComponent,
   HealthComponent,
   EnergyComponent,
   WeaponComponent,
   PhysicsComponent,
-} from "../../ecs/components";
-import { UpgradeKey } from "../../types";
-import { GAME_CONFIG, SHIPS_REGISTRY } from "../../core/Config";
-import { eventBus } from "../../core/EventBus";
+} from "@/components";
+import { UpgradeKey } from "@/core/types";
+import { GAME_CONFIG } from "@/config/game";
+import { SHIPS_REGISTRY } from "@/config/ships";
+import { eventBus } from "@/core/EventBus";
 
 export class UpgradeManager {
   public static getUpgradeCost(level: number): number {

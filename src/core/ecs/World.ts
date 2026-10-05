@@ -1,5 +1,5 @@
-import { Entity } from "./Entity";
-import { System } from "./System";
+import { Entity } from "@/core/ecs/Entity";
+import { System } from "@/core/ecs/System";
 
 export class World {
   private entities: Map<string, Entity> = new Map();

@@ -1,7 +1,7 @@
-import { System } from "../System";
-import { World } from "../World";
-import { HealthComponent, EnergyComponent } from "../components";
-import { eventBus } from "../../core/EventBus";
+import { System } from "@/core/ecs/System";
+import { World } from "@/core/ecs/World";
+import { HealthComponent, EnergyComponent } from "@/components";
+import { eventBus } from "@/core/EventBus";
 
 export class RegenerationSystem implements System {
   public update(world: World, delta: number): void {
