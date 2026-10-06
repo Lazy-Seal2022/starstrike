@@ -1,0 +1,7 @@
+{
+    "name": "StarStrike.Editor",
+    "rootNamespace": "StarStrike.EditorTools",
+    "references": ["StarStrike.Core", "StarStrike.Gameplay", "StarStrike.Platform", "StarStrike.UI"],
+    "includePlatforms": ["Editor"],
+    "autoReferenced": true
+}

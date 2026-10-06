@@ -128,6 +128,8 @@ The game is one web build (`dist/`), wrapped per platform. Native folders are ge
 | iOS | Capacitor (needs macOS/Xcode or macOS CI) | `ios/` |
 | Windows | Tauri | `src-tauri/` |
 
+A Unity version of the game lives in [`unity/`](unity/README.md).
+
 
 ---
 

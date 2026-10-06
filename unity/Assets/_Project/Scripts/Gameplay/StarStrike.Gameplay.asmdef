@@ -1,0 +1,7 @@
+{
+    "name": "StarStrike.Gameplay",
+    "rootNamespace": "StarStrike.Gameplay",
+    "references": ["StarStrike.Core", "StarStrike.Platform"],
+    
+    "autoReferenced": true
+}
