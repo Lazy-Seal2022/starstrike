@@ -1,6 +1,6 @@
 import Phaser from "phaser";
-import { System } from "../System";
-import { World } from "../World";
+import { System } from "@/core/ecs/System";
+import { World } from "@/core/ecs/World";
 import {
   TransformComponent,
   PhysicsComponent,
@@ -9,8 +9,8 @@ import {
   HealthComponent,
   LaserComponent,
   SpriteComponent,
-} from "../components";
-import { soundManager } from "../../core/SoundManager";
+} from "@/components";
+import { soundManager } from "@/services/SoundManager";
 
 export class AISystem implements System {
   constructor(private scene: Phaser.Scene) {}

@@ -1,6 +1,6 @@
 import Phaser from "phaser";
-import { Component } from "../Component";
-import { ShipStats, UpgradeLevels } from "../../types";
+import { Component } from "@/core/ecs/Component";
+import { ShipStats, UpgradeLevels } from "@/core/types";
 
 export class TransformComponent implements Component {
   public readonly type = "Transform";

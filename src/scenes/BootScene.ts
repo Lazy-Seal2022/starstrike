@@ -1,6 +1,6 @@
 import Phaser from "phaser";
-import { AssetGenerator } from "../core/AssetGenerator";
-import { soundManager } from "../core/SoundManager";
+import { AssetGenerator } from "@/services/AssetGenerator";
+import { soundManager } from "@/services/SoundManager";
 
 export class BootScene extends Phaser.Scene {
   constructor() {

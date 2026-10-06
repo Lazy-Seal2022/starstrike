@@ -1,7 +1,7 @@
-import { System } from "../System";
-import { World } from "../World";
-import { TransformComponent, PhysicsComponent, SpriteComponent } from "../components";
-import { GAME_CONFIG } from "../../core/Config";
+import { System } from "@/core/ecs/System";
+import { World } from "@/core/ecs/World";
+import { TransformComponent, PhysicsComponent, SpriteComponent } from "@/components";
+import { GAME_CONFIG } from "@/config/game";
 
 export class MovementSystem implements System {
   public update(world: World, delta: number): void {

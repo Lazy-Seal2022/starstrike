@@ -1,4 +1,4 @@
-import { Entity } from "../../ecs/Entity";
+import { Entity } from "@/core/ecs/Entity";
 import {
   PlayerComponent,
   SpriteComponent,
@@ -7,9 +7,9 @@ import {
   WeaponComponent,
   PhysicsComponent,
   TransformComponent,
-} from "../../ecs/components";
-import { SHIPS_REGISTRY } from "../../core/Config";
-import { eventBus } from "../../core/EventBus";
+} from "@/components";
+import { SHIPS_REGISTRY } from "@/config/ships";
+import { eventBus } from "@/core/EventBus";
 
 export class ShipEvolution {
   public static canEvolve(playerEntity: Entity): boolean {

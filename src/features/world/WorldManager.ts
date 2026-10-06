@@ -1,6 +1,6 @@
 import Phaser from "phaser";
-import { World } from "../../ecs/World";
-import { Entity } from "../../ecs/Entity";
+import { World } from "@/core/ecs/World";
+import { Entity } from "@/core/ecs/Entity";
 import {
   TransformComponent,
   PhysicsComponent,
@@ -10,9 +10,9 @@ import {
   AIComponent,
   HealthComponent,
   WeaponComponent,
-} from "../../ecs/components";
-import { GAME_CONFIG } from "../../core/Config";
-import { eventBus } from "../../core/EventBus";
+} from "@/components";
+import { GAME_CONFIG } from "@/config/game";
+import { eventBus } from "@/core/EventBus";
 
 export class WorldManager {
   private asteroidCount: number = 0;

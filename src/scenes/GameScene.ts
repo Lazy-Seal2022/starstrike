@@ -1,6 +1,6 @@
 import Phaser from "phaser";
-import { World } from "../ecs/World";
-import { Entity } from "../ecs/Entity";
+import { World } from "@/core/ecs/World";
+import { Entity } from "@/core/ecs/Entity";
 import {
   TransformComponent,
   PhysicsComponent,
@@ -10,16 +10,17 @@ import {
   WeaponComponent,
   PlayerComponent,
   LaserComponent,
-} from "../ecs/components";
-import { MovementSystem } from "../ecs/systems/MovementSystem";
-import { CombatSystem } from "../ecs/systems/CombatSystem";
-import { MiningSystem } from "../ecs/systems/MiningSystem";
-import { RegenerationSystem } from "../ecs/systems/RegenerationSystem";
-import { AISystem } from "../ecs/systems/AISystem";
-import { WorldManager } from "../modules/world/WorldManager";
-import { GAME_CONFIG, SHIPS_REGISTRY } from "../core/Config";
-import { eventBus } from "../core/EventBus";
-import { soundManager } from "../core/SoundManager";
+} from "@/components";
+import { MovementSystem } from "@/features/movement/MovementSystem";
+import { CombatSystem } from "@/features/combat/CombatSystem";
+import { MiningSystem } from "@/features/mining/MiningSystem";
+import { RegenerationSystem } from "@/features/regeneration/RegenerationSystem";
+import { AISystem } from "@/features/ai/AISystem";
+import { WorldManager } from "@/features/world/WorldManager";
+import { GAME_CONFIG } from "@/config/game";
+import { SHIPS_REGISTRY } from "@/config/ships";
+import { eventBus } from "@/core/EventBus";
+import { soundManager } from "@/services/SoundManager";
 
 export class GameScene extends Phaser.Scene {
   public ecsWorld!: World;

@@ -1,4 +1,4 @@
-import { eventBus } from "./EventBus";
+import { eventBus } from "@/core/EventBus";
 
 /**
  * Procedural Web Audio Sound Synthesizer.
