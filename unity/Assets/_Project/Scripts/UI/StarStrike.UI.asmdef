@@ -1,7 +1,10 @@
 {
     "name": "StarStrike.UI",
     "rootNamespace": "StarStrike.UI",
-    "references": ["StarStrike.Core", "StarStrike.Gameplay"],
-    
+    "references": [
+        "StarStrike.Core",
+        "StarStrike.Gameplay",
+        "Unity.InputSystem"
+    ],
     "autoReferenced": true
 }

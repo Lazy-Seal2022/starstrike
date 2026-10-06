@@ -2,6 +2,5 @@
     "name": "StarStrike.Core",
     "rootNamespace": "StarStrike.Core",
     "references": [],
-    "noEngineReferences": true,
     "autoReferenced": true
 }
