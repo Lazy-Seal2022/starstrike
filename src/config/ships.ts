@@ -37,7 +37,7 @@ export const SHIPS_REGISTRY: Record<string, ShipDefinition> = {
       agility: 5.0,
     },
     maxUpgradeLevel: 5,
-    evolvesTo: ["interceptor", "destroyer"],
+    evolvesTo: [],
     weaponSlots: 2,
     spriteKey: "ship_fighter",
     color: 0xf43f5e, // Rose-red
@@ -58,7 +58,7 @@ export const SHIPS_REGISTRY: Record<string, ShipDefinition> = {
       agility: 3.5,
     },
     maxUpgradeLevel: 5,
-    evolvesTo: ["colossus", "dreadnought"],
+    evolvesTo: [],
     weaponSlots: 2,
     spriteKey: "ship_miner",
     color: 0xf59e0b, // Amber-gold

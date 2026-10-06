@@ -37,7 +37,7 @@ unity/
 │   │   ├── Settings/             # Input actions, URP/quality per platform, Build Profiles
 │   │   ├── UI/                   # Fonts, UI layouts
 │   │   └── Scripts/
-│   │       ├── Core/             # StarStrike.Core: pure C#, NO UnityEngine (ECS, events, types)
+│   │       ├── Core/             # StarStrike.Core: Foundation models, events, math (primitives)
 │   │       ├── Platform/         # StarStrike.Platform: save, haptics, ads/IAP; the only place for #if UNITY_ANDROID/IOS
 │   │       ├── Gameplay/         # StarStrike.Gameplay: one folder per feature (AI, Combat, Mining, Movement, ...)
 │   │       ├── UI/               # StarStrike.UI: HUD, Minimap
@@ -54,7 +54,7 @@ unity/
 Core  ←  Platform  ←  Gameplay  ←  UI        Editor → all (editor only)
 ```
 
-- `Core` has `noEngineReferences: true`, so it compiles without Unity. Logic there is portable and unit-testable.
+- `Core` contains core data structures and math without depending on other game systems. Logic there is portable and unit-testable.
 - Platform-specific code (`#if UNITY_ANDROID`, `UNITY_IOS`, `UNITY_WEBGL`, `UNITY_STANDALONE_WIN`) goes **only** in `Platform/`. Gameplay never branches on platform.
 - Input goes through the Input System action asset in `Settings/Input`. Gameplay reads actions, not devices, so touch, keyboard and gamepad work automatically.
 - New feature = new folder in `Scripts/Gameplay/`. New ship = new ScriptableObject in `Data/Ships/`.
