@@ -3,17 +3,25 @@
 Unity version of StarStrike, side by side with the Phaser/web version in `../src`.
 Targets: **Android, iOS, Windows, WebGL**, all from this one project.
 
-## First-time setup
+## WSL & Windows Development Workflow (Option 2)
 
-The Editor generates `Packages/` and `ProjectSettings/`, so they aren't committed yet:
+The Git repository lives in WSL (`/home/quan/projects/starstrike`), while the live Unity 6 Editor runs in Windows (`C:\Data\Unity\StarStrike`).
 
-1. Unity Hub → **New project** → Unity 6 LTS → **Universal 2D** template. Create it in any temp folder.
-2. Move the new project's `Packages/` and `ProjectSettings/` into this `unity/` folder, then delete the temp project.
-3. Unity Hub → **Add → Add project from disk** → select `unity/`.
-4. Package Manager → install **Input System** (keyboard, mouse, touch and gamepad from one API).
-5. Hub → Installs → add modules: **Android Build Support**, **WebGL Build Support**, **Windows Build Support (IL2CPP)**, and **iOS Build Support** (iOS builds need a Mac).
-6. Run `git lfs install` once. Binaries are routed to LFS by [.gitattributes](.gitattributes).
-7. Commit `Packages/`, `ProjectSettings/` and all `.meta` files.
+To synchronize between WSL and Windows:
+- **Pull changes from Windows to Git**:
+  ```bash
+  npm run sync:unity:pull
+  ```
+  *(Mirrors updated assets, scenes, and settings from Windows into `unity/`, ready to commit)*
+
+- **Push changes from Git to Windows**:
+  ```bash
+  npm run sync:unity:push
+  ```
+  *(Mirrors repo changes directly into the live Windows Unity project)*
+
+Both projects share the identical folder structure and assembly definitions.
+
 
 ## Layout
 
