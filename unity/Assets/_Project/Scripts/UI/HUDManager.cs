@@ -7,6 +7,9 @@ namespace StarStrike.UI
 {
     public class HUDManager : MonoBehaviour
     {
+        [Tooltip("When enabled, migrates automatically to modern uGUI CanvasHUD.")]
+        public bool useCanvasUI = true;
+
         private ShipController player;
         private float shieldCurrent = 100f;
         private float shieldMax = 100f;
@@ -17,6 +20,18 @@ namespace StarStrike.UI
 
         private bool showUpgradeDrawer = false;
         private Texture2D texWhite;
+
+        private void Awake()
+        {
+            if (useCanvasUI)
+            {
+                if (GetComponent<CanvasHUD>() == null && FindAnyObjectByType<CanvasHUD>() == null)
+                {
+                    gameObject.AddComponent<CanvasHUD>();
+                }
+                enabled = false;
+            }
+        }
 
         private void OnEnable()
         {
