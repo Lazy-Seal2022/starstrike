@@ -4,12 +4,18 @@ This document tracks large architectural improvements identified during codebase
 
 ---
 
-## 1. Cross-Platform Input & UI Overhaul (Mobile & Gamepad)
-- **Current State**: `ShipController.cs` queries `Keyboard.current`, `Mouse.current`, and `Gamepad.current` directly. Touch controls currently rely on Unity's immediate-mode `OnGUI`, which lacks multi-touch tracking (cannot steer, thrust, and fire concurrently).
-- **Target Architecture**:
-  - Connect actions directly to `Assets/Settings/InputSystem_Actions.inputactions` (`Player/Move`, `Player/Look`, `Player/Attack`, `Player/Sprint`).
-  - Replace `OnGUI` with a modern URP 2D Screen Space Canvas or UI Toolkit interface.
-  - Implement an on-screen **Floating Virtual Joystick** for touch steering/thrust and dedicated multi-touch buttons for firing and afterburners.
+## 1. Cross-Platform Input & UI Overhaul (Mobile, Desktop & Gamepad) — [COMPLETED]
+- **Status**: Implemented & Verified in Play Mode (Unity 6 / URP 2D).
+- **Deliverables**:
+  - `StarStrike.UI.CanvasHUD`: High-performance uGUI Canvas system replacing legacy IMGUI `HUDManager`.
+    - Real-time Shield & Energy fill meters with numeric readouts.
+    - Tier and ship badge display (`T1 • DELTA SCOUT`, `T2 • ARES FIGHTER`, `T2 • GOLIATH MINER`).
+    - Collapsible Upgrade Drawer with 8 stat upgrades, live gem cost calculation, and dynamic affordance.
+    - Ship Evolution modal prompt with Ares Fighter and Goliath Miner options when evolution threshold is reached.
+  - `StarStrike.UI.VirtualJoystick`: Multi-touch drag steering with dynamic knob clamping and optional auto-thrust forward.
+  - `StarStrike.UI.TouchButton`: Multi-touch continuous pointer tracking for on-screen `FIRE`, `BOOST`, and `BRAKE` controls.
+  - `StarStrike.Gameplay.ShipController`: Decoupled input setters (`SetThrust`, `SetBrake`, `SetBoost`, `SetFire`, `SetAimDirection`) preventing physics tick state erasure.
+  - Desktop testing toggle: Press `[M]` anytime to preview mobile touch controls on PC, and `[U]` to toggle the upgrades drawer.
 
 ---
 
