@@ -60,11 +60,16 @@ namespace StarStrike.Gameplay
             sr.sortingOrder = 2;
         }
 
+        public bool hasCustomInitialVelocity = false;
+
         private void Start()
         {
-            // Gentle initial spin & drift
-            rb.angularVelocity = Random.Range(-40f, 40f);
-            rb.linearVelocity = Random.insideUnitCircle * Random.Range(0.5f, 2.0f);
+            if (!hasCustomInitialVelocity)
+            {
+                // Gentle initial spin & drift
+                rb.angularVelocity = Random.Range(-40f, 40f);
+                rb.linearVelocity = Random.insideUnitCircle * Random.Range(0.5f, 2.0f);
+            }
         }
 
         public void TakeDamage(float amount)
@@ -110,8 +115,10 @@ namespace StarStrike.Gameplay
             Asteroid ast = child.AddComponent<Asteroid>();
             ast.tier = childTier;
             ast.SetupStats();
+            ast.hasCustomInitialVelocity = true;
 
             Rigidbody2D cRb = child.GetComponent<Rigidbody2D>();
+            cRb.angularVelocity = Random.Range(-60f, 60f);
             cRb.linearVelocity = Random.insideUnitCircle.normalized * Random.Range(2f, 4.5f);
         }
     }
