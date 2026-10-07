@@ -539,6 +539,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2114270097}
   - component: {fileID: 2114270096}
+  - component: {fileID: 2114270098}
   m_Layer: 0
   m_Name: HUDManager
   m_TagString: Untagged
@@ -558,6 +559,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bf5074dac36b30439b9f43975c0141b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StarStrike.UI.HUDManager
+  useCanvasUI: 1
 --- !u!4 &2114270097
 Transform:
   m_ObjectHideFlags: 0
@@ -573,6 +575,33 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2114270098
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2114270095}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1a6efd4f6df08b4cabb6f7c5eace70a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: StarStrike.UI::StarStrike.UI.CanvasHUD
+  forceShowMobileControls: 0
+  canvas: {fileID: 0}
+  shipNameText: {fileID: 0}
+  gemsText: {fileID: 0}
+  shieldFill: {fileID: 0}
+  shieldValueText: {fileID: 0}
+  energyFill: {fileID: 0}
+  energyValueText: {fileID: 0}
+  upgradesDrawer: {fileID: 0}
+  toggleUpgradesButton: {fileID: 0}
+  toggleUpgradesButtonText: {fileID: 0}
+  evolutionBanner: {fileID: 0}
+  evolveFighterButton: {fileID: 0}
+  evolveMinerButton: {fileID: 0}
+  mobileControlsRoot: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

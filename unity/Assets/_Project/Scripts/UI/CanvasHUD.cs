@@ -105,6 +105,17 @@ namespace StarStrike.UI
                 ToggleUpgrades();
             }
 
+            // Keyboard shortcut [M] to toggle Mobile Controls overlay (useful for testing on desktop)
+            if (Keyboard.current != null && Keyboard.current.mKey.wasPressedThisFrame)
+            {
+                forceShowMobileControls = !forceShowMobileControls;
+                if (mobileControlsRoot != null)
+                {
+                    bool show = forceShowMobileControls || Application.isMobilePlatform || Touchscreen.current != null;
+                    mobileControlsRoot.SetActive(show);
+                }
+            }
+
             // Periodically refresh upgrade buttons & evolution banner
             UpdateEvolutionBanner();
             if (isUpgradesOpen)
