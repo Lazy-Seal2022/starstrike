@@ -1,0 +1,6 @@
+{
+    "name": "StarStrike.Core",
+    "rootNamespace": "StarStrike.Core",
+    "references": [],
+    "autoReferenced": true
+}

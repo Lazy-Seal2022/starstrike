@@ -1,0 +1,7 @@
+{
+    "name": "StarStrike.Platform",
+    "rootNamespace": "StarStrike.Platform",
+    "references": ["StarStrike.Core"],
+    
+    "autoReferenced": true
+}
