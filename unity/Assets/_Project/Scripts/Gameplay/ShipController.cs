@@ -8,6 +8,8 @@ namespace StarStrike.Gameplay
     [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
     public class ShipController : MonoBehaviour
     {
+        public static ShipController Instance { get; private set; }
+
         [Header("Ship Stats")]
         public ShipStats stats;
         public float currentShield;
@@ -21,6 +23,13 @@ namespace StarStrike.Gameplay
         public bool inputFire;
         public Vector2 inputAimDirection;
         public bool hasDirectAim = false;
+
+        private bool virtualThrust;
+        private bool virtualBrake;
+        private bool virtualBoost;
+        private bool virtualFire;
+        private Vector2 virtualAimDirection;
+        private bool hasVirtualAim;
 
         private Rigidbody2D rb;
         private SpriteRenderer spriteRenderer;
@@ -38,6 +47,7 @@ namespace StarStrike.Gameplay
 
         private void Awake()
         {
+            Instance = this;
             rb = GetComponent<Rigidbody2D>();
             rb.gravityScale = 0f;
             rb.linearDamping = 0.5f; // Newtonian space drag
@@ -101,6 +111,29 @@ namespace StarStrike.Gameplay
             HandleThrust();
         }
 
+        private void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+        }
+
+        public void SetThrust(bool active) => virtualThrust = active;
+        public void SetBrake(bool active) => virtualBrake = active;
+        public void SetBoost(bool active) => virtualBoost = active;
+        public void SetFire(bool active) => virtualFire = active;
+
+        public void SetAimDirection(Vector2 direction)
+        {
+            if (direction.sqrMagnitude > 0.001f)
+            {
+                virtualAimDirection = direction.normalized;
+                hasVirtualAim = true;
+            }
+            else
+            {
+                hasVirtualAim = false;
+            }
+        }
+
         private void ReadInputs()
         {
             // Keyboard (New Input System)
@@ -122,13 +155,23 @@ namespace StarStrike.Gameplay
             bool padBoost = pad != null && pad.buttonSouth.isPressed;
             bool padFire = pad != null && (pad.rightShoulder.isPressed || pad.buttonWest.isPressed);
 
-            inputThrust = inputThrust || keyW || padThrust;
-            inputBrake = inputBrake || keyS || padBrake;
-            inputBoost = inputBoost || keyShift || mouseRight || padBoost;
-            inputFire = inputFire || keySpace || mouseLeft || padFire;
+            inputThrust = virtualThrust || keyW || padThrust;
+            inputBrake = virtualBrake || keyS || padBrake;
+            inputBoost = virtualBoost || keyShift || mouseRight || padBoost;
+            inputFire = virtualFire || keySpace || mouseLeft || padFire;
 
-            // Mouse Aim
-            if (!hasDirectAim && mouse != null && Camera.main != null)
+            // Aim direction (Virtual -> Gamepad -> Mouse)
+            if (hasVirtualAim)
+            {
+                inputAimDirection = virtualAimDirection;
+                hasDirectAim = true;
+            }
+            else if (pad != null && pad.leftStick.ReadValue().sqrMagnitude > 0.1f)
+            {
+                inputAimDirection = pad.leftStick.ReadValue().normalized;
+                hasDirectAim = true;
+            }
+            else if (mouse != null && Camera.main != null)
             {
                 Vector2 mousePos = mouse.position.ReadValue();
                 Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, 10f));
@@ -137,10 +180,7 @@ namespace StarStrike.Gameplay
                 {
                     inputAimDirection = diff.normalized;
                 }
-            }
-            else if (pad != null && pad.leftStick.ReadValue().sqrMagnitude > 0.1f)
-            {
-                inputAimDirection = pad.leftStick.ReadValue().normalized;
+                hasDirectAim = false;
             }
         }
 
@@ -182,13 +222,6 @@ namespace StarStrike.Gameplay
             {
                 rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, accel * 0.4f * dt);
             }
-
-            // Reset touch / frame triggers
-            inputThrust = false;
-            inputBrake = false;
-            inputBoost = false;
-            inputFire = false;
-            hasDirectAim = false;
         }
 
         private void RegenerateMeters()
