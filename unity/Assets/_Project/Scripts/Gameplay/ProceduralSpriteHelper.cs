@@ -212,5 +212,75 @@ namespace StarStrike.Gameplay
             tex.Apply();
             return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 32);
         }
+
+        private static Sprite cachedWhite;
+        private static Sprite cachedCircle;
+        private static Sprite cachedRoundedBox;
+
+        public static Sprite GetWhiteSprite()
+        {
+            if (cachedWhite == null)
+            {
+                Texture2D tex = new Texture2D(4, 4, TextureFormat.RGBA32, false);
+                Color[] cols = new Color[16];
+                for (int i = 0; i < 16; i++) cols[i] = Color.white;
+                tex.SetPixels(cols);
+                tex.Apply();
+                cachedWhite = Sprite.Create(tex, new Rect(0, 0, 4, 4), new Vector2(0.5f, 0.5f), 100);
+            }
+            return cachedWhite;
+        }
+
+        public static Sprite GetCircleSprite(int size = 64)
+        {
+            if (cachedCircle == null)
+            {
+                Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+                tex.filterMode = FilterMode.Bilinear;
+                Color[] cols = new Color[size * size];
+                Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
+                float radius = size * 0.48f;
+
+                for (int y = 0; y < size; y++)
+                {
+                    for (int x = 0; x < size; x++)
+                    {
+                        float dist = Vector2.Distance(new Vector2(x, y), center);
+                        float alpha = Mathf.Clamp01((radius - dist) + 0.5f);
+                        cols[y * size + x] = new Color(1f, 1f, 1f, alpha);
+                    }
+                }
+                tex.SetPixels(cols);
+                tex.Apply();
+                cachedCircle = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100);
+            }
+            return cachedCircle;
+        }
+
+        public static Sprite GetRoundedBoxSprite(int size = 32, int cornerRadius = 6)
+        {
+            if (cachedRoundedBox == null)
+            {
+                Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+                tex.filterMode = FilterMode.Bilinear;
+                Color[] cols = new Color[size * size];
+
+                for (int y = 0; y < size; y++)
+                {
+                    for (int x = 0; x < size; x++)
+                    {
+                        int cx = x < cornerRadius ? cornerRadius : (x >= size - cornerRadius ? size - 1 - cornerRadius : x);
+                        int cy = y < cornerRadius ? cornerRadius : (y >= size - cornerRadius ? size - 1 - cornerRadius : y);
+                        float dist = Vector2.Distance(new Vector2(x, y), new Vector2(cx, cy));
+                        float alpha = dist > cornerRadius ? 0f : 1f;
+                        cols[y * size + x] = new Color(1f, 1f, 1f, alpha);
+                    }
+                }
+                tex.SetPixels(cols);
+                tex.Apply();
+                cachedRoundedBox = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100, 0, SpriteMeshType.FullRect, new Vector4(cornerRadius, cornerRadius, cornerRadius, cornerRadius));
+            }
+            return cachedRoundedBox;
+        }
     }
 }
