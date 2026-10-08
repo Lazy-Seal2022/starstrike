@@ -22,3 +22,19 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+*.csproj
+*.unityproj
+
+# Unity temporary & cache directories (generated locally)
+/[Uu]nity/[Ll]ibrary/
+/[Uu]nity/[Tt]emp/
+/[Uu]nity/[Oo]bj/
+/[Uu]nity/[Bb]uild/
+/[Uu]nity/[Bb]uilds/
+/[Uu]nity/[Ll]ogs/
+/[Uu]nity/[Uu]ser[Ss]ettings/
+/[Uu]nity/[Mm]emoryCaptures/
+/[Uu]nity/.vs/
+/[Uu]nity/.idea/
+/[Uu]nity/*.csproj
+/[Uu]nity/*.sln
