@@ -62,7 +62,7 @@ namespace StarStrike.Gameplay
         {
             if (collision.CompareTag("Player"))
             {
-                ShipController player = collision.GetComponent<ShipController>();
+                PlayerProgression player = collision.GetComponent<PlayerProgression>();
                 if (player != null)
                 {
                     player.AddGems(gemValue);

@@ -43,21 +43,21 @@ namespace StarStrike.UI
 
         private void ApplyState(bool state)
         {
-            if (ShipController.Instance == null) return;
+            if (PlayerInputReader.Instance == null) return;
 
             switch (action)
             {
                 case TouchButtonAction.Fire:
-                    ShipController.Instance.SetFire(state);
+                    PlayerInputReader.Instance.SetFire(state);
                     break;
                 case TouchButtonAction.Boost:
-                    ShipController.Instance.SetBoost(state);
+                    PlayerInputReader.Instance.SetBoost(state);
                     break;
                 case TouchButtonAction.Brake:
-                    ShipController.Instance.SetBrake(state);
+                    PlayerInputReader.Instance.SetBrake(state);
                     break;
                 case TouchButtonAction.Thrust:
-                    ShipController.Instance.SetThrust(state);
+                    PlayerInputReader.Instance.SetThrust(state);
                     break;
             }
         }

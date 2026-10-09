@@ -1,4 +1,5 @@
 using UnityEngine;
+using StarStrike.Core;
 
 namespace StarStrike.Gameplay
 {
@@ -40,32 +41,16 @@ namespace StarStrike.Gameplay
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (collision.CompareTag("Asteroid"))
+            if ((isEnemy && collision.CompareTag("Player")) ||
+                (!isEnemy && collision.CompareTag("Enemy")) ||
+                collision.CompareTag("Asteroid"))
             {
-                Asteroid asteroid = collision.GetComponent<Asteroid>();
-                if (asteroid != null)
+                IDamageable damageable = collision.GetComponent<IDamageable>();
+                if (damageable != null)
                 {
-                    asteroid.TakeDamage(damage);
-                    Destroy(gameObject);
+                    damageable.TakeDamage(damage);
                 }
-            }
-            else if (isEnemy && collision.CompareTag("Player"))
-            {
-                ShipController player = collision.GetComponent<ShipController>();
-                if (player != null)
-                {
-                    player.TakeDamage(damage);
-                    Destroy(gameObject);
-                }
-            }
-            else if (!isEnemy && collision.CompareTag("Enemy"))
-            {
-                EnemyAI enemy = collision.GetComponent<EnemyAI>();
-                if (enemy != null)
-                {
-                    enemy.TakeDamage(damage);
-                    Destroy(gameObject);
-                }
+                Destroy(gameObject);
             }
         }
     }

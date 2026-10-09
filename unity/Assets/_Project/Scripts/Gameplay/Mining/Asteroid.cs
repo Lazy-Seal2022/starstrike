@@ -1,3 +1,4 @@
+using StarStrike.Core;
 using UnityEngine;
 using StarStrike.Core;
 
@@ -6,7 +7,7 @@ namespace StarStrike.Gameplay
     public enum AsteroidTier { Large, Medium, Small }
 
     [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
-    public class Asteroid : MonoBehaviour
+    public class Asteroid : MonoBehaviour, IDamageable
     {
         public AsteroidTier tier = AsteroidTier.Large;
         public float currentHp;

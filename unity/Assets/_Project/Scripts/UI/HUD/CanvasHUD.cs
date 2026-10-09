@@ -126,21 +126,21 @@ namespace StarStrike.UI
 
         private void SyncPlayerInitialState()
         {
-            ShipController player = ShipController.Instance;
+            PlayerProgression player = PlayerProgression.Instance;
             if (player == null)
             {
                 GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-                if (playerObj != null) player = playerObj.GetComponent<ShipController>();
+                if (playerObj != null) player = playerObj.GetComponent<PlayerProgression>();
             }
 
-            if (player != null && player.stats != null)
+            if (player != null && player.currentShip != null)
             {
-                maxShield = player.stats.shieldCapacity;
-                currentShield = player.currentShield > 0f ? player.currentShield : maxShield;
-                maxEnergy = player.stats.energyCapacity;
-                currentEnergy = player.currentEnergy > 0f ? player.currentEnergy : maxEnergy;
+                maxShield = player.currentShip.shieldCapacity;
+                currentShield = player.health.currentShield > 0f ? player.health.currentShield : maxShield;
+                maxEnergy = player.currentShip.energyCapacity;
+                currentEnergy = player.health.currentEnergy > 0f ? player.health.currentEnergy : maxEnergy;
                 totalGems = player.gems;
-                UpdateShipHeader(player.stats.tier, player.stats.shipName);
+                UpdateShipHeader(player.currentShip.tier, player.currentShip.shipName);
             }
         }
 
@@ -173,14 +173,14 @@ namespace StarStrike.UI
 
         private void HandlePlayerEvolved(string shipId)
         {
-            ShipController player = ShipController.Instance;
-            if (player != null && player.stats != null)
+            PlayerProgression player = PlayerProgression.Instance;
+            if (player != null && player.currentShip != null)
             {
-                UpdateShipHeader(player.stats.tier, player.stats.shipName);
-                currentShield = player.stats.shieldCapacity;
-                maxShield = player.stats.shieldCapacity;
-                currentEnergy = player.stats.energyCapacity;
-                maxEnergy = player.stats.energyCapacity;
+                UpdateShipHeader(player.currentShip.tier, player.currentShip.shipName);
+                currentShield = player.currentShip.shieldCapacity;
+                maxShield = player.currentShip.shieldCapacity;
+                currentEnergy = player.currentShip.energyCapacity;
+                maxEnergy = player.currentShip.energyCapacity;
                 UpdateShieldVisuals();
                 UpdateEnergyVisuals();
             }
@@ -237,7 +237,7 @@ namespace StarStrike.UI
 
         private void UpdateUpgradeRows()
         {
-            ShipController player = ShipController.Instance;
+            PlayerProgression player = PlayerProgression.Instance;
             if (player == null) return;
 
             foreach (UpgradeDefinition def in StatUpgrades)
@@ -262,25 +262,25 @@ namespace StarStrike.UI
             }
         }
 
-        private int GetStatLevel(ShipController player, string key)
+        private int GetStatLevel(PlayerProgression player, string key)
         {
             switch (key)
             {
-                case "shieldCap": return player.lvlShieldCap;
-                case "shieldRegen": return player.lvlShieldRegen;
-                case "energyCap": return player.lvlEnergyCap;
-                case "energyRegen": return player.lvlEnergyRegen;
-                case "damage": return player.lvlDamage;
-                case "pulseSpeed": return player.lvlPulseSpeed;
-                case "speed": return player.lvlSpeed;
-                case "agility": return player.lvlAgility;
+                case "shieldCap": return player.upgradeState.shieldCapacityLevel;
+                case "shieldRegen": return player.upgradeState.shieldRegenLevel;
+                case "energyCap": return player.upgradeState.energyCapacityLevel;
+                case "energyRegen": return player.upgradeState.energyRegenLevel;
+                case "damage": return player.upgradeState.pulseDamageLevel;
+                case "pulseSpeed": return player.upgradeState.pulseSpeedLevel;
+                case "speed": return player.upgradeState.speedLevel;
+                case "agility": return player.upgradeState.agilityLevel;
                 default: return 0;
             }
         }
 
         private void OnUpgradeClicked(string key)
         {
-            ShipController player = ShipController.Instance;
+            PlayerProgression player = PlayerProgression.Instance;
             if (player != null && player.UpgradeStat(key))
             {
                 UpdateUpgradeRows();
@@ -292,7 +292,7 @@ namespace StarStrike.UI
         {
             if (evolutionBanner == null) return;
 
-            ShipController player = ShipController.Instance;
+            PlayerProgression player = PlayerProgression.Instance;
             bool canEvolve = player != null && player.CanEvolve();
             if (evolutionBanner.activeSelf != canEvolve)
             {
@@ -409,14 +409,14 @@ namespace StarStrike.UI
             evolveFighterButton = fighterBtnObj.GetComponent<Button>();
             evolveFighterButton.onClick.AddListener(() =>
             {
-                if (ShipController.Instance != null) ShipController.Instance.Evolve("fighter");
+                if (PlayerProgression.Instance != null) PlayerProgression.Instance.EvolveToId("fighter");
             });
 
             GameObject minerBtnObj = CreateButton(evoObj.transform, "MinerBtn", "⛏ GOLIATH MINER", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-210f, -42f), new Vector2(190f, 40f), new Color(0.9f, 0.55f, 0.1f, 1f), roundedSprite, defaultFont);
             evolveMinerButton = minerBtnObj.GetComponent<Button>();
             evolveMinerButton.onClick.AddListener(() =>
             {
-                if (ShipController.Instance != null) ShipController.Instance.Evolve("miner");
+                if (PlayerProgression.Instance != null) PlayerProgression.Instance.EvolveToId("miner");
             });
             evolutionBanner.SetActive(false);
 

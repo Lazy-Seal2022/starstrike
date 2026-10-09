@@ -1,45 +1,60 @@
 using UnityEngine;
-using StarStrike.Core;
 
 namespace StarStrike.Gameplay
 {
-    [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
+    [RequireComponent(typeof(ShipMovement), typeof(ShipHealth), typeof(ShipWeapon))]
     public class EnemyAI : MonoBehaviour
     {
-        public float maxHp = 60f;
-        public float currentHp;
         public float sightRadius = 16f;
         public float attackRadius = 10f;
-        public float fireCooldown = 1.1f;
-        public float moveSpeed = 6f;
-        public float turnSpeed = 5f;
 
-        private Rigidbody2D rb;
+        private ShipMovement movement;
+        private ShipHealth health;
+        private ShipWeapon weapon;
         private Transform playerTarget;
-        private float lastFireTime;
 
         private void Awake()
         {
-            rb = GetComponent<Rigidbody2D>();
-            rb.gravityScale = 0f;
-            rb.linearDamping = 0.8f;
+            movement = GetComponent<ShipMovement>();
+            health = GetComponent<ShipHealth>();
+            weapon = GetComponent<ShipWeapon>();
+            
             tag = "Enemy";
-
-            CircleCollider2D col = GetComponent<CircleCollider2D>();
-            col.radius = 0.5f;
 
             SpriteRenderer sr = GetComponent<SpriteRenderer>();
             if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
             sr.sprite = ProceduralSpriteHelper.GetShipSprite("drone");
             sr.sortingOrder = 4;
 
-            currentHp = maxHp;
+            health.OnDied += Die;
         }
 
         private void Start()
         {
             GameObject p = GameObject.FindGameObjectWithTag("Player");
             if (p != null) playerTarget = p.transform;
+            
+            // Setup stats for drone
+            health.maxShield = 60f;
+            health.shieldRegen = 0f;
+            health.maxEnergy = 9999f;
+            health.energyRegen = 9999f;
+            health.ResetMeters();
+
+            movement.maxSpeed = 6f;
+            movement.acceleration = 12f;
+            movement.agility = 5f;
+
+            weapon.pulseDamage = 14f;
+            weapon.pulseSpeed = 18f;
+            weapon.fireRate = 1.1f;
+            weapon.energyCost = 0f;
+            weapon.isPlayer = false;
+        }
+
+        private void OnDestroy()
+        {
+            if (health != null) health.OnDied -= Die;
         }
 
         private void Update()
@@ -48,6 +63,9 @@ namespace StarStrike.Gameplay
             {
                 GameObject p = GameObject.FindGameObjectWithTag("Player");
                 if (p != null) playerTarget = p.transform;
+                
+                movement.AimDirection = Vector2.zero;
+                movement.IsThrusting = false;
                 return;
             }
 
@@ -56,44 +74,26 @@ namespace StarStrike.Gameplay
 
             if (dist <= sightRadius)
             {
-                // Face the player
-                float targetAngle = Mathf.Atan2(toPlayer.y, toPlayer.x) * Mathf.Rad2Deg;
-                float currentAngle = transform.eulerAngles.z;
-                float angle = Mathf.MoveTowardsAngle(currentAngle, targetAngle, turnSpeed * 60f * Time.deltaTime);
-                transform.rotation = Quaternion.Euler(0, 0, angle);
+                movement.AimDirection = toPlayer.normalized;
 
                 // Move forward if too far
-                if (dist > attackRadius * 0.6f)
-                {
-                    rb.linearVelocity = transform.right * moveSpeed;
-                }
+                movement.IsThrusting = dist > attackRadius * 0.6f;
 
                 // Shoot laser
-                if (dist <= attackRadius && Time.time >= lastFireTime + fireCooldown)
+                if (dist <= attackRadius)
                 {
-                    FireLaser();
+                    Vector2 forward = transform.right;
+                    // Only fire if roughly facing the player
+                    if (Vector2.Dot(forward, toPlayer.normalized) > 0.9f)
+                    {
+                        weapon.TryFire(health);
+                    }
                 }
             }
-        }
-
-        private void FireLaser()
-        {
-            lastFireTime = Time.time;
-            GameObject laserObj = new GameObject("EnemyLaser");
-            laserObj.tag = "Laser";
-            laserObj.transform.position = transform.position + transform.right * 0.6f;
-            laserObj.transform.rotation = transform.rotation;
-
-            LaserProjectile proj = laserObj.AddComponent<LaserProjectile>();
-            proj.Initialize(14f, 18f, true);
-        }
-
-        public void TakeDamage(float amount)
-        {
-            currentHp -= amount;
-            if (currentHp <= 0f)
+            else
             {
-                Die();
+                movement.AimDirection = Vector2.zero;
+                movement.IsThrusting = false;
             }
         }
 

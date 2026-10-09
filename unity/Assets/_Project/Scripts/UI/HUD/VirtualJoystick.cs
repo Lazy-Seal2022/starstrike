@@ -55,14 +55,14 @@ namespace StarStrike.UI
                 inputVector = handleRange > 0f ? handlePos / handleRange : Vector2.zero;
 
                 // Send to ShipController
-                if (ShipController.Instance != null)
+                if (PlayerInputReader.Instance != null)
                 {
-                    ShipController.Instance.SetAimDirection(inputVector);
+                    PlayerInputReader.Instance.SetAim(inputVector);
 
                     if (autoThrustOnMove)
                     {
                         bool shouldThrust = inputVector.magnitude >= autoThrustThreshold;
-                        ShipController.Instance.SetThrust(shouldThrust);
+                        PlayerInputReader.Instance.SetThrust(shouldThrust);
                     }
                 }
             }
@@ -81,12 +81,12 @@ namespace StarStrike.UI
                 handle.anchoredPosition = Vector2.zero;
             }
 
-            if (ShipController.Instance != null)
+            if (PlayerInputReader.Instance != null)
             {
-                ShipController.Instance.SetAimDirection(Vector2.zero);
+                PlayerInputReader.Instance.SetAim(Vector2.zero);
                 if (autoThrustOnMove)
                 {
-                    ShipController.Instance.SetThrust(false);
+                    PlayerInputReader.Instance.SetThrust(false);
                 }
             }
         }

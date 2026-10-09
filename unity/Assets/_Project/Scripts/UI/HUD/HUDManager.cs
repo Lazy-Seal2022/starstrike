@@ -10,7 +10,7 @@ namespace StarStrike.UI
         [Tooltip("When enabled, migrates automatically to modern uGUI CanvasHUD.")]
         public bool useCanvasUI = true;
 
-        private ShipController player;
+        private PlayerProgression player;
         private float shieldCurrent = 100f;
         private float shieldMax = 100f;
         private float energyCurrent = 80f;
@@ -65,7 +65,7 @@ namespace StarStrike.UI
                 GameObject p = GameObject.FindGameObjectWithTag("Player");
                 if (p != null)
                 {
-                    player = p.GetComponent<ShipController>();
+                    player = p.GetComponent<PlayerProgression>();
                     if (player != null && player.stats != null)
                     {
                         shipName = $"T{player.stats.tier} • {player.stats.shipName.ToUpper()}";
