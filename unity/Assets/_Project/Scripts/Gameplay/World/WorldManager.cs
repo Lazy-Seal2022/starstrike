@@ -32,6 +32,14 @@ namespace StarStrike.Gameplay
             {
                 new GameObject("ParallaxBackground").AddComponent<ParallaxBackground>();
             }
+            if (FindObjectOfType<StarStrike.Gameplay.FX.PostProcessingSetup>() == null)
+            {
+                new GameObject("PostProcessingSetup").AddComponent<StarStrike.Gameplay.FX.PostProcessingSetup>();
+            }
+            if (FindObjectOfType<StarStrike.UI.AchievementUI>() == null)
+            {
+                new GameObject("AchievementUI").AddComponent<StarStrike.UI.AchievementUI>();
+            }
         }
 
         private void Start()

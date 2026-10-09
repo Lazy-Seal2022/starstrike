@@ -121,6 +121,7 @@ namespace StarStrike.Platform.Storage
             {
                 Profile.achievements.Add(achievementId);
                 Debug.Log("Achievement Unlocked: " + achievementId);
+                StarStrike.Core.GameEvents.TriggerAchievementUnlocked(achievementId);
                 SaveProfile();
             }
         }
