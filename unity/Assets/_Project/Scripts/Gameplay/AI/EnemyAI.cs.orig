@@ -1,5 +1,4 @@
 using UnityEngine;
-using StarStrike.Core;
 
 namespace StarStrike.Gameplay
 {
@@ -7,8 +6,6 @@ namespace StarStrike.Gameplay
     public class EnemyAI : MonoBehaviour
     {
         public enum AIState { Patrol, Chase, Attack }
-
-        public EnemyDefinition definition;
 
         public AIState currentState = AIState.Patrol;
         public float sightRadius = 16f;
@@ -37,43 +34,24 @@ namespace StarStrike.Gameplay
             sr.sprite = ProceduralSpriteHelper.GetShipSprite("drone");
             sr.sortingOrder = 4;
 
-            var trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();
-            trackable.Type = StarStrike.Gameplay.TrackableType.Enemy;
-
             health.OnDied += Die;
         }
 
         private void OnEnable()
         {
-            if (definition != null)
-            {
-                health.maxShield = definition.maxShield;
-                health.shieldRegen = definition.shieldRegen;
-                movement.maxSpeed = definition.speed;
-                movement.acceleration = definition.speed * 2f;
-                movement.agility = definition.agility;
-                weapon.pulseDamage = definition.pulseDamage;
-                weapon.pulseSpeed = definition.pulseSpeed;
-                weapon.fireRate = definition.fireRate;
-                sightRadius = definition.sightRadius;
-                attackRadius = definition.attackRadius;
-            }
-            else
-            {
-                health.maxShield = 60f;
-                health.shieldRegen = 0f;
-                movement.maxSpeed = 6f;
-                movement.acceleration = 12f;
-                movement.agility = 5f;
-                weapon.pulseDamage = 14f;
-                weapon.pulseSpeed = 18f;
-                weapon.fireRate = 1.1f;
-            }
-
+            health.maxShield = 60f;
+            health.shieldRegen = 0f;
             health.maxEnergy = 9999f;
             health.energyRegen = 9999f;
             health.ResetMeters();
 
+            movement.maxSpeed = 6f;
+            movement.acceleration = 12f;
+            movement.agility = 5f;
+
+            weapon.pulseDamage = 14f;
+            weapon.pulseSpeed = 18f;
+            weapon.fireRate = 1.1f;
             weapon.energyCost = 0f;
             weapon.isPlayer = false;
 
@@ -141,6 +119,7 @@ namespace StarStrike.Gameplay
             
             movement.AimDirection = toTarget.normalized;
             movement.IsThrusting = true;
+            // Hack to make it slower during patrol without modifying base stats
             movement.IsBraking = false; 
         }
 
@@ -153,6 +132,7 @@ namespace StarStrike.Gameplay
         private void RunAttack(Vector2 toPlayer)
         {
             movement.AimDirection = toPlayer.normalized;
+            // Stop thrusting if we are too close
             movement.IsThrusting = toPlayer.magnitude > attackRadius * 0.5f;
 
             Vector2 forward = transform.right;

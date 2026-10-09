@@ -31,6 +31,10 @@ namespace StarStrike.Gameplay
         {
             ApplyCurrentStats();
             if (health != null) health.OnDied += HandleDeath;
+
+            // Add Minimap Trackable
+            var trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();
+            trackable.Type = StarStrike.Gameplay.TrackableType.Player;
         }
 
         private void OnDestroy()

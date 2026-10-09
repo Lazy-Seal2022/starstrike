@@ -420,7 +420,13 @@ namespace StarStrike.UI
             });
             evolutionBanner.SetActive(false);
 
-            // 4. Mobile Touch Controls Container
+            // 4. Minimap Radar
+            GameObject minimapObj = new GameObject("MinimapRadar");
+            minimapObj.transform.SetParent(transform, false);
+            MinimapController minimap = minimapObj.AddComponent<MinimapController>();
+            // MinimapController will auto-build its UI on Awake
+
+            // 5. Mobile Touch Controls Container
             bool showMobile = forceShowMobileControls || Application.isMobilePlatform || Touchscreen.current != null;
             GameObject mobileRoot = new GameObject("MobileControlsRoot", typeof(RectTransform));
             mobileRoot.transform.SetParent(transform, false);

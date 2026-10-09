@@ -22,6 +22,9 @@ namespace StarStrike.Gameplay
             rb.linearDamping = 0.05f;
             rb.angularDamping = 0.05f;
             tag = "Asteroid";
+            
+            var trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();
+            trackable.Type = StarStrike.Gameplay.TrackableType.Asteroid;
 
             SetupStats();
         }

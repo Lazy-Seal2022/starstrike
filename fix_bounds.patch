@@ -1,0 +1,51 @@
+--- unity/Assets/_Project/Scripts/Gameplay/World/WorldManager.cs
++++ unity/Assets/_Project/Scripts/Gameplay/World/WorldManager.cs
+@@ -60,6 +60,16 @@
+                 new Vector3(-halfW, -halfH, 0)
+             };
+             lineRenderer.SetPositions(positions);
++
++            EdgeCollider2D edge = GetComponent<EdgeCollider2D>();
++            edge.points = new Vector2[]
++            {
++                new Vector2(-halfW, -halfH),
++                new Vector2(halfW, -halfH),
++                new Vector2(halfW, halfH),
++                new Vector2(-halfW, halfH),
++                new Vector2(-halfW, -halfH)
++            };
+         }
+ 
+         private void Update()
+@@ -69,27 +79,7 @@
+ 
+         private void EnforceBounds()
+         {
+-            if (playerTransform == null) return;
+-
+-            Vector3 pos = playerTransform.position;
+-            bool outOfBounds = false;
+-
+-            if (pos.x > halfW) { pos.x = halfW; outOfBounds = true; }
+-            else if (pos.x < -halfW) { pos.x = -halfW; outOfBounds = true; }
+-
+-            if (pos.y > halfH) { pos.y = halfH; outOfBounds = true; }
+-            else if (pos.y < -halfH) { pos.y = -halfH; outOfBounds = true; }
+-
+-            if (outOfBounds)
+-            {
+-                playerTransform.position = pos;
+-                Rigidbody2D rb = playerTransform.GetComponent<Rigidbody2D>();
+-                if (rb != null)
+-                {
+-                    // Bounce
+-                    Vector2 vel = rb.linearVelocity;
+-                    if (pos.x >= halfW || pos.x <= -halfW) vel.x = -vel.x * 0.5f;
+-                    if (pos.y >= halfH || pos.y <= -halfH) vel.y = -vel.y * 0.5f;
+-                    rb.linearVelocity = vel;
+-                }
+-            }
++            // Bounds are now enforced by EdgeCollider2D physics
+         }
+ 
+         private void LateUpdate()

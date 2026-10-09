@@ -28,6 +28,9 @@ namespace StarStrike.Gameplay
             if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
             sr.sprite = ProceduralSpriteHelper.GetGemSprite();
             sr.sortingOrder = 3;
+
+            var trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();
+            trackable.Type = StarStrike.Gameplay.TrackableType.Gem;
         }
 
         private void OnEnable()

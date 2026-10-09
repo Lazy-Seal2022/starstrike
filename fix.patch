@@ -1,0 +1,41 @@
+--- unity/Assets/_Project/Scripts/Gameplay/Combat/LaserProjectile.cs
++++ unity/Assets/_Project/Scripts/Gameplay/Combat/LaserProjectile.cs
+@@ -34,18 +34,15 @@
+ 
+         private void OnTriggerEnter2D(Collider2D collision)
+         {
+-            if (collision.CompareTag("Asteroid"))
+-            {
+-                Asteroid asteroid = collision.GetComponent<Asteroid>();
+-                if (asteroid != null)
+-                {
+-                    asteroid.TakeDamage(damage);
+-                    Destroy(gameObject);
+-                }
+-            }
+-            else if (isEnemy && collision.CompareTag("Player"))
+-            {
+-                ShipController player = collision.GetComponent<ShipController>();
+-                if (player != null)
+-                {
+-                    player.TakeDamage(damage);
+-                    Destroy(gameObject);
+-                }
+-            }
+-            else if (!isEnemy && collision.CompareTag("Enemy"))
+-            {
+-                // Enemy health script not yet implemented in base code
+-                Destroy(gameObject);
+-            }
++            if ((isEnemy && collision.CompareTag("Player")) ||
++                (!isEnemy && collision.CompareTag("Enemy")) ||
++                collision.CompareTag("Asteroid"))
++            {
++                IDamageable damageable = collision.GetComponent<IDamageable>();
++                if (damageable != null)
++                {
++                    damageable.TakeDamage(damage);
++                }
++                Destroy(gameObject);
++            }
+         }

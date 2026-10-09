@@ -11,7 +11,13 @@ namespace StarStrike.Gameplay
         public ShipWeapon weapon;
         public ShipHealth health;
 
-        [Header("Input State (Multiplatform)")]
+        [Header("Input Actions")]
+        private InputAction moveAction;
+        private InputAction lookAction;
+        private InputAction attackAction;
+        private InputAction sprintAction;
+
+        [Header("Input State")]
         public bool inputThrust;
         public bool inputBrake;
         public bool inputBoost;
@@ -29,6 +35,41 @@ namespace StarStrike.Gameplay
         private void Awake()
         {
             Instance = this;
+            SetupInputActions();
+        }
+
+        private void SetupInputActions()
+        {
+            moveAction = new InputAction("Move", binding: "<Gamepad>/leftStick");
+            moveAction.AddCompositeBinding("Dpad")
+                .With("Up", "<Keyboard>/w")
+                .With("Down", "<Keyboard>/s");
+
+            lookAction = new InputAction("Look", binding: "<Gamepad>/rightStick");
+            lookAction.AddBinding("<Pointer>/position");
+
+            attackAction = new InputAction("Attack", binding: "<Gamepad>/rightTrigger");
+            attackAction.AddBinding("<Gamepad>/buttonWest"); // X on Xbox
+            attackAction.AddBinding("<Keyboard>/space");
+            attackAction.AddBinding("<Mouse>/leftButton");
+
+            sprintAction = new InputAction("Sprint", binding: "<Gamepad>/buttonSouth"); // A on Xbox
+            sprintAction.AddBinding("<Gamepad>/leftShoulder");
+            sprintAction.AddBinding("<Keyboard>/shift");
+            sprintAction.AddBinding("<Mouse>/rightButton");
+
+            moveAction.Enable();
+            lookAction.Enable();
+            attackAction.Enable();
+            sprintAction.Enable();
+        }
+
+        private void OnDestroy()
+        {
+            moveAction?.Disable();
+            lookAction?.Disable();
+            attackAction?.Disable();
+            sprintAction?.Disable();
         }
 
         public void SetThrust(bool value) => virtualThrust = value;
@@ -69,47 +110,53 @@ namespace StarStrike.Gameplay
 
         private void UpdateInput()
         {
-            var kb = Keyboard.current;
-            var mouse = Mouse.current;
-            var pad = Gamepad.current;
+            // Action bindings
+            Vector2 moveVal = moveAction.ReadValue<Vector2>();
+            bool actionThrust = moveVal.y > 0.1f;
+            bool actionBrake = moveVal.y < -0.1f;
+            
+            bool actionFire = attackAction.IsPressed();
+            bool actionSprint = sprintAction.IsPressed();
 
-            bool keyW = kb != null && kb.wKey.isPressed;
-            bool keyS = kb != null && kb.sKey.isPressed;
-            bool keyShift = kb != null && kb.shiftKey.isPressed;
-            bool keySpace = kb != null && kb.spaceKey.isPressed;
-            bool mouseLeft = mouse != null && mouse.leftButton.isPressed;
-            bool mouseRight = mouse != null && mouse.rightButton.isPressed;
-
-            bool padThrust = pad != null && pad.rightTrigger.isPressed;
-            bool padBrake = pad != null && pad.leftTrigger.isPressed;
-            bool padBoost = pad != null && (pad.buttonSouth.isPressed || pad.leftShoulder.isPressed);
-            bool padFire = pad != null && (pad.rightShoulder.isPressed || pad.buttonWest.isPressed);
-
-            inputThrust = virtualThrust || keyW || padThrust;
-            inputBrake = virtualBrake || keyS || padBrake;
-            inputBoost = virtualBoost || keyShift || mouseRight || padBoost;
-            inputFire = virtualFire || keySpace || mouseLeft || padFire;
+            inputThrust = virtualThrust || actionThrust;
+            inputBrake = virtualBrake || actionBrake;
+            inputBoost = virtualBoost || actionSprint;
+            inputFire = virtualFire || actionFire;
 
             if (hasVirtualAim)
             {
                 inputAimDirection = virtualAimDirection;
                 hasDirectAim = true;
             }
-            else if (pad != null && pad.leftStick.ReadValue().sqrMagnitude > 0.1f)
+            else
             {
-                inputAimDirection = pad.leftStick.ReadValue().normalized;
-                hasDirectAim = true;
-            }
-            else if (mouse != null && Camera.main != null)
-            {
-                Vector2 mousePos = mouse.position.ReadValue();
-                Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, 10f));
-                Vector2 diff = (Vector2)mouseWorld - (Vector2)transform.position;
-                if (diff.sqrMagnitude > 0.05f)
+                Vector2 rawLook = lookAction.ReadValue<Vector2>();
+                
+                // If the pointer (mouse) is driving lookAction, we need to convert to world space
+                if (Mouse.current != null && lookAction.activeControl?.device == Mouse.current)
                 {
-                    inputAimDirection = diff.normalized;
+                    if (Camera.main != null)
+                    {
+                        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(new Vector3(rawLook.x, rawLook.y, 10f));
+                        Vector2 diff = (Vector2)mouseWorld - (Vector2)transform.position;
+                        if (diff.sqrMagnitude > 0.05f)
+                        {
+                            inputAimDirection = diff.normalized;
+                        }
+                        hasDirectAim = false;
+                    }
                 }
-                hasDirectAim = false;
+                else if (rawLook.sqrMagnitude > 0.1f) // Gamepad Right Stick
+                {
+                    inputAimDirection = rawLook.normalized;
+                    hasDirectAim = true;
+                }
+                else if (Mathf.Abs(moveVal.x) > 0.1f) // Gamepad Left Stick / keyboard A/D fallback
+                {
+                    // Fallback to steering with movement keys if no right stick
+                    inputAimDirection = moveVal.normalized;
+                    hasDirectAim = true;
+                }
             }
         }
     }

@@ -1,0 +1,52 @@
+--- unity/Assets/_Project/Scripts/Gameplay/Progression/PlayerProgression.cs
++++ unity/Assets/_Project/Scripts/Gameplay/Progression/PlayerProgression.cs
+@@ -1,6 +1,7 @@
+ using UnityEngine;
+ using StarStrike.Core;
++using System.Collections;
+ 
+ namespace StarStrike.Gameplay
+ {
+     public class PlayerProgression : MonoBehaviour
+@@ -23,6 +24,18 @@
+         private void Start()
+         {
+             ApplyCurrentStats();
++            if (health != null) health.OnDied += HandleDeath;
++        }
++        
++        private void OnDestroy()
++        {
++            if (health != null) health.OnDied -= HandleDeath;
++        }
++        
++        private void HandleDeath()
++        {
++            // Explode, wait 1.5s, respawn
++            StartCoroutine(RespawnRoutine());
++        }
++        
++        private IEnumerator RespawnRoutine()
++        {
++            if (shipRenderer != null) shipRenderer.enabled = false;
++            if (movement != null) movement.enabled = false;
++            if (weapon != null) weapon.enabled = false;
++            
++            yield return new WaitForSeconds(1.5f);
++            
++            if (shipRenderer != null) shipRenderer.enabled = true;
++            if (movement != null) movement.enabled = true;
++            if (weapon != null) weapon.enabled = true;
++            
++            transform.position = Vector3.zero;
++            if (movement != null) {
++                var rb = movement.GetComponent<Rigidbody2D>();
++                if (rb != null) {
++                    rb.linearVelocity = Vector2.zero;
++                    rb.angularVelocity = 0f;
++                }
++            }
++            health.ResetMeters();
+         }
+ 
+         public void AddGems(int amount)

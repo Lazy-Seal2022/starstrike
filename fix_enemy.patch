@@ -1,0 +1,70 @@
+--- unity/Assets/_Project/Scripts/Gameplay/AI/EnemyAI.cs
++++ unity/Assets/_Project/Scripts/Gameplay/AI/EnemyAI.cs
+@@ -1,4 +1,5 @@
+ using UnityEngine;
++using StarStrike.Core;
+ 
+ namespace StarStrike.Gameplay
+ {
+@@ -9,6 +10,8 @@
+ 
+         public AIState currentState = AIState.Patrol;
+         public float sightRadius = 16f;
+         public float attackRadius = 10f;
+         public float patrolSpeedMult = 0.5f;
++        
++        public EnemyDefinition definition;
+ 
+         private ShipMovement movement;
+         private ShipHealth health;
+@@ -37,17 +40,30 @@
+ 
+         private void OnEnable()
+         {
+-            health.maxShield = 60f;
+-            health.shieldRegen = 0f;
+-            health.maxEnergy = 9999f;
+-            health.energyRegen = 9999f;
+-            health.ResetMeters();
+-
+-            movement.maxSpeed = 6f;
+-            movement.acceleration = 12f;
+-            movement.agility = 5f;
+-
+-            weapon.pulseDamage = 14f;
+-            weapon.pulseSpeed = 18f;
+-            weapon.fireRate = 1.1f;
+-            weapon.energyCost = 0f;
+-            weapon.isPlayer = false;
++            if (definition != null)
++            {
++                health.maxShield = definition.maxShield;
++                health.shieldRegen = definition.shieldRegen;
++                movement.maxSpeed = definition.speed;
++                movement.acceleration = definition.speed * 2f;
++                movement.agility = definition.agility;
++                weapon.pulseDamage = definition.pulseDamage;
++                weapon.pulseSpeed = definition.pulseSpeed;
++                weapon.fireRate = definition.fireRate;
++                sightRadius = definition.sightRadius;
++                attackRadius = definition.attackRadius;
++            }
++            else
++            {
++                health.maxShield = 60f;
++                health.shieldRegen = 0f;
++                movement.maxSpeed = 6f;
++                movement.acceleration = 12f;
++                movement.agility = 5f;
++                weapon.pulseDamage = 14f;
++                weapon.pulseSpeed = 18f;
++                weapon.fireRate = 1.1f;
++            }
++            
++            health.maxEnergy = 9999f;
++            health.energyRegen = 9999f;
++            health.ResetMeters();
++            weapon.energyCost = 0f;
++            weapon.isPlayer = false;
+ 
+             patrolCenter = transform.position;

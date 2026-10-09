@@ -1,0 +1,24 @@
+--- unity/Assets/_Project/Scripts/Gameplay/Combat/ShipWeapon.cs
++++ unity/Assets/_Project/Scripts/Gameplay/Combat/ShipWeapon.cs
+@@ -37,13 +37,17 @@
+             {
+                 Vector2 nose = (Vector2)transform.position + (Vector2)transform.right * 0.65f + (Vector2)transform.up * offset;
+                 
+-                // TODO: Replace with Object Pooling in Phase 3
+-                GameObject laserObj = new GameObject(isPlayer ? "PlayerLaser" : "EnemyLaser");
+-                laserObj.tag = isPlayer ? "Laser" : "EnemyLaser";
+-                laserObj.transform.position = nose;
+-                laserObj.transform.rotation = transform.rotation;
++                string tag = isPlayer ? "PlayerLaser" : "EnemyLaser";
++                GameObject laserObj = PoolManager.Instance.Spawn(tag, nose, transform.rotation, () => 
++                {
++                    GameObject obj = new GameObject(tag);
++                    obj.tag = isPlayer ? "Laser" : "EnemyLaser";
++                    obj.AddComponent<LaserProjectile>();
++                    return obj;
++                });
+ 
+-                LaserProjectile proj = laserObj.AddComponent<LaserProjectile>();
++                LaserProjectile proj = laserObj.GetComponent<LaserProjectile>();
+                 proj.Initialize(pulseDamage, pulseSpeed, !isPlayer);
+             }
