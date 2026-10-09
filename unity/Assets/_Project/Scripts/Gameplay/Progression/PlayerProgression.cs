@@ -59,6 +59,10 @@ namespace StarStrike.Gameplay
                 gameConfig = ScriptableObject.CreateInstance<GameConfig>();
             }
 
+            if (health == null) health = GetComponent<ShipHealth>();
+            if (movement == null) movement = GetComponent<ShipMovement>();
+            if (weapon == null) weapon = GetComponent<ShipWeapon>();
+
             if (shipRenderer == null)
             {
                 shipRenderer = GetComponent<SpriteRenderer>();
@@ -72,6 +76,10 @@ namespace StarStrike.Gameplay
 
         private void Start()
         {
+            if (health == null) health = GetComponent<ShipHealth>();
+            if (movement == null) movement = GetComponent<ShipMovement>();
+            if (weapon == null) weapon = GetComponent<ShipWeapon>();
+
             ApplyCurrentStats();
             ApplyShipVisuals();
             if (health != null) health.OnDied += HandleDeath;
@@ -265,16 +273,23 @@ namespace StarStrike.Gameplay
 
             if (movement != null)
             {
-                movement.maxSpeed = currentStats.speed / 26f;
-                movement.acceleration = currentStats.speed / 26f * 1.8f; 
-                movement.agility = currentStats.agility;
+                float spd = currentStats.speed > 35f ? currentStats.speed / 26f : currentStats.speed;
+                if (spd <= 0f) spd = 10f;
+                movement.maxSpeed = spd;
+                movement.acceleration = spd * 1.8f;
+
+                float agl = currentStats.agility > 20f ? currentStats.agility / 30f : currentStats.agility;
+                if (agl <= 0f) agl = 6f;
+                movement.agility = agl;
             }
 
             if (weapon != null)
             {
-                weapon.pulseDamage = currentStats.pulseDamage;
-                weapon.pulseSpeed = currentStats.pulseSpeed / 26f;
-                weapon.weaponSlots = currentShip.weaponSlots;
+                weapon.pulseDamage = currentStats.pulseDamage > 0 ? currentStats.pulseDamage : 20f;
+                float pSpd = currentStats.pulseSpeed > 35f ? currentStats.pulseSpeed / 26f : currentStats.pulseSpeed;
+                if (pSpd <= 0f) pSpd = 22f;
+                weapon.pulseSpeed = pSpd;
+                weapon.weaponSlots = currentShip.weaponSlots > 0 ? currentShip.weaponSlots : 1;
             }
         }
 

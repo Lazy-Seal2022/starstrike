@@ -19,6 +19,10 @@ namespace StarStrike.Gameplay
         private void Awake()
         {
             rb = GetComponent<Rigidbody2D>();
+            if (CompareTag("Player") || gameObject.name == "Player")
+            {
+                isPlayer = true;
+            }
         }
 
         public bool TryFire(ShipHealth health)

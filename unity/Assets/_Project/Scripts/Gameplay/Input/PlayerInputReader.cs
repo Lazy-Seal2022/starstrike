@@ -22,6 +22,7 @@ namespace StarStrike.Gameplay
         public bool inputBrake;
         public bool inputBoost;
         public bool inputFire;
+        public float inputTurn;
         public Vector2 inputAimDirection;
         public bool hasDirectAim = false;
 
@@ -35,7 +36,20 @@ namespace StarStrike.Gameplay
         private void Awake()
         {
             Instance = this;
+            ResolveComponents();
             SetupInputActions();
+        }
+
+        private void Start()
+        {
+            ResolveComponents();
+        }
+
+        private void ResolveComponents()
+        {
+            if (movement == null) movement = GetComponent<ShipMovement>();
+            if (weapon == null) weapon = GetComponent<ShipWeapon>();
+            if (health == null) health = GetComponent<ShipHealth>();
         }
 
         private void SetupInputActions()
@@ -43,7 +57,9 @@ namespace StarStrike.Gameplay
             moveAction = new InputAction("Move", binding: "<Gamepad>/leftStick");
             moveAction.AddCompositeBinding("Dpad")
                 .With("Up", "<Keyboard>/w")
-                .With("Down", "<Keyboard>/s");
+                .With("Down", "<Keyboard>/s")
+                .With("Left", "<Keyboard>/a")
+                .With("Right", "<Keyboard>/d");
 
             lookAction = new InputAction("Look", binding: "<Gamepad>/rightStick");
             lookAction.AddBinding("<Pointer>/position");
@@ -93,17 +109,24 @@ namespace StarStrike.Gameplay
 
         private void Update()
         {
+            if (movement == null || weapon == null || health == null)
+            {
+                ResolveComponents();
+            }
+
             if (GameManager.Instance != null && GameManager.Instance.CurrentState != GameState.Playing)
             {
                 inputThrust = false;
                 inputBrake = false;
                 inputBoost = false;
                 inputFire = false;
+                inputTurn = 0f;
                 
                 if (movement != null)
                 {
                     movement.IsThrusting = false;
                     movement.IsBraking = true; // Auto-brake in menus
+                    movement.TurnInput = 0f;
                 }
                 return;
             }
@@ -113,6 +136,7 @@ namespace StarStrike.Gameplay
             if (movement != null)
             {
                 movement.AimDirection = inputAimDirection;
+                movement.TurnInput = inputTurn;
                 movement.IsThrusting = inputThrust || inputBoost;
                 movement.IsBraking = inputBrake;
             }
@@ -125,53 +149,66 @@ namespace StarStrike.Gameplay
 
         private void UpdateInput()
         {
-            // Action bindings
-            Vector2 moveVal = moveAction.ReadValue<Vector2>();
-            bool actionThrust = moveVal.y > 0.1f;
-            bool actionBrake = moveVal.y < -0.1f;
-            
-            bool actionFire = attackAction.IsPressed();
-            bool actionSprint = sprintAction.IsPressed();
+            Keyboard kb = Keyboard.current;
+            Mouse mouse = Mouse.current;
+            Gamepad pad = Gamepad.current;
 
-            inputThrust = virtualThrust || actionThrust;
-            inputBrake = virtualBrake || actionBrake;
+            bool keyW = kb != null && (kb.wKey.isPressed || kb.upArrowKey.isPressed);
+            bool keyS = kb != null && (kb.sKey.isPressed || kb.downArrowKey.isPressed);
+            bool keyA = kb != null && (kb.aKey.isPressed || kb.leftArrowKey.isPressed);
+            bool keyD = kb != null && (kb.dKey.isPressed || kb.rightArrowKey.isPressed);
+            bool keySpace = kb != null && kb.spaceKey.isPressed;
+            bool keyShift = kb != null && (kb.leftShiftKey.isPressed || kb.rightShiftKey.isPressed);
+
+            bool mouseLeft = mouse != null && mouse.leftButton.isPressed;
+            bool mouseRight = mouse != null && mouse.rightButton.isPressed;
+
+            Vector2 moveVal = moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
+            float padY = pad != null ? pad.leftStick.y.ReadValue() : 0f;
+            float padX = pad != null ? pad.leftStick.x.ReadValue() : 0f;
+            bool padFire = pad != null && (pad.rightTrigger.isPressed || pad.buttonWest.isPressed);
+            bool padBoost = pad != null && (pad.buttonSouth.isPressed || pad.leftShoulder.isPressed);
+
+            bool actionFire = (attackAction != null && attackAction.IsPressed()) || keySpace || mouseLeft || padFire;
+            bool actionSprint = (sprintAction != null && sprintAction.IsPressed()) || keyShift || mouseRight || padBoost;
+
+            inputThrust = virtualThrust || keyW || moveVal.y > 0.15f || padY > 0.15f;
+            inputBrake = virtualBrake || keyS || moveVal.y < -0.15f || padY < -0.15f;
             inputBoost = virtualBoost || actionSprint;
             inputFire = virtualFire || actionFire;
 
+            // Turn input: +1 for counter-clockwise / Left, -1 for clockwise / Right
+            float turn = 0f;
+            if (keyA) turn += 1f;
+            if (keyD) turn -= 1f;
+            inputTurn = turn;
+
+            // Aim direction resolution: Virtual -> Gamepad Right Stick -> Mouse Cursor -> Gamepad Left Stick
             if (hasVirtualAim)
             {
                 inputAimDirection = virtualAimDirection;
                 hasDirectAim = true;
             }
-            else
+            else if (pad != null && pad.rightStick.ReadValue().sqrMagnitude > 0.15f)
             {
-                Vector2 rawLook = lookAction.ReadValue<Vector2>();
-                
-                // If the pointer (mouse) is driving lookAction, we need to convert to world space
-                if (Mouse.current != null && lookAction.activeControl?.device == Mouse.current)
+                inputAimDirection = pad.rightStick.ReadValue().normalized;
+                hasDirectAim = true;
+            }
+            else if (mouse != null && Camera.main != null)
+            {
+                Vector2 mousePos = mouse.position.ReadValue();
+                float camDistance = Mathf.Abs(Camera.main.transform.position.z);
+                Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, camDistance));
+                Vector2 diff = (Vector2)mouseWorld - (Vector2)transform.position;
+                if (diff.sqrMagnitude > 0.05f)
                 {
-                    if (Camera.main != null)
-                    {
-                        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(new Vector3(rawLook.x, rawLook.y, 10f));
-                        Vector2 diff = (Vector2)mouseWorld - (Vector2)transform.position;
-                        if (diff.sqrMagnitude > 0.05f)
-                        {
-                            inputAimDirection = diff.normalized;
-                        }
-                        hasDirectAim = false;
-                    }
+                    inputAimDirection = diff.normalized;
                 }
-                else if (rawLook.sqrMagnitude > 0.1f) // Gamepad Right Stick
-                {
-                    inputAimDirection = rawLook.normalized;
-                    hasDirectAim = true;
-                }
-                else if (Mathf.Abs(moveVal.x) > 0.1f) // Gamepad Left Stick / keyboard A/D fallback
-                {
-                    // Fallback to steering with movement keys if no right stick
-                    inputAimDirection = moveVal.normalized;
-                    hasDirectAim = true;
-                }
+                hasDirectAim = false;
+            }
+            else if (Mathf.Abs(padX) > 0.15f)
+            {
+                inputTurn = -padX;
             }
         }
     }

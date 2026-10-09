@@ -351,7 +351,11 @@ GameObject:
   - component: {fileID: 727201835}
   - component: {fileID: 727201834}
   - component: {fileID: 727201833}
-  - component: {fileID: 727201832}
+  - component: {fileID: 727201840}
+  - component: {fileID: 727201839}
+  - component: {fileID: 727201838}
+  - component: {fileID: 727201837}
+  - component: {fileID: 727201836}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -359,49 +363,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &727201832
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 727201831}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2b1d31502962cb24ab625ba21a0c81fe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StarStrike.Gameplay.ShipController
-  stats:
-    shipId: scout
-    shipName: Delta Scout
-    tier: 1
-    weaponSlots: 1
-    shieldCapacity: 100
-    shieldRegen: 8
-    energyCapacity: 80
-    energyRegen: 18
-    pulseDamage: 18
-    pulseSpeed: 22
-    speed: 10
-    acceleration: 18
-    agility: 6
-  currentShield: 0
-  currentEnergy: 0
-  gems: 0
-  inputThrust: 0
-  inputBrake: 0
-  inputBoost: 0
-  inputFire: 0
-  inputAimDirection: {x: 0, y: 0}
-  hasDirectAim: 0
-  lvlShieldCap: 0
-  lvlShieldRegen: 0
-  lvlEnergyCap: 0
-  lvlEnergyRegen: 0
-  lvlDamage: 0
-  lvlPulseSpeed: 0
-  lvlSpeed: 0
-  lvlAgility: 0
 --- !u!58 &727201833
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -480,6 +441,107 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &727201836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 727201831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b9f28252b3709d458a8515983c8b004, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: StarStrike.Gameplay::StarStrike.Gameplay.PlayerInputReader
+  movement: {fileID: 727201840}
+  weapon: {fileID: 727201838}
+  health: {fileID: 727201839}
+  inputThrust: 0
+  inputBrake: 0
+  inputBoost: 0
+  inputFire: 0
+  inputAimDirection: {x: 0, y: 0}
+  hasDirectAim: 0
+--- !u!114 &727201837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 727201831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d428aa3bb4dc72242a8190f34c96671d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: StarStrike.Gameplay::StarStrike.Gameplay.PlayerProgression
+  currentShip: {fileID: 0}
+  gameConfig: {fileID: 0}
+  upgradeState:
+    shieldCapacityLevel: 0
+    shieldRegenLevel: 0
+    energyCapacityLevel: 0
+    energyRegenLevel: 0
+    pulseDamageLevel: 0
+    pulseSpeedLevel: 0
+    speedLevel: 0
+    agilityLevel: 0
+  gems: 0
+  health: {fileID: 727201839}
+  movement: {fileID: 727201840}
+  weapon: {fileID: 727201838}
+  shipRenderer: {fileID: 0}
+--- !u!114 &727201838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 727201831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0252b61bcff9f7440ab6b78a30535cfd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: StarStrike.Gameplay::StarStrike.Gameplay.ShipWeapon
+  pulseDamage: 18
+  pulseSpeed: 22
+  weaponSlots: 1
+  fireRate: 0.22
+  energyCost: 12
+  isPlayer: 1
+--- !u!114 &727201839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 727201831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7bdc92e6d677734a91643c82a9c6076, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: StarStrike.Gameplay::StarStrike.Gameplay.ShipHealth
+  maxShield: 100
+  shieldRegen: 8
+  maxEnergy: 80
+  energyRegen: 18
+  currentShield: 0
+  currentEnergy: 0
+  isPlayer: 1
+--- !u!114 &727201840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 727201831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ef766117543b624ab82eec827f93383, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: StarStrike.Gameplay::StarStrike.Gameplay.ShipMovement
+  maxSpeed: 10
+  acceleration: 18
+  agility: 6
 --- !u!1 &1627350162
 GameObject:
   m_ObjectHideFlags: 0
@@ -490,6 +552,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1627350164}
   - component: {fileID: 1627350163}
+  - component: {fileID: 1627350166}
+  - component: {fileID: 1627350165}
   m_Layer: 0
   m_Name: WorldManager
   m_TagString: Untagged
@@ -509,11 +573,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bbb9cbaf93d42d489863056e30ffb94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StarStrike.Gameplay.WorldManager
+  config: {fileID: 0}
+  playerTransform: {fileID: 0}
   worldWidth: 140
   worldHeight: 140
   initialAsteroidCount: 50
   initialDroneCount: 6
-  playerTransform: {fileID: 0}
 --- !u!4 &1627350164
 Transform:
   m_ObjectHideFlags: 0
@@ -529,6 +594,159 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!68 &1627350165
+EdgeCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1627350162}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_EdgeRadius: 0
+  m_Points:
+  - {x: -0.5, y: 0}
+  - {x: 0.5, y: 0}
+  m_AdjacentStartPoint: {x: 0, y: 0}
+  m_AdjacentEndPoint: {x: 0, y: 0}
+  m_UseAdjacentStartPoint: 0
+  m_UseAdjacentEndPoint: 0
+--- !u!120 &1627350166
+LineRenderer:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1627350162}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 0
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_Positions:
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 1}
+  m_Parameters:
+    serializedVersion: 3
+    widthMultiplier: 1
+    widthCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    colorGradient:
+      serializedVersion: 2
+      key0: {r: 1, g: 1, b: 1, a: 1}
+      key1: {r: 1, g: 1, b: 1, a: 1}
+      key2: {r: 0, g: 0, b: 0, a: 0}
+      key3: {r: 0, g: 0, b: 0, a: 0}
+      key4: {r: 0, g: 0, b: 0, a: 0}
+      key5: {r: 0, g: 0, b: 0, a: 0}
+      key6: {r: 0, g: 0, b: 0, a: 0}
+      key7: {r: 0, g: 0, b: 0, a: 0}
+      ctime0: 0
+      ctime1: 65535
+      ctime2: 0
+      ctime3: 0
+      ctime4: 0
+      ctime5: 0
+      ctime6: 0
+      ctime7: 0
+      atime0: 0
+      atime1: 65535
+      atime2: 0
+      atime3: 0
+      atime4: 0
+      atime5: 0
+      atime6: 0
+      atime7: 0
+      m_Mode: 0
+      m_ColorSpace: -1
+      m_NumColorKeys: 2
+      m_NumAlphaKeys: 2
+    numCornerVertices: 0
+    numCapVertices: 0
+    alignment: 0
+    textureMode: 0
+    textureScale: {x: 1, y: 1}
+    shadowBias: 0.5
+    generateLightingData: 0
+  m_UseWorldSpace: 1
+  m_Loop: 0
+  m_ApplyActiveColorSpace: 1
 --- !u!1 &2114270095
 GameObject:
   m_ObjectHideFlags: 0

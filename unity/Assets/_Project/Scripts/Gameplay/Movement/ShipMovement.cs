@@ -14,6 +14,7 @@ namespace StarStrike.Gameplay
 
         // Input state
         public Vector2 AimDirection { get; set; }
+        public float TurnInput { get; set; }
         public bool IsThrusting { get; set; }
         public bool IsBraking { get; set; }
         
@@ -50,7 +51,12 @@ namespace StarStrike.Gameplay
 
         private void HandleSteering()
         {
-            if (AimDirection.sqrMagnitude > 0.01f)
+            if (Mathf.Abs(TurnInput) > 0.01f)
+            {
+                float deltaAngle = TurnInput * agility * 45f * Time.fixedDeltaTime;
+                rb.MoveRotation(rb.rotation + deltaAngle);
+            }
+            else if (AimDirection.sqrMagnitude > 0.01f)
             {
                 float targetAngle = Mathf.Atan2(AimDirection.y, AimDirection.x) * Mathf.Rad2Deg;
                 float currentAngle = rb.rotation;

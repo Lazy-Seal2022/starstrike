@@ -22,6 +22,14 @@ namespace StarStrike.Gameplay
         public event Action<float, float> OnEnergyChanged;
         public event Action OnDied;
 
+        private void Awake()
+        {
+            if (CompareTag("Player") || gameObject.name == "Player")
+            {
+                isPlayer = true;
+            }
+        }
+
         private void Start()
         {
             ResetMeters();
