@@ -36,7 +36,19 @@ namespace StarStrike.Gameplay
             sr.sortingOrder = 5;
 
             rb.linearVelocity = transform.right * speed;
-            Destroy(gameObject, lifetime);
+            
+        }
+
+        private float spawnTime;
+        private void OnEnable()
+        {
+            spawnTime = Time.time;
+        }
+        private void Update()
+        {
+            if (Time.time - spawnTime > lifetime) {
+                gameObject.SetActive(false);
+            }
         }
 
         private void OnTriggerEnter2D(Collider2D collision)
@@ -50,7 +62,7 @@ namespace StarStrike.Gameplay
                 {
                     damageable.TakeDamage(damage);
                 }
-                Destroy(gameObject);
+                gameObject.SetActive(false);
             }
         }
     }

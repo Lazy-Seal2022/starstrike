@@ -1,12 +1,13 @@
 using UnityEngine;
 using StarStrike.Core;
+using System.Collections;
 
 namespace StarStrike.Gameplay
 {
     public class PlayerProgression : MonoBehaviour
     {
         public static PlayerProgression Instance { get; private set; }
-        private void Awake() { Instance = this; }
+
         [Header("Configuration")]
         public ShipDefinition currentShip;
         public GameConfig gameConfig;
@@ -21,9 +22,53 @@ namespace StarStrike.Gameplay
         public ShipWeapon weapon;
         public SpriteRenderer shipRenderer;
 
+        private void Awake()
+        {
+            Instance = this;
+        }
+
         private void Start()
         {
             ApplyCurrentStats();
+            if (health != null) health.OnDied += HandleDeath;
+        }
+
+        private void OnDestroy()
+        {
+            if (health != null) health.OnDied -= HandleDeath;
+        }
+
+        private void HandleDeath()
+        {
+            StartCoroutine(RespawnRoutine());
+        }
+
+        private IEnumerator RespawnRoutine()
+        {
+            if (shipRenderer != null) shipRenderer.enabled = false;
+            if (movement != null) movement.enabled = false;
+            if (weapon != null) weapon.enabled = false;
+            
+            // TODO: Spawn explosion particles here
+            if (PoolManager.Instance != null) {
+                // PoolManager.Instance.Spawn("Explosion", transform.position, Quaternion.identity, null);
+            }
+
+            yield return new WaitForSeconds(1.5f);
+            
+            if (shipRenderer != null) shipRenderer.enabled = true;
+            if (movement != null) movement.enabled = true;
+            if (weapon != null) weapon.enabled = true;
+            
+            transform.position = Vector3.zero;
+            if (movement != null) {
+                var rb = movement.GetComponent<Rigidbody2D>();
+                if (rb != null) {
+                    rb.linearVelocity = Vector2.zero;
+                    rb.angularVelocity = 0f;
+                }
+            }
+            health.ResetMeters();
         }
 
         public void AddGems(int amount)
@@ -50,9 +95,6 @@ namespace StarStrike.Gameplay
 
             GameEvents.TriggerGemCollected(0, gems);
             ApplyCurrentStats();
-            
-            // Keep current health proportional or just let it regenerate? The JS baseline keeps it proportional, 
-            // but for now we just let it regen from current value as before.
             
             return true;
         }
@@ -94,6 +136,19 @@ namespace StarStrike.Gameplay
             GameEvents.TriggerPlayerEvolved(currentShip.id);
         }
 
+        public void EvolveToId(string targetId)
+        {
+            if (currentShip == null || currentShip.evolvesTo == null) return;
+            foreach (var ship in currentShip.evolvesTo)
+            {
+                if (ship.id == targetId)
+                {
+                    Evolve(ship);
+                    return;
+                }
+            }
+        }
+
         private void ApplyCurrentStats()
         {
             if (currentShip == null || gameConfig == null) return;
@@ -110,9 +165,6 @@ namespace StarStrike.Gameplay
 
             if (movement != null)
             {
-                // In Phase 1 JS we saw speed 260. We might need a physics conversion factor here later.
-                // For now, if currentStats.speed is huge, we divide it to match old Unity scale (e.g. 260 -> 10 = divide by 26)
-                // Let's just pass it directly and adjust Physics later if needed.
                 movement.maxSpeed = currentStats.speed / 26f;
                 movement.acceleration = currentStats.speed / 26f * 1.8f; 
                 movement.agility = currentStats.agility;
@@ -124,3 +176,6 @@ namespace StarStrike.Gameplay
                 weapon.pulseSpeed = currentStats.pulseSpeed / 26f;
                 weapon.weaponSlots = currentShip.weaponSlots;
             }
+        }
+    }
+}

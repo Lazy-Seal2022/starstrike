@@ -43,13 +43,30 @@ namespace StarStrike.Gameplay
             {
                 Vector2 nose = (Vector2)transform.position + (Vector2)transform.right * 0.65f + (Vector2)transform.up * offset;
                 
-                // TODO: Replace with Object Pooling in Phase 3
-                GameObject laserObj = new GameObject(isPlayer ? "PlayerLaser" : "EnemyLaser");
-                laserObj.tag = isPlayer ? "Laser" : "EnemyLaser";
-                laserObj.transform.position = nose;
-                laserObj.transform.rotation = transform.rotation;
+                string poolTag = isPlayer ? "PlayerLaser" : "EnemyLaser";
+                
+                GameObject laserObj = null;
+                if (PoolManager.Instance != null)
+                {
+                    laserObj = PoolManager.Instance.Spawn(poolTag, nose, transform.rotation, () => 
+                    {
+                        GameObject obj = new GameObject(poolTag);
+                        obj.tag = isPlayer ? "Laser" : "EnemyLaser";
+                        obj.AddComponent<LaserProjectile>();
+                        return obj;
+                    });
+                }
+                else
+                {
+                    // Fallback if no pool
+                    laserObj = new GameObject(poolTag);
+                    laserObj.tag = isPlayer ? "Laser" : "EnemyLaser";
+                    laserObj.transform.position = nose;
+                    laserObj.transform.rotation = transform.rotation;
+                    laserObj.AddComponent<LaserProjectile>();
+                }
 
-                LaserProjectile proj = laserObj.AddComponent<LaserProjectile>();
+                LaserProjectile proj = laserObj.GetComponent<LaserProjectile>();
                 proj.Initialize(pulseDamage, pulseSpeed, !isPlayer);
             }
 

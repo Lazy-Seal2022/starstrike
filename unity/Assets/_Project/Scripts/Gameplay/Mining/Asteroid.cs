@@ -1,6 +1,5 @@
 using StarStrike.Core;
 using UnityEngine;
-using StarStrike.Core;
 
 namespace StarStrike.Gameplay
 {
@@ -63,7 +62,7 @@ namespace StarStrike.Gameplay
 
         public bool hasCustomInitialVelocity = false;
 
-        private void Start()
+        private void OnEnable()
         {
             if (!hasCustomInitialVelocity)
             {
@@ -89,9 +88,18 @@ namespace StarStrike.Gameplay
             // 1. Drop Crystals
             for (int i = 0; i < gemDropCount; i++)
             {
-                GameObject gemObj = new GameObject("GemCrystal");
-                gemObj.transform.position = transform.position + (Vector3)(Random.insideUnitCircle * 0.5f);
-                gemObj.AddComponent<GemCrystal>();
+                Vector3 pos = transform.position + (Vector3)(Random.insideUnitCircle * 0.5f);
+                if (PoolManager.Instance != null) {
+                    PoolManager.Instance.Spawn("Gem", pos, Quaternion.identity, () => {
+                        GameObject obj = new GameObject("GemCrystal");
+                        obj.AddComponent<GemCrystal>();
+                        return obj;
+                    });
+                } else {
+                    GameObject gemObj = new GameObject("GemCrystal");
+                    gemObj.transform.position = pos;
+                    gemObj.AddComponent<GemCrystal>();
+                }
             }
 
             // 2. Fracture into smaller asteroids
@@ -106,14 +114,28 @@ namespace StarStrike.Gameplay
                 SpawnChildAsteroid(AsteroidTier.Small);
             }
 
-            Destroy(gameObject);
+            gameObject.SetActive(false);
         }
 
         private void SpawnChildAsteroid(AsteroidTier childTier)
         {
-            GameObject child = new GameObject($"Asteroid_{childTier}");
-            child.transform.position = transform.position + (Vector3)(Random.insideUnitCircle * 0.4f);
-            Asteroid ast = child.AddComponent<Asteroid>();
+            Vector3 pos = transform.position + (Vector3)(Random.insideUnitCircle * 0.4f);
+            string tag = $"Asteroid_{childTier}";
+            GameObject child = null;
+            
+            if (PoolManager.Instance != null) {
+                child = PoolManager.Instance.Spawn(tag, pos, Quaternion.identity, () => {
+                    GameObject obj = new GameObject(tag);
+                    obj.AddComponent<Asteroid>();
+                    return obj;
+                });
+            } else {
+                child = new GameObject(tag);
+                child.transform.position = pos;
+            }
+
+            Asteroid ast = child.GetComponent<Asteroid>();
+            if (ast == null) ast = child.AddComponent<Asteroid>();
             ast.tier = childTier;
             ast.SetupStats();
             ast.hasCustomInitialVelocity = true;

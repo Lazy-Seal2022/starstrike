@@ -1,31 +1,44 @@
 using UnityEngine;
+using StarStrike.Core;
 
 namespace StarStrike.Gameplay
 {
+    [RequireComponent(typeof(LineRenderer), typeof(EdgeCollider2D))]
     public class WorldManager : MonoBehaviour
     {
-        [Header("World Boundaries")]
-        public float worldWidth = 140f;
-        public float worldHeight = 140f;
-
-        [Header("Spawning")]
-        public int initialAsteroidCount = 50;
-        public int initialDroneCount = 6;
-
+        [Header("References")]
+        public GameConfig config;
         public Transform playerTransform;
+
+        private float halfW;
+        private float halfH;
+        private LineRenderer lineRenderer;
 
         private void Start()
         {
-            // Find player
+            if (config != null)
+            {
+                halfW = config.worldWidth * 0.5f;
+                halfH = config.worldHeight * 0.5f;
+            }
+            else
+            {
+                // Fallback
+                halfW = 2000f;
+                halfH = 2000f;
+            }
+
             if (playerTransform == null)
             {
                 GameObject player = GameObject.FindGameObjectWithTag("Player");
                 if (player != null) playerTransform = player.transform;
             }
 
+            SetupCamera();
+            DrawBorder();
+            
             SpawnAsteroidField();
             SpawnEnemyDrones();
-            SetupCamera();
         }
 
         private void SetupCamera()
@@ -35,13 +48,44 @@ namespace StarStrike.Gameplay
             {
                 cam.orthographic = true;
                 cam.orthographicSize = 10f;
-                cam.backgroundColor = new Color(0.015f, 0.03f, 0.07f); // Deep space dark blue
+                cam.backgroundColor = new Color(0.015f, 0.03f, 0.07f);
             }
+        }
+
+        private void DrawBorder()
+        {
+            lineRenderer = GetComponent<LineRenderer>();
+            lineRenderer.positionCount = 5;
+            lineRenderer.useWorldSpace = true;
+            lineRenderer.startWidth = 0.5f;
+            lineRenderer.endWidth = 0.5f;
+            lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+            lineRenderer.startColor = new Color(0f, 1f, 1f, 0.3f);
+            lineRenderer.endColor = new Color(0f, 1f, 1f, 0.3f);
+
+            Vector3[] positions = new Vector3[]
+            {
+                new Vector3(-halfW, -halfH, 0),
+                new Vector3(halfW, -halfH, 0),
+                new Vector3(halfW, halfH, 0),
+                new Vector3(-halfW, halfH, 0),
+                new Vector3(-halfW, -halfH, 0)
+            };
+            lineRenderer.SetPositions(positions);
+
+            EdgeCollider2D edge = GetComponent<EdgeCollider2D>();
+            edge.points = new Vector2[]
+            {
+                new Vector2(-halfW, -halfH),
+                new Vector2(halfW, -halfH),
+                new Vector2(halfW, halfH),
+                new Vector2(-halfW, halfH),
+                new Vector2(-halfW, -halfH)
+            };
         }
 
         private void LateUpdate()
         {
-            // Smooth Camera Follow
             if (playerTransform != null && Camera.main != null)
             {
                 Vector3 targetPos = new Vector3(playerTransform.position.x, playerTransform.position.y, -10f);
@@ -51,48 +95,66 @@ namespace StarStrike.Gameplay
 
         private void SpawnAsteroidField()
         {
-            float halfW = worldWidth * 0.45f;
-            float halfH = worldHeight * 0.45f;
-
-            for (int i = 0; i < initialAsteroidCount; i++)
+            int count = config != null ? config.asteroidCount : 50;
+            
+            for (int i = 0; i < count; i++)
             {
-                Vector2 pos = new Vector2(Random.Range(-halfW, halfW), Random.Range(-halfH, halfH));
-                // Avoid spawning right on player
-                if (pos.magnitude < 6f) pos = pos.normalized * 8f;
+                Vector2 pos = new Vector2(Random.Range(-halfW * 0.9f, halfW * 0.9f), Random.Range(-halfH * 0.9f, halfH * 0.9f));
+                if (pos.magnitude < 10f) pos = pos.normalized * 12f;
 
-                GameObject astObj = new GameObject($"Asteroid_{i}");
-                astObj.transform.position = pos;
-                Asteroid ast = astObj.AddComponent<Asteroid>();
-
+                string tag = "Asteroid_Large";
                 float r = Random.value;
-                if (r < 0.35f) ast.tier = AsteroidTier.Large;
-                else if (r < 0.75f) ast.tier = AsteroidTier.Medium;
-                else ast.tier = AsteroidTier.Small;
+                if (r < 0.35f) tag = "Asteroid_Large";
+                else if (r < 0.75f) tag = "Asteroid_Medium";
+                else tag = "Asteroid_Small";
 
-                ast.SetupStats();
+                if (PoolManager.Instance != null) {
+                    PoolManager.Instance.Spawn(tag, pos, Quaternion.identity, () => {
+                        GameObject obj = new GameObject(tag);
+                        obj.AddComponent<Asteroid>();
+                        return obj;
+                    });
+                } else {
+                    GameObject astObj = new GameObject(tag);
+                    astObj.transform.position = pos;
+                    Asteroid ast = astObj.AddComponent<Asteroid>();
+                    if (tag.Contains("Large")) ast.tier = AsteroidTier.Large;
+                    else if (tag.Contains("Medium")) ast.tier = AsteroidTier.Medium;
+                    else ast.tier = AsteroidTier.Small;
+                    ast.SetupStats();
+                }
             }
         }
 
         private void SpawnEnemyDrones()
         {
-            float halfW = worldWidth * 0.4f;
-            float halfH = worldHeight * 0.4f;
-
-            for (int i = 0; i < initialDroneCount; i++)
+            int count = config != null ? 12 : 6;
+            
+            for (int i = 0; i < count; i++)
             {
-                Vector2 pos = new Vector2(Random.Range(-halfW, halfW), Random.Range(-halfH, halfH));
-                if (pos.magnitude < 12f) pos = pos.normalized * 15f;
+                Vector2 pos = new Vector2(Random.Range(-halfW * 0.8f, halfW * 0.8f), Random.Range(-halfH * 0.8f, halfH * 0.8f));
+                if (pos.magnitude < 15f) pos = pos.normalized * 20f;
 
-                GameObject droneObj = new GameObject($"EnemyDrone_{i}");
-                droneObj.transform.position = pos;
-                droneObj.AddComponent<EnemyAI>();
+                if (PoolManager.Instance != null) {
+                    PoolManager.Instance.Spawn("EnemyDrone", pos, Quaternion.identity, () => {
+                        GameObject obj = new GameObject("EnemyDrone");
+                        obj.AddComponent<EnemyAI>();
+                        return obj;
+                    });
+                } else {
+                    GameObject droneObj = new GameObject("EnemyDrone");
+                    droneObj.transform.position = pos;
+                    droneObj.AddComponent<EnemyAI>();
+                }
             }
         }
 
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.cyan;
-            Gizmos.DrawWireCube(Vector3.zero, new Vector3(worldWidth, worldHeight, 0f));
+            float w = config != null ? config.worldWidth : 4000f;
+            float h = config != null ? config.worldHeight : 4000f;
+            Gizmos.DrawWireCube(Vector3.zero, new Vector3(w, h, 0f));
         }
     }
 }

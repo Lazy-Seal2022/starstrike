@@ -30,7 +30,7 @@ namespace StarStrike.Gameplay
             sr.sortingOrder = 3;
         }
 
-        private void Start()
+        private void OnEnable()
         {
             GameObject p = GameObject.FindGameObjectWithTag("Player");
             if (p != null) playerTarget = p.transform;
@@ -66,7 +66,7 @@ namespace StarStrike.Gameplay
                 if (player != null)
                 {
                     player.AddGems(gemValue);
-                    Destroy(gameObject);
+                    gameObject.SetActive(false);
                 }
             }
         }
