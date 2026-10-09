@@ -1,9 +1,10 @@
+using StarStrike.UI;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using StarStrike.Gameplay;
-using StarStrike.UI.HUD;
-using StarStrike.UI.MainMenu;
+
+
 
 namespace StarStrike.Bootstrap
 {

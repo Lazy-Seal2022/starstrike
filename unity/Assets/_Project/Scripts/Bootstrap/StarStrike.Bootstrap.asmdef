@@ -6,7 +6,8 @@
         "StarStrike.UI",
         "StarStrike.Core",
         "StarStrike.Platform",
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "Unity.InputSystem"
     ],
     "autoReferenced": true
 }
