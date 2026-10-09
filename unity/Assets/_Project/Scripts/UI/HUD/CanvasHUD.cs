@@ -70,6 +70,11 @@ namespace StarStrike.UI
             Instance = this;
             EnsureEventSystem();
             BuildCanvasIfNeeded();
+
+            if (FindObjectOfType<AchievementUI>() == null)
+            {
+                new GameObject("AchievementUI").AddComponent<AchievementUI>();
+            }
         }
 
         private void OnDestroy()

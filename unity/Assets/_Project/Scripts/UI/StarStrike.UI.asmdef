@@ -4,6 +4,7 @@
     "references": [
         "StarStrike.Core",
         "StarStrike.Gameplay",
+        "StarStrike.Platform",
         "Unity.InputSystem",
         "UnityEngine.UI",
         "Unity.TextMeshPro"

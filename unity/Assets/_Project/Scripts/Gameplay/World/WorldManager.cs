@@ -36,10 +36,6 @@ namespace StarStrike.Gameplay
             {
                 new GameObject("PostProcessingSetup").AddComponent<StarStrike.Gameplay.FX.PostProcessingSetup>();
             }
-            if (FindObjectOfType<StarStrike.UI.AchievementUI>() == null)
-            {
-                new GameObject("AchievementUI").AddComponent<StarStrike.UI.AchievementUI>();
-            }
         }
 
         private void Start()
