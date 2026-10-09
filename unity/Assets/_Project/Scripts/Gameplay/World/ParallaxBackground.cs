@@ -36,7 +36,7 @@ namespace StarStrike.Gameplay
                     star.transform.localPosition = new Vector3(Random.Range(-50f, 50f), Random.Range(-50f, 50f), 0);
                     
                     var sr = star.AddComponent<SpriteRenderer>();
-                    sr.sprite = StarStrike.Core.ProceduralSpriteHelper.GetGemSprite(); // Simple dot
+                    sr.sprite = ProceduralSpriteHelper.GetGemSprite(); // Simple dot
                     sr.color = new Color(1f, 1f, 1f, Random.Range(0.2f, 0.8f) - (i * 0.1f));
                     float size = Random.Range(0.1f, 0.4f);
                     star.transform.localScale = new Vector3(size, size, 1);

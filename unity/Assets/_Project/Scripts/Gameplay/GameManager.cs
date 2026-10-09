@@ -46,7 +46,7 @@ namespace StarStrike.Gameplay
                     pp.weapon = player.AddComponent<ShipWeapon>();
                     pp.shipRenderer = player.GetComponent<SpriteRenderer>();
                     
-                    player.AddComponent<StarStrike.Gameplay.Input.PlayerInputReader>();
+                    player.AddComponent<PlayerInputReader>();
                 }
             }
         }
