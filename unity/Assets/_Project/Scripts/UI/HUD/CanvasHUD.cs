@@ -111,7 +111,23 @@ namespace StarStrike.UI
                 bool isPlaying = GameManager.Instance.CurrentState == GameState.Playing;
                 foreach (Transform child in transform)
                 {
-                    if (child.name != "MainMenuContainer")
+                    if (child.name == "MainMenuContainer") continue;
+
+                    if (child.name == "UpgradesDrawer")
+                    {
+                        child.gameObject.SetActive(isPlaying && isUpgradesOpen);
+                    }
+                    else if (child.name == "EvolutionBanner")
+                    {
+                        bool canEvolve = PlayerProgression.Instance != null && PlayerProgression.Instance.CanEvolve();
+                        child.gameObject.SetActive(isPlaying && canEvolve);
+                    }
+                    else if (child.name == "MobileControlsRoot")
+                    {
+                        bool showMobile = forceShowMobileControls || Application.isMobilePlatform || (Touchscreen.current != null && Touchscreen.current.wasUpdatedThisFrame);
+                        child.gameObject.SetActive(isPlaying && showMobile);
+                    }
+                    else
                     {
                         if (child.gameObject.activeSelf != isPlaying)
                         {
