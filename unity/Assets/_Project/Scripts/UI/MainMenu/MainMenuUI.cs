@@ -35,6 +35,18 @@ namespace StarStrike.UI
             }
         }
 
+        public void SetMenuVisible(bool visible)
+        {
+            if (menuContainer != null)
+            {
+                menuContainer.SetActive(visible);
+                if (visible)
+                {
+                    RefreshData();
+                }
+            }
+        }
+
         private void Update()
         {
             if (GameManager.Instance != null && menuContainer != null)
@@ -42,17 +54,14 @@ namespace StarStrike.UI
                 bool shouldShow = GameManager.Instance.CurrentState == GameState.Menu;
                 if (menuContainer.activeSelf != shouldShow)
                 {
-                    menuContainer.SetActive(shouldShow);
-                    if (shouldShow)
-                    {
-                        RefreshData();
-                    }
+                    SetMenuVisible(shouldShow);
                 }
 
                 if (shouldShow && Keyboard.current != null)
                 {
                     if (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame)
                     {
+                        SetMenuVisible(false);
                         GameManager.Instance.StartGame();
                     }
                 }
@@ -91,6 +100,7 @@ namespace StarStrike.UI
             // Start Button
             GameObject startBtnObj = CreateButton(menuContainer.transform, "StartButton", "START MISSION", new Vector2(0.5f, 0.16f), new Vector2(0.5f, 0.16f), new Vector2(-150, -35), new Vector2(300, 70), new Color(0.18f, 0.75f, 0.35f), defaultFont);
             startBtnObj.GetComponent<Button>().onClick.AddListener(() => {
+                SetMenuVisible(false);
                 if (GameManager.Instance != null)
                 {
                     GameManager.Instance.StartGame();
