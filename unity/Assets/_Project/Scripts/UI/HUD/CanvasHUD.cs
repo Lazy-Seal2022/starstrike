@@ -88,6 +88,7 @@ namespace StarStrike.UI
             GameEvents.OnEnergyChanged += HandleEnergyChanged;
             GameEvents.OnGemCollected += HandleGemCollected;
             GameEvents.OnPlayerEvolved += HandlePlayerEvolved;
+            GameEvents.OnGameStarted += HandleGameStarted;
         }
 
         private void OnDisable()
@@ -96,12 +97,47 @@ namespace StarStrike.UI
             GameEvents.OnEnergyChanged -= HandleEnergyChanged;
             GameEvents.OnGemCollected -= HandleGemCollected;
             GameEvents.OnPlayerEvolved -= HandlePlayerEvolved;
+            GameEvents.OnGameStarted -= HandleGameStarted;
+        }
+
+        public void SetHUDVisible(bool visible)
+        {
+            foreach (Transform child in transform)
+            {
+                if (child.name == "MainMenuContainer") continue;
+
+                if (child.name == "UpgradesDrawer")
+                {
+                    child.gameObject.SetActive(visible && isUpgradesOpen);
+                }
+                else if (child.name == "EvolutionBanner")
+                {
+                    bool canEvolve = PlayerProgression.Instance != null && PlayerProgression.Instance.CanEvolve();
+                    child.gameObject.SetActive(visible && canEvolve);
+                }
+                else if (child.name == "MobileControlsRoot")
+                {
+                    bool showMobile = forceShowMobileControls || Application.isMobilePlatform || (Touchscreen.current != null && Touchscreen.current.wasUpdatedThisFrame);
+                    child.gameObject.SetActive(visible && showMobile);
+                }
+                else
+                {
+                    child.gameObject.SetActive(visible);
+                }
+            }
+        }
+
+        private void HandleGameStarted()
+        {
+            SetHUDVisible(true);
         }
 
         private void Start()
         {
             SyncPlayerInitialState();
             UpdateAllHUDVisuals();
+            bool isPlaying = GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Playing;
+            SetHUDVisible(isPlaying);
         }
 
         private void Update()
@@ -109,32 +145,7 @@ namespace StarStrike.UI
             if (GameManager.Instance != null)
             {
                 bool isPlaying = GameManager.Instance.CurrentState == GameState.Playing;
-                foreach (Transform child in transform)
-                {
-                    if (child.name == "MainMenuContainer") continue;
-
-                    if (child.name == "UpgradesDrawer")
-                    {
-                        child.gameObject.SetActive(isPlaying && isUpgradesOpen);
-                    }
-                    else if (child.name == "EvolutionBanner")
-                    {
-                        bool canEvolve = PlayerProgression.Instance != null && PlayerProgression.Instance.CanEvolve();
-                        child.gameObject.SetActive(isPlaying && canEvolve);
-                    }
-                    else if (child.name == "MobileControlsRoot")
-                    {
-                        bool showMobile = forceShowMobileControls || Application.isMobilePlatform || (Touchscreen.current != null && Touchscreen.current.wasUpdatedThisFrame);
-                        child.gameObject.SetActive(isPlaying && showMobile);
-                    }
-                    else
-                    {
-                        if (child.gameObject.activeSelf != isPlaying)
-                        {
-                            child.gameObject.SetActive(isPlaying);
-                        }
-                    }
-                }
+                SetHUDVisible(isPlaying);
                 if (!isPlaying) return;
             }
 

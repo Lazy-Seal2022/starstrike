@@ -26,6 +26,21 @@ namespace StarStrike.UI
             BuildUI();
         }
 
+        private void OnEnable()
+        {
+            GameEvents.OnGameStarted += HandleGameStarted;
+        }
+
+        private void OnDisable()
+        {
+            GameEvents.OnGameStarted -= HandleGameStarted;
+        }
+
+        private void HandleGameStarted()
+        {
+            SetMenuVisible(false);
+        }
+
         private void Start()
         {
             // Initial state check

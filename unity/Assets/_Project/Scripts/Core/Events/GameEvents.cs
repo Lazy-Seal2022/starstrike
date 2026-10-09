@@ -19,5 +19,8 @@ namespace StarStrike.Core
         
         public static event Action<string> OnAchievementUnlocked;
         public static void TriggerAchievementUnlocked(string id) => OnAchievementUnlocked?.Invoke(id);
+
+        public static event Action OnGameStarted;
+        public static void TriggerGameStarted() => OnGameStarted?.Invoke();
     }
 }

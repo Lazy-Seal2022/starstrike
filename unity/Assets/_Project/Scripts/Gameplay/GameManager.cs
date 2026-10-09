@@ -128,6 +128,7 @@ namespace StarStrike.Gameplay
                 wm.ResetWorld();
             }
             ChangeState(GameState.Playing);
+            GameEvents.TriggerGameStarted();
         }
 
         public void PauseGame()
