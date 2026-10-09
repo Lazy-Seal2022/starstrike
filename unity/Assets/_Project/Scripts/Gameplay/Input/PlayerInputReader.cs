@@ -93,6 +93,21 @@ namespace StarStrike.Gameplay
 
         private void Update()
         {
+            if (GameManager.Instance != null && GameManager.Instance.CurrentState != GameState.Playing)
+            {
+                inputThrust = false;
+                inputBrake = false;
+                inputBoost = false;
+                inputFire = false;
+                
+                if (movement != null)
+                {
+                    movement.IsThrusting = false;
+                    movement.IsBraking = true; // Auto-brake in menus
+                }
+                return;
+            }
+
             UpdateInput();
 
             if (movement != null)

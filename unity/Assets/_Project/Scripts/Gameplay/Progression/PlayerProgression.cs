@@ -22,9 +22,12 @@ namespace StarStrike.Gameplay
         public ShipWeapon weapon;
         public SpriteRenderer shipRenderer;
 
+        private ShipDefinition baseShip;
+
         private void Awake()
         {
             Instance = this;
+            baseShip = currentShip;
         }
 
         private void Start()
@@ -35,6 +38,67 @@ namespace StarStrike.Gameplay
             // Add Minimap Trackable
             var trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();
             trackable.Type = StarStrike.Gameplay.TrackableType.Player;
+        }
+
+        public void ResetForNewRun()
+        {
+            gems = 0;
+            upgradeState.Reset();
+            
+            string selectedShipId = StarStrike.Platform.Storage.StorageService.GetLastShipEvolved();
+            if (string.IsNullOrEmpty(selectedShipId)) selectedShipId = "scout";
+
+            ShipDefinition selectedDef = FindShipById(baseShip, selectedShipId);
+            if (selectedDef != null)
+            {
+                currentShip = selectedDef;
+            }
+            
+            ApplyCurrentStats();
+            if (health != null) health.ResetMeters();
+
+            if (shipRenderer != null && currentShip.sprite != null)
+            {
+                shipRenderer.sprite = currentShip.sprite;
+                shipRenderer.color = currentShip.color;
+                shipRenderer.transform.localScale = Vector3.one * currentShip.scale;
+            }
+
+            transform.position = Vector3.zero;
+            if (movement != null)
+            {
+                var rb = movement.GetComponent<Rigidbody2D>();
+                if (rb != null)
+                {
+                    rb.linearVelocity = Vector2.zero;
+                    rb.angularVelocity = 0f;
+                }
+            }
+            
+            if (shipRenderer != null) shipRenderer.enabled = true;
+            if (movement != null) movement.enabled = true;
+            if (weapon != null) weapon.enabled = true;
+
+            GameEvents.TriggerPlayerEvolved(currentShip.id);
+            GameEvents.TriggerGemCollected(0, gems);
+        }
+
+        private ShipDefinition FindShipById(ShipDefinition root, string id, System.Collections.Generic.HashSet<string> visited = null)
+        {
+            if (visited == null) visited = new System.Collections.Generic.HashSet<string>();
+            if (root == null || visited.Contains(root.id)) return null;
+            visited.Add(root.id);
+
+            if (root.id == id) return root;
+            if (root.evolvesTo != null)
+            {
+                foreach (var child in root.evolvesTo)
+                {
+                    var found = FindShipById(child, id, visited);
+                    if (found != null) return found;
+                }
+            }
+            return null;
         }
 
         private void OnDestroy()

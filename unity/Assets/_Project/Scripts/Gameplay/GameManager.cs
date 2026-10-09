@@ -69,6 +69,15 @@ namespace StarStrike.Gameplay
 
         public void StartGame()
         {
+            if (PlayerProgression.Instance != null)
+            {
+                PlayerProgression.Instance.ResetForNewRun();
+            }
+            WorldManager wm = FindObjectOfType<WorldManager>();
+            if (wm != null)
+            {
+                wm.ResetWorld();
+            }
             ChangeState(GameState.Playing);
         }
 

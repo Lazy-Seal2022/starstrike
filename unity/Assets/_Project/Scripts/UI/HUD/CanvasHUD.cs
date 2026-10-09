@@ -39,6 +39,8 @@ namespace StarStrike.UI
         private float maxEnergy = 80f;
         private int totalGems = 0;
         private bool isUpgradesOpen = false;
+        
+        private GameObject gameplayContainer;
 
         private readonly struct UpgradeDefinition
         {
@@ -99,6 +101,22 @@ namespace StarStrike.UI
 
         private void Update()
         {
+            if (GameManager.Instance != null)
+            {
+                bool isPlaying = GameManager.Instance.CurrentState == GameState.Playing;
+                foreach (Transform child in transform)
+                {
+                    if (child.name != "MainMenuContainer")
+                    {
+                        if (child.gameObject.activeSelf != isPlaying)
+                        {
+                            child.gameObject.SetActive(isPlaying);
+                        }
+                    }
+                }
+                if (!isPlaying) return;
+            }
+
             // Keyboard shortcut [U] for Upgrades Drawer
             if (Keyboard.current != null && Keyboard.current.uKey.wasPressedThisFrame)
             {
@@ -463,6 +481,9 @@ namespace StarStrike.UI
             CreateText(brakeBtn.transform, "Label", "BRAKE", 12, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, defaultFont);
 
             mobileControlsRoot.SetActive(showMobile);
+            
+            // 6. Main Menu
+            gameObject.AddComponent<MainMenuUI>();
         }
 
         private GameObject CreatePanel(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax, Vector2 pos, Vector2 size, Color color, Sprite sprite)

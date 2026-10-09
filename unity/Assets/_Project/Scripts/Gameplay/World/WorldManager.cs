@@ -107,6 +107,13 @@ namespace StarStrike.Gameplay
         private float gameTimer = 0f;
         private bool bossSpawned = false;
 
+        public void ResetWorld()
+        {
+            gameTimer = 0f;
+            bossSpawned = false;
+            // Optionally, clear existing boss or enemies here, but resetting timer is most important
+        }
+
         private void LateUpdate()
         {
             if (playerTransform != null && Camera.main != null)
@@ -120,7 +127,7 @@ namespace StarStrike.Gameplay
                 }
             }
 
-            if (!bossSpawned)
+            if (!bossSpawned && GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Playing)
             {
                 gameTimer += Time.deltaTime;
                 if (gameTimer > 60f) // Spawn boss after 60 seconds
