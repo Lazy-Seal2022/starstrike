@@ -22,6 +22,12 @@ namespace StarStrike.Gameplay
         private void Awake()
         {
             rb = GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                rb.gravityScale = 0f;
+                rb.linearDamping = 0.5f;
+                rb.angularDamping = 1.0f;
+            }
         }
 
         private void Start()

@@ -34,6 +34,18 @@ namespace StarStrike.Gameplay
             GameObject player = GameObject.FindGameObjectWithTag("Player");
             if (player != null)
             {
+                var rb = player.GetComponent<Rigidbody2D>();
+                if (rb != null)
+                {
+                    rb.gravityScale = 0f;
+                    rb.linearDamping = 0.5f;
+                    rb.angularDamping = 1.0f;
+                }
+
+                var sr = player.GetComponent<SpriteRenderer>();
+                if (sr == null) sr = player.AddComponent<SpriteRenderer>();
+                sr.sortingOrder = 10;
+
                 var legacy = player.GetComponent("ShipController");
                 if (legacy != null)
                 {
@@ -44,7 +56,7 @@ namespace StarStrike.Gameplay
                     pp.health = player.AddComponent<ShipHealth>();
                     pp.movement = player.AddComponent<ShipMovement>();
                     pp.weapon = player.AddComponent<ShipWeapon>();
-                    pp.shipRenderer = player.GetComponent<SpriteRenderer>();
+                    pp.shipRenderer = sr;
                     
                     player.AddComponent<PlayerInputReader>();
                 }
@@ -89,6 +101,23 @@ namespace StarStrike.Gameplay
 
         public void StartGame()
         {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                player.transform.position = Vector3.zero;
+                var rb = player.GetComponent<Rigidbody2D>();
+                if (rb != null)
+                {
+                    rb.linearVelocity = Vector2.zero;
+                    rb.angularVelocity = 0f;
+                    rb.gravityScale = 0f;
+                }
+            }
+            if (Camera.main != null)
+            {
+                Camera.main.transform.position = new Vector3(0, 0, -10);
+            }
+
             if (PlayerProgression.Instance != null)
             {
                 PlayerProgression.Instance.ResetForNewRun();

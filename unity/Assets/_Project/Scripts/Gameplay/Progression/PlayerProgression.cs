@@ -59,12 +59,21 @@ namespace StarStrike.Gameplay
                 gameConfig = ScriptableObject.CreateInstance<GameConfig>();
             }
 
+            if (shipRenderer == null)
+            {
+                shipRenderer = GetComponent<SpriteRenderer>();
+                if (shipRenderer == null) shipRenderer = gameObject.AddComponent<SpriteRenderer>();
+            }
+            shipRenderer.sortingOrder = 10;
+
             baseShip = currentShip;
+            ApplyShipVisuals();
         }
 
         private void Start()
         {
             ApplyCurrentStats();
+            ApplyShipVisuals();
             if (health != null) health.OnDied += HandleDeath;
 
             // Add Minimap Trackable
@@ -227,13 +236,7 @@ namespace StarStrike.Gameplay
             upgradeState.Reset();
             ApplyCurrentStats();
             health.ResetMeters();
-
-            if (shipRenderer != null && currentShip.sprite != null)
-            {
-                shipRenderer.sprite = currentShip.sprite;
-                shipRenderer.color = currentShip.color;
-                shipRenderer.transform.localScale = Vector3.one * currentShip.scale;
-            }
+            ApplyShipVisuals();
 
             GameEvents.TriggerPlayerEvolved(currentShip.id);
         }
@@ -278,6 +281,25 @@ namespace StarStrike.Gameplay
                 weapon.pulseSpeed = currentStats.pulseSpeed / 26f;
                 weapon.weaponSlots = currentShip.weaponSlots;
             }
+        }
+
+        public void ApplyShipVisuals()
+        {
+            if (shipRenderer == null)
+            {
+                shipRenderer = GetComponent<SpriteRenderer>();
+                if (shipRenderer == null) shipRenderer = gameObject.AddComponent<SpriteRenderer>();
+            }
+            shipRenderer.sortingOrder = 10;
+            string shipId = currentShip != null && !string.IsNullOrEmpty(currentShip.id) ? currentShip.id : "scout";
+            shipRenderer.sprite = ProceduralSpriteHelper.GetShipSprite(shipId);
+
+            if (shipId == "fighter")
+                transform.localScale = Vector3.one * 1.25f;
+            else if (shipId == "miner")
+                transform.localScale = Vector3.one * 1.35f;
+            else
+                transform.localScale = Vector3.one * 1.0f;
         }
     }
 }

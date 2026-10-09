@@ -2,9 +2,8 @@ using StarStrike.UI;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using StarStrike.Gameplay;
-
-
 
 namespace StarStrike.Bootstrap
 {
@@ -26,7 +25,7 @@ namespace StarStrike.Bootstrap
             {
                 var eventSystemGO = new GameObject("EventSystem");
                 eventSystemGO.AddComponent<EventSystem>();
-                eventSystemGO.AddComponent<StandaloneInputModule>();
+                eventSystemGO.AddComponent<InputSystemUIInputModule>();
                 Object.DontDestroyOnLoad(eventSystemGO);
             }
 

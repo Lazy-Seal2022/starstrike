@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using StarStrike.Core;
 using StarStrike.Gameplay;
 using StarStrike.Platform.Storage;
@@ -47,6 +48,14 @@ namespace StarStrike.UI
                         RefreshData();
                     }
                 }
+
+                if (shouldShow && Keyboard.current != null)
+                {
+                    if (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame)
+                    {
+                        GameManager.Instance.StartGame();
+                    }
+                }
             }
         }
 
@@ -70,7 +79,7 @@ namespace StarStrike.UI
             bgRt.anchorMax = Vector2.one;
             bgRt.offsetMin = Vector2.zero;
             bgRt.offsetMax = Vector2.zero;
-            bgObj.GetComponent<Image>().color = new Color(0.05f, 0.05f, 0.1f, 0.95f);
+            bgObj.GetComponent<Image>().color = new Color(0.04f, 0.06f, 0.12f, 0.70f);
 
             // Title
             CreateText(menuContainer.transform, "TitleText", "STARSTRIKE", 64, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.8f), new Vector2(0.5f, 0.8f), new Vector2(-300, -50), new Vector2(300, 50), defaultFont);
@@ -80,14 +89,16 @@ namespace StarStrike.UI
             gemsText = gemsObj.GetComponent<Text>();
 
             // Start Button
-            GameObject startBtnObj = CreateButton(menuContainer.transform, "StartButton", "START MISSION", new Vector2(0.5f, 0.15f), new Vector2(0.5f, 0.15f), new Vector2(-150, -40), new Vector2(300, 80), new Color(0.2f, 0.8f, 0.3f), defaultFont);
+            GameObject startBtnObj = CreateButton(menuContainer.transform, "StartButton", "START MISSION", new Vector2(0.5f, 0.16f), new Vector2(0.5f, 0.16f), new Vector2(-150, -35), new Vector2(300, 70), new Color(0.18f, 0.75f, 0.35f), defaultFont);
             startBtnObj.GetComponent<Button>().onClick.AddListener(() => {
                 if (GameManager.Instance != null)
                 {
                     GameManager.Instance.StartGame();
-                    // Optional: reset player position and health here or in GameManager
                 }
             });
+
+            // Start Key Hint
+            CreateText(menuContainer.transform, "StartHintText", "[ Press ENTER or SPACE to Launch ]", 14, FontStyle.Normal, new Color(0.8f, 0.8f, 0.9f, 0.85f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.10f), new Vector2(0.5f, 0.10f), new Vector2(-200, -15), new Vector2(200, 15), defaultFont);
 
             // Ship Hangar
             GameObject shipHeader = CreateText(menuContainer.transform, "ShipHeader", "SELECT HANGAR SHIP", 20, FontStyle.Normal, Color.yellow, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.55f), new Vector2(0.5f, 0.55f), new Vector2(-200, -25), new Vector2(200, 25), defaultFont);
