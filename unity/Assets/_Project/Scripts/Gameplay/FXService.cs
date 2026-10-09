@@ -88,6 +88,7 @@ namespace StarStrike.Gameplay.FX
         {
             GameObject obj = new GameObject("ExplosionFX");
             ParticleSystem ps = obj.AddComponent<ParticleSystem>();
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             
             var main = ps.main;
             main.duration = 0.5f;
@@ -115,6 +116,7 @@ namespace StarStrike.Gameplay.FX
         {
             GameObject obj = new GameObject("ThrustFX");
             ParticleSystem ps = obj.AddComponent<ParticleSystem>();
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             
             var main = ps.main;
             main.duration = 1f;

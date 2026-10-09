@@ -31,10 +31,34 @@ namespace StarStrike.Gameplay
             {
                 currentShip = Resources.Load<ShipDefinition>("Data/Ship_Scout");
             }
+            if (currentShip == null)
+            {
+                currentShip = ScriptableObject.CreateInstance<ShipDefinition>();
+                currentShip.id = "scout";
+                currentShip.shipName = "Delta Scout";
+                currentShip.tier = 1;
+                currentShip.maxUpgradeLevel = 5;
+                currentShip.baseStats = new StatValues {
+                    shieldCapacity = 100f,
+                    shieldRegen = 10f,
+                    energyCapacity = 80f,
+                    energyRegen = 15f,
+                    pulseDamage = 25f,
+                    pulseSpeed = 16f,
+                    speed = 8f,
+                    agility = 180f
+                };
+            }
+
             if (gameConfig == null)
             {
                 gameConfig = Resources.Load<GameConfig>("Data/GameConfig");
             }
+            if (gameConfig == null)
+            {
+                gameConfig = ScriptableObject.CreateInstance<GameConfig>();
+            }
+
             baseShip = currentShip;
         }
 
@@ -187,7 +211,9 @@ namespace StarStrike.Gameplay
             else if (statName == "speed") lvl = upgradeState.speedLevel;
             else if (statName == "agility") lvl = upgradeState.agilityLevel;
 
-            return ProgressionMath.CalculateCost(gameConfig.upgradeBaseCost, gameConfig.upgradeCostMultiplier, lvl);
+            float baseCost = gameConfig != null ? gameConfig.upgradeBaseCost : 10f;
+            float multiplier = gameConfig != null ? gameConfig.upgradeCostMultiplier : 1.5f;
+            return ProgressionMath.CalculateCost(baseCost, multiplier, lvl);
         }
 
         public bool CanEvolve()
