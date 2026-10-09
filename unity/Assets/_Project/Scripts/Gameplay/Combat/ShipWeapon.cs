@@ -31,6 +31,8 @@ namespace StarStrike.Gameplay
             }
 
             lastFiredTime = Time.time;
+            
+            StarStrike.Gameplay.Audio.AudioService.Instance?.PlaySound(isPlayer ? "laser" : "enemy_laser", 0.4f);
 
             if (rb != null)
             {

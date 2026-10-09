@@ -61,6 +61,8 @@ namespace StarStrike.Gameplay
         {
             currentShield -= amount;
             
+            StarStrike.Gameplay.FX.FXService.Instance?.FlashSprite(GetComponent<SpriteRenderer>(), Color.white);
+
             if (currentShield <= 0f)
             {
                 currentShield = 0f;

@@ -78,6 +78,9 @@ namespace StarStrike.Gameplay
         public void TakeDamage(float amount)
         {
             currentHp -= amount;
+            
+            StarStrike.Gameplay.FX.FXService.Instance?.FlashSprite(GetComponent<SpriteRenderer>(), Color.white);
+
             if (currentHp <= 0f)
             {
                 SplitAndDestroy();

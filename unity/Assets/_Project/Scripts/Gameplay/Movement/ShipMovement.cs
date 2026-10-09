@@ -16,10 +16,24 @@ namespace StarStrike.Gameplay
         public Vector2 AimDirection { get; set; }
         public bool IsThrusting { get; set; }
         public bool IsBraking { get; set; }
+        
+        private ParticleSystem thrustFX;
 
         private void Awake()
         {
             rb = GetComponent<Rigidbody2D>();
+        }
+
+        private void Start()
+        {
+            if (StarStrike.Gameplay.FX.FXService.Instance != null)
+            {
+                GameObject fxObj = StarStrike.Gameplay.FX.FXService.Instance.CreateThrustFX();
+                fxObj.transform.SetParent(transform, false);
+                fxObj.transform.localPosition = new Vector3(-0.5f, 0, 0); // Position behind the ship
+                thrustFX = fxObj.GetComponent<ParticleSystem>();
+                thrustFX.Stop();
+            }
         }
 
         private void FixedUpdate()
@@ -45,6 +59,8 @@ namespace StarStrike.Gameplay
 
             if (IsThrusting)
             {
+                if (thrustFX != null && !thrustFX.isPlaying) thrustFX.Play();
+                
                 Vector2 thrustDir = transform.right;
                 rb.AddForce(thrustDir * acceleration * rb.mass);
 
@@ -53,9 +69,14 @@ namespace StarStrike.Gameplay
                     rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
                 }
             }
-            else if (IsBraking)
+            else
             {
-                rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, acceleration * 0.4f * dt);
+                if (thrustFX != null && thrustFX.isPlaying) thrustFX.Stop();
+
+                if (IsBraking)
+                {
+                    rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, acceleration * 0.4f * dt);
+                }
             }
         }
     }

@@ -14,6 +14,18 @@ namespace StarStrike.Gameplay
         private float halfH;
         private LineRenderer lineRenderer;
 
+        private void Awake()
+        {
+            if (StarStrike.Gameplay.Audio.AudioService.Instance == null)
+            {
+                new GameObject("AudioService").AddComponent<StarStrike.Gameplay.Audio.AudioService>();
+            }
+            if (StarStrike.Gameplay.FX.FXService.Instance == null)
+            {
+                new GameObject("FXService").AddComponent<StarStrike.Gameplay.FX.FXService>();
+            }
+        }
+
         private void Start()
         {
             if (config != null)
@@ -90,6 +102,11 @@ namespace StarStrike.Gameplay
             {
                 Vector3 targetPos = new Vector3(playerTransform.position.x, playerTransform.position.y, -10f);
                 Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, targetPos, 8f * Time.deltaTime);
+                
+                if (StarStrike.Gameplay.FX.FXService.Instance != null)
+                {
+                    Camera.main.transform.position += StarStrike.Gameplay.FX.FXService.CameraOffset;
+                }
             }
         }
 
