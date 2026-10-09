@@ -211,7 +211,7 @@ namespace StarStrike.Gameplay
             else if (statName == "speed") lvl = upgradeState.speedLevel;
             else if (statName == "agility") lvl = upgradeState.agilityLevel;
 
-            float baseCost = gameConfig != null ? gameConfig.upgradeBaseCost : 10f;
+            int baseCost = gameConfig != null ? gameConfig.upgradeBaseCost : 10;
             float multiplier = gameConfig != null ? gameConfig.upgradeCostMultiplier : 1.5f;
             return ProgressionMath.CalculateCost(baseCost, multiplier, lvl);
         }
