@@ -66,12 +66,12 @@ namespace StarStrike.UI
                 if (p != null)
                 {
                     player = p.GetComponent<PlayerProgression>();
-                    if (player != null && player.stats != null)
+                    if (player != null && player.currentShip != null)
                     {
-                        shipName = $"T{player.stats.tier} • {player.stats.shipName.ToUpper()}";
-                        shieldMax = player.stats.shieldCapacity;
+                        shipName = $"T{player.currentShip.tier} • {player.currentShip.shipName.ToUpper()}";
+                        shieldMax = player.currentShip.baseStats.shieldCapacity;
                         shieldCurrent = shieldMax;
-                        energyMax = player.stats.energyCapacity;
+                        energyMax = player.currentShip.baseStats.energyCapacity;
                         energyCurrent = energyMax;
                     }
                 }
@@ -83,9 +83,9 @@ namespace StarStrike.UI
         private void HandleGem(int added, int total) { totalGems = total; }
         private void HandleEvolved(string shipId)
         {
-            if (player != null && player.stats != null)
+            if (player != null && player.currentShip != null)
             {
-                shipName = $"T{player.stats.tier} • {player.stats.shipName.ToUpper()}";
+                shipName = $"T{player.currentShip.tier} • {player.currentShip.shipName.ToUpper()}";
             }
         }
 
@@ -149,11 +149,11 @@ namespace StarStrike.UI
                 GUI.Box(new Rect(screenW / 2 - 160, 20, 320, 80), "<b>★ EVOLUTION AVAILABLE ★</b>");
                 if (GUI.Button(new Rect(screenW / 2 - 150, 50, 140, 38), "⚔ ARES FIGHTER"))
                 {
-                    player.Evolve("fighter");
+                    player.EvolveToId("fighter");
                 }
                 if (GUI.Button(new Rect(screenW / 2 + 10, 50, 140, 38), "⛏ GOLIATH MINER"))
                 {
-                    player.Evolve("miner");
+                    player.EvolveToId("miner");
                 }
             }
 
@@ -166,14 +166,14 @@ namespace StarStrike.UI
                 Rect fireRect = new Rect(screenW - btnSize - 25, screenH - btnSize - 25, btnSize, btnSize);
                 if (GUI.RepeatButton(fireRect, "<b><size=18>FIRE</size></b>"))
                 {
-                    if (player != null) player.inputFire = true;
+                    if (PlayerInputReader.Instance != null) PlayerInputReader.Instance.inputFire = true;
                 }
 
                 // Virtual Thrust Button
                 Rect thrustRect = new Rect(screenW - btnSize * 2 - 45, screenH - btnSize - 25, btnSize, btnSize);
                 if (GUI.RepeatButton(thrustRect, "<b><size=16>THRUST</size></b>"))
                 {
-                    if (player != null) player.inputThrust = true;
+                    if (PlayerInputReader.Instance != null) PlayerInputReader.Instance.inputThrust = true;
                 }
             }
         }

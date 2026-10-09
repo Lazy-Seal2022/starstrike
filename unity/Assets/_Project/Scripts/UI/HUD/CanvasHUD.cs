@@ -158,9 +158,9 @@ namespace StarStrike.UI
 
             if (player != null && player.currentShip != null)
             {
-                maxShield = player.currentShip.shieldCapacity;
+                maxShield = player.currentShip.baseStats.shieldCapacity;
                 currentShield = player.health.currentShield > 0f ? player.health.currentShield : maxShield;
-                maxEnergy = player.currentShip.energyCapacity;
+                maxEnergy = player.currentShip.baseStats.energyCapacity;
                 currentEnergy = player.health.currentEnergy > 0f ? player.health.currentEnergy : maxEnergy;
                 totalGems = player.gems;
                 UpdateShipHeader(player.currentShip.tier, player.currentShip.shipName);
@@ -200,10 +200,10 @@ namespace StarStrike.UI
             if (player != null && player.currentShip != null)
             {
                 UpdateShipHeader(player.currentShip.tier, player.currentShip.shipName);
-                currentShield = player.currentShip.shieldCapacity;
-                maxShield = player.currentShip.shieldCapacity;
-                currentEnergy = player.currentShip.energyCapacity;
-                maxEnergy = player.currentShip.energyCapacity;
+                currentShield = player.currentShip.baseStats.shieldCapacity;
+                maxShield = player.currentShip.baseStats.shieldCapacity;
+                currentEnergy = player.currentShip.baseStats.energyCapacity;
+                maxEnergy = player.currentShip.baseStats.energyCapacity;
                 UpdateShieldVisuals();
                 UpdateEnergyVisuals();
             }
