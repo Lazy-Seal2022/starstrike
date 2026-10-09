@@ -16,8 +16,19 @@ namespace StarStrike.Core
 
         public static StatValues GetCurrentStats(ShipDefinition ship, UpgradeDefinition upgradeDef, UpgradeState state)
         {
-            var baseStats = ship.baseStats;
-            var mults = upgradeDef.multipliers;
+            var baseStats = ship != null ? ship.baseStats : default;
+            var mults = upgradeDef != null ? upgradeDef.multipliers : new StatValues
+            {
+                shieldCapacity = 1.15f,
+                shieldRegen = 1.15f,
+                energyCapacity = 1.15f,
+                energyRegen = 1.15f,
+                pulseDamage = 1.15f,
+                pulseSpeed = 1.15f,
+                speed = 1.10f,
+                agility = 1.10f
+            };
+            if (state == null) state = new UpgradeState();
 
             return new StatValues
             {
