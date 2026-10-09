@@ -54,7 +54,7 @@ namespace StarStrike.Gameplay
         private void OnTriggerEnter2D(Collider2D collision)
         {
             if ((isEnemy && collision.CompareTag("Player")) ||
-                (!isEnemy && collision.CompareTag("Enemy")) ||
+                (!isEnemy && (collision.CompareTag("Enemy") || collision.CompareTag("Boss"))) ||
                 collision.CompareTag("Asteroid"))
             {
                 IDamageable damageable = collision.GetComponent<IDamageable>();
