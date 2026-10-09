@@ -1,0 +1,12 @@
+{
+    "name": "StarStrike.Bootstrap",
+    "rootNamespace": "StarStrike.Bootstrap",
+    "references": [
+        "StarStrike.Gameplay",
+        "StarStrike.UI",
+        "StarStrike.Core",
+        "StarStrike.Platform",
+        "UnityEngine.UI"
+    ],
+    "autoReferenced": true
+}
