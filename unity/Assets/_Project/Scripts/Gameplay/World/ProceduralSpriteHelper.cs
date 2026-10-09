@@ -12,6 +12,7 @@ namespace StarStrike.Gameplay
         private static Sprite cachedEnemyLaser;
         private static Sprite cachedAsteroid;
         private static Sprite cachedGem;
+        private static Sprite cachedStar;
 
         public static Sprite GetShipSprite(string type)
         {
@@ -55,6 +56,44 @@ namespace StarStrike.Gameplay
         {
             if (cachedGem == null) cachedGem = GenerateDiamond(new Color(0.2f, 0.95f, 0.45f), 32);
             return cachedGem;
+        }
+
+        public static Sprite GetStarSprite()
+        {
+            if (cachedStar == null) cachedStar = GenerateCircle(Color.white, 16);
+            return cachedStar;
+        }
+
+        private static Sprite GenerateCircle(Color color, int size)
+        {
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Bilinear;
+            Color[] cols = new Color[size * size];
+
+            Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
+            float r = size * 0.45f;
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    Vector2 p = new Vector2(x - center.x, y - center.y);
+                    float dist = p.magnitude;
+                    if (dist <= r)
+                    {
+                        float alpha = Mathf.Clamp01(1f - (dist / r));
+                        cols[y * size + x] = new Color(color.r, color.g, color.b, alpha * alpha);
+                    }
+                    else
+                    {
+                        cols[y * size + x] = Color.clear;
+                    }
+                }
+            }
+
+            tex.SetPixels(cols);
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 16);
         }
 
         private static Sprite GenerateShip(Color color, int size, int style)

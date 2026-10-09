@@ -113,7 +113,7 @@ namespace StarStrike.UI
             gemsText = gemsObj.GetComponent<Text>();
 
             // Start Button
-            GameObject startBtnObj = CreateButton(menuContainer.transform, "StartButton", "START MISSION", new Vector2(0.5f, 0.16f), new Vector2(0.5f, 0.16f), new Vector2(-150, -35), new Vector2(300, 70), new Color(0.18f, 0.75f, 0.35f), defaultFont);
+            GameObject startBtnObj = CreateButton(menuContainer.transform, "StartButton", "START MISSION", new Vector2(0.5f, 0.18f), new Vector2(0.5f, 0.18f), Vector2.zero, new Vector2(340, 70), new Color(0.18f, 0.75f, 0.35f), defaultFont, 24);
             startBtnObj.GetComponent<Button>().onClick.AddListener(() => {
                 SetMenuVisible(false);
                 if (GameManager.Instance != null)
@@ -123,7 +123,7 @@ namespace StarStrike.UI
             });
 
             // Start Key Hint
-            CreateText(menuContainer.transform, "StartHintText", "[ Press ENTER or SPACE to Launch ]", 14, FontStyle.Normal, new Color(0.8f, 0.8f, 0.9f, 0.85f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.10f), new Vector2(0.5f, 0.10f), new Vector2(-200, -15), new Vector2(200, 15), defaultFont);
+            CreateText(menuContainer.transform, "StartHintText", "[ Press ENTER, SPACE or Click to Launch ]", 15, FontStyle.Normal, new Color(0.85f, 0.9f, 1f, 0.9f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.10f), new Vector2(0.5f, 0.10f), new Vector2(-250, -15), new Vector2(250, 15), defaultFont);
 
             // Ship Hangar
             GameObject shipHeader = CreateText(menuContainer.transform, "ShipHeader", "SELECT HANGAR SHIP", 20, FontStyle.Normal, Color.yellow, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.55f), new Vector2(0.5f, 0.55f), new Vector2(-200, -25), new Vector2(200, 25), defaultFont);
@@ -214,7 +214,7 @@ namespace StarStrike.UI
             return obj;
         }
 
-        private GameObject CreateButton(Transform parent, string name, string label, Vector2 anchorMin, Vector2 anchorMax, Vector2 pos, Vector2 size, Color bgColor, Font font)
+        private GameObject CreateButton(Transform parent, string name, string label, Vector2 anchorMin, Vector2 anchorMax, Vector2 pos, Vector2 size, Color bgColor, Font font, int fontSize = 16)
         {
             GameObject btnObj = new GameObject(name, typeof(RectTransform), typeof(Image));
             btnObj.transform.SetParent(parent, false);
@@ -234,7 +234,7 @@ namespace StarStrike.UI
             cb.pressedColor = bgColor * 0.8f;
             btn.colors = cb;
 
-            CreateText(btnObj.transform, "Text", label, 14, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, font);
+            CreateText(btnObj.transform, "Text", label, fontSize, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, font);
             return btnObj;
         }
     }

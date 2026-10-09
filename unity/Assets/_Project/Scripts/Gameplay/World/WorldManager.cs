@@ -10,6 +10,12 @@ namespace StarStrike.Gameplay
         public GameConfig config;
         public Transform playerTransform;
 
+        [Header("World Dimensions")]
+        public float worldWidth = 140f;
+        public float worldHeight = 140f;
+        public int initialAsteroidCount = 50;
+        public int initialDroneCount = 6;
+
         private float halfW;
         private float halfH;
         private LineRenderer lineRenderer;
@@ -51,14 +57,15 @@ namespace StarStrike.Gameplay
 
             if (config != null)
             {
-                halfW = config.worldWidth * 0.5f;
-                halfH = config.worldHeight * 0.5f;
+                float w = (config.worldWidth > 0 && config.worldWidth <= 500f) ? config.worldWidth : worldWidth;
+                float h = (config.worldHeight > 0 && config.worldHeight <= 500f) ? config.worldHeight : worldHeight;
+                halfW = w * 0.5f;
+                halfH = h * 0.5f;
             }
             else
             {
-                // Fallback
-                halfW = 2000f;
-                halfH = 2000f;
+                halfW = worldWidth * 0.5f;
+                halfH = worldHeight * 0.5f;
             }
 
             if (playerTransform == null)
@@ -124,7 +131,16 @@ namespace StarStrike.Gameplay
         {
             gameTimer = 0f;
             bossSpawned = false;
-            // Optionally, clear existing boss or enemies here, but resetting timer is most important
+
+            var existingAsteroids = FindObjectsOfType<StarStrike.Gameplay.Asteroid>();
+            if (existingAsteroids.Length < 15)
+            {
+                foreach (var a in existingAsteroids)
+                {
+                    Destroy(a.gameObject);
+                }
+                SpawnAsteroidField();
+            }
         }
 
         private void LateUpdate()
@@ -173,45 +189,66 @@ namespace StarStrike.Gameplay
 
         private void SpawnAsteroidField()
         {
-            int count = config != null ? config.asteroidCount : 50;
+            int count = config != null ? config.asteroidCount : initialAsteroidCount;
+            if (count <= 0) count = 50;
             
-            for (int i = 0; i < count; i++)
+            // Guarantee 6-8 asteroids right around player in direct camera view
+            int immediateCount = Mathf.Min(8, count);
+            for (int i = 0; i < immediateCount; i++)
+            {
+                float angle = (i / (float)immediateCount) * Mathf.PI * 2f + Random.Range(-0.25f, 0.25f);
+                float dist = Random.Range(6.5f, 13.5f);
+                Vector2 pos = new Vector2(Mathf.Cos(angle) * dist, Mathf.Sin(angle) * dist);
+                SpawnSingleAsteroid(pos);
+            }
+
+            // Spawn the remaining asteroids throughout the world
+            for (int i = immediateCount; i < count; i++)
             {
                 Vector2 pos = new Vector2(Random.Range(-halfW * 0.9f, halfW * 0.9f), Random.Range(-halfH * 0.9f, halfH * 0.9f));
-                if (pos.magnitude < 10f) pos = pos.normalized * 12f;
+                if (pos.magnitude < 6f) pos = pos.normalized * 8f;
+                SpawnSingleAsteroid(pos);
+            }
+        }
 
-                string tag = "Asteroid_Large";
-                float r = Random.value;
-                if (r < 0.35f) tag = "Asteroid_Large";
-                else if (r < 0.75f) tag = "Asteroid_Medium";
-                else tag = "Asteroid_Small";
+        private void SpawnSingleAsteroid(Vector2 pos)
+        {
+            string tag = "Asteroid_Large";
+            float r = Random.value;
+            if (r < 0.35f) tag = "Asteroid_Large";
+            else if (r < 0.75f) tag = "Asteroid_Medium";
+            else tag = "Asteroid_Small";
 
-                if (PoolManager.Instance != null) {
-                    PoolManager.Instance.Spawn(tag, pos, Quaternion.identity, () => {
-                        GameObject obj = new GameObject(tag);
-                        obj.AddComponent<Asteroid>();
-                        return obj;
-                    });
-                } else {
-                    GameObject astObj = new GameObject(tag);
-                    astObj.transform.position = pos;
-                    Asteroid ast = astObj.AddComponent<Asteroid>();
+            if (PoolManager.Instance != null) {
+                PoolManager.Instance.Spawn(tag, pos, Quaternion.identity, () => {
+                    GameObject obj = new GameObject(tag);
+                    Asteroid ast = obj.AddComponent<Asteroid>();
                     if (tag.Contains("Large")) ast.tier = AsteroidTier.Large;
                     else if (tag.Contains("Medium")) ast.tier = AsteroidTier.Medium;
                     else ast.tier = AsteroidTier.Small;
                     ast.SetupStats();
-                }
+                    return obj;
+                });
+            } else {
+                GameObject astObj = new GameObject(tag);
+                astObj.transform.position = pos;
+                Asteroid ast = astObj.AddComponent<Asteroid>();
+                if (tag.Contains("Large")) ast.tier = AsteroidTier.Large;
+                else if (tag.Contains("Medium")) ast.tier = AsteroidTier.Medium;
+                else ast.tier = AsteroidTier.Small;
+                ast.SetupStats();
             }
         }
 
         private void SpawnEnemyDrones()
         {
-            int count = config != null ? 12 : 6;
+            int count = config != null ? 12 : initialDroneCount;
+            if (count <= 0) count = 6;
             
             for (int i = 0; i < count; i++)
             {
                 Vector2 pos = new Vector2(Random.Range(-halfW * 0.8f, halfW * 0.8f), Random.Range(-halfH * 0.8f, halfH * 0.8f));
-                if (pos.magnitude < 15f) pos = pos.normalized * 20f;
+                if (pos.magnitude < 15f) pos = pos.normalized * 18f;
 
                 if (PoolManager.Instance != null) {
                     PoolManager.Instance.Spawn("EnemyDrone", pos, Quaternion.identity, () => {
@@ -230,8 +267,8 @@ namespace StarStrike.Gameplay
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.cyan;
-            float w = config != null ? config.worldWidth : 4000f;
-            float h = config != null ? config.worldHeight : 4000f;
+            float w = halfW > 0 ? halfW * 2f : worldWidth;
+            float h = halfH > 0 ? halfH * 2f : worldHeight;
             Gizmos.DrawWireCube(Vector3.zero, new Vector3(w, h, 0f));
         }
     }

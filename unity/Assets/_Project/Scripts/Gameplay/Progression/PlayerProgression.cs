@@ -98,12 +98,7 @@ namespace StarStrike.Gameplay
             ApplyCurrentStats();
             if (health != null) health.ResetMeters();
 
-            if (shipRenderer != null && currentShip.sprite != null)
-            {
-                shipRenderer.sprite = currentShip.sprite;
-                shipRenderer.color = currentShip.color;
-                shipRenderer.transform.localScale = Vector3.one * currentShip.scale;
-            }
+            ApplyShipVisuals();
 
             transform.position = Vector3.zero;
             if (movement != null)

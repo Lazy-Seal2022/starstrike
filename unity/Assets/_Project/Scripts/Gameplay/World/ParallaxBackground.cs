@@ -29,16 +29,16 @@ namespace StarStrike.Gameplay
                 startPositions[i] = layers[i].transform.position;
 
                 // Add some star sprites
-                for (int j = 0; j < 50; j++)
+                for (int j = 0; j < 60; j++)
                 {
                     GameObject star = new GameObject("Star");
                     star.transform.SetParent(layers[i].transform);
-                    star.transform.localPosition = new Vector3(Random.Range(-50f, 50f), Random.Range(-50f, 50f), 0);
+                    star.transform.localPosition = new Vector3(Random.Range(-70f, 70f), Random.Range(-70f, 70f), 0);
                     
                     var sr = star.AddComponent<SpriteRenderer>();
-                    sr.sprite = ProceduralSpriteHelper.GetGemSprite(); // Simple dot
-                    sr.color = new Color(1f, 1f, 1f, Random.Range(0.2f, 0.8f) - (i * 0.1f));
-                    float size = Random.Range(0.1f, 0.4f);
+                    sr.sprite = ProceduralSpriteHelper.GetStarSprite();
+                    sr.color = new Color(1f, 1f, 1f, Random.Range(0.3f, 0.9f) - (i * 0.1f));
+                    float size = Random.Range(0.15f, 0.45f);
                     star.transform.localScale = new Vector3(size, size, 1);
                 }
             }
