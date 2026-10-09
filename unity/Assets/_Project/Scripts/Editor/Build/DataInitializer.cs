@@ -51,14 +51,37 @@ namespace StarStrike.Editor
             miner.baseStats = new StatValues { shieldCapacity = 220, shieldRegen = 16, energyCapacity = 150, energyRegen = 20, pulseDamage = 40, pulseSpeed = 520, speed = 210, agility = 3.5f };
             AssetDatabase.CreateAsset(miner, "Assets/_Project/Data/Ship_Miner.asset");
 
+            // Create Tier 3 Ships
+            var juggernaut = ScriptableObject.CreateInstance<ShipDefinition>();
+            juggernaut.id = "juggernaut";
+            juggernaut.shipName = "Titan Juggernaut";
+            juggernaut.tier = 3;
+            juggernaut.maxUpgradeLevel = 6;
+            juggernaut.weaponSlots = 3;
+            juggernaut.baseStats = new StatValues { shieldCapacity = 400, shieldRegen = 25, energyCapacity = 200, energyRegen = 25, pulseDamage = 75, pulseSpeed = 480, speed = 180, agility = 2.5f };
+            AssetDatabase.CreateAsset(juggernaut, "Assets/_Project/Data/Ship_Juggernaut.asset");
+
+            var interceptor = ScriptableObject.CreateInstance<ShipDefinition>();
+            interceptor.id = "interceptor";
+            interceptor.shipName = "Viper Interceptor";
+            interceptor.tier = 3;
+            interceptor.maxUpgradeLevel = 6;
+            interceptor.weaponSlots = 2; // Maybe 2 slots but much faster
+            interceptor.baseStats = new StatValues { shieldCapacity = 180, shieldRegen = 15, energyCapacity = 140, energyRegen = 30, pulseDamage = 35, pulseSpeed = 800, speed = 400, agility = 6.5f };
+            AssetDatabase.CreateAsset(interceptor, "Assets/_Project/Data/Ship_Interceptor.asset");
+
             // Links
             scout.evolvesTo = new ShipDefinition[] { fighter, miner };
-            fighter.evolvesTo = new ShipDefinition[0];
-            miner.evolvesTo = new ShipDefinition[0];
+            fighter.evolvesTo = new ShipDefinition[] { interceptor };
+            miner.evolvesTo = new ShipDefinition[] { juggernaut };
+            interceptor.evolvesTo = new ShipDefinition[0];
+            juggernaut.evolvesTo = new ShipDefinition[0];
 
             EditorUtility.SetDirty(scout);
             EditorUtility.SetDirty(fighter);
             EditorUtility.SetDirty(miner);
+            EditorUtility.SetDirty(interceptor);
+            EditorUtility.SetDirty(juggernaut);
             AssetDatabase.SaveAssets();
 
             Debug.Log("StarStrike Data Initialized!");

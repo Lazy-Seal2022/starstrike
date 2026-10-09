@@ -107,6 +107,23 @@ namespace StarStrike.Gameplay
                     gemObj.AddComponent<GemCrystal>();
                 }
             }
+            
+            // Rare chance to drop a powerup
+            if (Random.value < 0.05f) // 5% chance
+            {
+                Vector3 puPos = transform.position + (Vector3)(Random.insideUnitCircle * 0.5f);
+                if (PoolManager.Instance != null) {
+                    PoolManager.Instance.Spawn("PowerUp", puPos, Quaternion.identity, () => {
+                        GameObject obj = new GameObject("PowerUpItem");
+                        obj.AddComponent<PowerUpItem>();
+                        return obj;
+                    });
+                } else {
+                    GameObject puObj = new GameObject("PowerUpItem");
+                    puObj.transform.position = puPos;
+                    puObj.AddComponent<PowerUpItem>();
+                }
+            }
 
             // 2. Fracture into smaller asteroids
             if (tier == AsteroidTier.Large)

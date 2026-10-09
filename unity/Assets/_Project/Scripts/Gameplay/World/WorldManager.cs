@@ -24,6 +24,14 @@ namespace StarStrike.Gameplay
             {
                 new GameObject("FXService").AddComponent<StarStrike.Gameplay.FX.FXService>();
             }
+            if (FindObjectOfType<AchievementManager>() == null)
+            {
+                new GameObject("AchievementManager").AddComponent<AchievementManager>();
+            }
+            if (FindObjectOfType<ParallaxBackground>() == null)
+            {
+                new GameObject("ParallaxBackground").AddComponent<ParallaxBackground>();
+            }
         }
 
         private void Start()
@@ -96,6 +104,9 @@ namespace StarStrike.Gameplay
             };
         }
 
+        private float gameTimer = 0f;
+        private bool bossSpawned = false;
+
         private void LateUpdate()
         {
             if (playerTransform != null && Camera.main != null)
@@ -108,6 +119,36 @@ namespace StarStrike.Gameplay
                     Camera.main.transform.position += StarStrike.Gameplay.FX.FXService.CameraOffset;
                 }
             }
+
+            if (!bossSpawned)
+            {
+                gameTimer += Time.deltaTime;
+                if (gameTimer > 60f) // Spawn boss after 60 seconds
+                {
+                    SpawnBoss();
+                    bossSpawned = true;
+                }
+            }
+        }
+
+        private void SpawnBoss()
+        {
+            Vector2 pos = new Vector2(0, halfH * 0.8f);
+            
+            if (PoolManager.Instance != null) {
+                PoolManager.Instance.Spawn("Boss", pos, Quaternion.identity, () => {
+                    GameObject obj = new GameObject("Boss");
+                    obj.AddComponent<BossBrain>();
+                    return obj;
+                });
+            } else {
+                GameObject bossObj = new GameObject("Boss");
+                bossObj.transform.position = pos;
+                bossObj.AddComponent<BossBrain>();
+            }
+            
+            // Optionally notify UI
+            Debug.Log("BOSS SPAWNED!");
         }
 
         private void SpawnAsteroidField()
