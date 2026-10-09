@@ -29,6 +29,26 @@ namespace StarStrike.Gameplay
             }
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            
+            // Auto-upgrade Player GameObject from legacy ShipController to Domain-Driven components
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                var legacy = player.GetComponent("ShipController");
+                if (legacy != null)
+                {
+                    DestroyImmediate(legacy); // Remove the old script
+                    
+                    // Add new Domain-Driven components
+                    var pp = player.AddComponent<PlayerProgression>();
+                    pp.health = player.AddComponent<ShipHealth>();
+                    pp.movement = player.AddComponent<ShipMovement>();
+                    pp.weapon = player.AddComponent<ShipWeapon>();
+                    pp.shipRenderer = player.GetComponent<SpriteRenderer>();
+                    
+                    player.AddComponent<StarStrike.Gameplay.Input.PlayerInputReader>();
+                }
+            }
         }
 
         private void Start()

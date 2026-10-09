@@ -27,6 +27,14 @@ namespace StarStrike.Gameplay
         private void Awake()
         {
             Instance = this;
+            if (currentShip == null)
+            {
+                currentShip = Resources.Load<ShipDefinition>("Data/Ship_Scout");
+            }
+            if (gameConfig == null)
+            {
+                gameConfig = Resources.Load<GameConfig>("Data/GameConfig");
+            }
             baseShip = currentShip;
         }
 

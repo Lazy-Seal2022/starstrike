@@ -36,10 +36,19 @@ namespace StarStrike.Gameplay
             {
                 new GameObject("PostProcessingSetup").AddComponent<StarStrike.Gameplay.FX.PostProcessingSetup>();
             }
+            if (FindObjectOfType<GameManager>() == null)
+            {
+                new GameObject("GameManager").AddComponent<GameManager>();
+            }
         }
 
         private void Start()
         {
+            if (config == null)
+            {
+                config = Resources.Load<GameConfig>("Data/GameConfig");
+            }
+
             if (config != null)
             {
                 halfW = config.worldWidth * 0.5f;
