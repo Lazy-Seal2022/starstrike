@@ -45,6 +45,18 @@ namespace StarStrike.UI
             MinimapTrackable.OnTrackableDisabled += UnregisterTrackable;
         }
 
+        private void Start()
+        {
+            var existing = FindObjectsByType<MinimapTrackable>(FindObjectsSortMode.None);
+            foreach (var t in existing)
+            {
+                if (t != null && t.isActiveAndEnabled)
+                {
+                    RegisterTrackable(t);
+                }
+            }
+        }
+
         private void OnDisable()
         {
             MinimapTrackable.OnTrackableEnabled -= RegisterTrackable;
