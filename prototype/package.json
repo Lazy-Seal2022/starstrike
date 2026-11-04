@@ -1,0 +1,28 @@
+{
+  "name": "starstrike-prototype",
+  "version": "0.1.0",
+  "description": "StarStrike Phaser 3 TypeScript web game prototype",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "phaser3",
+    "game",
+    "space-shooter",
+    "starblast",
+    "typescript",
+    "ecs"
+  ],
+  "author": "Lazy-Seal2022",
+  "license": "MIT",
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vite": "^6.2.0"
+  }
+}
