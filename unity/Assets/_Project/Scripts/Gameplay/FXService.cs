@@ -18,6 +18,14 @@ namespace StarStrike.Gameplay.FX
             Instance = this;
         }
 
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
+        }
+
         private void OnEnable()
         {
             GameEvents.OnAsteroidDestroyed += SpawnExplosion;

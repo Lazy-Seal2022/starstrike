@@ -79,7 +79,10 @@ namespace StarStrike.Gameplay
         {
             currentHp -= amount;
             
-            StarStrike.Gameplay.FX.FXService.Instance?.FlashSprite(GetComponent<SpriteRenderer>(), Color.white);
+            if (StarStrike.Gameplay.FX.FXService.Instance != null)
+            {
+                StarStrike.Gameplay.FX.FXService.Instance.FlashSprite(GetComponent<SpriteRenderer>(), Color.white);
+            }
 
             if (currentHp <= 0f)
             {
