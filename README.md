@@ -86,31 +86,20 @@ npm run preview
 
 ```
 starstrike/
-├── src/
-│   ├── main.ts                # Entry point: Phaser game config
-│   ├── core/                  # Engine-agnostic. NO Phaser / DOM imports (reusable on a future server)
-│   │   ├── ecs/               # Entity, Component, System, World
-│   │   ├── EventBus.ts        # Pub/sub between systems, scenes and UI
-│   │   └── types.ts           # Shared TypeScript interfaces
-│   ├── config/                # Pure data / tuning
-│   │   ├── game.ts            # Physics, world bounds, mining, upgrade costs
-│   │   └── ships.ts           # Ship registry (add new ships here)
-│   ├── components/            # ECS component data (Transform, Physics, Health, Weapon, ...)
-│   ├── features/              # One folder per gameplay feature: its systems + managers
-│   │   ├── ai/                # AISystem (enemy drones)
-│   │   ├── combat/            # CombatSystem (lasers, damage, death)
-│   │   ├── mining/            # MiningSystem (gem magnetism & pickup)
-│   │   ├── movement/          # MovementSystem (Newtonian physics)
-│   │   ├── regeneration/      # RegenerationSystem (shield & energy regen)
-│   │   ├── progression/       # UpgradeManager, ShipEvolution
-│   │   └── world/             # WorldManager (starfield, bounds, asteroid spawning)
-│   ├── services/              # App-wide singletons: SoundManager, AssetGenerator
-│   ├── scenes/                # Phaser scenes: Boot, Game, HUD
-│   └── ui/                    # Reusable HUD widgets (Minimap)
-├── index.html
-├── package.json
-├── tsconfig.json              # `@/` alias -> src/
-└── vite.config.ts
+├── unity/                     # Main Game (Unity 6 / URP 2D)
+│   ├── Assets/_Project/       # Scripts, Scenes, Tests, Resources
+│   ├── Packages/
+│   └── ProjectSettings/
+├── prototype/                 # Original Web Prototype (Phaser 3 + TypeScript + ECS)
+│   ├── src/                   # Main Phaser TypeScript source
+│   ├── index.html
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── vite.config.ts
+├── scripts/
+│   └── sync-unity.sh          # Linux/WSL <-> Windows Unity synchronization
+├── package.json               # Root convenience runner scripts
+└── README.md
 ```
 
 **Rules of thumb**
