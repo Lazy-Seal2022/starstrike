@@ -53,20 +53,36 @@ namespace StarStrike.UI
 
         private void BuildUI()
         {
+            RectTransform selfRt = GetComponent<RectTransform>();
+            if (selfRt == null) selfRt = gameObject.AddComponent<RectTransform>();
+            selfRt.anchorMin = Vector2.zero;
+            selfRt.anchorMax = Vector2.one;
+            selfRt.offsetMin = Vector2.zero;
+            selfRt.offsetMax = Vector2.zero;
+
             if (mapContainer == null)
             {
                 GameObject bgObj = new GameObject("Minimap_BG", typeof(RectTransform), typeof(Image));
                 bgObj.transform.SetParent(transform, false);
                 mapContainer = bgObj.GetComponent<RectTransform>();
                 
-                mapContainer.anchorMin = new Vector2(1, 1);
-                mapContainer.anchorMax = new Vector2(1, 1);
-                mapContainer.pivot = new Vector2(1, 1);
-                mapContainer.anchoredPosition = new Vector2(-20, -20);
+                mapContainer.anchorMin = new Vector2(1f, 0f);
+                mapContainer.anchorMax = new Vector2(1f, 0f);
+                mapContainer.pivot = new Vector2(1f, 0f);
+                mapContainer.anchoredPosition = new Vector2(-25f, 25f);
                 mapContainer.sizeDelta = new Vector2(mapSize, mapSize);
 
                 background = bgObj.GetComponent<Image>();
-                background.color = new Color(0, 0, 0, 0.5f);
+                background.sprite = ProceduralSpriteHelper.GetRadarSprite(128);
+                background.color = Color.white;
+            }
+            else
+            {
+                mapContainer.anchorMin = new Vector2(1f, 0f);
+                mapContainer.anchorMax = new Vector2(1f, 0f);
+                mapContainer.pivot = new Vector2(1f, 0f);
+                mapContainer.anchoredPosition = new Vector2(-25f, 25f);
+                mapContainer.sizeDelta = new Vector2(mapSize, mapSize);
             }
         }
 
@@ -134,7 +150,7 @@ namespace StarStrike.UI
                         float scale = (mapSize / 2f) / radarRange;
                         Vector2 uiPos = offset * scale;
 
-                        float maxDist = mapSize / 2f;
+                        float maxDist = (mapSize / 2f) - 6f;
                         if (uiPos.magnitude > maxDist)
                         {
                             uiPos = uiPos.normalized * maxDist;
@@ -157,11 +173,12 @@ namespace StarStrike.UI
             rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot = new Vector2(0.5f, 0.5f);
             
-            float dotSize = trackable.Type == TrackableType.Player ? 6f : 4f;
-            if (trackable.Type == TrackableType.Asteroid) dotSize = 3f;
+            float dotSize = trackable.Type == TrackableType.Player ? 8f : 5f;
+            if (trackable.Type == TrackableType.Asteroid) dotSize = 4f;
             rt.sizeDelta = new Vector2(dotSize, dotSize);
 
             Image img = dotObj.GetComponent<Image>();
+            img.sprite = ProceduralSpriteHelper.GetCircleSprite(16);
             switch (trackable.Type)
             {
                 case TrackableType.Player: img.color = playerColor; break;

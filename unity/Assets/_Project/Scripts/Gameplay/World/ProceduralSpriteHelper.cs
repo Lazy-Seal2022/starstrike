@@ -13,6 +13,7 @@ namespace StarStrike.Gameplay
         private static Sprite cachedAsteroid;
         private static Sprite cachedGem;
         private static Sprite cachedStar;
+        private static Sprite cachedRadar;
 
         public static Sprite GetShipSprite(string type)
         {
@@ -294,6 +295,55 @@ namespace StarStrike.Gameplay
                 cachedCircle = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100);
             }
             return cachedCircle;
+        }
+
+        public static Sprite GetRadarSprite(int size = 128)
+        {
+            if (cachedRadar == null)
+            {
+                Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+                tex.filterMode = FilterMode.Bilinear;
+                Color[] cols = new Color[size * size];
+                Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
+                float radius = size * 0.48f;
+                float innerRingRadius = radius * 0.5f;
+
+                for (int y = 0; y < size; y++)
+                {
+                    for (int x = 0; x < size; x++)
+                    {
+                        float dist = Vector2.Distance(new Vector2(x, y), center);
+                        if (dist <= radius)
+                        {
+                            Color col = new Color(0.02f, 0.05f, 0.12f, 0.75f);
+
+                            if (dist >= radius - 2.5f)
+                            {
+                                col = new Color(0.2f, 0.8f, 1f, 0.85f);
+                            }
+                            else if (Mathf.Abs(dist - innerRingRadius) <= 1.0f)
+                            {
+                                col = new Color(0.2f, 0.8f, 1f, 0.3f);
+                            }
+                            else if ((Mathf.Abs(x - center.x) <= 0.6f || Mathf.Abs(y - center.y) <= 0.6f) && dist > 4f)
+                            {
+                                col = new Color(0.2f, 0.8f, 1f, 0.25f);
+                            }
+
+                            float aa = Mathf.Clamp01((radius - dist) + 0.5f);
+                            cols[y * size + x] = new Color(col.r, col.g, col.b, col.a * aa);
+                        }
+                        else
+                        {
+                            cols[y * size + x] = Color.clear;
+                        }
+                    }
+                }
+                tex.SetPixels(cols);
+                tex.Apply();
+                cachedRadar = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100);
+            }
+            return cachedRadar;
         }
 
         public static Sprite GetRoundedBoxSprite(int size = 32, int cornerRadius = 6)

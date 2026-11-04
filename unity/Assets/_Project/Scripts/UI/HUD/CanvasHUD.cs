@@ -471,8 +471,13 @@ namespace StarStrike.UI
             evolutionBanner.SetActive(false);
 
             // 4. Minimap Radar
-            GameObject minimapObj = new GameObject("MinimapRadar");
+            GameObject minimapObj = new GameObject("MinimapRadar", typeof(RectTransform));
             minimapObj.transform.SetParent(transform, false);
+            RectTransform mmRt = minimapObj.GetComponent<RectTransform>();
+            mmRt.anchorMin = Vector2.zero;
+            mmRt.anchorMax = Vector2.one;
+            mmRt.offsetMin = Vector2.zero;
+            mmRt.offsetMax = Vector2.zero;
             MinimapController minimap = minimapObj.AddComponent<MinimapController>();
             // MinimapController will auto-build its UI on Awake
 
