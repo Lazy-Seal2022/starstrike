@@ -43,10 +43,8 @@ namespace StarStrike.UI
         {
             MinimapTrackable.OnTrackableEnabled += RegisterTrackable;
             MinimapTrackable.OnTrackableDisabled += UnregisterTrackable;
-        }
 
-        private void Start()
-        {
+            // Scan and register all currently active trackables
             var existing = FindObjectsByType<MinimapTrackable>(FindObjectsSortMode.None);
             foreach (var t in existing)
             {
@@ -100,6 +98,8 @@ namespace StarStrike.UI
 
         public void RegisterTrackable(MinimapTrackable trackable)
         {
+            if (trackable == null) return;
+
             if (!trackables.Contains(trackable))
             {
                 trackables.Add(trackable);
@@ -108,6 +108,11 @@ namespace StarStrike.UI
                 {
                     playerTransform = trackable.transform;
                 }
+            }
+
+            if (!trackableDots.ContainsKey(trackable) && mapContainer != null)
+            {
+                trackableDots[trackable] = CreateDot(trackable);
             }
         }
 
