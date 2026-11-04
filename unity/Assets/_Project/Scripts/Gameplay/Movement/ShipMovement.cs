@@ -9,13 +9,18 @@ namespace StarStrike.Gameplay
         public float maxSpeed = 10f;
         public float acceleration = 18f;
         public float agility = 6f; // rad/sec
+        public float boostMultiplier = 1.8f;
+        public float boostMaxSpeedMultiplier = 1.4f;
+        public float boostEnergyDrain = 25f; // Energy units / second
 
         private Rigidbody2D rb;
+        private ShipHealth health;
 
         // Input state
         public Vector2 AimDirection { get; set; }
         public float TurnInput { get; set; }
         public bool IsThrusting { get; set; }
+        public bool IsBoosting { get; set; }
         public bool IsBraking { get; set; }
         
         private ParticleSystem thrustFX;
@@ -23,6 +28,7 @@ namespace StarStrike.Gameplay
         private void Awake()
         {
             InitializePhysics();
+            health = GetComponent<ShipHealth>();
         }
 
         public void InitializePhysics()
@@ -81,16 +87,33 @@ namespace StarStrike.Gameplay
         {
             float dt = Time.fixedDeltaTime;
 
-            if (IsThrusting)
+            if (health == null) health = GetComponent<ShipHealth>();
+
+            bool canBoost = IsBoosting && (health == null || health.currentEnergy > 5f);
+            bool isApplyingThrust = IsThrusting || canBoost;
+
+            if (isApplyingThrust)
             {
                 if (thrustFX != null && !thrustFX.isPlaying) thrustFX.Play();
                 
-                Vector2 thrustDir = transform.right;
-                rb.AddForce(thrustDir * acceleration * rb.mass);
+                float currentAccel = acceleration;
+                float currentMaxSpeed = maxSpeed;
 
-                if (rb.linearVelocity.magnitude > maxSpeed)
+                if (canBoost)
                 {
-                    rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
+                    if (health == null || health.ConsumeEnergy(boostEnergyDrain * dt))
+                    {
+                        currentAccel *= boostMultiplier;
+                        currentMaxSpeed *= boostMaxSpeedMultiplier;
+                    }
+                }
+
+                Vector2 thrustDir = transform.right;
+                rb.AddForce(thrustDir * currentAccel * rb.mass);
+
+                if (rb.linearVelocity.magnitude > currentMaxSpeed)
+                {
+                    rb.linearVelocity = rb.linearVelocity.normalized * currentMaxSpeed;
                 }
             }
             else

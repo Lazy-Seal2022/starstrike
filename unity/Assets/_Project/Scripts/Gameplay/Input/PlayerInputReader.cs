@@ -125,6 +125,7 @@ namespace StarStrike.Gameplay
                 if (movement != null)
                 {
                     movement.IsThrusting = false;
+                    movement.IsBoosting = false;
                     movement.IsBraking = true; // Auto-brake in menus
                     movement.TurnInput = 0f;
                 }
@@ -137,7 +138,8 @@ namespace StarStrike.Gameplay
             {
                 movement.AimDirection = inputAimDirection;
                 movement.TurnInput = inputTurn;
-                movement.IsThrusting = inputThrust || inputBoost;
+                movement.IsThrusting = inputThrust;
+                movement.IsBoosting = inputBoost;
                 movement.IsBraking = inputBrake;
             }
 

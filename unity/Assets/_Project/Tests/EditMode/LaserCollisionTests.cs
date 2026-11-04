@@ -25,7 +25,7 @@ namespace StarStrike.Tests.EditMode
             LaserProjectile laser = laserGo.AddComponent<LaserProjectile>();
             laser.Initialize(25f, 20f, enemy: false);
 
-            laser.SendMessage("OnTriggerEnter2D", enemyCol);
+            laser.OnTriggerEnter2D(enemyCol);
 
             Assert.AreEqual(75f, enemyHealth.currentShield, 0.01f, "Laser damage must be deducted from enemy shield");
             Assert.IsFalse(laserGo.activeSelf, "Laser must deactivate upon hitting enemy");
@@ -53,7 +53,7 @@ namespace StarStrike.Tests.EditMode
             LaserProjectile laser = laserGo.AddComponent<LaserProjectile>();
             laser.Initialize(15f, 18f, enemy: true);
 
-            laser.SendMessage("OnTriggerEnter2D", playerCol);
+            laser.OnTriggerEnter2D(playerCol);
 
             Assert.AreEqual(85f, targetHealth.currentShield, 0.01f, "Enemy laser must deduct shield from player");
             Assert.IsFalse(laserGo.activeSelf, "Enemy laser must deactivate upon hitting player");
@@ -78,7 +78,7 @@ namespace StarStrike.Tests.EditMode
             LaserProjectile laser = laserGo.AddComponent<LaserProjectile>();
             laser.Initialize(25f, 20f, enemy: false);
 
-            laser.SendMessage("OnTriggerEnter2D", playerCol);
+            laser.OnTriggerEnter2D(playerCol);
 
             Assert.AreEqual(100f, pHealth.currentShield, "Player laser must never damage player");
             Assert.IsTrue(laserGo.activeSelf, "Laser must not be consumed by hitting friendly player");

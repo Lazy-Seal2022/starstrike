@@ -88,6 +88,63 @@ namespace StarStrike.Tests.EditMode
         }
 
         [Test]
+        public void AddGems_FiresGemCollectedEvent_WithExactAmountAndTotal()
+        {
+            int receivedAmount = -1;
+            int receivedTotal = -1;
+            System.Action<int, int> handler = (amt, tot) =>
+            {
+                receivedAmount = amt;
+                receivedTotal = tot;
+            };
+
+            GameEvents.OnGemCollected += handler;
+            progression.AddGems(42);
+            GameEvents.OnGemCollected -= handler;
+
+            Assert.AreEqual(42, receivedAmount, "OnGemCollected must deliver the non-zero amount collected");
+            Assert.AreEqual(42, receivedTotal, "OnGemCollected must deliver the running total");
+        }
+
+        [Test]
+        public void CreateDefaultShipTree_ProvidesFullThreeTierHierarchy()
+        {
+            ShipDefinition root = PlayerProgression.CreateDefaultShipTree();
+            Assert.IsNotNull(root);
+            Assert.AreEqual("scout", root.id);
+            Assert.AreEqual(2, root.evolvesTo.Length);
+
+            ShipDefinition fighter = root.evolvesTo[0];
+            ShipDefinition miner = root.evolvesTo[1];
+            Assert.AreEqual("fighter", fighter.id);
+            Assert.AreEqual("miner", miner.id);
+
+            Assert.AreEqual(1, fighter.evolvesTo.Length);
+            Assert.AreEqual("interceptor", fighter.evolvesTo[0].id);
+
+            Assert.AreEqual(1, miner.evolvesTo.Length);
+            Assert.AreEqual("juggernaut", miner.evolvesTo[0].id);
+        }
+
+        [Test]
+        public void ApplyShipVisuals_SetsScaleForTier3Ships()
+        {
+            ShipDefinition root = PlayerProgression.CreateDefaultShipTree();
+            ShipDefinition fighter = root.evolvesTo[0];
+            ShipDefinition interceptor = fighter.evolvesTo[0];
+
+            progression.currentShip = interceptor;
+            progression.ApplyShipVisuals();
+            Assert.AreEqual(1.2f, playerGo.transform.localScale.x, 0.01f);
+
+            ShipDefinition miner = root.evolvesTo[1];
+            ShipDefinition juggernaut = miner.evolvesTo[0];
+            progression.currentShip = juggernaut;
+            progression.ApplyShipVisuals();
+            Assert.AreEqual(1.6f, playerGo.transform.localScale.x, 0.01f);
+        }
+
+        [Test]
         public void UpgradeStat_DeductsGemsAndIncrementsLevel()
         {
             progression.AddGems(100);

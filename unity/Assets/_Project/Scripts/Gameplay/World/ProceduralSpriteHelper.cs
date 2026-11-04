@@ -8,6 +8,9 @@ namespace StarStrike.Gameplay
         private static Sprite cachedFighter;
         private static Sprite cachedMiner;
         private static Sprite cachedDrone;
+        private static Sprite cachedInterceptor;
+        private static Sprite cachedJuggernaut;
+        private static Sprite cachedBoss;
         private static Sprite cachedLaser;
         private static Sprite cachedEnemyLaser;
         private static Sprite cachedAsteroid;
@@ -31,6 +34,21 @@ namespace StarStrike.Gameplay
             {
                 if (cachedDrone == null) cachedDrone = GenerateShip(new Color(0.9f, 0.15f, 0.15f), 48, 4);
                 return cachedDrone;
+            }
+            if (type == "interceptor")
+            {
+                if (cachedInterceptor == null) cachedInterceptor = GenerateShip(new Color(0.45f, 0.35f, 0.98f), 64, 5);
+                return cachedInterceptor;
+            }
+            if (type == "juggernaut")
+            {
+                if (cachedJuggernaut == null) cachedJuggernaut = GenerateShip(new Color(0.95f, 0.45f, 0.15f), 64, 6);
+                return cachedJuggernaut;
+            }
+            if (type == "boss")
+            {
+                if (cachedBoss == null) cachedBoss = GenerateShip(new Color(0.95f, 0.12f, 0.22f), 96, 7);
+                return cachedBoss;
             }
             if (cachedScout == null) cachedScout = GenerateShip(new Color(0.22f, 0.74f, 0.97f), 64, 1);
             return cachedScout;
@@ -133,11 +151,39 @@ namespace StarStrike.Gameplay
                         float ny = Mathf.Abs(p.y) / r;
                         inside = (nx <= 0.7f && ny <= 0.7f) || (p.x >= 0 && p.x <= r * 0.95f && ny <= 0.45f);
                     }
-                    else // Drone (Diamond saucer)
+                    else if (style == 4) // Drone (Diamond saucer)
                     {
                         float nx = Mathf.Abs(p.x) / (r * 0.8f);
                         float ny = Mathf.Abs(p.y) / (r * 0.8f);
                         inside = (nx + ny) <= 1.0f;
+                    }
+                    else if (style == 5) // Interceptor (Viper Interceptor - sleek needle + swept wings)
+                    {
+                        float nx = p.x / r;
+                        float ny = Mathf.Abs(p.y) / r;
+                        bool needle = (nx >= -0.7f && nx <= 0.95f && ny <= (0.95f - nx) * 0.35f);
+                        bool sweptWings = (nx >= -0.5f && nx <= 0.25f && ny <= 0.85f && ny >= 0.3f && (nx - ny * 0.35f) >= -0.45f);
+                        bool engines = (nx >= -0.85f && nx <= -0.3f && ny >= 0.2f && ny <= 0.45f);
+                        inside = needle || sweptWings || engines;
+                    }
+                    else if (style == 6) // Juggernaut (Titan Juggernaut - armored tank chassis + prongs)
+                    {
+                        float nx = p.x / r;
+                        float ny = Mathf.Abs(p.y) / r;
+                        bool mainBlock = (Mathf.Abs(nx) <= 0.75f && ny <= 0.75f);
+                        bool frontProngs = (nx >= 0.2f && nx <= 0.95f && ny >= 0.25f && ny <= 0.7f);
+                        bool centerRam = (nx >= 0.6f && nx <= 0.9f && ny <= 0.25f);
+                        bool rearPlates = (nx <= -0.4f && nx >= -0.9f && ny <= 0.85f);
+                        inside = mainBlock || frontProngs || centerRam || rearPlates;
+                    }
+                    else if (style == 7) // Boss (Dreadnought flagship)
+                    {
+                        float nx = p.x / r;
+                        float ny = Mathf.Abs(p.y) / r;
+                        bool core = (nx >= -0.85f && nx <= 0.9f && ny <= (0.95f - nx) * 0.75f);
+                        bool claws = (nx >= -0.2f && nx <= 0.85f && ny >= 0.5f && ny <= 0.95f);
+                        bool rearEngines = (nx <= -0.4f && nx >= -0.95f && ny >= 0.3f && ny <= 0.85f);
+                        inside = core || claws || rearEngines;
                     }
 
                     if (inside)

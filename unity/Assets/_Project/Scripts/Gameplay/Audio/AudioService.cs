@@ -69,7 +69,10 @@ namespace StarStrike.Gameplay.Audio
 
         private void OnGemCollected(int amount, int total)
         {
-            PlaySound("gem", 0.4f);
+            if (amount > 0)
+            {
+                PlaySound("gem", 0.4f);
+            }
         }
 
         private void OnPlayerEvolved(string shipId)

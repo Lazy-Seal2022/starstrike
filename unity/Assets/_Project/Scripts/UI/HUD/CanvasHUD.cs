@@ -223,6 +223,7 @@ namespace StarStrike.UI
 
         private void HandlePlayerEvolved(string shipId)
         {
+            lastEvoShipId = "";
             PlayerProgression player = PlayerProgression.Instance;
             if (player != null && player.currentShip != null)
             {
@@ -338,15 +339,131 @@ namespace StarStrike.UI
             }
         }
 
+        private GameObject evolutionButtonsContainer;
+        private readonly List<GameObject> activeEvoButtons = new List<GameObject>();
+        private string lastEvoShipId = "";
+
         private void UpdateEvolutionBanner()
         {
             if (evolutionBanner == null) return;
 
             PlayerProgression player = PlayerProgression.Instance;
             bool canEvolve = player != null && player.CanEvolve();
-            if (evolutionBanner.activeSelf != canEvolve)
+
+            if (canEvolve)
             {
-                evolutionBanner.SetActive(canEvolve);
+                string curId = player.currentShip != null ? player.currentShip.id : "";
+                if (!evolutionBanner.activeSelf || lastEvoShipId != curId)
+                {
+                    lastEvoShipId = curId;
+                    RebuildEvolutionButtons(player);
+                    evolutionBanner.SetActive(true);
+                }
+            }
+            else
+            {
+                if (evolutionBanner.activeSelf)
+                {
+                    evolutionBanner.SetActive(false);
+                }
+            }
+        }
+
+        public void RebuildEvolutionButtons(PlayerProgression player)
+        {
+            if (player == null || player.currentShip == null || player.currentShip.evolvesTo == null) return;
+
+            Transform parent = evolutionButtonsContainer != null ? evolutionButtonsContainer.transform : (evolutionBanner != null ? evolutionBanner.transform : transform);
+
+            for (int i = activeEvoButtons.Count - 1; i >= 0; i--)
+            {
+                if (activeEvoButtons[i] != null) DestroyImmediate(activeEvoButtons[i]);
+            }
+            activeEvoButtons.Clear();
+
+            if (evolveFighterButton != null && evolveFighterButton.gameObject != null && !activeEvoButtons.Contains(evolveFighterButton.gameObject))
+            {
+                evolveFighterButton.gameObject.SetActive(false);
+            }
+            if (evolveMinerButton != null && evolveMinerButton.gameObject != null && !activeEvoButtons.Contains(evolveMinerButton.gameObject))
+            {
+                evolveMinerButton.gameObject.SetActive(false);
+            }
+
+            var targets = player.currentShip.evolvesTo;
+            int count = targets.Length;
+            if (count == 0) return;
+
+            Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            Sprite roundedSprite = ProceduralSpriteHelper.GetRadarSprite(32);
+
+            for (int i = 0; i < count; i++)
+            {
+                var target = targets[i];
+                if (target == null) continue;
+
+                Vector2 pos;
+                Vector2 size;
+                Vector2 anchorMin;
+                Vector2 anchorMax;
+
+                if (count == 1)
+                {
+                    anchorMin = new Vector2(0.5f, 1f);
+                    anchorMax = new Vector2(0.5f, 1f);
+                    pos = new Vector2(-120f, -42f);
+                    size = new Vector2(240f, 40f);
+                }
+                else
+                {
+                    if (i == 0)
+                    {
+                        anchorMin = new Vector2(0f, 1f);
+                        anchorMax = new Vector2(0f, 1f);
+                        pos = new Vector2(20f, -42f);
+                        size = new Vector2(190f, 40f);
+                    }
+                    else
+                    {
+                        anchorMin = new Vector2(1f, 1f);
+                        anchorMax = new Vector2(1f, 1f);
+                        pos = new Vector2(-210f, -42f);
+                        size = new Vector2(190f, 40f);
+                    }
+                }
+
+                Color btnColor = GetEvoButtonColor(target.id);
+                string icon = target.id == "miner" ? "⛏ " : (target.id == "fighter" ? "⚔ " : (target.id == "interceptor" ? "⚡ " : "★ "));
+                string label = $"{icon}{target.shipName.ToUpper()}";
+
+                GameObject btnObj = CreateButton(parent, $"EvoBtn_{target.id}", label, anchorMin, anchorMax, pos, size, btnColor, roundedSprite, defaultFont);
+                Button btn = btnObj.GetComponent<Button>();
+                string targetId = target.id;
+                btn.onClick.AddListener(() =>
+                {
+                    if (PlayerProgression.Instance != null)
+                    {
+                        PlayerProgression.Instance.EvolveToId(targetId);
+                        UpdateEvolutionBanner();
+                    }
+                });
+
+                if (targetId == "fighter") evolveFighterButton = btn;
+                if (targetId == "miner") evolveMinerButton = btn;
+
+                activeEvoButtons.Add(btnObj);
+            }
+        }
+
+        private Color GetEvoButtonColor(string id)
+        {
+            switch (id)
+            {
+                case "fighter": return new Color(0.85f, 0.2f, 0.25f, 1f);
+                case "miner": return new Color(0.9f, 0.55f, 0.1f, 1f);
+                case "interceptor": return new Color(0.35f, 0.4f, 0.95f, 1f);
+                case "juggernaut": return new Color(0.95f, 0.45f, 0.15f, 1f);
+                default: return new Color(0.2f, 0.6f, 0.85f, 1f);
             }
         }
 
@@ -455,19 +572,18 @@ namespace StarStrike.UI
             evolutionBanner = evoObj;
             CreateText(evoObj.transform, "EvoHeader", "★ SHIP EVOLUTION AVAILABLE ★", 15, FontStyle.Bold, new Color(1f, 0.84f, 0.25f), TextAnchor.MiddleCenter, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -8f), new Vector2(0f, -32f), defaultFont);
 
-            GameObject fighterBtnObj = CreateButton(evoObj.transform, "AresBtn", "⚔ ARES FIGHTER", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -42f), new Vector2(190f, 40f), new Color(0.85f, 0.2f, 0.25f, 1f), roundedSprite, defaultFont);
-            evolveFighterButton = fighterBtnObj.GetComponent<Button>();
-            evolveFighterButton.onClick.AddListener(() =>
-            {
-                if (PlayerProgression.Instance != null) PlayerProgression.Instance.EvolveToId("fighter");
-            });
+            evolutionButtonsContainer = new GameObject("ButtonsContainer", typeof(RectTransform));
+            evolutionButtonsContainer.transform.SetParent(evoObj.transform, false);
+            RectTransform ebRt = evolutionButtonsContainer.GetComponent<RectTransform>();
+            ebRt.anchorMin = Vector2.zero;
+            ebRt.anchorMax = Vector2.one;
+            ebRt.offsetMin = Vector2.zero;
+            ebRt.offsetMax = Vector2.zero;
 
-            GameObject minerBtnObj = CreateButton(evoObj.transform, "MinerBtn", "⛏ GOLIATH MINER", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-210f, -42f), new Vector2(190f, 40f), new Color(0.9f, 0.55f, 0.1f, 1f), roundedSprite, defaultFont);
-            evolveMinerButton = minerBtnObj.GetComponent<Button>();
-            evolveMinerButton.onClick.AddListener(() =>
+            if (PlayerProgression.Instance != null)
             {
-                if (PlayerProgression.Instance != null) PlayerProgression.Instance.EvolveToId("miner");
-            });
+                RebuildEvolutionButtons(PlayerProgression.Instance);
+            }
             evolutionBanner.SetActive(false);
 
             // 4. Minimap Radar

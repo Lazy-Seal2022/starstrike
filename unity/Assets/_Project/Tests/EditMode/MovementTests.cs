@@ -76,5 +76,23 @@ namespace StarStrike.Tests.EditMode
 
             Assert.AreEqual(maxSpeed, rb.linearVelocity.magnitude, 0.01f);
         }
+
+        [Test]
+        public void Movement_BoostProperties_HaveExpectedMultipliers()
+        {
+            Assert.AreEqual(1.8f, movement.boostMultiplier, 0.01f);
+            Assert.AreEqual(1.4f, movement.boostMaxSpeedMultiplier, 0.01f);
+            Assert.AreEqual(25f, movement.boostEnergyDrain, 0.01f);
+        }
+
+        [Test]
+        public void Movement_BoostState_AllowsHigherSpeedLimit()
+        {
+            float normalMax = movement.maxSpeed;
+            float boostMax = normalMax * movement.boostMaxSpeedMultiplier;
+
+            Assert.Greater(boostMax, normalMax);
+            Assert.AreEqual(14f, boostMax, 0.01f);
+        }
     }
 }
