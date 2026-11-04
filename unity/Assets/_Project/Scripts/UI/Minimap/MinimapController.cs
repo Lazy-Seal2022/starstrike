@@ -61,7 +61,15 @@ namespace StarStrike.UI
             MinimapTrackable.OnTrackableDisabled -= UnregisterTrackable;
         }
 
-        private void BuildUI()
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
+        }
+
+        public void BuildUI()
         {
             RectTransform selfRt = GetComponent<RectTransform>();
             if (selfRt == null) selfRt = gameObject.AddComponent<RectTransform>();

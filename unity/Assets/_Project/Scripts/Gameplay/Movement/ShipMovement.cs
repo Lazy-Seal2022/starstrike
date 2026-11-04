@@ -22,6 +22,11 @@ namespace StarStrike.Gameplay
 
         private void Awake()
         {
+            InitializePhysics();
+        }
+
+        public void InitializePhysics()
+        {
             rb = GetComponent<Rigidbody2D>();
             if (rb != null)
             {

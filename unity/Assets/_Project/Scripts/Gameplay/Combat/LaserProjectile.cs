@@ -15,13 +15,24 @@ namespace StarStrike.Gameplay
 
         private void Awake()
         {
+            SetupPhysics();
+        }
+
+        public void SetupPhysics()
+        {
             rb = GetComponent<Rigidbody2D>();
-            rb.gravityScale = 0f;
-            rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            if (rb != null)
+            {
+                rb.gravityScale = 0f;
+                rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            }
 
             CircleCollider2D col = GetComponent<CircleCollider2D>();
-            col.isTrigger = true;
-            col.radius = 0.25f;
+            if (col != null)
+            {
+                col.isTrigger = true;
+                col.radius = 0.25f;
+            }
         }
 
         public void Initialize(float dmg, float spd, bool enemy)
@@ -30,13 +41,22 @@ namespace StarStrike.Gameplay
             speed = spd;
             isEnemy = enemy;
 
+            if (rb == null)
+            {
+                rb = GetComponent<Rigidbody2D>();
+                if (rb == null) rb = gameObject.AddComponent<Rigidbody2D>();
+                SetupPhysics();
+            }
+
             SpriteRenderer sr = GetComponent<SpriteRenderer>();
             if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
             sr.sprite = ProceduralSpriteHelper.GetLaserSprite(isEnemy);
             sr.sortingOrder = 5;
 
-            rb.linearVelocity = transform.right * speed;
-            
+            if (rb != null)
+            {
+                rb.linearVelocity = transform.right * speed;
+            }
         }
 
         private float spawnTime;

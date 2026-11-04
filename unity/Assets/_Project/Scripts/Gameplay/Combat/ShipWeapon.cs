@@ -13,7 +13,7 @@ namespace StarStrike.Gameplay
 
         public bool isPlayer = false;
 
-        private float lastFiredTime;
+        private float lastFiredTime = -999f;
         private Rigidbody2D rb;
 
         private void Awake()

@@ -17,6 +17,7 @@ namespace StarStrike.Tests.EditMode
             minimap = minimapGo.AddComponent<MinimapController>();
             minimap.radarRange = 50f;
             minimap.mapSize = 150f;
+            minimap.BuildUI();
         }
 
         [TearDown]

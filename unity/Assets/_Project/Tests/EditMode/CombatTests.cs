@@ -34,6 +34,12 @@ namespace StarStrike.Tests.EditMode
             {
                 Object.DestroyImmediate(playerGo);
             }
+
+            var lasers = Object.FindObjectsByType<LaserProjectile>(FindObjectsSortMode.None);
+            foreach (var l in lasers)
+            {
+                Object.DestroyImmediate(l.gameObject);
+            }
         }
 
         [Test]

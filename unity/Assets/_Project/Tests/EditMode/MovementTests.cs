@@ -16,6 +16,7 @@ namespace StarStrike.Tests.EditMode
             shipGo = new GameObject("TestShip");
             rb = shipGo.AddComponent<Rigidbody2D>();
             movement = shipGo.AddComponent<ShipMovement>();
+            movement.InitializePhysics();
             movement.maxSpeed = 10f;
             movement.acceleration = 18f;
             movement.agility = 6f;
