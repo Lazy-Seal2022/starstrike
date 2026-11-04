@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace StarStrike.Gameplay
 {
-    [RequireComponent(typeof(Rigidbody2D))]
+    [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
     public class ShipMovement : MonoBehaviour
     {
         [Header("Stats")]
@@ -33,6 +33,13 @@ namespace StarStrike.Gameplay
                 rb.gravityScale = 0f;
                 rb.linearDamping = 0.5f;
                 rb.angularDamping = 1.0f;
+            }
+
+            CircleCollider2D col = GetComponent<CircleCollider2D>();
+            if (col == null) col = gameObject.AddComponent<CircleCollider2D>();
+            if (col != null && col.radius <= 0.01f)
+            {
+                col.radius = 0.6f;
             }
         }
 

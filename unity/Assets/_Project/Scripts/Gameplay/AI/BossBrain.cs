@@ -3,6 +3,7 @@ using StarStrike.Core;
 
 namespace StarStrike.Gameplay
 {
+    [RequireComponent(typeof(CircleCollider2D))]
     [RequireComponent(typeof(ShipMovement), typeof(ShipHealth), typeof(ShipWeapon))]
     public class BossBrain : MonoBehaviour
     {
@@ -29,6 +30,11 @@ namespace StarStrike.Gameplay
             weapon = GetComponent<ShipWeapon>();
             
             tag = "Enemy"; // Or "Boss"
+
+            CircleCollider2D col = GetComponent<CircleCollider2D>();
+            if (col == null) col = gameObject.AddComponent<CircleCollider2D>();
+            col.radius = 0.8f;
+            col.isTrigger = false;
 
             SpriteRenderer sr = GetComponent<SpriteRenderer>();
             if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();

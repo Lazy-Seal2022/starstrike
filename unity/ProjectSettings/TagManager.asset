@@ -8,6 +8,8 @@ TagManager:
   - Laser
   - Asteroid
   - Gem
+  - EnemyLaser
+  - Boss
   layers:
   - Default
   - TransparentFX

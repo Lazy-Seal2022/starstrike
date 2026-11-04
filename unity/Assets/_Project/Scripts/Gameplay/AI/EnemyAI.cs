@@ -3,6 +3,7 @@ using StarStrike.Core;
 
 namespace StarStrike.Gameplay
 {
+    [RequireComponent(typeof(CircleCollider2D))]
     [RequireComponent(typeof(ShipMovement), typeof(ShipHealth), typeof(ShipWeapon))]
     public class EnemyAI : MonoBehaviour
     {
@@ -31,6 +32,11 @@ namespace StarStrike.Gameplay
             weapon = GetComponent<ShipWeapon>();
             
             tag = "Enemy";
+
+            CircleCollider2D col = GetComponent<CircleCollider2D>();
+            if (col == null) col = gameObject.AddComponent<CircleCollider2D>();
+            col.radius = 0.7f;
+            col.isTrigger = false;
 
             SpriteRenderer sr = GetComponent<SpriteRenderer>();
             if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();

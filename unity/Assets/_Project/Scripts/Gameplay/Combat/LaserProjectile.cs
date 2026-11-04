@@ -31,7 +31,7 @@ namespace StarStrike.Gameplay
             if (col != null)
             {
                 col.isTrigger = true;
-                col.radius = 0.25f;
+                col.radius = 0.35f;
             }
         }
 
@@ -73,11 +73,33 @@ namespace StarStrike.Gameplay
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if ((isEnemy && collision.CompareTag("Player")) ||
-                (!isEnemy && (collision.CompareTag("Enemy") || collision.CompareTag("Boss"))) ||
-                collision.CompareTag("Asteroid"))
+            bool isEnemyTarget = collision.CompareTag("Enemy") || (collision.attachedRigidbody != null && collision.attachedRigidbody.CompareTag("Enemy"));
+            bool isBossTarget = collision.CompareTag("Boss") || (collision.attachedRigidbody != null && collision.attachedRigidbody.CompareTag("Boss"));
+            bool isPlayerTarget = collision.CompareTag("Player") || (collision.attachedRigidbody != null && collision.attachedRigidbody.CompareTag("Player"));
+            bool isAsteroidTarget = collision.CompareTag("Asteroid") || (collision.attachedRigidbody != null && collision.attachedRigidbody.CompareTag("Asteroid"));
+
+            bool hitTarget = false;
+            if (isEnemy)
+            {
+                hitTarget = isPlayerTarget || isAsteroidTarget;
+            }
+            else
+            {
+                hitTarget = isEnemyTarget || isBossTarget || isAsteroidTarget;
+            }
+
+            if (hitTarget)
             {
                 IDamageable damageable = collision.GetComponent<IDamageable>();
+                if (damageable == null)
+                {
+                    damageable = collision.GetComponentInParent<IDamageable>();
+                }
+                if (damageable == null && collision.attachedRigidbody != null)
+                {
+                    damageable = collision.attachedRigidbody.GetComponent<IDamageable>();
+                }
+
                 if (damageable != null)
                 {
                     damageable.TakeDamage(damage);
