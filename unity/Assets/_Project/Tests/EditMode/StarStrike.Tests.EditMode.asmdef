@@ -5,7 +5,9 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "StarStrike.Core",
-        "StarStrike.Gameplay"
+        "StarStrike.Gameplay",
+        "StarStrike.Platform",
+        "StarStrike.UI"
     ],
     "includePlatforms": [
         "Editor"
