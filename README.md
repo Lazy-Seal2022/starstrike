@@ -98,7 +98,6 @@ starstrike/
 │   └── vite.config.ts
 ├── scripts/
 │   └── sync-unity.sh          # Linux/WSL <-> Windows Unity synchronization
-├── package.json               # Root convenience runner scripts
 └── README.md
 ```
 
