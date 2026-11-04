@@ -49,7 +49,7 @@ namespace StarStrike.Gameplay
             }
         }
 
-        private void ApplyPowerUp(GameObject player)
+        public void ApplyPowerUp(GameObject player)
         {
             if (type == PowerUpType.ShieldOvercharge)
             {

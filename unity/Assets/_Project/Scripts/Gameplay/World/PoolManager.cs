@@ -12,10 +12,26 @@ namespace StarStrike.Gameplay
 
         private void Awake()
         {
+            Initialize();
+        }
+
+        public void Initialize()
+        {
             if (Instance == null)
             {
                 Instance = this;
+            }
+            if (poolDictionary == null)
+            {
                 poolDictionary = new Dictionary<string, Queue<GameObject>>();
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
             }
         }
 

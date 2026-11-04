@@ -44,7 +44,11 @@ namespace StarStrike.Gameplay
 
         private void Update()
         {
-            float dt = Time.deltaTime;
+            RegenerateMeters(Time.deltaTime);
+        }
+
+        public void RegenerateMeters(float dt)
+        {
             bool changed = false;
 
             if (currentShield < maxShield)

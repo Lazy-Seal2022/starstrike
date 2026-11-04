@@ -26,6 +26,11 @@ namespace StarStrike.Gameplay
 
         private void Awake()
         {
+            Initialize();
+        }
+
+        public void Initialize()
+        {
             Instance = this;
             if (currentShip == null)
             {
@@ -147,6 +152,7 @@ namespace StarStrike.Gameplay
 
         private void OnDestroy()
         {
+            if (Instance == this) Instance = null;
             if (health != null) health.OnDied -= HandleDeath;
         }
 

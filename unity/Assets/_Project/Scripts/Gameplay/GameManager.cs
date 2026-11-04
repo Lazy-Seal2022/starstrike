@@ -157,5 +157,14 @@ namespace StarStrike.Gameplay
             ChangeState(GameState.Boot);
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
+
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
+            Time.timeScale = 1f;
+        }
     }
 }

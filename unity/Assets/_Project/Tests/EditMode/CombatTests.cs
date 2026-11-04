@@ -109,5 +109,19 @@ namespace StarStrike.Tests.EditMode
             Assert.IsTrue(fired);
             Assert.AreEqual(energyBefore - weapon.energyCost, health.currentEnergy, 0.01f);
         }
+
+        [Test]
+        public void RegenerateMeters_RestoresShieldAndEnergyOverTime()
+        {
+            health.shieldRegen = 10f;
+            health.energyRegen = 20f;
+            health.TakeDamage(50f); // Shield at 50 / 100
+            health.ConsumeEnergy(40f); // Energy at 40 / 80
+
+            health.RegenerateMeters(2.0f); // 2 seconds
+
+            Assert.AreEqual(70f, health.currentShield, 0.01f);
+            Assert.AreEqual(80f, health.currentEnergy, 0.01f); // capped at max (80)
+        }
     }
 }
