@@ -21,6 +21,14 @@ namespace StarStrike.Gameplay
 
         public GameState CurrentState { get; private set; } = GameState.Boot;
 
+        [Header("Mode")]
+        public GameMode CurrentMode { get; private set; } = GameMode.PvE;
+
+        public void SetGameMode(GameMode mode)
+        {
+            CurrentMode = mode;
+        }
+
         [Header("Run Metrics")]
         public float RunTimer { get; private set; }
         public int GemsCollectedInRun { get; private set; }
@@ -159,8 +167,18 @@ namespace StarStrike.Gameplay
             EnemiesDestroyedCount = 0;
 
             GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player == null)
+            {
+                var pp = Resources.FindObjectsOfTypeAll<PlayerProgression>();
+                if (pp.Length > 0)
+                {
+                    player = pp[0].gameObject;
+                    player.SetActive(true);
+                }
+            }
             if (player != null)
             {
+                player.SetActive(true);
                 player.transform.position = Vector3.zero;
                 var rb = player.GetComponent<Rigidbody2D>();
                 if (rb != null)

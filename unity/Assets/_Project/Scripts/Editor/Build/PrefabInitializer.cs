@@ -1,8 +1,10 @@
 using UnityEditor;
 using UnityEngine;
+using Unity.Netcode;
 using StarStrike.Core;
 using StarStrike.Gameplay;
 using StarStrike.UI;
+using StarStrike.Network;
 
 namespace StarStrike.Editor
 {
@@ -17,6 +19,7 @@ namespace StarStrike.Editor
             EnsureFolder("Assets/_Project/Prefabs", "Enemies");
             EnsureFolder("Assets/_Project/Prefabs", "Ships");
             EnsureFolder("Assets/_Project/Prefabs", "UI");
+            EnsureFolder("Assets/_Project/Prefabs", "Network");
 
             EnsureFolder("Assets/_Project", "Resources");
             EnsureFolder("Assets/_Project/Resources", "Prefabs");
@@ -25,6 +28,7 @@ namespace StarStrike.Editor
             EnsureFolder("Assets/_Project/Resources/Prefabs", "Enemies");
             EnsureFolder("Assets/_Project/Resources/Prefabs", "Ships");
             EnsureFolder("Assets/_Project/Resources/Prefabs", "UI");
+            EnsureFolder("Assets/_Project/Resources/Prefabs", "Network");
 
             // 1. Projectiles
             CreatePlayerLaserPrefab();
@@ -50,6 +54,10 @@ namespace StarStrike.Editor
 
             // 5. UI Prefabs
             CreateCanvasHUDPrefab();
+
+            // 6. Network Prefabs
+            CreateNetworkLaserPrefab();
+            CreateNetworkPlayerShipPrefab();
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -374,6 +382,69 @@ namespace StarStrike.Editor
             hud.endGameModal = endGameModal;
 
             SavePrefab(hudGo, "UI/CanvasHUD");
+        }
+
+        private static void CreateNetworkLaserPrefab()
+        {
+            GameObject go = new GameObject("NetworkLaserProjectile");
+            go.tag = "Laser";
+
+            var netObj = go.AddComponent<NetworkObject>();
+
+            var rb = go.AddComponent<Rigidbody2D>();
+            rb.gravityScale = 0f;
+            rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+            var col = go.AddComponent<CircleCollider2D>();
+            col.isTrigger = true;
+            col.radius = 0.2f;
+
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = ProceduralSpriteHelper.GetLaserSprite(false);
+            sr.sortingOrder = 6;
+            sr.color = new Color(0.2f, 0.95f, 1f, 1f);
+
+            var proj = go.AddComponent<NetworkLaserProjectile>();
+            proj.damage = 22f;
+            proj.speed = 28f;
+            proj.lifetime = 2.5f;
+
+            SavePrefab(go, "Network/NetworkLaserProjectile");
+        }
+
+        private static void CreateNetworkPlayerShipPrefab()
+        {
+            GameObject go = new GameObject("NetworkPlayerShip");
+            go.tag = "Player";
+
+            var netObj = go.AddComponent<NetworkObject>();
+
+            var rb = go.AddComponent<Rigidbody2D>();
+            rb.gravityScale = 0f;
+            rb.linearDamping = 0.5f;
+            rb.angularDamping = 1.0f;
+
+            var col = go.AddComponent<CircleCollider2D>();
+            col.radius = 0.6f;
+            col.isTrigger = false;
+
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = ProceduralSpriteHelper.GetShipSprite("scout");
+            sr.sortingOrder = 10;
+
+            var ship = go.AddComponent<NetworkPlayerShip>();
+            ship.maxSpeed = 12f;
+            ship.acceleration = 24f;
+            ship.agility = 5f;
+            ship.fireRate = 0.2f;
+
+            var laserPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Network/NetworkLaserProjectile.prefab");
+            if (laserPrefab != null)
+            {
+                ship.laserPrefab = laserPrefab;
+            }
+
+            SavePrefab(go, "Network/NetworkPlayerShip");
         }
 
         private static void SavePrefab(GameObject go, string subPath)

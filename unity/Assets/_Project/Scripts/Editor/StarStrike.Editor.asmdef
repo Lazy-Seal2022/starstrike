@@ -1,7 +1,7 @@
 {
     "name": "StarStrike.Editor",
     "rootNamespace": "StarStrike.EditorTools",
-    "references": ["StarStrike.Core", "StarStrike.Gameplay", "StarStrike.Platform", "StarStrike.UI"],
+    "references": ["StarStrike.Core", "StarStrike.Gameplay", "StarStrike.Platform", "StarStrike.UI", "StarStrike.Network", "Unity.Netcode.Runtime"],
     "includePlatforms": ["Editor"],
     "autoReferenced": true
 }

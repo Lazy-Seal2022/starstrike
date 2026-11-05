@@ -49,6 +49,16 @@ namespace StarStrike.Bootstrap
             hudGO.transform.SetParent(canvasGO.transform, false);
             hudGO.AddComponent<CanvasHUD>();
 
+            // 6. Create ArenaLobbyUI
+            var lobbyGO = new GameObject("ArenaLobbyUI");
+            lobbyGO.transform.SetParent(canvasGO.transform, false);
+            lobbyGO.AddComponent<StarStrike.Network.ArenaLobbyUI>();
+
+            // 7. Create ArenaScoreboardUI
+            var scoreboardGO = new GameObject("ArenaScoreboardUI");
+            scoreboardGO.transform.SetParent(canvasGO.transform, false);
+            scoreboardGO.AddComponent<StarStrike.Network.ArenaScoreboardUI>();
+
             Debug.Log("GameBootstrapper: Core systems instantiated.");
         }
     }

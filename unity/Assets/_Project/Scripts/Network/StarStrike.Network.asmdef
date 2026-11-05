@@ -1,0 +1,15 @@
+{
+    "name": "StarStrike.Network",
+    "rootNamespace": "StarStrike.Network",
+    "references": [
+        "StarStrike.Core",
+        "StarStrike.Gameplay",
+        "StarStrike.Platform",
+        "Unity.Netcode.Runtime",
+        "Unity.Networking.Transport",
+        "Unity.Collections",
+        "Unity.InputSystem",
+        "UnityEngine.UI"
+    ],
+    "autoReferenced": true
+}

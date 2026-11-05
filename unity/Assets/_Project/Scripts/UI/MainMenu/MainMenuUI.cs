@@ -77,7 +77,11 @@ namespace StarStrike.UI
                     if (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame)
                     {
                         SetMenuVisible(false);
-                        GameManager.Instance.StartGame();
+                        if (GameManager.Instance != null)
+                        {
+                            GameManager.Instance.SetGameMode(GameMode.PvE);
+                            GameManager.Instance.StartGame();
+                        }
                     }
                 }
             }
@@ -112,18 +116,33 @@ namespace StarStrike.UI
             GameObject gemsObj = CreateText(menuContainer.transform, "GemsText", "Meta-Gems: 0", 24, FontStyle.Bold, Color.cyan, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.7f), new Vector2(0.5f, 0.7f), new Vector2(-200, -30), new Vector2(200, 30), defaultFont);
             gemsText = gemsObj.GetComponent<Text>();
 
-            // Start Button
-            GameObject startBtnObj = CreateButton(menuContainer.transform, "StartButton", "START MISSION", new Vector2(0.5f, 0.18f), new Vector2(0.5f, 0.18f), Vector2.zero, new Vector2(340, 70), new Color(0.18f, 0.75f, 0.35f), defaultFont, 24);
-            startBtnObj.GetComponent<Button>().onClick.AddListener(() => {
+            // Mode 1: PvE Survival Button
+            GameObject pveBtnObj = CreateButton(menuContainer.transform, "PvEStartButton", "► PvE SURVIVAL", new Vector2(0.5f, 0.18f), new Vector2(0.5f, 0.18f), new Vector2(-155, 0), new Vector2(290, 64), new Color(0.15f, 0.70f, 0.35f), defaultFont, 22);
+            pveBtnObj.GetComponent<Button>().onClick.AddListener(() => {
                 SetMenuVisible(false);
                 if (GameManager.Instance != null)
                 {
+                    GameManager.Instance.SetGameMode(GameMode.PvE);
                     GameManager.Instance.StartGame();
                 }
             });
 
+            // Mode 2: PvP Arena Button
+            GameObject pvpBtnObj = CreateButton(menuContainer.transform, "PvPStartButton", "⚔ PvP ARENA", new Vector2(0.5f, 0.18f), new Vector2(0.5f, 0.18f), new Vector2(155, 0), new Vector2(290, 64), new Color(0.90f, 0.35f, 0.15f), defaultFont, 22);
+            pvpBtnObj.GetComponent<Button>().onClick.AddListener(() => {
+                SetMenuVisible(false);
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.SetGameMode(GameMode.PvPArena);
+                }
+                if (StarStrike.Network.ArenaLobbyUI.Instance != null)
+                {
+                    StarStrike.Network.ArenaLobbyUI.Instance.SetVisible(true);
+                }
+            });
+
             // Start Key Hint
-            CreateText(menuContainer.transform, "StartHintText", "[ Press ENTER, SPACE or Click to Launch ]", 15, FontStyle.Normal, new Color(0.85f, 0.9f, 1f, 0.9f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.10f), new Vector2(0.5f, 0.10f), new Vector2(-250, -15), new Vector2(250, 15), defaultFont);
+            CreateText(menuContainer.transform, "StartHintText", "[ ENTER / SPACE: Launch PvE  |  Or Click PvP Arena ]", 15, FontStyle.Normal, new Color(0.85f, 0.9f, 1f, 0.9f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.09f), new Vector2(0.5f, 0.09f), new Vector2(-300, -15), new Vector2(300, 15), defaultFont);
 
             // Ship Hangar
             GameObject shipHeader = CreateText(menuContainer.transform, "ShipHeader", "SELECT HANGAR SHIP", 20, FontStyle.Normal, Color.yellow, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.55f), new Vector2(0.5f, 0.55f), new Vector2(-200, -25), new Vector2(200, 25), defaultFont);

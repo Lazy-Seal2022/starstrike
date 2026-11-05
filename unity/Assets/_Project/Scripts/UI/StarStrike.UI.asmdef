@@ -5,6 +5,7 @@
         "StarStrike.Core",
         "StarStrike.Gameplay",
         "StarStrike.Platform",
+        "StarStrike.Network",
         "Unity.InputSystem",
         "UnityEngine.UI",
         "Unity.TextMeshPro"

@@ -6,6 +6,7 @@
         "StarStrike.UI",
         "StarStrike.Core",
         "StarStrike.Platform",
+        "StarStrike.Network",
         "UnityEngine.UI",
         "Unity.InputSystem"
     ],

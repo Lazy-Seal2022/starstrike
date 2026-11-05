@@ -8,7 +8,10 @@
         "StarStrike.Gameplay",
         "StarStrike.Platform",
         "StarStrike.UI",
-        "StarStrike.Editor"
+        "StarStrike.Network",
+        "StarStrike.Editor",
+        "Unity.Netcode.Runtime",
+        "Unity.Collections"
     ],
     "includePlatforms": [
         "Editor"

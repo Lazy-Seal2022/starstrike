@@ -105,7 +105,10 @@ namespace StarStrike.Gameplay
             DrawBorder();
             
             SpawnAsteroidField();
-            SpawnEnemyDrones();
+            if (GameManager.Instance == null || GameManager.Instance.CurrentMode == GameMode.PvE)
+            {
+                SpawnEnemyDrones();
+            }
         }
 
         private void SetupCamera()
@@ -183,7 +186,7 @@ namespace StarStrike.Gameplay
                 }
             }
 
-            if (!bossSpawned && GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Playing)
+            if (!bossSpawned && GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Playing && GameManager.Instance.CurrentMode == GameMode.PvE)
             {
                 gameTimer += Time.deltaTime;
                 float delay = bossConfig != null ? bossConfig.spawnDelaySeconds : 60f;
