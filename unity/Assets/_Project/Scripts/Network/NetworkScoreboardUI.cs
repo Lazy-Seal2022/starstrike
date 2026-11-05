@@ -8,9 +8,9 @@ using StarStrike.Gameplay;
 
 namespace StarStrike.Network
 {
-    public class ArenaScoreboardUI : MonoBehaviour
+    public class NetworkScoreboardUI : MonoBehaviour
     {
-        public static ArenaScoreboardUI Instance { get; private set; }
+        public static NetworkScoreboardUI Instance { get; private set; }
 
         private GameObject scoreboardContainer;
         private Transform rowsParent;
@@ -34,16 +34,16 @@ namespace StarStrike.Network
 
         private void OnEnable()
         {
-            NetworkArenaManager.OnKillFeed += HandleKillFeed;
-            NetworkArenaManager.OnMatchOver += HandleMatchOver;
-            NetworkArenaManager.OnScoreboardUpdated += RefreshLeaderboard;
+            NetworkMatchManager.OnKillFeed += HandleKillFeed;
+            NetworkMatchManager.OnMatchOver += HandleMatchOver;
+            NetworkMatchManager.OnScoreboardUpdated += RefreshLeaderboard;
         }
 
         private void OnDisable()
         {
-            NetworkArenaManager.OnKillFeed -= HandleKillFeed;
-            NetworkArenaManager.OnMatchOver -= HandleMatchOver;
-            NetworkArenaManager.OnScoreboardUpdated -= RefreshLeaderboard;
+            NetworkMatchManager.OnKillFeed -= HandleKillFeed;
+            NetworkMatchManager.OnMatchOver -= HandleMatchOver;
+            NetworkMatchManager.OnScoreboardUpdated -= RefreshLeaderboard;
         }
 
         public void SetVisible(bool visible)
@@ -64,7 +64,7 @@ namespace StarStrike.Network
             // Toggle scoreboard details with Tab key
             if (Keyboard.current != null && Keyboard.current.tabKey.wasPressedThisFrame)
             {
-                if (scoreboardContainer != null && GameManager.Instance != null && GameManager.Instance.CurrentMode == GameMode.PvPArena)
+                if (scoreboardContainer != null && GameManager.Instance != null && GameManager.Instance.CurrentMode == GameMode.PvP)
                 {
                     scoreboardContainer.SetActive(!scoreboardContainer.activeSelf);
                     if (scoreboardContainer.activeSelf) RefreshLeaderboard();
@@ -91,14 +91,14 @@ namespace StarStrike.Network
                 victoryModal.SetActive(true);
                 if (victoryWinnerText != null)
                 {
-                    victoryWinnerText.text = $"ARENA CHAMPION\n<color=#ffcc00>{winner}</color>\nREACHED 10 KILLS!";
+                    victoryWinnerText.text = $"MATCH CHAMPION\n<color=#ffcc00>{winner}</color>\nREACHED 10 KILLS!";
                 }
             }
         }
 
         public void RefreshLeaderboard()
         {
-            if (rowsParent == null || NetworkArenaManager.Instance == null || NetworkArenaManager.Instance.Scoreboard == null) return;
+            if (rowsParent == null || NetworkMatchManager.Instance == null || NetworkMatchManager.Instance.Scoreboard == null) return;
 
             // Clear rows
             foreach (Transform child in rowsParent)
@@ -108,11 +108,11 @@ namespace StarStrike.Network
 
             Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
 
-            // Convert scoreboard to list and sort by kills/score descending
-            List<ArenaScoreEntry> sorted = new List<ArenaScoreEntry>();
-            for (int i = 0; i < NetworkArenaManager.Instance.Scoreboard.Count; i++)
+            // Convert scoreboard to list and sort by score descending
+            List<NetworkScoreEntry> sorted = new List<NetworkScoreEntry>();
+            for (int i = 0; i < NetworkMatchManager.Instance.Scoreboard.Count; i++)
             {
-                sorted.Add(NetworkArenaManager.Instance.Scoreboard[i]);
+                sorted.Add(NetworkMatchManager.Instance.Scoreboard[i]);
             }
             sorted.Sort((a, b) => b.Score.CompareTo(a.Score));
 
@@ -128,7 +128,7 @@ namespace StarStrike.Network
         {
             Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
 
-            scoreboardContainer = new GameObject("ArenaScoreboardContainer", typeof(RectTransform));
+            scoreboardContainer = new GameObject("NetworkScoreboardContainer", typeof(RectTransform));
             scoreboardContainer.transform.SetParent(transform, false);
             RectTransform rt = scoreboardContainer.GetComponent<RectTransform>();
             rt.anchorMin = Vector2.zero;
@@ -151,7 +151,7 @@ namespace StarStrike.Network
             boardCard.GetComponent<Image>().color = new Color(0.05f, 0.08f, 0.16f, 0.85f);
 
             // Leaderboard Header
-            CreateText(boardCard.transform, "Header", "PVP ARENA LEADERBOARD [TAB]", 14, FontStyle.Bold, Color.yellow, TextAnchor.MiddleCenter, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, -28), Vector2.zero, defaultFont);
+            CreateText(boardCard.transform, "Header", "MULTIPLAYER LEADERBOARD [TAB]", 14, FontStyle.Bold, Color.yellow, TextAnchor.MiddleCenter, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, -28), Vector2.zero, defaultFont);
 
             // Rows Container
             GameObject rowsObj = new GameObject("RowsContainer", typeof(RectTransform));
@@ -169,7 +169,7 @@ namespace StarStrike.Network
 
         private void BuildVictoryModal(Font font)
         {
-            victoryModal = new GameObject("ArenaVictoryModal", typeof(RectTransform), typeof(Image));
+            victoryModal = new GameObject("NetworkVictoryModal", typeof(RectTransform), typeof(Image));
             victoryModal.transform.SetParent(scoreboardContainer.transform, false);
             RectTransform vmRt = victoryModal.GetComponent<RectTransform>();
             vmRt.anchorMin = new Vector2(0.5f, 0.5f);
@@ -179,7 +179,7 @@ namespace StarStrike.Network
             victoryModal.GetComponent<Image>().color = new Color(0.04f, 0.07f, 0.14f, 0.96f);
 
             // Title & Winner Text
-            GameObject winObj = CreateText(victoryModal.transform, "WinnerText", "ARENA CHAMPION\nWINNER!\nREACHED 10 KILLS!", 24, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.65f), new Vector2(0.5f, 0.65f), new Vector2(-220, -60), new Vector2(220, 60), font);
+            GameObject winObj = CreateText(victoryModal.transform, "WinnerText", "MATCH CHAMPION\nWINNER!\nREACHED 10 KILLS!", 24, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.65f), new Vector2(0.5f, 0.65f), new Vector2(-220, -60), new Vector2(220, 60), font);
             victoryWinnerText = winObj.GetComponent<Text>();
 
             // Return to Menu Button
@@ -197,9 +197,9 @@ namespace StarStrike.Network
             Button btn = retBtnObj.GetComponent<Button>();
             btn.onClick.AddListener(() =>
             {
-                if (NetworkArenaManager.Instance != null)
+                if (NetworkMatchManager.Instance != null)
                 {
-                    NetworkArenaManager.Instance.DisconnectAndReturnToMenu();
+                    NetworkMatchManager.Instance.DisconnectAndReturnToMenu();
                 }
                 SetVisible(false);
             });

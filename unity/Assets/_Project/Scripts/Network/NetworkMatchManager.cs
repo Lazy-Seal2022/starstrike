@@ -10,9 +10,9 @@ using StarStrike.Gameplay.Audio;
 
 namespace StarStrike.Network
 {
-    public class NetworkArenaManager : NetworkBehaviour
+    public class NetworkMatchManager : NetworkBehaviour
     {
-        public static NetworkArenaManager Instance { get; private set; }
+        public static NetworkMatchManager Instance { get; private set; }
 
         public static event Action<string, string> OnKillFeed;
         public static event Action<string> OnMatchOver;
@@ -20,13 +20,13 @@ namespace StarStrike.Network
 
         [Header("Match Settings")]
         public int killsToWin = 10;
-        public float arenaRadius = 35f;
+        public float spawnRadius = 35f;
         public int maxSlots = 8;
 
         [Header("Prefabs")]
         public GameObject networkPlayerShipPrefab;
 
-        public NetworkList<ArenaScoreEntry> Scoreboard { get; private set; }
+        public NetworkList<NetworkScoreEntry> Scoreboard { get; private set; }
 
         public NetworkVariable<bool> MatchEnded = new NetworkVariable<bool>(
             false,
@@ -47,7 +47,7 @@ namespace StarStrike.Network
             }
             Instance = this;
 
-            Scoreboard = new NetworkList<ArenaScoreEntry>(
+            Scoreboard = new NetworkList<NetworkScoreEntry>(
                 null,
                 NetworkVariableReadPermission.Everyone,
                 NetworkVariableWritePermission.Server);
@@ -82,7 +82,7 @@ namespace StarStrike.Network
             base.OnNetworkDespawn();
         }
 
-        private void HandleScoreboardListChanged(NetworkListEvent<ArenaScoreEntry> changeEvent)
+        private void HandleScoreboardListChanged(NetworkListEvent<NetworkScoreEntry> changeEvent)
         {
             OnScoreboardUpdated?.Invoke();
         }
@@ -127,7 +127,7 @@ namespace StarStrike.Network
         {
             if (!IsServer) return;
 
-            ArenaScoreEntry entry = new ArenaScoreEntry
+            NetworkScoreEntry entry = new NetworkScoreEntry
             {
                 ClientId = clientId,
                 PlayerName = new FixedString32Bytes(playerName),
@@ -172,10 +172,10 @@ namespace StarStrike.Network
             }
         }
 
-        public Vector2 GetArenaSpawnPoint(ulong clientId, int totalSlots = 8, float radius = 35f)
+        public Vector2 GetSpawnPoint(ulong clientId, int totalSlots = 8, float radius = 35f)
         {
             int slots = totalSlots > 0 ? totalSlots : maxSlots;
-            float r = radius > 0 ? radius : arenaRadius;
+            float r = radius > 0 ? radius : spawnRadius;
             float angle = (clientId % (ulong)Mathf.Max(1, slots)) * (2f * Mathf.PI / slots);
             return new Vector2(Mathf.Cos(angle) * r, Mathf.Sin(angle) * r);
         }

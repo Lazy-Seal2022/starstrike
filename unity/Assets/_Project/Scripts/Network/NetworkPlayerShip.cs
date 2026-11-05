@@ -267,9 +267,9 @@ namespace StarStrike.Network
                 NetworkShield.Value = 0f;
                 NetworkIsDead.Value = true;
 
-                if (NetworkArenaManager.Instance != null)
+                if (NetworkMatchManager.Instance != null)
                 {
-                    NetworkArenaManager.Instance.RecordKill(attackerClientId, OwnerClientId);
+                    NetworkMatchManager.Instance.RecordKill(attackerClientId, OwnerClientId);
                 }
 
                 PlayExplosionClientRpc(transform.position);
@@ -283,9 +283,9 @@ namespace StarStrike.Network
             yield return new WaitForSeconds(3.0f);
 
             Vector2 spawnPos = Vector2.zero;
-            if (NetworkArenaManager.Instance != null)
+            if (NetworkMatchManager.Instance != null)
             {
-                spawnPos = NetworkArenaManager.Instance.GetArenaSpawnPoint(OwnerClientId);
+                spawnPos = NetworkMatchManager.Instance.GetSpawnPoint(OwnerClientId);
             }
 
             transform.position = spawnPos;

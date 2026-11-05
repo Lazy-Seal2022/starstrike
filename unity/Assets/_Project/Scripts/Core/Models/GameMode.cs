@@ -2,7 +2,8 @@ namespace StarStrike.Core
 {
     public enum GameMode
     {
-        PvE,        // Classic Survival & Exploration (Asteroids, Drones, Boss)
-        PvPArena    // Online / LAN Free-For-All Arena Combat
+        PvE = 0,        // Single-Player Survival & Exploration (Asteroids, Drones, Boss)
+        PvP = 1,        // Online / LAN Multiplayer Dogfight Combat
+        PvPArena = PvP  // Backward-compatible alias
     }
 }

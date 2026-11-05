@@ -9,7 +9,7 @@ using StarStrike.Network;
 namespace StarStrike.Tests.EditMode
 {
     [TestFixture]
-    public class PvPArenaTests
+    public class MultiplayerTests
     {
         private GameObject testObject;
 
@@ -26,21 +26,21 @@ namespace StarStrike.Tests.EditMode
         public void GameMode_EnumValues_ExistAndDefaultIsPvE()
         {
             Assert.AreEqual(0, (int)GameMode.PvE);
-            Assert.AreEqual(1, (int)GameMode.PvPArena);
+            Assert.AreEqual(1, (int)GameMode.PvP);
 
             testObject = new GameObject("GameManager_Test");
             var gm = testObject.AddComponent<GameManager>();
 
             Assert.AreEqual(GameMode.PvE, gm.CurrentMode);
 
-            gm.SetGameMode(GameMode.PvPArena);
-            Assert.AreEqual(GameMode.PvPArena, gm.CurrentMode);
+            gm.SetGameMode(GameMode.PvP);
+            Assert.AreEqual(GameMode.PvP, gm.CurrentMode);
         }
 
         [Test]
-        public void ArenaScoreEntry_FieldsAndEquality_WorkCorrectly()
+        public void NetworkScoreEntry_FieldsAndEquality_WorkCorrectly()
         {
-            var entry1 = new ArenaScoreEntry
+            var entry1 = new NetworkScoreEntry
             {
                 ClientId = 1,
                 PlayerName = new FixedString32Bytes("Viper"),
@@ -50,7 +50,7 @@ namespace StarStrike.Tests.EditMode
                 Score = 500
             };
 
-            var entry2 = new ArenaScoreEntry
+            var entry2 = new NetworkScoreEntry
             {
                 ClientId = 1,
                 PlayerName = new FixedString32Bytes("ViperUpdated"),
@@ -60,7 +60,7 @@ namespace StarStrike.Tests.EditMode
                 Score = 600
             };
 
-            var entry3 = new ArenaScoreEntry
+            var entry3 = new NetworkScoreEntry
             {
                 ClientId = 2,
                 PlayerName = new FixedString32Bytes("Ace"),
@@ -76,17 +76,17 @@ namespace StarStrike.Tests.EditMode
         }
 
         [Test]
-        public void NetworkArenaManager_SpawnMath_DistributesEquallyAroundRadius()
+        public void NetworkMatchManager_SpawnMath_DistributesEquallyAroundRadius()
         {
-            testObject = new GameObject("ArenaManager_Test");
-            var arenaMgr = testObject.AddComponent<NetworkArenaManager>();
+            testObject = new GameObject("MatchManager_Test");
+            var matchMgr = testObject.AddComponent<NetworkMatchManager>();
 
             float radius = 35f;
             int totalSlots = 8;
 
-            Vector2 p0 = arenaMgr.GetArenaSpawnPoint(0, totalSlots, radius);
-            Vector2 p2 = arenaMgr.GetArenaSpawnPoint(2, totalSlots, radius);
-            Vector2 p4 = arenaMgr.GetArenaSpawnPoint(4, totalSlots, radius);
+            Vector2 p0 = matchMgr.GetSpawnPoint(0, totalSlots, radius);
+            Vector2 p2 = matchMgr.GetSpawnPoint(2, totalSlots, radius);
+            Vector2 p4 = matchMgr.GetSpawnPoint(4, totalSlots, radius);
 
             // Radius distance check
             Assert.AreEqual(radius, p0.magnitude, 0.01f);

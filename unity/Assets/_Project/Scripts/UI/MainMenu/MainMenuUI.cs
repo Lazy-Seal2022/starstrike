@@ -127,22 +127,22 @@ namespace StarStrike.UI
                 }
             });
 
-            // Mode 2: PvP Arena Button
-            GameObject pvpBtnObj = CreateButton(menuContainer.transform, "PvPStartButton", "⚔ PvP ARENA", new Vector2(0.5f, 0.18f), new Vector2(0.5f, 0.18f), new Vector2(155, 0), new Vector2(290, 64), new Color(0.90f, 0.35f, 0.15f), defaultFont, 22);
+            // Mode 2: Multiplayer PvP Button
+            GameObject pvpBtnObj = CreateButton(menuContainer.transform, "PvPStartButton", "⚔ MULTIPLAYER PvP", new Vector2(0.5f, 0.18f), new Vector2(0.5f, 0.18f), new Vector2(155, 0), new Vector2(290, 64), new Color(0.90f, 0.35f, 0.15f), defaultFont, 22);
             pvpBtnObj.GetComponent<Button>().onClick.AddListener(() => {
                 SetMenuVisible(false);
                 if (GameManager.Instance != null)
                 {
-                    GameManager.Instance.SetGameMode(GameMode.PvPArena);
+                    GameManager.Instance.SetGameMode(GameMode.PvP);
                 }
-                if (StarStrike.Network.ArenaLobbyUI.Instance != null)
+                if (StarStrike.Network.NetworkLobbyUI.Instance != null)
                 {
-                    StarStrike.Network.ArenaLobbyUI.Instance.SetVisible(true);
+                    StarStrike.Network.NetworkLobbyUI.Instance.SetVisible(true);
                 }
             });
 
             // Start Key Hint
-            CreateText(menuContainer.transform, "StartHintText", "[ ENTER / SPACE: Launch PvE  |  Or Click PvP Arena ]", 15, FontStyle.Normal, new Color(0.85f, 0.9f, 1f, 0.9f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.09f), new Vector2(0.5f, 0.09f), new Vector2(-300, -15), new Vector2(300, 15), defaultFont);
+            CreateText(menuContainer.transform, "StartHintText", "[ ENTER / SPACE: Launch PvE  |  Or Click Multiplayer PvP ]", 15, FontStyle.Normal, new Color(0.85f, 0.9f, 1f, 0.9f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.09f), new Vector2(0.5f, 0.09f), new Vector2(-300, -15), new Vector2(300, 15), defaultFont);
 
             // Ship Hangar
             GameObject shipHeader = CreateText(menuContainer.transform, "ShipHeader", "SELECT HANGAR SHIP", 20, FontStyle.Normal, Color.yellow, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.55f), new Vector2(0.5f, 0.55f), new Vector2(-200, -25), new Vector2(200, 25), defaultFont);

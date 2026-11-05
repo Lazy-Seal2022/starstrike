@@ -5,7 +5,7 @@ using Unity.Netcode;
 namespace StarStrike.Network
 {
     [Serializable]
-    public struct ArenaScoreEntry : INetworkSerializable, IEquatable<ArenaScoreEntry>
+    public struct NetworkScoreEntry : INetworkSerializable, IEquatable<NetworkScoreEntry>
     {
         public ulong ClientId;
         public FixedString32Bytes PlayerName;
@@ -24,14 +24,14 @@ namespace StarStrike.Network
             serializer.SerializeValue(ref Score);
         }
 
-        public bool Equals(ArenaScoreEntry other)
+        public bool Equals(NetworkScoreEntry other)
         {
             return ClientId == other.ClientId;
         }
 
         public override bool Equals(object obj)
         {
-            return obj is ArenaScoreEntry other && Equals(other);
+            return obj is NetworkScoreEntry other && Equals(other);
         }
 
         public override int GetHashCode()

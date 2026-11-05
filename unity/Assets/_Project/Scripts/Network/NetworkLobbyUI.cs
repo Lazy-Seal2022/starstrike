@@ -10,9 +10,9 @@ using StarStrike.Platform.Storage;
 
 namespace StarStrike.Network
 {
-    public class ArenaLobbyUI : MonoBehaviour
+    public class NetworkLobbyUI : MonoBehaviour
     {
-        public static ArenaLobbyUI Instance { get; private set; }
+        public static NetworkLobbyUI Instance { get; private set; }
 
         private GameObject lobbyContainer;
         private InputField nameInput;
@@ -52,7 +52,7 @@ namespace StarStrike.Network
         {
             Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
 
-            lobbyContainer = new GameObject("ArenaLobbyContainer", typeof(RectTransform));
+            lobbyContainer = new GameObject("NetworkLobbyContainer", typeof(RectTransform));
             lobbyContainer.transform.SetParent(transform, false);
             RectTransform rt = lobbyContainer.GetComponent<RectTransform>();
             rt.anchorMin = Vector2.zero;
@@ -71,10 +71,10 @@ namespace StarStrike.Network
             bgObj.GetComponent<Image>().color = new Color(0.03f, 0.05f, 0.10f, 0.90f);
 
             // Title
-            CreateText(lobbyContainer.transform, "TitleText", "PVP ARENA DOGFIGHT", 44, FontStyle.Bold, new Color(1f, 0.35f, 0.2f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.85f), new Vector2(0.5f, 0.85f), new Vector2(-300, -35), new Vector2(300, 35), defaultFont);
+            CreateText(lobbyContainer.transform, "TitleText", "MULTIPLAYER DOGFIGHT", 44, FontStyle.Bold, new Color(1f, 0.35f, 0.2f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.85f), new Vector2(0.5f, 0.85f), new Vector2(-300, -35), new Vector2(300, 35), defaultFont);
 
             // Subtitle
-            CreateText(lobbyContainer.transform, "SubtitleText", "FREE-FOR-ALL MULTIPLAYER COMBAT", 18, FontStyle.Normal, Color.cyan, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.78f), new Vector2(0.5f, 0.78f), new Vector2(-250, -20), new Vector2(250, 20), defaultFont);
+            CreateText(lobbyContainer.transform, "SubtitleText", "ONLINE & LAN FREE-FOR-ALL COMBAT", 18, FontStyle.Normal, Color.cyan, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.78f), new Vector2(0.5f, 0.78f), new Vector2(-250, -20), new Vector2(250, 20), defaultFont);
 
             // Pilot Name Label & Input
             CreateText(lobbyContainer.transform, "NameLabel", "PILOT CALL-SIGN:", 16, FontStyle.Bold, Color.white, TextAnchor.MiddleRight, new Vector2(0.35f, 0.68f), new Vector2(0.35f, 0.68f), new Vector2(-150, -20), new Vector2(0, 20), defaultFont);
@@ -93,10 +93,10 @@ namespace StarStrike.Network
             statusText = stObj.GetComponent<Text>();
 
             // Buttons: Host, Join, Back
-            GameObject hostBtnObj = CreateButton(lobbyContainer.transform, "HostBtn", "HOST ARENA", new Vector2(0.32f, 0.25f), new Vector2(0.32f, 0.25f), Vector2.zero, new Vector2(200, 55), new Color(0.85f, 0.3f, 0.15f), defaultFont, 20);
+            GameObject hostBtnObj = CreateButton(lobbyContainer.transform, "HostBtn", "HOST MATCH", new Vector2(0.32f, 0.25f), new Vector2(0.32f, 0.25f), Vector2.zero, new Vector2(200, 55), new Color(0.85f, 0.3f, 0.15f), defaultFont, 20);
             hostBtnObj.GetComponent<Button>().onClick.AddListener(OnHostClicked);
 
-            GameObject joinBtnObj = CreateButton(lobbyContainer.transform, "JoinBtn", "JOIN ARENA", new Vector2(0.52f, 0.25f), new Vector2(0.52f, 0.25f), Vector2.zero, new Vector2(200, 55), new Color(0.18f, 0.65f, 0.35f), defaultFont, 20);
+            GameObject joinBtnObj = CreateButton(lobbyContainer.transform, "JoinBtn", "JOIN MATCH", new Vector2(0.52f, 0.25f), new Vector2(0.52f, 0.25f), Vector2.zero, new Vector2(200, 55), new Color(0.18f, 0.65f, 0.35f), defaultFont, 20);
             joinBtnObj.GetComponent<Button>().onClick.AddListener(OnJoinClicked);
 
             GameObject backBtnObj = CreateButton(lobbyContainer.transform, "BackBtn", "BACK TO MENU", new Vector2(0.72f, 0.25f), new Vector2(0.72f, 0.25f), Vector2.zero, new Vector2(200, 55), new Color(0.3f, 0.35f, 0.45f), defaultFont, 18);
@@ -122,7 +122,7 @@ namespace StarStrike.Network
                 bool success = NetworkManager.Singleton.StartHost();
                 if (success)
                 {
-                    statusText.text = $"Hosting Arena on port {port}...";
+                    statusText.text = $"Hosting match on port {port}...";
                     OnSessionStarted(pilotName);
                 }
                 else
@@ -172,15 +172,15 @@ namespace StarStrike.Network
 
             if (GameManager.Instance != null)
             {
-                GameManager.Instance.SetGameMode(GameMode.PvPArena);
+                GameManager.Instance.SetGameMode(GameMode.PvP);
                 GameManager.Instance.ChangeState(GameState.Playing);
             }
 
             SetVisible(false);
 
-            if (ArenaScoreboardUI.Instance != null)
+            if (NetworkScoreboardUI.Instance != null)
             {
-                ArenaScoreboardUI.Instance.SetVisible(true);
+                NetworkScoreboardUI.Instance.SetVisible(true);
             }
 
             // Sync pilot info after connection
@@ -194,10 +194,10 @@ namespace StarStrike.Network
                 yield return null;
             }
 
-            if (NetworkArenaManager.Instance != null && NetworkManager.Singleton != null)
+            if (NetworkMatchManager.Instance != null && NetworkManager.Singleton != null)
             {
                 ulong localId = NetworkManager.Singleton.LocalClientId;
-                NetworkArenaManager.Instance.SubmitPilotProfileServerRpc(
+                NetworkMatchManager.Instance.SubmitPilotProfileServerRpc(
                     localId,
                     new FixedString32Bytes(pilotName),
                     new FixedString32Bytes(selectedShipId));
@@ -241,10 +241,10 @@ namespace StarStrike.Network
                 }
             }
 
-            if (NetworkArenaManager.Instance == null)
+            if (NetworkMatchManager.Instance == null)
             {
-                var arenaMgrObj = new GameObject("NetworkArenaManager", typeof(NetworkArenaManager), typeof(NetworkObject));
-                var netObj = arenaMgrObj.GetComponent<NetworkObject>();
+                var matchMgrObj = new GameObject("NetworkMatchManager", typeof(NetworkMatchManager), typeof(NetworkObject));
+                var netObj = matchMgrObj.GetComponent<NetworkObject>();
                 if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer && !netObj.IsSpawned)
                 {
                     netObj.Spawn();
