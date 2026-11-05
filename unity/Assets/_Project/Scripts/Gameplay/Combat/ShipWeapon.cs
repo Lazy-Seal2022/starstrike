@@ -1,9 +1,13 @@
 using UnityEngine;
+using StarStrike.Core;
 
 namespace StarStrike.Gameplay
 {
     public class ShipWeapon : MonoBehaviour
     {
+        [Header("Configuration")]
+        public CombatConfig combatConfig;
+
         [Header("Stats")]
         public float pulseDamage = 18f;
         public float pulseSpeed = 22f;
@@ -18,6 +22,9 @@ namespace StarStrike.Gameplay
 
         private void Awake()
         {
+            if (combatConfig == null) combatConfig = Resources.Load<CombatConfig>("Data/CombatConfig");
+            if (combatConfig == null) combatConfig = ScriptableObject.CreateInstance<CombatConfig>();
+
             rb = GetComponent<Rigidbody2D>();
             if (CompareTag("Player") || gameObject.name == "Player")
             {
@@ -38,16 +45,19 @@ namespace StarStrike.Gameplay
             
             StarStrike.Gameplay.Audio.AudioService.Instance?.PlaySound(isPlayer ? "laser" : "enemy_laser", 0.4f);
 
-            if (rb != null)
+            float recoil = combatConfig != null ? combatConfig.recoilForce : 1.5f;
+            if (rb != null && recoil > 0f)
             {
-                rb.AddForce(-transform.right * 1.5f, ForceMode2D.Impulse);
+                rb.AddForce(-transform.right * recoil, ForceMode2D.Impulse);
             }
 
-            float[] offsets = weaponSlots == 2 ? new float[] { -0.3f, 0.3f } : new float[] { 0f };
+            float spread = combatConfig != null ? combatConfig.dualWeaponSpread : 0.3f;
+            float fwd = combatConfig != null ? combatConfig.muzzleForwardOffset : 0.65f;
+            float[] offsets = weaponSlots == 2 ? new float[] { -spread, spread } : new float[] { 0f };
 
             foreach (float offset in offsets)
             {
-                Vector2 nose = (Vector2)transform.position + (Vector2)transform.right * 0.65f + (Vector2)transform.up * offset;
+                Vector2 nose = (Vector2)transform.position + (Vector2)transform.right * fwd + (Vector2)transform.up * offset;
                 
                 string poolTag = isPlayer ? "PlayerLaser" : "EnemyLaser";
                 

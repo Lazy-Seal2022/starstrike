@@ -6,6 +6,10 @@ namespace StarStrike.Gameplay
     [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
     public class LaserProjectile : MonoBehaviour
     {
+        [Header("Configuration")]
+        public CombatConfig combatConfig;
+
+        [Header("Stats")]
         public float damage = 18f;
         public bool isEnemy = false;
         public float speed = 25f;
@@ -20,6 +24,11 @@ namespace StarStrike.Gameplay
 
         public void SetupPhysics()
         {
+            if (combatConfig == null) combatConfig = Resources.Load<CombatConfig>("Data/CombatConfig");
+            if (combatConfig == null) combatConfig = ScriptableObject.CreateInstance<CombatConfig>();
+
+            lifetime = combatConfig.projectileLifetime;
+
             rb = GetComponent<Rigidbody2D>();
             if (rb != null)
             {
@@ -31,7 +40,7 @@ namespace StarStrike.Gameplay
             if (col != null)
             {
                 col.isTrigger = true;
-                col.radius = 0.35f;
+                col.radius = combatConfig.laserColliderRadius;
             }
         }
 

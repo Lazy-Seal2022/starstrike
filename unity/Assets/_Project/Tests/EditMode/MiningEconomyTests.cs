@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using UnityEngine;
+using StarStrike.Core;
 using StarStrike.Gameplay;
 
 namespace StarStrike.Tests.EditMode

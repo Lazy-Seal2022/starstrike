@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9430f6624d4d6e4ea46eeec93c786d4, type: 3}
+  m_Name: GameConfig
+  m_EditorClassIdentifier: StarStrike.Core::StarStrike.Core.GameConfig
+  worldWidth: 140
+  worldHeight: 140
+  asteroidCount: 50
+  initialDroneCount: 6
+  baseFriction: 0.985
+  maxVelocity: 500
+  rotationSpeed: 0.08
+  gemMagnetRadius: 6.5
+  gemMagnetSpeed: 14
+  upgradeBaseCost: 10
+  upgradeCostMultiplier: 1.6
+  flightConfig: {fileID: 11400000, guid: b5bdd178616ad6c488a241fb781b6b1a, type: 2}
+  combatConfig: {fileID: 11400000, guid: 5da745baecf0f9d40835ece5253960e6, type: 2}
+  asteroidConfig: {fileID: 11400000, guid: 34daf776c7164494bbb5b55d181f6367, type: 2}
+  bossConfig: {fileID: 11400000, guid: 3b2fd5486fd22ba449b720210354ef67, type: 2}
+  lootConfig: {fileID: 11400000, guid: b46690167ae5cab4499b3c830166f4cf, type: 2}
+  upgradeDefinition: {fileID: 11400000, guid: fe4b7e646ab734d4fab33a2783cc82c7, type: 2}
+  defaultShip: {fileID: 11400000, guid: 1f7b9d0ca0570064ca2506011046c62b, type: 2}

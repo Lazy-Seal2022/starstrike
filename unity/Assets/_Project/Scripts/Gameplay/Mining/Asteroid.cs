@@ -3,11 +3,13 @@ using UnityEngine;
 
 namespace StarStrike.Gameplay
 {
-    public enum AsteroidTier { Large, Medium, Small }
-
     [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
     public class Asteroid : MonoBehaviour, IDamageable
     {
+        [Header("Configuration")]
+        public AsteroidConfig config;
+
+        [Header("State")]
         public AsteroidTier tier = AsteroidTier.Large;
         public float currentHp;
         public float maxHp = 120f;
@@ -31,31 +33,20 @@ namespace StarStrike.Gameplay
 
         public void SetupStats()
         {
-            float scale = 1.6f;
-            if (tier == AsteroidTier.Large)
-            {
-                maxHp = 120f;
-                gemDropCount = 8;
-                scale = 2.2f;
-            }
-            else if (tier == AsteroidTier.Medium)
-            {
-                maxHp = 50f;
-                gemDropCount = 4;
-                scale = 1.3f;
-            }
-            else // Small
-            {
-                maxHp = 20f;
-                gemDropCount = 1;
-                scale = 0.75f;
-            }
+            if (config == null) config = Resources.Load<AsteroidConfig>("Data/AsteroidConfig");
+            if (config == null) config = ScriptableObject.CreateInstance<AsteroidConfig>();
+
+            AsteroidTierData data = config.GetTierData(tier);
+            maxHp = data.maxHp;
+            gemDropCount = data.gemDropCount;
+            float scale = data.visualScale;
 
             currentHp = maxHp;
             transform.localScale = Vector3.one * scale;
 
             CircleCollider2D col = GetComponent<CircleCollider2D>();
-            col.radius = 0.45f;
+            if (col == null) col = gameObject.AddComponent<CircleCollider2D>();
+            col.radius = data.colliderRadius;
 
             SpriteRenderer sr = GetComponent<SpriteRenderer>();
             if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
@@ -112,7 +103,8 @@ namespace StarStrike.Gameplay
             }
             
             // Rare chance to drop a powerup
-            if (Random.value < 0.05f) // 5% chance
+            float puChance = config != null ? config.powerUpDropChance : 0.05f;
+            if (Random.value < puChance)
             {
                 Vector3 puPos = transform.position + (Vector3)(Random.insideUnitCircle * 0.5f);
                 if (PoolManager.Instance != null) {
@@ -129,15 +121,14 @@ namespace StarStrike.Gameplay
             }
 
             // 2. Fracture into smaller asteroids
+            int splitCount = config != null ? config.fractureSplitCount : 2;
             if (tier == AsteroidTier.Large)
             {
-                SpawnChildAsteroid(AsteroidTier.Medium);
-                SpawnChildAsteroid(AsteroidTier.Medium);
+                for (int i = 0; i < splitCount; i++) SpawnChildAsteroid(AsteroidTier.Medium);
             }
             else if (tier == AsteroidTier.Medium)
             {
-                SpawnChildAsteroid(AsteroidTier.Small);
-                SpawnChildAsteroid(AsteroidTier.Small);
+                for (int i = 0; i < splitCount; i++) SpawnChildAsteroid(AsteroidTier.Small);
             }
 
             gameObject.SetActive(false);
@@ -163,12 +154,16 @@ namespace StarStrike.Gameplay
             Asteroid ast = child.GetComponent<Asteroid>();
             if (ast == null) ast = child.AddComponent<Asteroid>();
             ast.tier = childTier;
+            ast.config = config;
             ast.SetupStats();
             ast.hasCustomInitialVelocity = true;
 
+            float minSpd = config != null ? config.minChildSpeed : 2.0f;
+            float maxSpd = config != null ? config.maxChildSpeed : 4.5f;
+
             Rigidbody2D cRb = child.GetComponent<Rigidbody2D>();
             cRb.angularVelocity = Random.Range(-60f, 60f);
-            cRb.linearVelocity = Random.insideUnitCircle.normalized * Random.Range(2f, 4.5f);
+            cRb.linearVelocity = Random.insideUnitCircle.normalized * Random.Range(minSpd, maxSpd);
         }
     }
 }

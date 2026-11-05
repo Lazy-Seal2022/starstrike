@@ -15,16 +15,8 @@ ACTION="${1:-pull}"
 if [ "$ACTION" = "push" ]; then
     echo "==> Pushing changes from WSL repo ($UNITY_REPO) to Windows ($WIN_UNITY)..."
     rsync -av --delete \
-        --exclude="Library/" \
-        --exclude="Temp/" \
-        --exclude="Logs/" \
-        --exclude="UserSettings/" \
-        --exclude="Build/" \
-        --exclude="Builds/" \
-        --exclude=".vs/" \
-        --exclude=".idea/" \
-        --exclude="*.csproj" \
-        --exclude="*.sln" \
+        --exclude=".DS_Store" \
+        --exclude="Thumbs.db" \
         "$UNITY_REPO/Assets/" "$WIN_UNITY/Assets/"
 
     rsync -av "$UNITY_REPO/Packages/" "$WIN_UNITY/Packages/"
@@ -34,16 +26,8 @@ if [ "$ACTION" = "push" ]; then
 elif [ "$ACTION" = "pull" ]; then
     echo "==> Pulling changes from Windows ($WIN_UNITY) to WSL repo ($UNITY_REPO)..."
     rsync -av --delete \
-        --exclude="Library/" \
-        --exclude="Temp/" \
-        --exclude="Logs/" \
-        --exclude="UserSettings/" \
-        --exclude="Build/" \
-        --exclude="Builds/" \
-        --exclude=".vs/" \
-        --exclude=".idea/" \
-        --exclude="*.csproj" \
-        --exclude="*.sln" \
+        --exclude=".DS_Store" \
+        --exclude="Thumbs.db" \
         "$WIN_UNITY/Assets/" "$UNITY_REPO/Assets/"
 
     rsync -av "$WIN_UNITY/Packages/" "$UNITY_REPO/Packages/"

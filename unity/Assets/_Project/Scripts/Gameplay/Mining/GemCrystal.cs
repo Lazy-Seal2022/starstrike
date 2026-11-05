@@ -6,6 +6,10 @@ namespace StarStrike.Gameplay
     [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
     public class GemCrystal : MonoBehaviour
     {
+        [Header("Configuration")]
+        public LootConfig lootConfig;
+
+        [Header("Stats")]
         public int gemValue = 1;
         public float magnetRadius = 6.5f;
         public float magnetSpeed = 14f;
@@ -15,13 +19,20 @@ namespace StarStrike.Gameplay
 
         private void Awake()
         {
+            if (lootConfig == null) lootConfig = Resources.Load<LootConfig>("Data/LootConfig");
+            if (lootConfig == null) lootConfig = ScriptableObject.CreateInstance<LootConfig>();
+
+            gemValue = lootConfig.defaultGemValue;
+            magnetRadius = lootConfig.magnetRadius;
+            magnetSpeed = lootConfig.magnetSpeed;
+
             rb = GetComponent<Rigidbody2D>();
             rb.gravityScale = 0f;
             rb.linearDamping = 1.2f;
 
             CircleCollider2D col = GetComponent<CircleCollider2D>();
             col.isTrigger = true;
-            col.radius = 0.5f;
+            col.radius = lootConfig.gemColliderRadius;
             tag = "Gem";
 
             SpriteRenderer sr = GetComponent<SpriteRenderer>();
@@ -40,7 +51,9 @@ namespace StarStrike.Gameplay
 
             // Small initial ejection impulse
             Vector2 randomDir = Random.insideUnitCircle.normalized;
-            rb.linearVelocity = randomDir * Random.Range(1.5f, 4f);
+            float minSpd = lootConfig != null ? lootConfig.minEjectionSpeed : 1.5f;
+            float maxSpd = lootConfig != null ? lootConfig.maxEjectionSpeed : 4.0f;
+            rb.linearVelocity = randomDir * Random.Range(minSpd, maxSpd);
         }
 
         private void Update()

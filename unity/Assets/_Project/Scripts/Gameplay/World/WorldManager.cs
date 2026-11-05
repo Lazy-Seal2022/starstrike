@@ -8,6 +8,7 @@ namespace StarStrike.Gameplay
     {
         [Header("References")]
         public GameConfig config;
+        public BossConfig bossConfig;
         public Transform playerTransform;
 
         [Header("World Dimensions")]
@@ -53,6 +54,19 @@ namespace StarStrike.Gameplay
             if (config == null)
             {
                 config = Resources.Load<GameConfig>("Data/GameConfig");
+            }
+
+            if (bossConfig == null && config != null)
+            {
+                bossConfig = config.bossConfig;
+            }
+            if (bossConfig == null)
+            {
+                bossConfig = Resources.Load<BossConfig>("Data/BossConfig");
+            }
+            if (bossConfig == null)
+            {
+                bossConfig = ScriptableObject.CreateInstance<BossConfig>();
             }
 
             if (config != null)
@@ -159,7 +173,8 @@ namespace StarStrike.Gameplay
             if (!bossSpawned && GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Playing)
             {
                 gameTimer += Time.deltaTime;
-                if (gameTimer > 60f) // Spawn boss after 60 seconds
+                float delay = bossConfig != null ? bossConfig.spawnDelaySeconds : 60f;
+                if (gameTimer > delay)
                 {
                     SpawnBoss();
                     bossSpawned = true;
@@ -169,18 +184,21 @@ namespace StarStrike.Gameplay
 
         private void SpawnBoss()
         {
-            Vector2 pos = new Vector2(0, halfH * 0.8f);
+            float yRatio = bossConfig != null ? bossConfig.spawnYRatio : 0.8f;
+            Vector2 pos = new Vector2(0, halfH * yRatio);
             
             if (PoolManager.Instance != null) {
                 PoolManager.Instance.Spawn("Boss", pos, Quaternion.identity, () => {
                     GameObject obj = new GameObject("Boss");
-                    obj.AddComponent<BossBrain>();
+                    BossBrain b = obj.AddComponent<BossBrain>();
+                    b.config = bossConfig;
                     return obj;
                 });
             } else {
                 GameObject bossObj = new GameObject("Boss");
                 bossObj.transform.position = pos;
-                bossObj.AddComponent<BossBrain>();
+                BossBrain b = bossObj.AddComponent<BossBrain>();
+                b.config = bossConfig;
             }
             
             // Optionally notify UI

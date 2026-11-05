@@ -9,6 +9,9 @@ namespace StarStrike.Gameplay
     {
         public enum BossPhase { Approaching, SweepingLasers, BulletHell, Enraged }
 
+        [Header("Configuration")]
+        public BossConfig config;
+
         public BossPhase currentPhase = BossPhase.Approaching;
         
         [Header("Stats")]
@@ -25,6 +28,9 @@ namespace StarStrike.Gameplay
 
         private void Awake()
         {
+            if (config == null) config = Resources.Load<BossConfig>("Data/BossConfig");
+            if (config == null) config = ScriptableObject.CreateInstance<BossConfig>();
+
             movement = GetComponent<ShipMovement>();
             health = GetComponent<ShipHealth>();
             weapon = GetComponent<ShipWeapon>();
@@ -33,7 +39,7 @@ namespace StarStrike.Gameplay
 
             CircleCollider2D col = GetComponent<CircleCollider2D>();
             if (col == null) col = gameObject.AddComponent<CircleCollider2D>();
-            col.radius = 0.8f;
+            col.radius = config.colliderRadius;
             col.isTrigger = false;
 
             SpriteRenderer sr = GetComponent<SpriteRenderer>();
@@ -41,7 +47,7 @@ namespace StarStrike.Gameplay
             sr.sprite = ProceduralSpriteHelper.GetShipSprite("boss");
             sr.sortingOrder = 5;
             sr.color = new Color(1f, 0.4f, 0.4f);
-            transform.localScale = Vector3.one * 3f;
+            transform.localScale = Vector3.one * config.visualScale;
 
             health.OnDied += Die;
 
@@ -51,15 +57,18 @@ namespace StarStrike.Gameplay
 
         private void OnEnable()
         {
-            // Massive stats for boss
-            health.maxShield = 2500f;
-            health.shieldRegen = 10f;
-            movement.maxSpeed = 4f;
-            movement.acceleration = 8f;
-            movement.agility = 3f;
-            weapon.pulseDamage = 30f;
-            weapon.pulseSpeed = 25f;
-            weapon.fireRate = 0.5f;
+            if (config == null) config = Resources.Load<BossConfig>("Data/BossConfig");
+            if (config == null) config = ScriptableObject.CreateInstance<BossConfig>();
+
+            // Massive stats for boss from config
+            health.maxShield = config.maxShield;
+            health.shieldRegen = config.shieldRegen;
+            movement.maxSpeed = config.maxSpeed;
+            movement.acceleration = config.acceleration;
+            movement.agility = config.agility;
+            weapon.pulseDamage = config.pulseDamage;
+            weapon.pulseSpeed = config.pulseSpeed;
+            weapon.fireRate = config.fireRate;
 
             health.maxEnergy = 9999f;
             health.energyRegen = 9999f;
@@ -67,7 +76,7 @@ namespace StarStrike.Gameplay
 
             weapon.energyCost = 0f;
             weapon.isPlayer = false;
-            weapon.weaponSlots = 3;
+            weapon.weaponSlots = config.weaponSlots;
 
             currentPhase = BossPhase.Approaching;
             phaseTimer = 0f;
@@ -97,9 +106,13 @@ namespace StarStrike.Gameplay
             float dist = toPlayer.magnitude;
 
             // Phase Transitions based on Health
+            float p1 = config != null ? config.phase1Threshold : 0.75f;
+            float p2 = config != null ? config.phase2Threshold : 0.50f;
+            float p3 = config != null ? config.phase3Threshold : 0.25f;
+
             float hpPercent = health.currentShield / health.maxShield;
-            if (hpPercent < 0.3f) currentPhase = BossPhase.Enraged;
-            else if (hpPercent < 0.6f && currentPhase != BossPhase.BulletHell) 
+            if (hpPercent < p3) currentPhase = BossPhase.Enraged;
+            else if (hpPercent < p2 && currentPhase != BossPhase.BulletHell) 
             {
                 if (currentPhase != BossPhase.SweepingLasers) currentPhase = BossPhase.BulletHell; 
                 // Cycle between BulletHell and Sweeping

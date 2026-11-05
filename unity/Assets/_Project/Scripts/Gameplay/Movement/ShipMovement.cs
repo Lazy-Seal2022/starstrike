@@ -1,10 +1,14 @@
 using UnityEngine;
+using StarStrike.Core;
 
 namespace StarStrike.Gameplay
 {
     [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
     public class ShipMovement : MonoBehaviour
     {
+        [Header("Configuration")]
+        public FlightConfig flightConfig;
+
         [Header("Stats")]
         public float maxSpeed = 10f;
         public float acceleration = 18f;
@@ -33,13 +37,20 @@ namespace StarStrike.Gameplay
 
         public void InitializePhysics()
         {
+            if (flightConfig == null) flightConfig = Resources.Load<FlightConfig>("Data/FlightConfig");
+            if (flightConfig == null) flightConfig = ScriptableObject.CreateInstance<FlightConfig>();
+
             rb = GetComponent<Rigidbody2D>();
             if (rb != null)
             {
                 rb.gravityScale = 0f;
-                rb.linearDamping = 0.5f;
-                rb.angularDamping = 1.0f;
+                rb.linearDamping = flightConfig.linearDamping;
+                rb.angularDamping = flightConfig.angularDamping;
             }
+
+            boostMultiplier = flightConfig.boostMultiplier;
+            boostMaxSpeedMultiplier = flightConfig.boostMaxSpeedMultiplier;
+            boostEnergyDrain = flightConfig.boostEnergyDrain;
 
             CircleCollider2D col = GetComponent<CircleCollider2D>();
             if (col == null) col = gameObject.AddComponent<CircleCollider2D>();
@@ -88,8 +99,10 @@ namespace StarStrike.Gameplay
             float dt = Time.fixedDeltaTime;
 
             if (health == null) health = GetComponent<ShipHealth>();
+            float minBoostEnergy = flightConfig != null ? flightConfig.minEnergyToBoost : 5f;
+            float brakeFactor = flightConfig != null ? flightConfig.brakeDecelerationFactor : 0.4f;
 
-            bool canBoost = IsBoosting && (health == null || health.currentEnergy > 5f);
+            bool canBoost = IsBoosting && (health == null || health.currentEnergy > minBoostEnergy);
             bool isApplyingThrust = IsThrusting || canBoost;
 
             if (isApplyingThrust)
@@ -122,7 +135,7 @@ namespace StarStrike.Gameplay
 
                 if (IsBraking)
                 {
-                    rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, acceleration * 0.4f * dt);
+                    rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, acceleration * brakeFactor * dt);
                 }
             }
         }

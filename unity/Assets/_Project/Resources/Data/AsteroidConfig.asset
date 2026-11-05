@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4689d745239c3bf419a3aad4640db3c2, type: 3}
+  m_Name: AsteroidConfig
+  m_EditorClassIdentifier: StarStrike.Core::StarStrike.Core.AsteroidConfig
+  largeTier:
+    maxHp: 120
+    gemDropCount: 8
+    visualScale: 2.2
+    colliderRadius: 0.45
+  mediumTier:
+    maxHp: 50
+    gemDropCount: 4
+    visualScale: 1.3
+    colliderRadius: 0.45
+  smallTier:
+    maxHp: 20
+    gemDropCount: 1
+    visualScale: 0.75
+    colliderRadius: 0.45
+  powerUpDropChance: 0.05
+  fractureSplitCount: 2
+  minChildSpeed: 2
+  maxChildSpeed: 4.5

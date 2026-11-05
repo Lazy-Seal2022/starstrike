@@ -8,10 +8,16 @@ namespace StarStrike.Gameplay
     {
         public enum PowerUpType { ShieldOvercharge, WeaponOverdrive }
 
+        [Header("Configuration")]
+        public LootConfig lootConfig;
+
         public PowerUpType type = PowerUpType.ShieldOvercharge;
 
         private void Awake()
         {
+            if (lootConfig == null) lootConfig = Resources.Load<LootConfig>("Data/LootConfig");
+            if (lootConfig == null) lootConfig = ScriptableObject.CreateInstance<LootConfig>();
+
             var rb = GetComponent<Rigidbody2D>();
             rb.gravityScale = 0f;
             rb.linearDamping = 1.0f;
@@ -56,7 +62,8 @@ namespace StarStrike.Gameplay
                 var health = player.GetComponent<ShipHealth>();
                 if (health != null)
                 {
-                    health.maxShield += 100f; // Temporary boost? For now just instant heal + max capacity boost
+                    float bonus = lootConfig != null ? lootConfig.shieldOverchargeBonus : 100f;
+                    health.maxShield += bonus;
                     health.currentShield = health.maxShield;
                 }
             }
@@ -66,7 +73,8 @@ namespace StarStrike.Gameplay
                 if (weapon != null)
                 {
                     weapon.weaponSlots = Mathf.Min(weapon.weaponSlots + 1, 3);
-                    weapon.fireRate *= 0.8f; // Faster fire rate
+                    float fireMult = lootConfig != null ? lootConfig.weaponOverdriveFireRateMultiplier : 0.8f;
+                    weapon.fireRate *= fireMult;
                 }
             }
 
