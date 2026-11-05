@@ -11,6 +11,13 @@ namespace StarStrike.Gameplay
         public BossConfig bossConfig;
         public Transform playerTransform;
 
+        [Header("Prefabs")]
+        public GameObject asteroidLargePrefab;
+        public GameObject asteroidMediumPrefab;
+        public GameObject asteroidSmallPrefab;
+        public GameObject enemyDronePrefab;
+        public GameObject bossPrefab;
+
         [Header("World Dimensions")]
         public float worldWidth = 140f;
         public float worldHeight = 140f;
@@ -68,6 +75,12 @@ namespace StarStrike.Gameplay
             {
                 bossConfig = ScriptableObject.CreateInstance<BossConfig>();
             }
+
+            if (asteroidLargePrefab == null) asteroidLargePrefab = Resources.Load<GameObject>("Prefabs/Environment/Asteroid_Large");
+            if (asteroidMediumPrefab == null) asteroidMediumPrefab = Resources.Load<GameObject>("Prefabs/Environment/Asteroid_Medium");
+            if (asteroidSmallPrefab == null) asteroidSmallPrefab = Resources.Load<GameObject>("Prefabs/Environment/Asteroid_Small");
+            if (enemyDronePrefab == null) enemyDronePrefab = Resources.Load<GameObject>("Prefabs/Enemies/EnemyDrone");
+            if (bossPrefab == null) bossPrefab = Resources.Load<GameObject>("Prefabs/Enemies/BossDreadnought");
 
             if (config != null)
             {
@@ -189,15 +202,33 @@ namespace StarStrike.Gameplay
             
             if (PoolManager.Instance != null) {
                 PoolManager.Instance.Spawn("Boss", pos, Quaternion.identity, () => {
+                    if (bossPrefab != null)
+                    {
+                        var inst = Instantiate(bossPrefab, pos, Quaternion.identity);
+                        inst.name = "Boss";
+                        var brain = inst.GetComponent<BossBrain>();
+                        if (brain != null) brain.config = bossConfig;
+                        return inst;
+                    }
                     GameObject obj = new GameObject("Boss");
                     BossBrain b = obj.AddComponent<BossBrain>();
                     b.config = bossConfig;
                     return obj;
                 });
             } else {
-                GameObject bossObj = new GameObject("Boss");
-                bossObj.transform.position = pos;
-                BossBrain b = bossObj.AddComponent<BossBrain>();
+                GameObject bossObj = null;
+                if (bossPrefab != null)
+                {
+                    bossObj = Instantiate(bossPrefab, pos, Quaternion.identity);
+                    bossObj.name = "Boss";
+                }
+                else
+                {
+                    bossObj = new GameObject("Boss");
+                    bossObj.transform.position = pos;
+                }
+                BossBrain b = bossObj.GetComponent<BossBrain>();
+                if (b == null) b = bossObj.AddComponent<BossBrain>();
                 b.config = bossConfig;
             }
             
@@ -233,12 +264,39 @@ namespace StarStrike.Gameplay
         {
             string tag = "Asteroid_Large";
             float r = Random.value;
-            if (r < 0.35f) tag = "Asteroid_Large";
-            else if (r < 0.75f) tag = "Asteroid_Medium";
-            else tag = "Asteroid_Small";
+            GameObject prefabToUse = asteroidLargePrefab;
+            if (r < 0.35f)
+            {
+                tag = "Asteroid_Large";
+                prefabToUse = asteroidLargePrefab;
+            }
+            else if (r < 0.75f)
+            {
+                tag = "Asteroid_Medium";
+                prefabToUse = asteroidMediumPrefab;
+            }
+            else
+            {
+                tag = "Asteroid_Small";
+                prefabToUse = asteroidSmallPrefab;
+            }
 
             if (PoolManager.Instance != null) {
                 PoolManager.Instance.Spawn(tag, pos, Quaternion.identity, () => {
+                    if (prefabToUse != null)
+                    {
+                        var inst = Instantiate(prefabToUse, pos, Quaternion.identity);
+                        inst.name = tag;
+                        Asteroid a = inst.GetComponent<Asteroid>();
+                        if (a != null)
+                        {
+                            if (tag.Contains("Large")) a.tier = AsteroidTier.Large;
+                            else if (tag.Contains("Medium")) a.tier = AsteroidTier.Medium;
+                            else a.tier = AsteroidTier.Small;
+                            a.SetupStats();
+                        }
+                        return inst;
+                    }
                     GameObject obj = new GameObject(tag);
                     Asteroid ast = obj.AddComponent<Asteroid>();
                     if (tag.Contains("Large")) ast.tier = AsteroidTier.Large;
@@ -248,9 +306,19 @@ namespace StarStrike.Gameplay
                     return obj;
                 });
             } else {
-                GameObject astObj = new GameObject(tag);
-                astObj.transform.position = pos;
-                Asteroid ast = astObj.AddComponent<Asteroid>();
+                GameObject astObj = null;
+                if (prefabToUse != null)
+                {
+                    astObj = Instantiate(prefabToUse, pos, Quaternion.identity);
+                    astObj.name = tag;
+                }
+                else
+                {
+                    astObj = new GameObject(tag);
+                    astObj.transform.position = pos;
+                }
+                Asteroid ast = astObj.GetComponent<Asteroid>();
+                if (ast == null) ast = astObj.AddComponent<Asteroid>();
                 if (tag.Contains("Large")) ast.tier = AsteroidTier.Large;
                 else if (tag.Contains("Medium")) ast.tier = AsteroidTier.Medium;
                 else ast.tier = AsteroidTier.Small;
@@ -270,14 +338,29 @@ namespace StarStrike.Gameplay
 
                 if (PoolManager.Instance != null) {
                     PoolManager.Instance.Spawn("EnemyDrone", pos, Quaternion.identity, () => {
+                        if (enemyDronePrefab != null)
+                        {
+                            var inst = Instantiate(enemyDronePrefab, pos, Quaternion.identity);
+                            inst.name = "EnemyDrone";
+                            return inst;
+                        }
                         GameObject obj = new GameObject("EnemyDrone");
                         obj.AddComponent<EnemyAI>();
                         return obj;
                     });
                 } else {
-                    GameObject droneObj = new GameObject("EnemyDrone");
-                    droneObj.transform.position = pos;
-                    droneObj.AddComponent<EnemyAI>();
+                    GameObject droneObj = null;
+                    if (enemyDronePrefab != null)
+                    {
+                        droneObj = Instantiate(enemyDronePrefab, pos, Quaternion.identity);
+                        droneObj.name = "EnemyDrone";
+                    }
+                    else
+                    {
+                        droneObj = new GameObject("EnemyDrone");
+                        droneObj.transform.position = pos;
+                        droneObj.AddComponent<EnemyAI>();
+                    }
                 }
             }
         }

@@ -9,6 +9,12 @@ namespace StarStrike.Gameplay
         [Header("Configuration")]
         public AsteroidConfig config;
 
+        [Header("Prefabs")]
+        public GameObject gemCrystalPrefab;
+        public GameObject powerUpPrefab;
+        public GameObject mediumChildPrefab;
+        public GameObject smallChildPrefab;
+
         [Header("State")]
         public AsteroidTier tier = AsteroidTier.Large;
         public float currentHp;
@@ -27,6 +33,11 @@ namespace StarStrike.Gameplay
             
             var trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();
             trackable.Type = StarStrike.Gameplay.TrackableType.Asteroid;
+
+            if (gemCrystalPrefab == null) gemCrystalPrefab = Resources.Load<GameObject>("Prefabs/Environment/GemCrystal");
+            if (powerUpPrefab == null) powerUpPrefab = Resources.Load<GameObject>("Prefabs/Environment/PowerUpItem");
+            if (mediumChildPrefab == null) mediumChildPrefab = Resources.Load<GameObject>("Prefabs/Environment/Asteroid_Medium");
+            if (smallChildPrefab == null) smallChildPrefab = Resources.Load<GameObject>("Prefabs/Environment/Asteroid_Small");
 
             SetupStats();
         }
@@ -91,14 +102,29 @@ namespace StarStrike.Gameplay
                 Vector3 pos = transform.position + (Vector3)(Random.insideUnitCircle * 0.5f);
                 if (PoolManager.Instance != null) {
                     PoolManager.Instance.Spawn("Gem", pos, Quaternion.identity, () => {
+                        if (gemCrystalPrefab != null)
+                        {
+                            var inst = Instantiate(gemCrystalPrefab, pos, Quaternion.identity);
+                            inst.name = "GemCrystal";
+                            return inst;
+                        }
                         GameObject obj = new GameObject("GemCrystal");
                         obj.AddComponent<GemCrystal>();
                         return obj;
                     });
                 } else {
-                    GameObject gemObj = new GameObject("GemCrystal");
-                    gemObj.transform.position = pos;
-                    gemObj.AddComponent<GemCrystal>();
+                    GameObject gemObj = null;
+                    if (gemCrystalPrefab != null)
+                    {
+                        gemObj = Instantiate(gemCrystalPrefab, pos, Quaternion.identity);
+                        gemObj.name = "GemCrystal";
+                    }
+                    else
+                    {
+                        gemObj = new GameObject("GemCrystal");
+                        gemObj.transform.position = pos;
+                        gemObj.AddComponent<GemCrystal>();
+                    }
                 }
             }
             
@@ -109,14 +135,29 @@ namespace StarStrike.Gameplay
                 Vector3 puPos = transform.position + (Vector3)(Random.insideUnitCircle * 0.5f);
                 if (PoolManager.Instance != null) {
                     PoolManager.Instance.Spawn("PowerUp", puPos, Quaternion.identity, () => {
+                        if (powerUpPrefab != null)
+                        {
+                            var inst = Instantiate(powerUpPrefab, puPos, Quaternion.identity);
+                            inst.name = "PowerUpItem";
+                            return inst;
+                        }
                         GameObject obj = new GameObject("PowerUpItem");
                         obj.AddComponent<PowerUpItem>();
                         return obj;
                     });
                 } else {
-                    GameObject puObj = new GameObject("PowerUpItem");
-                    puObj.transform.position = puPos;
-                    puObj.AddComponent<PowerUpItem>();
+                    GameObject puObj = null;
+                    if (powerUpPrefab != null)
+                    {
+                        puObj = Instantiate(powerUpPrefab, puPos, Quaternion.identity);
+                        puObj.name = "PowerUpItem";
+                    }
+                    else
+                    {
+                        puObj = new GameObject("PowerUpItem");
+                        puObj.transform.position = puPos;
+                        puObj.AddComponent<PowerUpItem>();
+                    }
                 }
             }
 
@@ -139,16 +180,31 @@ namespace StarStrike.Gameplay
             Vector3 pos = transform.position + (Vector3)(Random.insideUnitCircle * 0.4f);
             string tag = $"Asteroid_{childTier}";
             GameObject child = null;
+            GameObject prefabToUse = childTier == AsteroidTier.Medium ? mediumChildPrefab : smallChildPrefab;
             
             if (PoolManager.Instance != null) {
                 child = PoolManager.Instance.Spawn(tag, pos, Quaternion.identity, () => {
+                    if (prefabToUse != null)
+                    {
+                        var inst = Instantiate(prefabToUse, pos, Quaternion.identity);
+                        inst.name = tag;
+                        return inst;
+                    }
                     GameObject obj = new GameObject(tag);
                     obj.AddComponent<Asteroid>();
                     return obj;
                 });
             } else {
-                child = new GameObject(tag);
-                child.transform.position = pos;
+                if (prefabToUse != null)
+                {
+                    child = Instantiate(prefabToUse, pos, Quaternion.identity);
+                    child.name = tag;
+                }
+                else
+                {
+                    child = new GameObject(tag);
+                    child.transform.position = pos;
+                }
             }
 
             Asteroid ast = child.GetComponent<Asteroid>();

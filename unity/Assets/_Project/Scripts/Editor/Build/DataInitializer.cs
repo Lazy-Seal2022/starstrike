@@ -126,6 +126,9 @@ namespace StarStrike.Editor
             gameConfig.defaultShip = scout;
             CreateOrUpdateAsset(gameConfig, $"{dataPath}/GameConfig.asset");
 
+            // 10. Generate Prefabs
+            PrefabInitializer.GeneratePrefabs();
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 

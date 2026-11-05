@@ -8,6 +8,9 @@ namespace StarStrike.Gameplay
         [Header("Configuration")]
         public CombatConfig combatConfig;
 
+        [Header("Prefabs")]
+        public GameObject laserPrefab;
+
         [Header("Stats")]
         public float pulseDamage = 18f;
         public float pulseSpeed = 22f;
@@ -29,6 +32,12 @@ namespace StarStrike.Gameplay
             if (CompareTag("Player") || gameObject.name == "Player")
             {
                 isPlayer = true;
+            }
+
+            if (laserPrefab == null)
+            {
+                string prefabPath = isPlayer ? "Prefabs/Projectiles/PlayerLaser" : "Prefabs/Projectiles/EnemyLaser";
+                laserPrefab = Resources.Load<GameObject>(prefabPath);
             }
         }
 
@@ -66,6 +75,12 @@ namespace StarStrike.Gameplay
                 {
                     laserObj = PoolManager.Instance.Spawn(poolTag, nose, transform.rotation, () => 
                     {
+                        if (laserPrefab != null)
+                        {
+                            var inst = Instantiate(laserPrefab, nose, transform.rotation);
+                            inst.name = poolTag;
+                            return inst;
+                        }
                         GameObject obj = new GameObject(poolTag);
                         obj.tag = isPlayer ? "Laser" : "EnemyLaser";
                         obj.AddComponent<LaserProjectile>();
@@ -75,11 +90,19 @@ namespace StarStrike.Gameplay
                 else
                 {
                     // Fallback if no pool
-                    laserObj = new GameObject(poolTag);
-                    laserObj.tag = isPlayer ? "Laser" : "EnemyLaser";
-                    laserObj.transform.position = nose;
-                    laserObj.transform.rotation = transform.rotation;
-                    laserObj.AddComponent<LaserProjectile>();
+                    if (laserPrefab != null)
+                    {
+                        laserObj = Instantiate(laserPrefab, nose, transform.rotation);
+                        laserObj.name = poolTag;
+                    }
+                    else
+                    {
+                        laserObj = new GameObject(poolTag);
+                        laserObj.tag = isPlayer ? "Laser" : "EnemyLaser";
+                        laserObj.transform.position = nose;
+                        laserObj.transform.rotation = transform.rotation;
+                        laserObj.AddComponent<LaserProjectile>();
+                    }
                 }
 
                 LaserProjectile proj = laserObj.GetComponent<LaserProjectile>();
