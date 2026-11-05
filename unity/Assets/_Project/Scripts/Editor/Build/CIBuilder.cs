@@ -6,9 +6,9 @@ namespace StarStrike.Editor
 {
     public static class CIBuilder
     {
-        private static string[] GetScenes()
+        public static string[] GetScenes()
         {
-            return new string[] { "Assets/_Project/Scenes/Game.unity" };
+            return new string[] { "Assets/_Project/Scenes/GameScene.unity" };
         }
 
         [MenuItem("Build/Windows")]

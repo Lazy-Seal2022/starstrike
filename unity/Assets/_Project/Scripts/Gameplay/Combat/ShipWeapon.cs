@@ -41,6 +41,19 @@ namespace StarStrike.Gameplay
             }
         }
 
+        public static float[] CalculateMuzzleOffsets(int slots, float spread)
+        {
+            if (slots >= 3)
+            {
+                return new float[] { -spread, 0f, spread };
+            }
+            if (slots == 2)
+            {
+                return new float[] { -spread, spread };
+            }
+            return new float[] { 0f };
+        }
+
         public bool TryFire(ShipHealth health)
         {
             if (Time.time - lastFiredTime < fireRate) return false;
@@ -62,7 +75,7 @@ namespace StarStrike.Gameplay
 
             float spread = combatConfig != null ? combatConfig.dualWeaponSpread : 0.3f;
             float fwd = combatConfig != null ? combatConfig.muzzleForwardOffset : 0.65f;
-            float[] offsets = weaponSlots == 2 ? new float[] { -spread, spread } : new float[] { 0f };
+            float[] offsets = CalculateMuzzleOffsets(weaponSlots, spread);
 
             foreach (float offset in offsets)
             {

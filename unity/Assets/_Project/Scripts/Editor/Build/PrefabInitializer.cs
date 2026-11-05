@@ -364,10 +364,14 @@ namespace StarStrike.Editor
             var floatText = hudGo.AddComponent<HUDFloatingText>();
             floatText.themeConfig = theme;
 
+            var endGameModal = hudGo.AddComponent<HUDEndGameModal>();
+            endGameModal.themeConfig = theme;
+
             hud.playerStatus = statusComp;
             hud.evolutionBannerController = evoBanner;
             hud.upgradeDrawerController = upgradeDrawer;
             hud.floatingTextController = floatText;
+            hud.endGameModal = endGameModal;
 
             SavePrefab(hudGo, "UI/CanvasHUD");
         }

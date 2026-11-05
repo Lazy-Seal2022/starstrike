@@ -221,7 +221,11 @@ namespace StarStrike.Gameplay
             GameEvents.TriggerAsteroidDestroyed(transform.position + Vector3.right, "Large");
             GameEvents.TriggerAsteroidDestroyed(transform.position + Vector3.left, "Large");
             
-            // TODO: Trigger Victory Event
+            GameEvents.TriggerBossDefeated();
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.Victory();
+            }
 
             gameObject.SetActive(false);
         }

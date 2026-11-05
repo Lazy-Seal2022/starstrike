@@ -189,6 +189,7 @@ namespace StarStrike.Gameplay
                 }
             }
 
+            GameEvents.TriggerEnemyDestroyed(definition != null ? definition.id : "drone");
             gameObject.SetActive(false);
         }
     }

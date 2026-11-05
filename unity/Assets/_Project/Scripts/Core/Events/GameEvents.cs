@@ -16,6 +16,18 @@ namespace StarStrike.Core
         public static void TriggerGemCollected(int amount, int total) => OnGemCollected?.Invoke(amount, total);
         public static void TriggerPlayerEvolved(string shipId) => OnPlayerEvolved?.Invoke(shipId);
         public static void TriggerAsteroidDestroyed(Vector2 pos, string size) => OnAsteroidDestroyed?.Invoke(pos, size);
+
+        public static event Action<string> OnEnemyDestroyed; // enemyId or enemyType
+        public static void TriggerEnemyDestroyed(string enemyId) => OnEnemyDestroyed?.Invoke(enemyId);
+
+        public static event Action OnBossDefeated;
+        public static void TriggerBossDefeated() => OnBossDefeated?.Invoke();
+
+        public static event Action<RunSummary> OnGameOver;
+        public static void TriggerGameOver(RunSummary summary) => OnGameOver?.Invoke(summary);
+
+        public static event Action<RunSummary> OnVictory;
+        public static void TriggerVictory(RunSummary summary) => OnVictory?.Invoke(summary);
         
         public static event Action<string> OnAchievementUnlocked;
         public static void TriggerAchievementUnlocked(string id) => OnAchievementUnlocked?.Invoke(id);

@@ -203,7 +203,17 @@ namespace StarStrike.Gameplay
 
         private void HandleDeath()
         {
-            StartCoroutine(RespawnRoutine());
+            if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Playing)
+            {
+                if (shipRenderer != null) shipRenderer.enabled = false;
+                if (movement != null) movement.enabled = false;
+                if (weapon != null) weapon.enabled = false;
+                GameManager.Instance.GameOver();
+            }
+            else
+            {
+                StartCoroutine(RespawnRoutine());
+            }
         }
 
         private IEnumerator RespawnRoutine()

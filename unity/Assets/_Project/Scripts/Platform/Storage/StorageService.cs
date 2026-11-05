@@ -38,14 +38,22 @@ namespace StarStrike.Platform.Storage
 
         public static void LoadProfile()
         {
-            if (File.Exists(SavePath))
+            try
             {
-                string json = File.ReadAllText(SavePath);
-                currentProfile = JsonUtility.FromJson<PlayerProfile>(json);
-                if (currentProfile == null) currentProfile = new PlayerProfile();
+                if (File.Exists(SavePath))
+                {
+                    string json = File.ReadAllText(SavePath);
+                    currentProfile = JsonUtility.FromJson<PlayerProfile>(json);
+                    if (currentProfile == null) currentProfile = new PlayerProfile();
+                }
+                else
+                {
+                    currentProfile = new PlayerProfile();
+                }
             }
-            else
+            catch (System.Exception ex)
             {
+                Debug.LogWarning($"Failed to load player profile from {SavePath}: {ex.Message}. Using default profile.");
                 currentProfile = new PlayerProfile();
             }
         }
@@ -53,8 +61,15 @@ namespace StarStrike.Platform.Storage
         public static void SaveProfile()
         {
             if (currentProfile == null) return;
-            string json = JsonUtility.ToJson(currentProfile, true);
-            File.WriteAllText(SavePath, json);
+            try
+            {
+                string json = JsonUtility.ToJson(currentProfile, true);
+                File.WriteAllText(SavePath, json);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"Failed to save player profile to {SavePath}: {ex.Message}");
+            }
         }
 
         public static void SaveHighScore(int score)

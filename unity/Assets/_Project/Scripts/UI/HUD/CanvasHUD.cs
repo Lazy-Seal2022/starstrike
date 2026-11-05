@@ -22,6 +22,7 @@ namespace StarStrike.UI
         public HUDEvolutionBanner evolutionBannerController;
         public HUDUpgradeDrawer upgradeDrawerController;
         public HUDFloatingText floatingTextController;
+        public HUDEndGameModal endGameModal;
 
         [Header("UI References (Optional - Auto-built if null)")]
         public Canvas canvas;
@@ -664,6 +665,11 @@ namespace StarStrike.UI
             if (floatingTextController == null)
             {
                 floatingTextController = gameObject.AddComponent<HUDFloatingText>();
+            }
+
+            if (endGameModal == null)
+            {
+                endGameModal = gameObject.AddComponent<HUDEndGameModal>();
             }
         }
 

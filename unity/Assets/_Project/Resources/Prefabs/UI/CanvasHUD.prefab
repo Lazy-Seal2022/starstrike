@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 182982071724279986}
   - component: {fileID: 607335398411203324}
   - component: {fileID: 7755228392284798844}
+  - component: {fileID: 8288929018535006674}
   m_Layer: 0
   m_Name: CanvasHUD
   m_TagString: Untagged
@@ -123,6 +124,7 @@ MonoBehaviour:
   evolutionBannerController: {fileID: 182982071724279986}
   upgradeDrawerController: {fileID: 607335398411203324}
   floatingTextController: {fileID: 7755228392284798844}
+  endGameModal: {fileID: 8288929018535006674}
   canvas: {fileID: 0}
   shipNameText: {fileID: 0}
   gemsText: {fileID: 0}
@@ -205,3 +207,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: StarStrike.UI::StarStrike.UI.HUDFloatingText
   themeConfig: {fileID: 11400000, guid: 47a4e455b0e819c4b816a46065258c61, type: 2}
+--- !u!114 &8288929018535006674
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6728193302663402268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af5322ee0fe3dd64e9ca16252b4ca558, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: StarStrike.UI::StarStrike.UI.HUDEndGameModal
+  themeConfig: {fileID: 11400000, guid: 47a4e455b0e819c4b816a46065258c61, type: 2}
+  modalRoot: {fileID: 0}
+  titleText: {fileID: 0}
+  statsSummaryText: {fileID: 0}
+  scoreText: {fileID: 0}
+  playAgainButton: {fileID: 0}
+  returnHangarButton: {fileID: 0}

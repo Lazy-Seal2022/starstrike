@@ -7,7 +7,8 @@
         "StarStrike.Core",
         "StarStrike.Gameplay",
         "StarStrike.Platform",
-        "StarStrike.UI"
+        "StarStrike.UI",
+        "StarStrike.Editor"
     ],
     "includePlatforms": [
         "Editor"

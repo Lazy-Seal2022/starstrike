@@ -11,7 +11,8 @@ namespace StarStrike.Gameplay
         Menu,
         Playing,
         Paused,
-        GameOver
+        GameOver,
+        Victory
     }
 
     public class GameManager : MonoBehaviour
@@ -19,6 +20,13 @@ namespace StarStrike.Gameplay
         public static GameManager Instance { get; private set; }
 
         public GameState CurrentState { get; private set; } = GameState.Boot;
+
+        [Header("Run Metrics")]
+        public float RunTimer { get; private set; }
+        public int GemsCollectedInRun { get; private set; }
+        public int AsteroidsMinedCount { get; private set; }
+        public int EnemiesDestroyedCount { get; private set; }
+        public RunSummary LastRunSummary { get; private set; }
 
         private void Awake()
         {
@@ -49,9 +57,8 @@ namespace StarStrike.Gameplay
                 var legacy = player.GetComponent("ShipController");
                 if (legacy != null)
                 {
-                    DestroyImmediate(legacy); // Remove the old script
+                    DestroyImmediate(legacy);
                     
-                    // Add new Domain-Driven components
                     var pp = player.AddComponent<PlayerProgression>();
                     pp.health = player.AddComponent<ShipHealth>();
                     pp.movement = player.AddComponent<ShipMovement>();
@@ -63,9 +70,55 @@ namespace StarStrike.Gameplay
             }
         }
 
+        private void OnEnable()
+        {
+            GameEvents.OnAsteroidDestroyed += HandleAsteroidDestroyed;
+            GameEvents.OnGemCollected += HandleGemCollected;
+            GameEvents.OnEnemyDestroyed += HandleEnemyDestroyed;
+        }
+
+        private void OnDisable()
+        {
+            GameEvents.OnAsteroidDestroyed -= HandleAsteroidDestroyed;
+            GameEvents.OnGemCollected -= HandleGemCollected;
+            GameEvents.OnEnemyDestroyed -= HandleEnemyDestroyed;
+        }
+
         private void Start()
         {
             ChangeState(GameState.Menu);
+        }
+
+        private void Update()
+        {
+            if (CurrentState == GameState.Playing)
+            {
+                RunTimer += Time.deltaTime;
+            }
+        }
+
+        private void HandleAsteroidDestroyed(Vector2 pos, string size)
+        {
+            if (CurrentState == GameState.Playing)
+            {
+                AsteroidsMinedCount++;
+            }
+        }
+
+        private void HandleGemCollected(int added, int total)
+        {
+            if (CurrentState == GameState.Playing && added > 0)
+            {
+                GemsCollectedInRun += added;
+            }
+        }
+
+        private void HandleEnemyDestroyed(string enemyId)
+        {
+            if (CurrentState == GameState.Playing)
+            {
+                EnemiesDestroyedCount++;
+            }
         }
 
         public void ChangeState(GameState newState)
@@ -84,16 +137,15 @@ namespace StarStrike.Gameplay
             {
                 case GameState.Menu:
                     Time.timeScale = 1f;
-                    // Logic to show menu UI (using GameEvents)
                     break;
                 case GameState.Playing:
                     Time.timeScale = 1f;
-                    // Ensure gameplay is active
                     break;
                 case GameState.Paused:
                     Time.timeScale = 0f;
                     break;
                 case GameState.GameOver:
+                case GameState.Victory:
                     Time.timeScale = 1f;
                     break;
             }
@@ -101,6 +153,11 @@ namespace StarStrike.Gameplay
 
         public void StartGame()
         {
+            RunTimer = 0f;
+            GemsCollectedInRun = 0;
+            AsteroidsMinedCount = 0;
+            EnemiesDestroyedCount = 0;
+
             GameObject player = GameObject.FindGameObjectWithTag("Player");
             if (player != null)
             {
@@ -149,7 +206,60 @@ namespace StarStrike.Gameplay
 
         public void GameOver()
         {
+            if (CurrentState != GameState.Playing) return;
+
+            string shipId = PlayerProgression.Instance != null && PlayerProgression.Instance.currentShip != null
+                ? PlayerProgression.Instance.currentShip.id
+                : "scout";
+
+            int finalScore = RunSummary.CalculateScore(GemsCollectedInRun, AsteroidsMinedCount, EnemiesDestroyedCount, false, RunTimer);
+            StorageService.SaveHighScore(finalScore);
+            StorageService.AddMetaGems(GemsCollectedInRun);
+
+            var summary = new RunSummary
+            {
+                isVictory = false,
+                timeSurvived = RunTimer,
+                gemsCollected = GemsCollectedInRun,
+                asteroidsMined = AsteroidsMinedCount,
+                enemiesDestroyed = EnemiesDestroyedCount,
+                bossDefeated = false,
+                finalShipId = shipId,
+                finalScore = finalScore
+            };
+
+            LastRunSummary = summary;
             ChangeState(GameState.GameOver);
+            GameEvents.TriggerGameOver(summary);
+        }
+
+        public void Victory()
+        {
+            if (CurrentState != GameState.Playing) return;
+
+            string shipId = PlayerProgression.Instance != null && PlayerProgression.Instance.currentShip != null
+                ? PlayerProgression.Instance.currentShip.id
+                : "scout";
+
+            int finalScore = RunSummary.CalculateScore(GemsCollectedInRun, AsteroidsMinedCount, EnemiesDestroyedCount, true, RunTimer);
+            StorageService.SaveHighScore(finalScore);
+            StorageService.AddMetaGems(GemsCollectedInRun);
+
+            var summary = new RunSummary
+            {
+                isVictory = true,
+                timeSurvived = RunTimer,
+                gemsCollected = GemsCollectedInRun,
+                asteroidsMined = AsteroidsMinedCount,
+                enemiesDestroyed = EnemiesDestroyedCount,
+                bossDefeated = true,
+                finalShipId = shipId,
+                finalScore = finalScore
+            };
+
+            LastRunSummary = summary;
+            ChangeState(GameState.Victory);
+            GameEvents.TriggerVictory(summary);
         }
 
         public void RestartGame()
