@@ -279,6 +279,11 @@ namespace StarStrike.Gameplay
             return ProgressionMath.CalculateCost(baseCost, multiplier, lvl);
         }
 
+        public int GetMaxLevel()
+        {
+            return currentShip != null ? currentShip.maxUpgradeLevel : 5;
+        }
+
         public bool CanEvolve()
         {
             return currentShip != null && currentShip.evolvesTo != null && currentShip.evolvesTo.Length > 0 && upgradeState.AreAllStatsMaxed(currentShip.maxUpgradeLevel);
@@ -293,6 +298,11 @@ namespace StarStrike.Gameplay
             ApplyShipVisuals();
 
             GameEvents.TriggerPlayerEvolved(currentShip.id);
+        }
+
+        public void EvolveTo(ShipDefinition targetShip)
+        {
+            Evolve(targetShip);
         }
 
         public void EvolveToId(string targetId)

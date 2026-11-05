@@ -17,6 +17,12 @@ namespace StarStrike.UI
         [Header("Configuration")]
         public bool forceShowMobileControls = false;
 
+        [Header("Modular Sub-Controllers")]
+        public HUDPlayerStatus playerStatus;
+        public HUDEvolutionBanner evolutionBannerController;
+        public HUDUpgradeDrawer upgradeDrawerController;
+        public HUDFloatingText floatingTextController;
+
         [Header("UI References (Optional - Auto-built if null)")]
         public Canvas canvas;
         public Text shipNameText;
@@ -199,6 +205,7 @@ namespace StarStrike.UI
             currentShield = current;
             maxShield = max;
             UpdateShieldVisuals();
+            if (playerStatus != null) playerStatus.HandleShieldChanged(current, max);
         }
 
         private void HandleEnergyChanged(float current, float max)
@@ -206,6 +213,7 @@ namespace StarStrike.UI
             currentEnergy = current;
             maxEnergy = max;
             UpdateEnergyVisuals();
+            if (playerStatus != null) playerStatus.HandleEnergyChanged(current, max);
         }
 
         private void HandleGemCollected(int added, int total)
@@ -215,6 +223,7 @@ namespace StarStrike.UI
             {
                 gemsText.text = $"💎 <color=#4ade80><b>{totalGems}</b></color> Gems";
             }
+            if (playerStatus != null) playerStatus.HandleGemCollected(added, total);
             if (isUpgradesOpen)
             {
                 UpdateUpgradeRows();
@@ -235,6 +244,7 @@ namespace StarStrike.UI
                 UpdateShieldVisuals();
                 UpdateEnergyVisuals();
             }
+            if (playerStatus != null) playerStatus.HandlePlayerEvolved(shipId);
             UpdateEvolutionBanner();
         }
 
@@ -637,6 +647,24 @@ namespace StarStrike.UI
             
             // 6. Main Menu
             gameObject.AddComponent<MainMenuUI>();
+
+            // 7. Sub-Controllers
+            if (playerStatus == null)
+            {
+                playerStatus = gameObject.AddComponent<HUDPlayerStatus>();
+                playerStatus.shieldFill = shieldFill;
+                playerStatus.shieldText = shieldValueText;
+                playerStatus.energyFill = energyFill;
+                playerStatus.energyText = energyValueText;
+                playerStatus.shipNameText = shipNameText;
+                playerStatus.gemsText = gemsText;
+                playerStatus.ApplyThemeStyles();
+            }
+
+            if (floatingTextController == null)
+            {
+                floatingTextController = gameObject.AddComponent<HUDFloatingText>();
+            }
         }
 
         private GameObject CreatePanel(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax, Vector2 pos, Vector2 size, Color color, Sprite sprite)

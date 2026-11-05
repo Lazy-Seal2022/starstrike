@@ -2,6 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using StarStrike.Core;
 using StarStrike.Gameplay;
+using StarStrike.UI;
 
 namespace StarStrike.Editor
 {
@@ -15,6 +16,7 @@ namespace StarStrike.Editor
             EnsureFolder("Assets/_Project/Prefabs", "Environment");
             EnsureFolder("Assets/_Project/Prefabs", "Enemies");
             EnsureFolder("Assets/_Project/Prefabs", "Ships");
+            EnsureFolder("Assets/_Project/Prefabs", "UI");
 
             EnsureFolder("Assets/_Project", "Resources");
             EnsureFolder("Assets/_Project/Resources", "Prefabs");
@@ -22,6 +24,7 @@ namespace StarStrike.Editor
             EnsureFolder("Assets/_Project/Resources/Prefabs", "Environment");
             EnsureFolder("Assets/_Project/Resources/Prefabs", "Enemies");
             EnsureFolder("Assets/_Project/Resources/Prefabs", "Ships");
+            EnsureFolder("Assets/_Project/Resources/Prefabs", "UI");
 
             // 1. Projectiles
             CreatePlayerLaserPrefab();
@@ -44,6 +47,9 @@ namespace StarStrike.Editor
             CreateShipPrefab("miner", 2, 220f, 16f, 150f, 20f, 40f, 20f, 2);
             CreateShipPrefab("interceptor", 3, 180f, 15f, 140f, 30f, 35f, 28f, 2);
             CreateShipPrefab("juggernaut", 3, 400f, 25f, 200f, 25f, 75f, 18f, 3);
+
+            // 5. UI Prefabs
+            CreateCanvasHUDPrefab();
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -326,6 +332,44 @@ namespace StarStrike.Editor
             rightMuzzle.transform.localPosition = new Vector3(0.3f, 0.65f, 0f);
 
             SavePrefab(go, $"Ships/Ship_{capId}");
+        }
+
+        private static void CreateCanvasHUDPrefab()
+        {
+            GameObject hudGo = new GameObject("CanvasHUD");
+            var canvas = hudGo.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 100;
+
+            var scaler = hudGo.AddComponent<UnityEngine.UI.CanvasScaler>();
+            scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080);
+            scaler.matchWidthOrHeight = 0.5f;
+
+            hudGo.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+
+            var hud = hudGo.AddComponent<CanvasHUD>();
+            var theme = AssetDatabase.LoadAssetAtPath<UIThemeConfig>("Assets/_Project/Resources/Data/UIThemeConfig.asset");
+
+            // Sub-controllers
+            var statusComp = hudGo.AddComponent<HUDPlayerStatus>();
+            statusComp.themeConfig = theme;
+
+            var evoBanner = hudGo.AddComponent<HUDEvolutionBanner>();
+            evoBanner.themeConfig = theme;
+
+            var upgradeDrawer = hudGo.AddComponent<HUDUpgradeDrawer>();
+            upgradeDrawer.themeConfig = theme;
+
+            var floatText = hudGo.AddComponent<HUDFloatingText>();
+            floatText.themeConfig = theme;
+
+            hud.playerStatus = statusComp;
+            hud.evolutionBannerController = evoBanner;
+            hud.upgradeDrawerController = upgradeDrawer;
+            hud.floatingTextController = floatText;
+
+            SavePrefab(hudGo, "UI/CanvasHUD");
         }
 
         private static void SavePrefab(GameObject go, string subPath)

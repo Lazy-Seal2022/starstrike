@@ -14,6 +14,22 @@ namespace StarStrike.Core
         public int speedLevel;
         public int agilityLevel;
 
+        public int GetLevel(string statName)
+        {
+            switch (statName)
+            {
+                case "shieldCap": return shieldCapacityLevel;
+                case "shieldRegen": return shieldRegenLevel;
+                case "energyCap": return energyCapacityLevel;
+                case "energyRegen": return energyRegenLevel;
+                case "damage": return pulseDamageLevel;
+                case "pulseSpeed": return pulseSpeedLevel;
+                case "speed": return speedLevel;
+                case "agility": return agilityLevel;
+                default: return 0;
+            }
+        }
+
         public void Reset()
         {
             shieldCapacityLevel = 0;

@@ -16,30 +16,27 @@ namespace StarStrike.Editor
             string dataPath = "Assets/_Project/Resources/Data";
 
             // 1. Upgrade Definition
-            var upgradeDef = ScriptableObject.CreateInstance<UpgradeDefinition>();
-            CreateOrUpdateAsset(upgradeDef, $"{dataPath}/UpgradeDefinition.asset");
+            var upgradeDef = CreateOrUpdateAsset(ScriptableObject.CreateInstance<UpgradeDefinition>(), $"{dataPath}/UpgradeDefinition.asset");
 
             // 2. Flight Config
-            var flightConfig = ScriptableObject.CreateInstance<FlightConfig>();
-            CreateOrUpdateAsset(flightConfig, $"{dataPath}/FlightConfig.asset");
+            var flightConfig = CreateOrUpdateAsset(ScriptableObject.CreateInstance<FlightConfig>(), $"{dataPath}/FlightConfig.asset");
 
             // 3. Combat Config
-            var combatConfig = ScriptableObject.CreateInstance<CombatConfig>();
-            CreateOrUpdateAsset(combatConfig, $"{dataPath}/CombatConfig.asset");
+            var combatConfig = CreateOrUpdateAsset(ScriptableObject.CreateInstance<CombatConfig>(), $"{dataPath}/CombatConfig.asset");
 
             // 4. Asteroid Config
-            var asteroidConfig = ScriptableObject.CreateInstance<AsteroidConfig>();
-            CreateOrUpdateAsset(asteroidConfig, $"{dataPath}/AsteroidConfig.asset");
+            var asteroidConfig = CreateOrUpdateAsset(ScriptableObject.CreateInstance<AsteroidConfig>(), $"{dataPath}/AsteroidConfig.asset");
 
             // 5. Boss Config
-            var bossConfig = ScriptableObject.CreateInstance<BossConfig>();
-            CreateOrUpdateAsset(bossConfig, $"{dataPath}/BossConfig.asset");
+            var bossConfig = CreateOrUpdateAsset(ScriptableObject.CreateInstance<BossConfig>(), $"{dataPath}/BossConfig.asset");
 
             // 6. Loot Config
-            var lootConfig = ScriptableObject.CreateInstance<LootConfig>();
-            CreateOrUpdateAsset(lootConfig, $"{dataPath}/LootConfig.asset");
+            var lootConfig = CreateOrUpdateAsset(ScriptableObject.CreateInstance<LootConfig>(), $"{dataPath}/LootConfig.asset");
 
-            // 7. Enemy Drone Definition
+            // 7. UI Theme Config
+            var uiThemeConfig = CreateOrUpdateAsset(ScriptableObject.CreateInstance<UIThemeConfig>(), $"{dataPath}/UIThemeConfig.asset");
+
+            // 8. Enemy Drone Definition
             var drone = ScriptableObject.CreateInstance<EnemyDefinition>();
             drone.id = "drone";
             drone.enemyName = "Hostile Drone";
@@ -51,9 +48,9 @@ namespace StarStrike.Editor
             drone.fireRate = 1.1f;
             drone.sightRadius = 16f;
             drone.attackRadius = 10f;
-            CreateOrUpdateAsset(drone, $"{dataPath}/Enemy_Drone.asset");
+            drone = CreateOrUpdateAsset(drone, $"{dataPath}/Enemy_Drone.asset");
 
-            // 8. Ships
+            // 9. Ships
             var scout = ScriptableObject.CreateInstance<ShipDefinition>();
             scout.id = "scout";
             scout.shipName = "Delta Scout";
@@ -61,7 +58,7 @@ namespace StarStrike.Editor
             scout.maxUpgradeLevel = 4;
             scout.weaponSlots = 1;
             scout.baseStats = new StatValues { shieldCapacity = 100, shieldRegen = 8, energyCapacity = 80, energyRegen = 18, pulseDamage = 18, pulseSpeed = 600, speed = 260, agility = 4.5f };
-            CreateOrUpdateAsset(scout, $"{dataPath}/Ship_Scout.asset");
+            scout = CreateOrUpdateAsset(scout, $"{dataPath}/Ship_Scout.asset");
 
             var fighter = ScriptableObject.CreateInstance<ShipDefinition>();
             fighter.id = "fighter";
@@ -70,7 +67,7 @@ namespace StarStrike.Editor
             fighter.maxUpgradeLevel = 5;
             fighter.weaponSlots = 2;
             fighter.baseStats = new StatValues { shieldCapacity = 150, shieldRegen = 12, energyCapacity = 120, energyRegen = 24, pulseDamage = 28, pulseSpeed = 680, speed = 310, agility = 5.0f };
-            CreateOrUpdateAsset(fighter, $"{dataPath}/Ship_Fighter.asset");
+            fighter = CreateOrUpdateAsset(fighter, $"{dataPath}/Ship_Fighter.asset");
 
             var miner = ScriptableObject.CreateInstance<ShipDefinition>();
             miner.id = "miner";
@@ -79,7 +76,7 @@ namespace StarStrike.Editor
             miner.maxUpgradeLevel = 5;
             miner.weaponSlots = 2;
             miner.baseStats = new StatValues { shieldCapacity = 220, shieldRegen = 16, energyCapacity = 150, energyRegen = 20, pulseDamage = 40, pulseSpeed = 520, speed = 210, agility = 3.5f };
-            CreateOrUpdateAsset(miner, $"{dataPath}/Ship_Miner.asset");
+            miner = CreateOrUpdateAsset(miner, $"{dataPath}/Ship_Miner.asset");
 
             var interceptor = ScriptableObject.CreateInstance<ShipDefinition>();
             interceptor.id = "interceptor";
@@ -88,7 +85,7 @@ namespace StarStrike.Editor
             interceptor.maxUpgradeLevel = 6;
             interceptor.weaponSlots = 2;
             interceptor.baseStats = new StatValues { shieldCapacity = 180, shieldRegen = 15, energyCapacity = 140, energyRegen = 30, pulseDamage = 35, pulseSpeed = 800, speed = 400, agility = 6.5f };
-            CreateOrUpdateAsset(interceptor, $"{dataPath}/Ship_Interceptor.asset");
+            interceptor = CreateOrUpdateAsset(interceptor, $"{dataPath}/Ship_Interceptor.asset");
 
             var juggernaut = ScriptableObject.CreateInstance<ShipDefinition>();
             juggernaut.id = "juggernaut";
@@ -97,7 +94,7 @@ namespace StarStrike.Editor
             juggernaut.maxUpgradeLevel = 6;
             juggernaut.weaponSlots = 3;
             juggernaut.baseStats = new StatValues { shieldCapacity = 400, shieldRegen = 25, energyCapacity = 200, energyRegen = 25, pulseDamage = 75, pulseSpeed = 480, speed = 180, agility = 2.5f };
-            CreateOrUpdateAsset(juggernaut, $"{dataPath}/Ship_Juggernaut.asset");
+            juggernaut = CreateOrUpdateAsset(juggernaut, $"{dataPath}/Ship_Juggernaut.asset");
 
             scout.evolvesTo = new ShipDefinition[] { fighter, miner };
             fighter.evolvesTo = new ShipDefinition[] { interceptor };
@@ -111,7 +108,7 @@ namespace StarStrike.Editor
             EditorUtility.SetDirty(interceptor);
             EditorUtility.SetDirty(juggernaut);
 
-            // 9. Master Game Config
+            // 10. Master Game Config
             var gameConfig = ScriptableObject.CreateInstance<GameConfig>();
             gameConfig.worldWidth = 140f;
             gameConfig.worldHeight = 140f;
@@ -122,17 +119,18 @@ namespace StarStrike.Editor
             gameConfig.asteroidConfig = asteroidConfig;
             gameConfig.bossConfig = bossConfig;
             gameConfig.lootConfig = lootConfig;
+            gameConfig.uiThemeConfig = uiThemeConfig;
             gameConfig.upgradeDefinition = upgradeDef;
             gameConfig.defaultShip = scout;
             CreateOrUpdateAsset(gameConfig, $"{dataPath}/GameConfig.asset");
 
-            // 10. Generate Prefabs
+            // 11. Generate Prefabs
             PrefabInitializer.GeneratePrefabs();
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            Debug.Log("StarStrike Approach A: Pure ScriptableObject Configuration Assets successfully generated in " + dataPath);
+            Debug.Log("StarStrike pure ScriptableObject configuration assets and prefabs successfully generated!");
         }
 
         private static void EnsureFolder(string parent, string name)
@@ -144,17 +142,20 @@ namespace StarStrike.Editor
             }
         }
 
-        private static void CreateOrUpdateAsset(UnityEngine.Object asset, string path)
+        private static T CreateOrUpdateAsset<T>(T asset, string path) where T : UnityEngine.Object
         {
-            var existing = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+            asset.name = System.IO.Path.GetFileNameWithoutExtension(path);
+            var existing = AssetDatabase.LoadAssetAtPath<T>(path);
             if (existing != null)
             {
                 EditorUtility.CopySerialized(asset, existing);
                 EditorUtility.SetDirty(existing);
+                return existing;
             }
             else
             {
                 AssetDatabase.CreateAsset(asset, path);
+                return asset;
             }
         }
     }

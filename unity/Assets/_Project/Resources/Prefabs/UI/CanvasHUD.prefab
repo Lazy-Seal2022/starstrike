@@ -1,0 +1,207 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6728193302663402268
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4443155747916600436}
+  - component: {fileID: 284939282737487701}
+  - component: {fileID: 7914323352107472018}
+  - component: {fileID: 455493335144410798}
+  - component: {fileID: 2439962878667679906}
+  - component: {fileID: 2234842512936025724}
+  - component: {fileID: 182982071724279986}
+  - component: {fileID: 607335398411203324}
+  - component: {fileID: 7755228392284798844}
+  m_Layer: 0
+  m_Name: CanvasHUD
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &4443155747916600436
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6728193302663402268}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0, y: 0, z: 0}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0, y: 0}
+--- !u!223 &284939282737487701
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6728193302663402268}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 0
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_AdditionalShaderChannelsFlag: 0
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 100
+  m_TargetDisplay: 0
+--- !u!114 &7914323352107472018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6728193302663402268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
+  m_UiScaleMode: 1
+  m_ReferencePixelsPerUnit: 100
+  m_ScaleFactor: 1
+  m_ReferenceResolution: {x: 1920, y: 1080}
+  m_ScreenMatchMode: 0
+  m_MatchWidthOrHeight: 0.5
+  m_PhysicalUnit: 3
+  m_FallbackScreenDPI: 96
+  m_DefaultSpriteDPI: 96
+  m_DynamicPixelsPerUnit: 1
+  m_PresetInfoIsWorld: 0
+--- !u!114 &455493335144410798
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6728193302663402268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GraphicRaycaster
+  m_IgnoreReversedGraphics: 1
+  m_BlockingObjects: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!114 &2439962878667679906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6728193302663402268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1a6efd4f6df08b4cabb6f7c5eace70a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: StarStrike.UI::StarStrike.UI.CanvasHUD
+  forceShowMobileControls: 0
+  playerStatus: {fileID: 2234842512936025724}
+  evolutionBannerController: {fileID: 182982071724279986}
+  upgradeDrawerController: {fileID: 607335398411203324}
+  floatingTextController: {fileID: 7755228392284798844}
+  canvas: {fileID: 0}
+  shipNameText: {fileID: 0}
+  gemsText: {fileID: 0}
+  shieldFill: {fileID: 0}
+  shieldValueText: {fileID: 0}
+  energyFill: {fileID: 0}
+  energyValueText: {fileID: 0}
+  upgradesDrawer: {fileID: 0}
+  toggleUpgradesButton: {fileID: 0}
+  toggleUpgradesButtonText: {fileID: 0}
+  evolutionBanner: {fileID: 0}
+  evolveFighterButton: {fileID: 0}
+  evolveMinerButton: {fileID: 0}
+  mobileControlsRoot: {fileID: 0}
+--- !u!114 &2234842512936025724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6728193302663402268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02b8110c5e9e3844d882e0fd4a62d550, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: StarStrike.UI::StarStrike.UI.HUDPlayerStatus
+  themeConfig: {fileID: 11400000, guid: 47a4e455b0e819c4b816a46065258c61, type: 2}
+  shieldFill: {fileID: 0}
+  shieldGhostFill: {fileID: 0}
+  shieldText: {fileID: 0}
+  energyFill: {fileID: 0}
+  energyText: {fileID: 0}
+  boostFill: {fileID: 0}
+  shipNameText: {fileID: 0}
+  gemsText: {fileID: 0}
+--- !u!114 &182982071724279986
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6728193302663402268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 186298a5072118642863c609ebb601ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: StarStrike.UI::StarStrike.UI.HUDEvolutionBanner
+  themeConfig: {fileID: 11400000, guid: 47a4e455b0e819c4b816a46065258c61, type: 2}
+  bannerRoot: {fileID: 0}
+  buttonsContainer: {fileID: 0}
+  promptText: {fileID: 0}
+  buttonTemplate: {fileID: 0}
+--- !u!114 &607335398411203324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6728193302663402268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9248e196a251b84fb9ecb50119d101c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: StarStrike.UI::StarStrike.UI.HUDUpgradeDrawer
+  themeConfig: {fileID: 11400000, guid: 47a4e455b0e819c4b816a46065258c61, type: 2}
+  drawerPanel: {fileID: 0}
+  toggleButton: {fileID: 0}
+  toggleButtonText: {fileID: 0}
+  itemsContainer: {fileID: 0}
+--- !u!114 &7755228392284798844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6728193302663402268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1efe994644c1a78429d766f11a9edd01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: StarStrike.UI::StarStrike.UI.HUDFloatingText
+  themeConfig: {fileID: 11400000, guid: 47a4e455b0e819c4b816a46065258c61, type: 2}
