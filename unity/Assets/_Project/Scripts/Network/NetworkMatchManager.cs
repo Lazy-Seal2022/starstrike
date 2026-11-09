@@ -19,7 +19,8 @@ namespace StarStrike.Network
         public static event Action OnScoreboardUpdated;
 
         [Header("Match Settings")]
-        public int killsToWin = 10;
+        public bool enableMatchEnd = false;
+        public int killsToWin = 0;
         public float spawnRadius = 35f;
         public int maxSlots = 8;
 
@@ -182,7 +183,7 @@ namespace StarStrike.Network
 
         public void RecordKill(ulong killerClientId, ulong victimClientId)
         {
-            if (!IsServer || MatchEnded.Value) return;
+            if (!IsServer || (enableMatchEnd && MatchEnded.Value)) return;
 
             FixedString32Bytes killerName = "Unknown";
             FixedString32Bytes victimName = "Unknown";
@@ -218,8 +219,8 @@ namespace StarStrike.Network
 
             BroadcastKillClientRpc(killerName, victimName);
 
-            // Check victory condition
-            if (killerKills >= killsToWin)
+            // Check victory condition only if match ending is enabled
+            if (enableMatchEnd && killsToWin > 0 && killerKills >= killsToWin)
             {
                 MatchEnded.Value = true;
                 WinnerName.Value = killerName;

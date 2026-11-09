@@ -18,6 +18,9 @@ namespace StarStrike.Gameplay
         public float sightRadius = 40f;
         public float attackRadius = 15f;
 
+        [Header("Game Flow Options")]
+        public bool triggerVictoryOnDefeat = false;
+
         private ShipMovement movement;
         private ShipHealth health;
         private ShipWeapon weapon;
@@ -222,7 +225,7 @@ namespace StarStrike.Gameplay
             GameEvents.TriggerAsteroidDestroyed(transform.position + Vector3.left, "Large");
             
             GameEvents.TriggerBossDefeated();
-            if (GameManager.Instance != null)
+            if (triggerVictoryOnDefeat && GameManager.Instance != null)
             {
                 GameManager.Instance.Victory();
             }

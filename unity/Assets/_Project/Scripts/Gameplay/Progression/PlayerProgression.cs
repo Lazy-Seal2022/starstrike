@@ -201,9 +201,12 @@ namespace StarStrike.Gameplay
             if (health != null) health.OnDied -= HandleDeath;
         }
 
+        [Header("Game Flow Options")]
+        public bool triggerGameOverOnDeath = false;
+
         private void HandleDeath()
         {
-            if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Playing)
+            if (triggerGameOverOnDeath && GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Playing)
             {
                 if (shipRenderer != null) shipRenderer.enabled = false;
                 if (movement != null) movement.enabled = false;
@@ -222,10 +225,8 @@ namespace StarStrike.Gameplay
             if (movement != null) movement.enabled = false;
             if (weapon != null) weapon.enabled = false;
             
-            // TODO: Spawn explosion particles here
-            if (PoolManager.Instance != null) {
-                // PoolManager.Instance.Spawn("Explosion", transform.position, Quaternion.identity, null);
-            }
+            GameEvents.TriggerAsteroidDestroyed(transform.position, "Large");
+            AudioService.Instance?.PlaySound("explosion", 0.8f);
 
             yield return new WaitForSeconds(1.5f);
             
