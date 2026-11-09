@@ -74,9 +74,15 @@ namespace StarStrike.UI
 
         private void Awake()
         {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
             Instance = this;
             EnsureEventSystem();
             BuildCanvasIfNeeded();
+            SetHUDVisible(false);
 
             if (FindObjectOfType<AchievementUI>() == null)
             {

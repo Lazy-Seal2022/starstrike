@@ -44,10 +44,13 @@ namespace StarStrike.Bootstrap
             mainMenuGO.transform.SetParent(canvasGO.transform, false);
             mainMenuGO.AddComponent<MainMenuUI>();
 
-            // 5. Create CanvasHUD
-            var hudGO = new GameObject("CanvasHUD");
-            hudGO.transform.SetParent(canvasGO.transform, false);
-            hudGO.AddComponent<CanvasHUD>();
+            // 5. Create CanvasHUD if not already present
+            if (CanvasHUD.Instance == null && Object.FindObjectOfType<CanvasHUD>() == null)
+            {
+                var hudGO = new GameObject("CanvasHUD");
+                hudGO.transform.SetParent(canvasGO.transform, false);
+                hudGO.AddComponent<CanvasHUD>();
+            }
 
             // 6. Create NetworkLobbyUI
             var lobbyGO = new GameObject("NetworkLobbyUI");

@@ -15,6 +15,8 @@ namespace StarStrike.UI
         private Text gemsText;
         private Transform shipListContainer;
 
+        public bool IsVisible => menuContainer != null && menuContainer.activeSelf;
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -50,8 +52,18 @@ namespace StarStrike.UI
             }
         }
 
+        public void EnsureUIBuilt()
+        {
+            if (Instance == null) Instance = this;
+            if (menuContainer == null)
+            {
+                BuildUI();
+            }
+        }
+
         public void SetMenuVisible(bool visible)
         {
+            EnsureUIBuilt();
             if (menuContainer != null)
             {
                 menuContainer.SetActive(visible);
@@ -176,9 +188,11 @@ namespace StarStrike.UI
             }
 
             // Clear old children
-            foreach (Transform child in shipListContainer)
+            for (int i = shipListContainer.childCount - 1; i >= 0; i--)
             {
-                Destroy(child.gameObject);
+                var child = shipListContainer.GetChild(i);
+                if (Application.isPlaying) Destroy(child.gameObject);
+                else DestroyImmediate(child.gameObject);
             }
 
             Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");

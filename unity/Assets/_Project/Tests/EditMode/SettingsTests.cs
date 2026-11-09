@@ -149,5 +149,30 @@ namespace StarStrike.Tests.EditMode
             settings.Close();
             Assert.IsFalse(settings.IsVisible, "Settings should be hidden after Close()");
         }
+
+        [Test]
+        public void SettingsUI_OpenAndClose_HidesMainMenuWithoutOverlap()
+        {
+            trackObject = new GameObject("TestRoot");
+            var menuGO = new GameObject("MainMenuUI");
+            menuGO.transform.SetParent(trackObject.transform, false);
+            var menu = menuGO.AddComponent<MainMenuUI>();
+            menu.SetMenuVisible(true);
+            Assert.IsTrue(menu.IsVisible, "MainMenu should be visible initially");
+
+            var settingsGO = new GameObject("SettingsUI");
+            settingsGO.transform.SetParent(trackObject.transform, false);
+            var settings = settingsGO.AddComponent<SettingsUI>();
+
+            // When settings opens, main menu must hide so they do not overlap
+            settings.Open();
+            Assert.IsTrue(settings.IsVisible, "Settings must be visible");
+            Assert.IsFalse(menu.IsVisible, "MainMenu must be hidden while Settings is open");
+
+            // When settings closes, main menu must be restored
+            settings.Close();
+            Assert.IsFalse(settings.IsVisible, "Settings must be closed");
+            Assert.IsTrue(menu.IsVisible, "MainMenu must be restored after Settings closes");
+        }
     }
 }
