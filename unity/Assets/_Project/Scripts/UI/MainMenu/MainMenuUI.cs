@@ -31,16 +31,30 @@ namespace StarStrike.UI
         private void OnEnable()
         {
             GameEvents.OnGameStarted += HandleGameStarted;
+            Network.NetworkLobbyUI.OnLobbyVisibilityChanged += HandleLobbyVisibilityChanged;
         }
 
         private void OnDisable()
         {
             GameEvents.OnGameStarted -= HandleGameStarted;
+            Network.NetworkLobbyUI.OnLobbyVisibilityChanged -= HandleLobbyVisibilityChanged;
         }
 
         private void HandleGameStarted()
         {
             SetMenuVisible(false);
+        }
+
+        private void HandleLobbyVisibilityChanged(bool isLobbyVisible)
+        {
+            if (isLobbyVisible)
+            {
+                SetMenuVisible(false);
+            }
+            else if (GameManager.Instance == null || GameManager.Instance.CurrentState == GameState.Menu)
+            {
+                SetMenuVisible(true);
+            }
         }
 
         private void Start()
@@ -78,7 +92,10 @@ namespace StarStrike.UI
         {
             if (GameManager.Instance != null && menuContainer != null)
             {
-                bool shouldShow = GameManager.Instance.CurrentState == GameState.Menu;
+                bool isOverlayOpen = (SettingsUI.Instance != null && SettingsUI.Instance.IsVisible) ||
+                                     (Network.NetworkLobbyUI.Instance != null && Network.NetworkLobbyUI.Instance.IsVisible);
+
+                bool shouldShow = GameManager.Instance.CurrentState == GameState.Menu && !isOverlayOpen;
                 if (menuContainer.activeSelf != shouldShow)
                 {
                     SetMenuVisible(shouldShow);
@@ -111,7 +128,17 @@ namespace StarStrike.UI
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
 
-            // Background
+            // Sorting order for main menu
+            Canvas menuCanvas = menuContainer.GetComponent<Canvas>();
+            if (menuCanvas == null) menuCanvas = menuContainer.AddComponent<Canvas>();
+            menuCanvas.overrideSorting = true;
+            menuCanvas.sortingOrder = 50;
+            if (menuContainer.GetComponent<GraphicRaycaster>() == null)
+            {
+                menuContainer.AddComponent<GraphicRaycaster>();
+            }
+
+            // Solid opaque background (100% covers previous screen)
             GameObject bgObj = new GameObject("Background", typeof(RectTransform), typeof(Image));
             bgObj.transform.SetParent(menuContainer.transform, false);
             RectTransform bgRt = bgObj.GetComponent<RectTransform>();
@@ -119,7 +146,9 @@ namespace StarStrike.UI
             bgRt.anchorMax = Vector2.one;
             bgRt.offsetMin = Vector2.zero;
             bgRt.offsetMax = Vector2.zero;
-            bgObj.GetComponent<Image>().color = new Color(0.04f, 0.06f, 0.12f, 0.70f);
+            var bgImg = bgObj.GetComponent<Image>();
+            bgImg.color = new Color(0.03f, 0.05f, 0.08f, 1.0f);
+            bgImg.raycastTarget = true;
 
             // Title
             CreateText(menuContainer.transform, "TitleText", "STARSTRIKE", 64, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.8f), new Vector2(0.5f, 0.8f), new Vector2(-300, -50), new Vector2(300, 50), defaultFont);

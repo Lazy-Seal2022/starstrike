@@ -145,7 +145,8 @@ namespace StarStrike.UI
             rt.sizeDelta = new Vector2(520f, 420f);
 
             var bg = modalRoot.GetComponent<Image>();
-            bg.color = themeConfig != null ? themeConfig.panelBackground : new Color(0.05f, 0.08f, 0.14f, 0.94f);
+            bg.color = new Color(0.04f, 0.07f, 0.13f, 1.0f);
+            bg.raycastTarget = true;
 
             // Title
             GameObject titleObj = new GameObject("TitleText", typeof(RectTransform), typeof(Text));

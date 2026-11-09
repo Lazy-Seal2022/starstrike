@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.UI;
 using StarStrike.Platform.Storage;
 using StarStrike.Gameplay.Audio;
 using StarStrike.Gameplay;
@@ -169,10 +170,43 @@ namespace StarStrike.Tests.EditMode
             Assert.IsTrue(settings.IsVisible, "Settings must be visible");
             Assert.IsFalse(menu.IsVisible, "MainMenu must be hidden while Settings is open");
 
+            // Verify settings has solid opaque coverage (alpha == 1)
+            var backdrop = settings.settingsContainer.transform.Find("Backdrop");
+            Assert.IsNotNull(backdrop, "Settings must have a full-screen Backdrop");
+            var img = backdrop.GetComponent<Image>();
+            Assert.AreEqual(1f, img.color.a, 0.01f, "Backdrop must be 100% solid opaque to cover underlying UI");
+
             // When settings closes, main menu must be restored
             settings.Close();
             Assert.IsFalse(settings.IsVisible, "Settings must be closed");
             Assert.IsTrue(menu.IsVisible, "MainMenu must be restored after Settings closes");
+        }
+
+        [Test]
+        public void NetworkLobbyUI_OpenAndBack_CoversAndRestoresMainMenu()
+        {
+            trackObject = new GameObject("TestRoot");
+            var menuGO = new GameObject("MainMenuUI");
+            menuGO.transform.SetParent(trackObject.transform, false);
+            var menu = menuGO.AddComponent<MainMenuUI>();
+            menu.SetMenuVisible(true);
+            Assert.IsTrue(menu.IsVisible);
+
+            var lobbyGO = new GameObject("NetworkLobbyUI");
+            lobbyGO.transform.SetParent(trackObject.transform, false);
+            var lobby = lobbyGO.AddComponent<StarStrike.Network.NetworkLobbyUI>();
+
+            lobby.SetVisible(true);
+            Assert.IsTrue(lobby.IsVisible);
+            Assert.IsFalse(menu.IsVisible, "MainMenu must be hidden while Lobby is open");
+
+            var bg = lobbyGO.transform.Find("NetworkLobbyContainer/Background");
+            Assert.IsNotNull(bg);
+            var bgImg = bg.GetComponent<Image>();
+            Assert.AreEqual(1f, bgImg.color.a, 0.01f, "Lobby background must be 100% solid opaque");
+
+            lobby.SetVisible(false);
+            Assert.IsFalse(lobby.IsVisible);
         }
     }
 }

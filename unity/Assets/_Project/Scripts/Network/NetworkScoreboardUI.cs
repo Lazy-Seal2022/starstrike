@@ -176,7 +176,8 @@ namespace StarStrike.Network
             vmRt.anchorMax = new Vector2(0.5f, 0.5f);
             vmRt.anchoredPosition = Vector2.zero;
             vmRt.sizeDelta = new Vector2(480, 320);
-            victoryModal.GetComponent<Image>().color = new Color(0.04f, 0.07f, 0.14f, 0.96f);
+            victoryModal.GetComponent<Image>().color = new Color(0.04f, 0.07f, 0.14f, 1.0f);
+            victoryModal.GetComponent<Image>().raycastTarget = true;
 
             // Title & Winner Text
             GameObject winObj = CreateText(victoryModal.transform, "WinnerText", "MATCH CHAMPION\nWINNER!\nREACHED 10 KILLS!", 24, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.65f), new Vector2(0.5f, 0.65f), new Vector2(-220, -60), new Vector2(220, 60), font);

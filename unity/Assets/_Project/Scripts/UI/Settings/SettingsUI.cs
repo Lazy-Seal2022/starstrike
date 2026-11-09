@@ -58,6 +58,7 @@ namespace StarStrike.UI
 
         private GameState stateBeforeOpening = GameState.Menu;
         private bool wasMainMenuVisible = false;
+        private bool wasLobbyVisible = false;
 
         public bool IsVisible => settingsContainer != null && settingsContainer.activeSelf;
 
@@ -128,6 +129,14 @@ namespace StarStrike.UI
                 menu.SetMenuVisible(false);
             }
 
+            wasLobbyVisible = false;
+            var lobby = Network.NetworkLobbyUI.Instance ?? FindAnyObjectByType<Network.NetworkLobbyUI>();
+            if (lobby != null && lobby.IsVisible)
+            {
+                wasLobbyVisible = true;
+                lobby.SetVisible(false);
+            }
+
             var hud = CanvasHUD.Instance ?? FindAnyObjectByType<CanvasHUD>();
             if (hud != null)
             {
@@ -162,9 +171,17 @@ namespace StarStrike.UI
                 CanvasHUD.Instance.forceShowMobileControls = StorageService.GetShowMobileControls();
             }
 
-            var menu = MainMenuUI.Instance ?? FindAnyObjectByType<MainMenuUI>();
-            if (wasMainMenuVisible && (GameManager.Instance == null || GameManager.Instance.CurrentState == GameState.Menu))
+            if (wasLobbyVisible)
             {
+                var lobby = Network.NetworkLobbyUI.Instance ?? FindAnyObjectByType<Network.NetworkLobbyUI>();
+                if (lobby != null)
+                {
+                    lobby.SetVisible(true);
+                }
+            }
+            else if (wasMainMenuVisible && (GameManager.Instance == null || GameManager.Instance.CurrentState == GameState.Menu))
+            {
+                var menu = MainMenuUI.Instance ?? FindAnyObjectByType<MainMenuUI>();
                 if (menu != null)
                 {
                     menu.SetMenuVisible(true);
@@ -384,7 +401,7 @@ namespace StarStrike.UI
             Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             Sprite roundedSprite = ProceduralSpriteHelper.GetRoundedBoxSprite(32, 6);
 
-            // Container stretches to cover the entire screen so backdrop dims everything behind
+            // Container stretches to cover the entire screen so backdrop covers everything behind
             settingsContainer = new GameObject("SettingsContainer", typeof(RectTransform));
             settingsContainer.transform.SetParent(transform, false);
 
@@ -394,7 +411,17 @@ namespace StarStrike.UI
             cRt.offsetMin = Vector2.zero;
             cRt.offsetMax = Vector2.zero;
 
-            // 1. Full-screen Dimmer Backdrop (blocks clicks and prevents background bleeding)
+            // Sorting order for Settings: 500 (renders on top of everything)
+            Canvas settingsCanvas = settingsContainer.GetComponent<Canvas>();
+            if (settingsCanvas == null) settingsCanvas = settingsContainer.AddComponent<Canvas>();
+            settingsCanvas.overrideSorting = true;
+            settingsCanvas.sortingOrder = 500;
+            if (settingsContainer.GetComponent<GraphicRaycaster>() == null)
+            {
+                settingsContainer.AddComponent<GraphicRaycaster>();
+            }
+
+            // 1. Full-screen Solid Opaque Backdrop (100% covers previous UI, completely prevents text bleed-through)
             GameObject backdropObj = new GameObject("Backdrop", typeof(RectTransform), typeof(Image));
             backdropObj.transform.SetParent(settingsContainer.transform, false);
             var bdRt = backdropObj.GetComponent<RectTransform>();
@@ -403,7 +430,8 @@ namespace StarStrike.UI
             bdRt.offsetMin = Vector2.zero;
             bdRt.offsetMax = Vector2.zero;
             var bdImg = backdropObj.GetComponent<Image>();
-            bdImg.color = new Color(0.02f, 0.04f, 0.08f, 0.88f);
+            bdImg.color = new Color(0.02f, 0.03f, 0.06f, 1.0f);
+            bdImg.raycastTarget = true;
 
             // 2. Centered Dialog Card
             GameObject dialogCard = new GameObject("DialogCard", typeof(RectTransform), typeof(Image));
@@ -417,7 +445,7 @@ namespace StarStrike.UI
             var cardImg = dialogCard.GetComponent<Image>();
             cardImg.sprite = roundedSprite;
             cardImg.type = Image.Type.Sliced;
-            cardImg.color = themeConfig != null ? themeConfig.panelBackground : new Color(0.06f, 0.09f, 0.15f, 0.98f);
+            cardImg.color = new Color(0.05f, 0.08f, 0.14f, 1.0f);
 
             // 3. Header Section
             CreateTextExplicit(dialogCard.transform, "HeaderTitle", "⚙ SYSTEM SETTINGS", 24, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter,

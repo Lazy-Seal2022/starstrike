@@ -13,6 +13,7 @@ namespace StarStrike.Network
     public class NetworkLobbyUI : MonoBehaviour
     {
         public static NetworkLobbyUI Instance { get; private set; }
+        public static event Action<bool> OnLobbyVisibilityChanged;
 
         private GameObject lobbyContainer;
         private InputField nameInput;
@@ -20,6 +21,8 @@ namespace StarStrike.Network
         private InputField portInput;
         private Text statusText;
         private string selectedShipId = "scout";
+
+        public bool IsVisible => lobbyContainer != null && lobbyContainer.activeSelf;
 
         private void Awake()
         {
@@ -34,8 +37,18 @@ namespace StarStrike.Network
             SetVisible(false);
         }
 
+        public void EnsureUIBuilt()
+        {
+            if (Instance == null) Instance = this;
+            if (lobbyContainer == null)
+            {
+                BuildUI();
+            }
+        }
+
         public void SetVisible(bool visible)
         {
+            EnsureUIBuilt();
             if (lobbyContainer != null)
             {
                 lobbyContainer.SetActive(visible);
@@ -46,6 +59,27 @@ namespace StarStrike.Network
                     if (statusText != null) statusText.text = "Ready to engage.";
                 }
             }
+
+            // Decoupled cross-assembly notification to hide/show MainMenu and HUD
+            var allBehaviours = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
+            for (int i = 0; i < allBehaviours.Length; i++)
+            {
+                var b = allBehaviours[i];
+                if (b == null) continue;
+                string typeName = b.GetType().Name;
+                if (typeName == "MainMenuUI")
+                {
+                    var mi = b.GetType().GetMethod("SetMenuVisible", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                    mi?.Invoke(b, new object[] { !visible });
+                }
+                else if (visible && typeName == "CanvasHUD")
+                {
+                    var mi = b.GetType().GetMethod("SetHUDVisible", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                    mi?.Invoke(b, new object[] { false });
+                }
+            }
+
+            OnLobbyVisibilityChanged?.Invoke(visible);
         }
 
         private void BuildUI()
@@ -60,7 +94,17 @@ namespace StarStrike.Network
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
 
-            // Semi-transparent background
+            // Sorting order for Lobby (above MainMenu & HUD)
+            Canvas lobbyCanvas = lobbyContainer.GetComponent<Canvas>();
+            if (lobbyCanvas == null) lobbyCanvas = lobbyContainer.AddComponent<Canvas>();
+            lobbyCanvas.overrideSorting = true;
+            lobbyCanvas.sortingOrder = 300;
+            if (lobbyContainer.GetComponent<GraphicRaycaster>() == null)
+            {
+                lobbyContainer.AddComponent<GraphicRaycaster>();
+            }
+
+            // 100% Solid Opaque Background (Completely covers the previous screen)
             GameObject bgObj = new GameObject("Background", typeof(RectTransform), typeof(Image));
             bgObj.transform.SetParent(lobbyContainer.transform, false);
             RectTransform bgRt = bgObj.GetComponent<RectTransform>();
@@ -68,7 +112,9 @@ namespace StarStrike.Network
             bgRt.anchorMax = Vector2.one;
             bgRt.offsetMin = Vector2.zero;
             bgRt.offsetMax = Vector2.zero;
-            bgObj.GetComponent<Image>().color = new Color(0.03f, 0.05f, 0.10f, 0.90f);
+            var bgImg = bgObj.GetComponent<Image>();
+            bgImg.color = new Color(0.03f, 0.05f, 0.09f, 1.0f);
+            bgImg.raycastTarget = true;
 
             // Title
             CreateText(lobbyContainer.transform, "TitleText", "MULTIPLAYER DOGFIGHT", 44, FontStyle.Bold, new Color(1f, 0.35f, 0.2f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.85f), new Vector2(0.5f, 0.85f), new Vector2(-300, -35), new Vector2(300, 35), defaultFont);
