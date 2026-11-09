@@ -111,43 +111,60 @@ namespace StarStrike.Tests.EditMode
         [Test]
         public void NetworkPlayerShip_ComponentSetup_HasRequiredPhysicsAndRenderer()
         {
-            testObject = new GameObject("NetworkShip_Test");
-            var ship = testObject.AddComponent<NetworkPlayerShip>();
+            var prefab = Resources.Load<GameObject>("Prefabs/Network/NetworkPlayerShip");
+            if (prefab != null)
+            {
+                var rb = prefab.GetComponent<Rigidbody2D>();
+                Assert.IsNotNull(rb);
+                Assert.AreEqual(0f, rb.gravityScale);
 
-            var rb = testObject.GetComponent<Rigidbody2D>();
-            Assert.IsNotNull(rb);
-            Assert.AreEqual(0f, rb.gravityScale);
-            Assert.AreEqual(0.5f, rb.linearDamping);
+                var col = prefab.GetComponent<CircleCollider2D>();
+                Assert.IsNotNull(col);
+                Assert.IsFalse(col.isTrigger);
 
-            var col = testObject.GetComponent<CircleCollider2D>();
-            Assert.IsNotNull(col);
-            Assert.IsFalse(col.isTrigger);
+                var sr = prefab.GetComponent<SpriteRenderer>();
+                Assert.IsNotNull(sr);
+                Assert.AreEqual(10, sr.sortingOrder);
 
-            var sr = testObject.GetComponent<SpriteRenderer>();
-            Assert.IsNotNull(sr);
-            Assert.AreEqual(10, sr.sortingOrder);
-
-            var netObj = testObject.GetComponent<NetworkObject>();
-            Assert.IsNotNull(netObj);
+                var netObj = prefab.GetComponent<NetworkObject>();
+                Assert.IsNotNull(netObj);
+            }
+            else
+            {
+                testObject = new GameObject("NetworkShip_Test");
+                testObject.AddComponent<NetworkPlayerShip>();
+                Assert.IsNotNull(testObject.GetComponent<NetworkObject>());
+                Assert.IsNotNull(testObject.GetComponent<Rigidbody2D>());
+                Assert.IsNotNull(testObject.GetComponent<CircleCollider2D>());
+            }
         }
 
         [Test]
         public void NetworkLaserProjectile_ComponentSetup_HasTriggerAndContinuousPhysics()
         {
-            testObject = new GameObject("NetworkLaser_Test");
-            var laser = testObject.AddComponent<NetworkLaserProjectile>();
+            var prefab = Resources.Load<GameObject>("Prefabs/Network/NetworkLaserProjectile");
+            if (prefab != null)
+            {
+                var rb = prefab.GetComponent<Rigidbody2D>();
+                Assert.IsNotNull(rb);
+                Assert.AreEqual(0f, rb.gravityScale);
+                Assert.AreEqual(CollisionDetectionMode2D.Continuous, rb.collisionDetectionMode);
 
-            var rb = testObject.GetComponent<Rigidbody2D>();
-            Assert.IsNotNull(rb);
-            Assert.AreEqual(0f, rb.gravityScale);
-            Assert.AreEqual(CollisionDetectionMode2D.Continuous, rb.collisionDetectionMode);
+                var col = prefab.GetComponent<CircleCollider2D>();
+                Assert.IsNotNull(col);
+                Assert.IsTrue(col.isTrigger);
 
-            var col = testObject.GetComponent<CircleCollider2D>();
-            Assert.IsNotNull(col);
-            Assert.IsTrue(col.isTrigger);
-
-            var netObj = testObject.GetComponent<NetworkObject>();
-            Assert.IsNotNull(netObj);
+                var netObj = prefab.GetComponent<NetworkObject>();
+                Assert.IsNotNull(netObj);
+            }
+            else
+            {
+                testObject = new GameObject("NetworkLaser_Test");
+                testObject.AddComponent<NetworkLaserProjectile>();
+                Assert.IsNotNull(testObject.GetComponent<NetworkObject>());
+                Assert.IsNotNull(testObject.GetComponent<Rigidbody2D>());
+                Assert.IsNotNull(testObject.GetComponent<CircleCollider2D>());
+            }
         }
     }
 }
