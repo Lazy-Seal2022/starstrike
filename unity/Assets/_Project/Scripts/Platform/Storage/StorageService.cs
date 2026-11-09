@@ -10,6 +10,17 @@ namespace StarStrike.Platform.Storage
         public int highScore = 0;
         public int totalMetaGems = 0;
         public bool isAudioMuted = false;
+        public float masterVolume = 1.0f;
+        public float sfxVolume = 0.8f;
+        public float musicVolume = 0.7f;
+
+        // Control settings
+        public int controlAimMode = 0; // 0 = Mouse / Direct Aim, 1 = Keyboard Turn (Classic)
+        public float mouseSensitivity = 1.0f;
+        public bool autoBrakeEnabled = true;
+        public bool showMobileControls = false;
+        public bool invertTurn = false;
+
         public string lastShipId = "scout";
         public List<string> unlockedShips = new List<string> { "scout" };
         public List<string> achievements = new List<string>();
@@ -45,6 +56,7 @@ namespace StarStrike.Platform.Storage
                     string json = File.ReadAllText(SavePath);
                     currentProfile = JsonUtility.FromJson<PlayerProfile>(json);
                     if (currentProfile == null) currentProfile = new PlayerProfile();
+                    else EnsureDefaultSettings(currentProfile);
                 }
                 else
                 {
@@ -55,6 +67,18 @@ namespace StarStrike.Platform.Storage
             {
                 Debug.LogWarning($"Failed to load player profile from {SavePath}: {ex.Message}. Using default profile.");
                 currentProfile = new PlayerProfile();
+            }
+        }
+
+        private static void EnsureDefaultSettings(PlayerProfile profile)
+        {
+            if (profile.masterVolume <= 0.001f && profile.sfxVolume <= 0.001f && profile.musicVolume <= 0.001f && !profile.isAudioMuted)
+            {
+                profile.masterVolume = 1.0f;
+                profile.sfxVolume = 0.8f;
+                profile.musicVolume = 0.7f;
+                profile.mouseSensitivity = 1.0f;
+                profile.autoBrakeEnabled = true;
             }
         }
 
@@ -90,6 +114,76 @@ namespace StarStrike.Platform.Storage
         }
 
         public static bool GetAudioMuted() => Profile.isAudioMuted;
+
+        public static float GetMasterVolume() => Profile.masterVolume;
+        public static void SaveMasterVolume(float vol)
+        {
+            Profile.masterVolume = Mathf.Clamp01(vol);
+            SaveProfile();
+        }
+
+        public static float GetSfxVolume() => Profile.sfxVolume;
+        public static void SaveSfxVolume(float vol)
+        {
+            Profile.sfxVolume = Mathf.Clamp01(vol);
+            SaveProfile();
+        }
+
+        public static float GetMusicVolume() => Profile.musicVolume;
+        public static void SaveMusicVolume(float vol)
+        {
+            Profile.musicVolume = Mathf.Clamp01(vol);
+            SaveProfile();
+        }
+
+        public static int GetControlAimMode() => Profile.controlAimMode;
+        public static void SaveControlAimMode(int mode)
+        {
+            Profile.controlAimMode = mode;
+            SaveProfile();
+        }
+
+        public static float GetMouseSensitivity() => Profile.mouseSensitivity;
+        public static void SaveMouseSensitivity(float sens)
+        {
+            Profile.mouseSensitivity = Mathf.Clamp(sens, 0.2f, 3.0f);
+            SaveProfile();
+        }
+
+        public static bool GetAutoBrake() => Profile.autoBrakeEnabled;
+        public static void SaveAutoBrake(bool enabled)
+        {
+            Profile.autoBrakeEnabled = enabled;
+            SaveProfile();
+        }
+
+        public static bool GetShowMobileControls() => Profile.showMobileControls;
+        public static void SaveShowMobileControls(bool show)
+        {
+            Profile.showMobileControls = show;
+            SaveProfile();
+        }
+
+        public static bool GetInvertTurn() => Profile.invertTurn;
+        public static void SaveInvertTurn(bool invert)
+        {
+            Profile.invertTurn = invert;
+            SaveProfile();
+        }
+
+        public static void ResetSettingsToDefaults()
+        {
+            Profile.isAudioMuted = false;
+            Profile.masterVolume = 1.0f;
+            Profile.sfxVolume = 0.8f;
+            Profile.musicVolume = 0.7f;
+            Profile.controlAimMode = 0;
+            Profile.mouseSensitivity = 1.0f;
+            Profile.autoBrakeEnabled = true;
+            Profile.showMobileControls = false;
+            Profile.invertTurn = false;
+            SaveProfile();
+        }
 
         public static void SaveLastShipEvolved(string shipId)
         {

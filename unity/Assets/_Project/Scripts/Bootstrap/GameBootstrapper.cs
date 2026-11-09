@@ -59,6 +59,11 @@ namespace StarStrike.Bootstrap
             scoreboardGO.transform.SetParent(canvasGO.transform, false);
             scoreboardGO.AddComponent<StarStrike.Network.NetworkScoreboardUI>();
 
+            // 8. Create SettingsUI
+            var settingsGO = new GameObject("SettingsUI");
+            settingsGO.transform.SetParent(canvasGO.transform, false);
+            settingsGO.AddComponent<StarStrike.UI.SettingsUI>();
+
             Debug.Log("GameBootstrapper: Core systems instantiated.");
         }
     }

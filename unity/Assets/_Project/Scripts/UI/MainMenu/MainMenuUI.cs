@@ -144,6 +144,15 @@ namespace StarStrike.UI
             // Start Key Hint
             CreateText(menuContainer.transform, "StartHintText", "[ ENTER / SPACE: Launch PvE  |  Or Click Multiplayer PvP ]", 15, FontStyle.Normal, new Color(0.85f, 0.9f, 1f, 0.9f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.09f), new Vector2(0.5f, 0.09f), new Vector2(-300, -15), new Vector2(300, 15), defaultFont);
 
+            // Settings Button (Top Right)
+            GameObject settingsBtnObj = CreateButton(menuContainer.transform, "SettingsButton", "⚙ SETTINGS [O]", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-120f, -40f), new Vector2(180f, 44f), new Color(0.12f, 0.22f, 0.35f), defaultFont, 16);
+            settingsBtnObj.GetComponent<Button>().onClick.AddListener(() => {
+                if (StarStrike.UI.SettingsUI.Instance != null)
+                {
+                    StarStrike.UI.SettingsUI.Instance.Open();
+                }
+            });
+
             // Ship Hangar
             GameObject shipHeader = CreateText(menuContainer.transform, "ShipHeader", "SELECT HANGAR SHIP", 20, FontStyle.Normal, Color.yellow, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.55f), new Vector2(0.5f, 0.55f), new Vector2(-200, -25), new Vector2(200, 25), defaultFont);
 

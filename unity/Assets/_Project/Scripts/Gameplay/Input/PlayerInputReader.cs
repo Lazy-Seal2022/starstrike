@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using StarStrike.Platform.Storage;
 
 namespace StarStrike.Gameplay
 {
@@ -10,6 +11,12 @@ namespace StarStrike.Gameplay
         public ShipMovement movement;
         public ShipWeapon weapon;
         public ShipHealth health;
+
+        [Header("Control Settings")]
+        public int aimMode = 0; // 0 = Mouse / Direct Aim, 1 = Keyboard Turn
+        public float mouseSensitivity = 1.0f;
+        public bool autoBrakeEnabled = true;
+        public bool invertTurn = false;
 
         [Header("Input Actions")]
         private InputAction moveAction;
@@ -36,13 +43,23 @@ namespace StarStrike.Gameplay
         private void Awake()
         {
             Instance = this;
+            ApplySettings();
             ResolveComponents();
             SetupInputActions();
         }
 
         private void Start()
         {
+            ApplySettings();
             ResolveComponents();
+        }
+
+        public void ApplySettings()
+        {
+            aimMode = StorageService.GetControlAimMode();
+            mouseSensitivity = StorageService.GetMouseSensitivity();
+            autoBrakeEnabled = StorageService.GetAutoBrake();
+            invertTurn = StorageService.GetInvertTurn();
         }
 
         private void ResolveComponents()
@@ -174,43 +191,66 @@ namespace StarStrike.Gameplay
             bool actionFire = (attackAction != null && attackAction.IsPressed()) || keySpace || mouseLeft || padFire;
             bool actionSprint = (sprintAction != null && sprintAction.IsPressed()) || keyShift || mouseRight || padBoost;
 
-            inputThrust = virtualThrust || keyW || moveVal.y > 0.15f || padY > 0.15f;
-            inputBrake = virtualBrake || keyS || moveVal.y < -0.15f || padY < -0.15f;
+            bool hasThrust = virtualThrust || keyW || moveVal.y > 0.15f || padY > 0.15f;
+            inputThrust = hasThrust;
+
+            if (autoBrakeEnabled && !hasThrust && !actionSprint && !virtualBoost)
+            {
+                inputBrake = true;
+            }
+            else
+            {
+                inputBrake = virtualBrake || keyS || moveVal.y < -0.15f || padY < -0.15f;
+            }
+
             inputBoost = virtualBoost || actionSprint;
             inputFire = virtualFire || actionFire;
 
             // Turn input: +1 for counter-clockwise / Left, -1 for clockwise / Right
+            float turnMult = invertTurn ? -1f : 1f;
             float turn = 0f;
-            if (keyA) turn += 1f;
-            if (keyD) turn -= 1f;
+            if (keyA) turn += 1f * turnMult;
+            if (keyD) turn -= 1f * turnMult;
             inputTurn = turn;
 
             // Aim direction resolution: Virtual -> Gamepad Right Stick -> Mouse Cursor -> Gamepad Left Stick
-            if (hasVirtualAim)
+            if (aimMode == 1) // Keyboard Turn only (Classic Asteroids style)
             {
-                inputAimDirection = virtualAimDirection;
-                hasDirectAim = true;
-            }
-            else if (pad != null && pad.rightStick.ReadValue().sqrMagnitude > 0.15f)
-            {
-                inputAimDirection = pad.rightStick.ReadValue().normalized;
-                hasDirectAim = true;
-            }
-            else if (mouse != null && Camera.main != null)
-            {
-                Vector2 mousePos = mouse.position.ReadValue();
-                float camDistance = Mathf.Abs(Camera.main.transform.position.z);
-                Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, camDistance));
-                Vector2 diff = (Vector2)mouseWorld - (Vector2)transform.position;
-                if (diff.sqrMagnitude > 0.05f)
-                {
-                    inputAimDirection = diff.normalized;
-                }
+                inputAimDirection = Vector2.zero;
                 hasDirectAim = false;
+                if (Mathf.Abs(padX) > 0.15f)
+                {
+                    inputTurn = -padX * turnMult;
+                }
             }
-            else if (Mathf.Abs(padX) > 0.15f)
+            else // Mouse Direct / Stick Aim (Modern Twin-Stick / Arena style)
             {
-                inputTurn = -padX;
+                if (hasVirtualAim)
+                {
+                    inputAimDirection = virtualAimDirection;
+                    hasDirectAim = true;
+                }
+                else if (pad != null && pad.rightStick.ReadValue().sqrMagnitude > 0.15f)
+                {
+                    inputAimDirection = pad.rightStick.ReadValue().normalized;
+                    hasDirectAim = true;
+                }
+                else if (mouse != null && Camera.main != null)
+                {
+                    Vector2 mousePos = mouse.position.ReadValue();
+                    float camDistance = Mathf.Abs(Camera.main.transform.position.z);
+                    Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, camDistance));
+                    Vector2 diff = (Vector2)mouseWorld - (Vector2)transform.position;
+                    if (diff.sqrMagnitude > 0.05f)
+                    {
+                        inputAimDirection = diff.normalized;
+                    }
+                    hasDirectAim = false;
+                }
+                else if (Mathf.Abs(padX) > 0.15f)
+                {
+                    inputTurn = -padX * turnMult;
+                }
             }
         }
     }

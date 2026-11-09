@@ -115,7 +115,8 @@ namespace StarStrike.UI
                     child.name == "NetworkLobbyContainer" ||
                     child.name == "NetworkScoreboardContainer" ||
                     child.name == "NetworkVictoryModal" ||
-                    child.name == "ArenaVictoryModal")
+                    child.name == "ArenaVictoryModal" ||
+                    child.name == "SettingsContainer")
                 {
                     continue;
                 }
@@ -568,6 +569,16 @@ namespace StarStrike.UI
             toggleUpgradesButton = toggleBtnObj.GetComponent<Button>();
             toggleUpgradesButton.onClick.AddListener(ToggleUpgrades);
             toggleUpgradesButtonText = toggleBtnObj.GetComponentInChildren<Text>();
+
+            // Settings Button
+            GameObject hudSettingsBtnObj = CreateButton(statusCard.transform, "HUDSettingsBtn", "⚙ [ESC]", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(195f, -122f), new Vector2(150f, 30f), new Color(0.12f, 0.22f, 0.35f, 0.95f), roundedSprite, defaultFont);
+            Button hudSettingsBtn = hudSettingsBtnObj.GetComponent<Button>();
+            hudSettingsBtn.onClick.AddListener(() => {
+                if (StarStrike.UI.SettingsUI.Instance != null)
+                {
+                    StarStrike.UI.SettingsUI.Instance.Toggle();
+                }
+            });
 
             // 2. Upgrades Drawer
             GameObject drawerObj = CreatePanel(transform, "UpgradesDrawer", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -190f), new Vector2(360f, 360f), new Color(0.04f, 0.08f, 0.16f, 0.94f), roundedSprite);
