@@ -111,7 +111,20 @@ namespace StarStrike.UI
         {
             foreach (Transform child in transform)
             {
-                if (child.name == "MainMenuContainer") continue;
+                if (child.name == "MainMenuContainer" ||
+                    child.name == "NetworkLobbyContainer" ||
+                    child.name == "NetworkScoreboardContainer" ||
+                    child.name == "NetworkVictoryModal" ||
+                    child.name == "ArenaVictoryModal")
+                {
+                    continue;
+                }
+
+                if (child.name == "EndGameModalPanel" || (endGameModal != null && child.gameObject == endGameModal.modalRoot))
+                {
+                    if (!visible) child.gameObject.SetActive(false);
+                    continue;
+                }
 
                 if (child.name == "UpgradesDrawer")
                 {

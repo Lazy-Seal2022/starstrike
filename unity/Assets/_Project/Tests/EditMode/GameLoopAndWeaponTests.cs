@@ -159,6 +159,28 @@ namespace StarStrike.Tests.EditMode
         }
 
         [Test]
+        public void CanvasHUD_SetHUDVisible_DoesNotActivateEndGameModalPanel()
+        {
+            var hudGo = Track(new GameObject("TestHUD"));
+            var hud = hudGo.AddComponent<CanvasHUD>();
+            var modal = hudGo.AddComponent<HUDEndGameModal>();
+            hud.endGameModal = modal;
+            modal.SetVisible(false);
+
+            Assert.IsFalse(modal.IsVisible, "Modal should initially be hidden");
+
+            // Calling SetHUDVisible(true) must NOT show the end game modal
+            hud.SetHUDVisible(true);
+            Assert.IsFalse(modal.IsVisible, "EndGameModalPanel must NOT be activated by SetHUDVisible(true)");
+
+            // If modal was shown explicitly, SetHUDVisible(false) properly hides it
+            modal.SetVisible(true);
+            Assert.IsTrue(modal.IsVisible);
+            hud.SetHUDVisible(false);
+            Assert.IsFalse(modal.IsVisible, "SetHUDVisible(false) should ensure EndGameModalPanel is hidden");
+        }
+
+        [Test]
         public void CIBuilder_ScenePath_MatchesActualGameScene()
         {
             string[] scenes = CIBuilder.GetScenes();

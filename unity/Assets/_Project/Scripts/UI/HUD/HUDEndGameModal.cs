@@ -103,6 +103,10 @@ namespace StarStrike.UI
 
         public void SetVisible(bool visible)
         {
+            if (modalRoot == null)
+            {
+                BuildDefaultModal();
+            }
             if (modalRoot != null)
             {
                 modalRoot.SetActive(visible);
