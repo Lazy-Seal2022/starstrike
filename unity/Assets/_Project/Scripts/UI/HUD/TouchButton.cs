@@ -25,20 +25,14 @@ namespace StarStrike.UI
 
         public void OnPointerUp(PointerEventData eventData)
         {
-            if (isPressed)
-            {
-                isPressed = false;
-                ApplyState(false);
-            }
+            isPressed = false;
+            ApplyState(false);
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            if (isPressed)
-            {
-                isPressed = false;
-                ApplyState(false);
-            }
+            isPressed = false;
+            ApplyState(false);
         }
 
         private void ApplyState(bool state)
@@ -64,11 +58,8 @@ namespace StarStrike.UI
 
         private void OnDisable()
         {
-            if (isPressed)
-            {
-                isPressed = false;
-                ApplyState(false);
-            }
+            isPressed = false;
+            ApplyState(false);
         }
     }
 }

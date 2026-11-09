@@ -16,7 +16,7 @@ namespace StarStrike.Gameplay
         public float pulseSpeed = 22f;
         public int weaponSlots = 1;
         public float fireRate = 0.22f;
-        public float energyCost = 12f;
+        public float energyCost = 6f;
 
         public bool isPlayer = false;
 
@@ -27,6 +27,12 @@ namespace StarStrike.Gameplay
         {
             if (combatConfig == null) combatConfig = Resources.Load<CombatConfig>("Data/CombatConfig");
             if (combatConfig == null) combatConfig = ScriptableObject.CreateInstance<CombatConfig>();
+
+            if (combatConfig != null)
+            {
+                if (energyCost == 12f || energyCost <= 0f) energyCost = combatConfig.defaultEnergyCost;
+                if (fireRate <= 0f) fireRate = combatConfig.defaultFireRate;
+            }
 
             rb = GetComponent<Rigidbody2D>();
             if (CompareTag("Player") || gameObject.name == "Player")

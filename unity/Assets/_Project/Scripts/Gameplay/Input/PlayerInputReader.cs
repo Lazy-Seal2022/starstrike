@@ -33,6 +33,11 @@ namespace StarStrike.Gameplay
         public Vector2 inputAimDirection;
         public bool hasDirectAim = false;
 
+        [Header("Firing Management")]
+        public bool autoFireEnabled = true;
+        private bool wasFirePressedLastFrame = false;
+        private float fireHeldDuration = 0f;
+
         private bool virtualThrust;
         private bool virtualBrake;
         private bool virtualBoost;
@@ -71,22 +76,24 @@ namespace StarStrike.Gameplay
 
         private void SetupInputActions()
         {
-            moveAction = new InputAction("Move", binding: "<Gamepad>/leftStick");
+            moveAction = new InputAction("Move", type: InputActionType.Value, binding: "<Gamepad>/leftStick");
             moveAction.AddCompositeBinding("Dpad")
                 .With("Up", "<Keyboard>/w")
                 .With("Down", "<Keyboard>/s")
                 .With("Left", "<Keyboard>/a")
                 .With("Right", "<Keyboard>/d");
 
-            lookAction = new InputAction("Look", binding: "<Gamepad>/rightStick");
+            lookAction = new InputAction("Look", type: InputActionType.Value, binding: "<Gamepad>/rightStick");
             lookAction.AddBinding("<Pointer>/position");
 
-            attackAction = new InputAction("Attack", binding: "<Gamepad>/rightTrigger");
+            attackAction = new InputAction("Attack", type: InputActionType.Button);
+            attackAction.AddBinding("<Gamepad>/rightTrigger");
             attackAction.AddBinding("<Gamepad>/buttonWest"); // X on Xbox
             attackAction.AddBinding("<Keyboard>/space");
             attackAction.AddBinding("<Mouse>/leftButton");
 
-            sprintAction = new InputAction("Sprint", binding: "<Gamepad>/buttonSouth"); // A on Xbox
+            sprintAction = new InputAction("Sprint", type: InputActionType.Button);
+            sprintAction.AddBinding("<Gamepad>/buttonSouth"); // A on Xbox
             sprintAction.AddBinding("<Gamepad>/leftShoulder");
             sprintAction.AddBinding("<Keyboard>/shift");
             sprintAction.AddBinding("<Mouse>/rightButton");
@@ -95,6 +102,11 @@ namespace StarStrike.Gameplay
             lookAction.Enable();
             attackAction.Enable();
             sprintAction.Enable();
+        }
+
+        private void OnDisable()
+        {
+            ResetInputState();
         }
 
         private void OnDestroy()
@@ -133,11 +145,7 @@ namespace StarStrike.Gameplay
 
             if (GameManager.Instance != null && GameManager.Instance.CurrentState != GameState.Playing)
             {
-                inputThrust = false;
-                inputBrake = false;
-                inputBoost = false;
-                inputFire = false;
-                inputTurn = 0f;
+                ResetInputState();
                 
                 if (movement != null)
                 {
@@ -160,9 +168,59 @@ namespace StarStrike.Gameplay
                 movement.IsBraking = inputBrake;
             }
 
-            if (inputFire && weapon != null)
+            ProcessFiring(Time.deltaTime);
+        }
+
+        public void ResetInputState()
+        {
+            inputThrust = false;
+            inputBrake = false;
+            inputBoost = false;
+            inputFire = false;
+            inputTurn = 0f;
+            virtualThrust = false;
+            virtualBrake = false;
+            virtualBoost = false;
+            virtualFire = false;
+            wasFirePressedLastFrame = false;
+            fireHeldDuration = 0f;
+        }
+
+        public void ProcessFiring(float dt)
+        {
+            bool isFireTriggered = false;
+            if (inputFire)
             {
-                weapon.TryFire(health);
+                if (!wasFirePressedLastFrame)
+                {
+                    // Tap / Initial press: immediately fire exactly 1 shot
+                    isFireTriggered = true;
+                    fireHeldDuration = 0f;
+                }
+                else
+                {
+                    // Button held down: advance hold timer
+                    fireHeldDuration += dt;
+                    float repeatInterval = weapon != null ? weapon.fireRate : 0.22f;
+                    if (autoFireEnabled && fireHeldDuration >= repeatInterval)
+                    {
+                        isFireTriggered = true;
+                    }
+                }
+            }
+            else
+            {
+                fireHeldDuration = 0f;
+            }
+            wasFirePressedLastFrame = inputFire;
+
+            if (isFireTriggered && weapon != null)
+            {
+                bool fired = weapon.TryFire(health);
+                if (fired)
+                {
+                    fireHeldDuration = 0f; // Reset repeat timer after each successful shot
+                }
             }
         }
 
@@ -179,8 +237,9 @@ namespace StarStrike.Gameplay
             bool keySpace = kb != null && kb.spaceKey.isPressed;
             bool keyShift = kb != null && (kb.leftShiftKey.isPressed || kb.rightShiftKey.isPressed);
 
-            bool mouseLeft = mouse != null && mouse.leftButton.isPressed;
-            bool mouseRight = mouse != null && mouse.rightButton.isPressed;
+            bool isPointerOverUI = UnityEngine.EventSystems.EventSystem.current != null && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
+            bool mouseLeft = mouse != null && mouse.leftButton.isPressed && !isPointerOverUI;
+            bool mouseRight = mouse != null && mouse.rightButton.isPressed && !isPointerOverUI;
 
             Vector2 moveVal = moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
             float padY = pad != null ? pad.leftStick.y.ReadValue() : 0f;

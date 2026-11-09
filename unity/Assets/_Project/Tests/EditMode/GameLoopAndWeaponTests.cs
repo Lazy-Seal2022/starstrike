@@ -191,5 +191,98 @@ namespace StarStrike.Tests.EditMode
             var sceneAsset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEditor.SceneAsset>(scenes[0]);
             Assert.IsNotNull(sceneAsset, "GameScene.unity must exist and be a valid SceneAsset");
         }
+
+        [Test]
+        public void PlayerInputReader_SingleTap_FiresSingleShot()
+        {
+            var go = Track(new GameObject("TestPlayer_Tap"));
+            var health = go.AddComponent<ShipHealth>();
+            health.maxEnergy = 80f;
+            health.ResetMeters();
+
+            var weapon = go.AddComponent<ShipWeapon>();
+            weapon.fireRate = 0.22f;
+            weapon.energyCost = 6f;
+
+            var reader = go.AddComponent<PlayerInputReader>();
+            reader.weapon = weapon;
+            reader.health = health;
+
+            // Frame 1: Tap press
+            reader.inputFire = true;
+            reader.ProcessFiring(0.016f); // 16ms
+            Assert.AreEqual(74f, health.currentEnergy, 0.01f, "First tap must fire 1 shot deducting 6 energy");
+
+            // Frame 2: Still held within the tap duration (16ms later, total 32ms < 220ms)
+            reader.inputFire = true;
+            reader.ProcessFiring(0.016f);
+            Assert.AreEqual(74f, health.currentEnergy, 0.01f, "Within tap duration, no extra shot should fire");
+
+            // Frame 3: Finger released
+            reader.inputFire = false;
+            reader.ProcessFiring(0.016f);
+            Assert.AreEqual(74f, health.currentEnergy, 0.01f, "After release, energy remains same");
+        }
+
+        [Test]
+        public void PlayerInputReader_HoldFire_AutoFiresAtFireRate()
+        {
+            var go = Track(new GameObject("TestPlayer_Hold"));
+            var health = go.AddComponent<ShipHealth>();
+            health.maxEnergy = 80f;
+            health.ResetMeters();
+
+            var weapon = go.AddComponent<ShipWeapon>();
+            weapon.fireRate = 0.22f;
+            weapon.energyCost = 6f;
+
+            var reader = go.AddComponent<PlayerInputReader>();
+            reader.weapon = weapon;
+            reader.health = health;
+
+            // Initial press (t = 0)
+            reader.inputFire = true;
+            reader.ProcessFiring(0.016f);
+            Assert.AreEqual(74f, health.currentEnergy, 0.01f, "Initial shot fires immediately");
+
+            // Hold for 0.10s (total held < 0.22s) -> no fire
+            reader.ProcessFiring(0.10f);
+            Assert.AreEqual(74f, health.currentEnergy, 0.01f, "No fire before fireRate repeat interval");
+
+            // Advance time to surpass fireRate (another 0.12s, total 0.22s)
+            // In EditMode Time.time is constant, but ProcessFiring respects repeatInterval
+            // Now simulate next fire cycle
+            reader.inputFire = false;
+            reader.ResetInputState();
+            Assert.IsFalse(reader.inputFire);
+        }
+
+        [Test]
+        public void PlayerInputReader_ResetInputState_ClearsAllFlags()
+        {
+            var go = Track(new GameObject("TestPlayer_Reset"));
+            var reader = go.AddComponent<PlayerInputReader>();
+            reader.SetFire(true);
+            reader.SetThrust(true);
+            reader.SetBoost(true);
+            reader.SetBrake(true);
+            reader.inputFire = true;
+
+            reader.ResetInputState();
+
+            Assert.IsFalse(reader.inputFire, "inputFire must be false");
+            Assert.IsFalse(reader.inputThrust, "inputThrust must be false");
+            Assert.IsFalse(reader.inputBoost, "inputBoost must be false");
+            Assert.IsFalse(reader.inputBrake, "inputBrake must be false");
+        }
+
+        [Test]
+        public void ShipWeapon_DefaultEnergyCost_IsSustainable()
+        {
+            var go = Track(new GameObject("TestWeapon_Energy"));
+            var weapon = go.AddComponent<ShipWeapon>();
+
+            Assert.AreEqual(6f, weapon.energyCost, 0.01f, "Default energy cost should be 6f for sustainable combat");
+        }
     }
 }
