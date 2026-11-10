@@ -18,12 +18,14 @@ namespace StarStrike.Tests.EditMode
         public void SetUp()
         {
             testRoot = new GameObject("TestRoot_P2");
+            FXService.ResetStaticState();
         }
 
         [TearDown]
         public void TearDown()
         {
             Time.timeScale = 1.0f;
+            FXService.ResetStaticState();
             if (testRoot != null) Object.DestroyImmediate(testRoot);
         }
 

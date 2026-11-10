@@ -35,6 +35,29 @@ namespace StarStrike.Tests.EditMode
         }
 
         [Test]
+        public void AudioService_LoadsProductionClips_AndHandlesAliasesGracefully()
+        {
+            testRoot = new GameObject("AudioTestRoot");
+            var audioService = testRoot.AddComponent<AudioService>();
+            audioService.Initialize();
+
+            string[] expectedClips = { "laser", "enemy_laser", "gem", "explosion", "upgrade", "click", "ambient_music", "laser_fire", "upgrade_acquired" };
+            foreach (var clipId in expectedClips)
+            {
+                Assert.IsTrue(audioService.HasClip(clipId), $"AudioService must contain clip '{clipId}'");
+                var clip = audioService.GetClip(clipId);
+                Assert.IsNotNull(clip, $"Clip '{clipId}' should not be null");
+                Assert.IsTrue(clip.length > 0f, $"Clip '{clipId}' length should be greater than 0");
+            }
+
+            // Verify safe playback without exceptions
+            Assert.DoesNotThrow(() => audioService.PlaySound("laser", 0.5f));
+            Assert.DoesNotThrow(() => audioService.PlaySound("explosion", 0.8f));
+            Assert.DoesNotThrow(() => audioService.PlayUISound("click", 0.6f));
+            Assert.DoesNotThrow(() => audioService.PlaySound("non_existent_key", 1.0f));
+        }
+
+        [Test]
         public void ProceduralSpriteHelper_ReturnsValidSprites_ForAllStandardKeys()
         {
             string[] keys = { "scout", "fighter", "miner", "interceptor", "juggernaut", "drone", "boss" };

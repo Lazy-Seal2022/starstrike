@@ -287,6 +287,10 @@ namespace StarStrike.UI
             img.color = bgColor;
 
             Button btn = btnObj.AddComponent<Button>();
+            btn.onClick.AddListener(() =>
+            {
+                StarStrike.Gameplay.Audio.AudioService.Instance?.PlayUISound("click");
+            });
             ColorBlock cb = btn.colors;
             cb.normalColor = bgColor;
             cb.highlightedColor = bgColor * 1.2f;

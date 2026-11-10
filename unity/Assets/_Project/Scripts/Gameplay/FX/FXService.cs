@@ -27,6 +27,12 @@ namespace StarStrike.Gameplay.FX
         public static Vector3 CameraOffset { get; private set; }
         public static bool IsHitStopActive { get; private set; }
 
+        public static void ResetStaticState()
+        {
+            CameraOffset = Vector3.zero;
+            IsHitStopActive = false;
+        }
+
         private Coroutine activeShakeCoroutine;
         private Coroutine activeHitStopCoroutine;
 

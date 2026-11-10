@@ -753,6 +753,10 @@ namespace StarStrike.UI
             colors.highlightedColor = color * 1.25f;
             colors.pressedColor = color * 0.85f;
             btn.colors = colors;
+            btn.onClick.AddListener(() =>
+            {
+                AudioService.Instance?.PlayUISound("click");
+            });
 
             UIHelper.CreateTextMeshPro(obj.transform, "Text", label, fontSize, FontStyles.Bold, Color.white, TextAlignmentOptions.Center,
                 Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);

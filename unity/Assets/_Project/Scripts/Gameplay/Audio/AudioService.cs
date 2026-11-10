@@ -29,6 +29,11 @@ namespace StarStrike.Gameplay.Audio
 
         private void Awake()
         {
+            Initialize();
+        }
+
+        public void Initialize()
+        {
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);
@@ -36,20 +41,41 @@ namespace StarStrike.Gameplay.Audio
             }
             Instance = this;
 
-            audioSource = gameObject.AddComponent<AudioSource>();
-            audioSource.playOnAwake = false;
+            if (audioSource == null)
+            {
+                audioSource = gameObject.GetComponent<AudioSource>();
+                if (audioSource == null)
+                {
+                    audioSource = gameObject.AddComponent<AudioSource>();
+                }
+                audioSource.playOnAwake = false;
+            }
 
-            musicSource = gameObject.AddComponent<AudioSource>();
-            musicSource.playOnAwake = false;
-            musicSource.loop = true;
+            if (musicSource == null)
+            {
+                musicSource = gameObject.AddComponent<AudioSource>();
+                musicSource.playOnAwake = false;
+                musicSource.loop = true;
+            }
 
-            uiSource = gameObject.AddComponent<AudioSource>();
-            uiSource.playOnAwake = false;
+            if (uiSource == null)
+            {
+                uiSource = gameObject.AddComponent<AudioSource>();
+                uiSource.playOnAwake = false;
+            }
 
             ApplyMixerRouting();
             LoadSettings();
-            GenerateClips();
+            LoadAudioClips();
             StartBackgroundMusic();
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
         }
 
         public void ApplyMixerRouting()
@@ -153,18 +179,34 @@ namespace StarStrike.Gameplay.Audio
             }
         }
 
-        private void StartBackgroundMusic()
+        public void StartBackgroundMusic()
         {
             if (musicSource == null) return;
             if (!proceduralClips.ContainsKey("ambient_music"))
             {
-                proceduralClips["ambient_music"] = GenerateAmbientMusic();
+                var musicClip = Resources.Load<AudioClip>("Audio/ambient_music");
+                if (musicClip != null)
+                {
+                    proceduralClips["ambient_music"] = musicClip;
+                }
+                else
+                {
+                    proceduralClips["ambient_music"] = GenerateAmbientMusic();
+                }
             }
             musicSource.clip = proceduralClips["ambient_music"];
             UpdateMusicVolume();
             if (!musicSource.isPlaying)
             {
                 musicSource.Play();
+            }
+        }
+
+        public void StopBackgroundMusic()
+        {
+            if (musicSource != null && musicSource.isPlaying)
+            {
+                musicSource.Stop();
             }
         }
 
@@ -183,14 +225,56 @@ namespace StarStrike.Gameplay.Audio
             GameEvents.OnPlayerEvolved -= OnPlayerEvolved;
         }
 
-        private void GenerateClips()
+        private void LoadAudioClips()
         {
-            proceduralClips["laser"] = GenerateTone(44100, 0.1f, 880f, 440f, 0.5f, WaveType.Square);
-            proceduralClips["enemy_laser"] = GenerateTone(44100, 0.15f, 440f, 220f, 0.5f, WaveType.Sawtooth);
-            proceduralClips["gem"] = GenerateTone(44100, 0.1f, 1200f, 1600f, 0.3f, WaveType.Sine);
-            proceduralClips["explosion"] = GenerateNoise(44100, 0.4f, 0.8f);
-            proceduralClips["upgrade"] = GenerateTone(44100, 0.3f, 440f, 880f, 0.6f, WaveType.Sine);
-            proceduralClips["click"] = GenerateTone(44100, 0.05f, 600f, 900f, 0.4f, WaveType.Sine);
+            LoadClipWithFallback("laser", () => GenerateTone(44100, 0.1f, 880f, 440f, 0.5f, WaveType.Square));
+            LoadClipWithFallback("enemy_laser", () => GenerateTone(44100, 0.15f, 440f, 220f, 0.5f, WaveType.Sawtooth));
+            LoadClipWithFallback("gem", () => GenerateTone(44100, 0.1f, 1200f, 1600f, 0.3f, WaveType.Sine));
+            LoadClipWithFallback("explosion", () => GenerateNoise(44100, 0.4f, 0.8f));
+            LoadClipWithFallback("upgrade", () => GenerateTone(44100, 0.3f, 440f, 880f, 0.6f, WaveType.Sine));
+            LoadClipWithFallback("click", () => GenerateTone(44100, 0.05f, 600f, 900f, 0.4f, WaveType.Sine));
+
+            // Register compatibility aliases
+            if (proceduralClips.TryGetValue("laser", out var laserClip))
+            {
+                proceduralClips["laser_fire"] = laserClip;
+            }
+            if (proceduralClips.TryGetValue("upgrade", out var upgradeClip))
+            {
+                proceduralClips["upgrade_acquired"] = upgradeClip;
+            }
+        }
+
+        private void LoadClipWithFallback(string id, System.Func<AudioClip> fallbackGenerator)
+        {
+            AudioClip clip = Resources.Load<AudioClip>("Audio/" + id);
+            if (clip != null)
+            {
+                proceduralClips[id] = clip;
+            }
+            else if (fallbackGenerator != null)
+            {
+                proceduralClips[id] = fallbackGenerator();
+            }
+        }
+
+        public bool HasClip(string id)
+        {
+            return proceduralClips.ContainsKey(id);
+        }
+
+        public AudioClip GetClip(string id)
+        {
+            if (proceduralClips.TryGetValue(id, out AudioClip clip))
+            {
+                return clip;
+            }
+            clip = Resources.Load<AudioClip>("Audio/" + id);
+            if (clip != null)
+            {
+                proceduralClips[id] = clip;
+            }
+            return clip;
         }
 
         public void PlaySound(string id, float volume = 1f)
@@ -199,7 +283,9 @@ namespace StarStrike.Gameplay.Audio
             float effectiveVolume = Mathf.Clamp01(volume * sfxVolume * masterVolume);
             if (effectiveVolume <= 0.001f) return;
             if (audioSource == null) return;
-            if (proceduralClips.TryGetValue(id, out AudioClip clip))
+
+            AudioClip clip = GetClip(id);
+            if (clip != null)
             {
                 audioSource.PlayOneShot(clip, effectiveVolume);
             }
@@ -212,7 +298,9 @@ namespace StarStrike.Gameplay.Audio
             if (effectiveVolume <= 0.001f) return;
             AudioSource targetSource = uiSource != null ? uiSource : audioSource;
             if (targetSource == null) return;
-            if (proceduralClips.TryGetValue(id, out AudioClip clip))
+
+            AudioClip clip = GetClip(id);
+            if (clip != null)
             {
                 targetSource.PlayOneShot(clip, effectiveVolume);
             }
