@@ -61,6 +61,7 @@ namespace StarStrike.Network
         private CircleCollider2D col;
         private SpriteRenderer sr;
         private float lastFireTime = -999f;
+        private StarStrike.Gameplay.FX.ShipThrusterEffect thrusterEffect;
 
         private void Awake()
         {
@@ -87,6 +88,9 @@ namespace StarStrike.Network
             sr = GetComponent<SpriteRenderer>();
             if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
             sr.sortingOrder = 10;
+
+            thrusterEffect = GetComponent<StarStrike.Gameplay.FX.ShipThrusterEffect>();
+            if (thrusterEffect == null) thrusterEffect = gameObject.AddComponent<StarStrike.Gameplay.FX.ShipThrusterEffect>();
         }
 
         public override void OnNetworkSpawn()
@@ -124,6 +128,7 @@ namespace StarStrike.Network
         {
             if (sr != null) sr.enabled = !newVal;
             if (col != null) col.enabled = !newVal;
+            if (thrusterEffect != null) thrusterEffect.SetThrusting(false, false);
         }
 
         private void UpdateVisuals(string shipId)
@@ -136,7 +141,11 @@ namespace StarStrike.Network
 
         private void Update()
         {
-            if (NetworkIsDead.Value) return;
+            if (NetworkIsDead.Value)
+            {
+                if (thrusterEffect != null) thrusterEffect.SetThrusting(false, false);
+                return;
+            }
 
             if (IsOwner)
             {
@@ -145,6 +154,9 @@ namespace StarStrike.Network
             else
             {
                 // Smooth interpolation for remote proxies
+                bool isMoving = (transform.position - (Vector3)NetworkPosition.Value).sqrMagnitude > 0.02f;
+                if (thrusterEffect != null) thrusterEffect.SetThrusting(isMoving, false);
+
                 transform.position = Vector3.Lerp(transform.position, NetworkPosition.Value, 15f * Time.deltaTime);
                 transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, 0, NetworkRotation.Value), 15f * Time.deltaTime);
             }
@@ -164,6 +176,11 @@ namespace StarStrike.Network
             {
                 Vector2 stick = Gamepad.current.leftStick.ReadValue();
                 if (stick.sqrMagnitude > 0.05f) moveDir = stick;
+            }
+
+            if (thrusterEffect != null)
+            {
+                thrusterEffect.SetThrusting(moveDir.sqrMagnitude > 0.05f, false);
             }
 
             if (moveDir.sqrMagnitude > 1f) moveDir.Normalize();

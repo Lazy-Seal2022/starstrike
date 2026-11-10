@@ -28,6 +28,7 @@ namespace StarStrike.Gameplay
         public bool IsBraking { get; set; }
         
         private ParticleSystem thrustFX;
+        private StarStrike.Gameplay.FX.ShipThrusterEffect thrusterEffect;
 
         private void Awake()
         {
@@ -62,13 +63,10 @@ namespace StarStrike.Gameplay
 
         private void Start()
         {
-            if (StarStrike.Gameplay.FX.FXService.Instance != null)
+            thrusterEffect = GetComponent<StarStrike.Gameplay.FX.ShipThrusterEffect>();
+            if (thrusterEffect == null)
             {
-                GameObject fxObj = StarStrike.Gameplay.FX.FXService.Instance.CreateThrustFX();
-                fxObj.transform.SetParent(transform, false);
-                fxObj.transform.localPosition = new Vector3(-0.5f, 0, 0); // Position behind the ship
-                thrustFX = fxObj.GetComponent<ParticleSystem>();
-                thrustFX.Stop();
+                thrusterEffect = gameObject.AddComponent<StarStrike.Gameplay.FX.ShipThrusterEffect>();
             }
         }
 
@@ -105,10 +103,13 @@ namespace StarStrike.Gameplay
             bool canBoost = IsBoosting && (health == null || health.currentEnergy > minBoostEnergy);
             bool isApplyingThrust = IsThrusting || canBoost;
 
+            if (thrusterEffect != null)
+            {
+                thrusterEffect.SetThrusting(isApplyingThrust, canBoost);
+            }
+
             if (isApplyingThrust)
             {
-                if (thrustFX != null && !thrustFX.isPlaying) thrustFX.Play();
-                
                 float currentAccel = acceleration;
                 float currentMaxSpeed = maxSpeed;
 
@@ -131,8 +132,6 @@ namespace StarStrike.Gameplay
             }
             else
             {
-                if (thrustFX != null && thrustFX.isPlaying) thrustFX.Stop();
-
                 if (IsBraking)
                 {
                     rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, acceleration * brakeFactor * dt);

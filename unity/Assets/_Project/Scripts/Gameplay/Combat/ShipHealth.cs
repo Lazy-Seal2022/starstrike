@@ -76,6 +76,11 @@ namespace StarStrike.Gameplay
             if (StarStrike.Gameplay.FX.FXService.Instance != null)
             {
                 StarStrike.Gameplay.FX.FXService.Instance.FlashSprite(GetComponent<SpriteRenderer>(), Color.white);
+                if (isPlayer)
+                {
+                    float ratio = maxShield > 0f ? amount / maxShield : 0.2f;
+                    StarStrike.Gameplay.FX.FXService.Instance.TriggerPlayerDamageShake(ratio);
+                }
             }
 
             if (currentShield <= 0f)

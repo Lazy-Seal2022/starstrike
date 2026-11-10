@@ -6,24 +6,47 @@ namespace StarStrike.Gameplay.FX
 {
     public class FXService : MonoBehaviour
     {
-        public static FXService Instance { get; private set; }
+        private static FXService instance;
+        public static FXService Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = FindAnyObjectByType<FXService>();
+                    if (instance == null)
+                    {
+                        var go = new GameObject("FXService");
+                        instance = go.AddComponent<FXService>();
+                    }
+                }
+                return instance;
+            }
+        }
+
+        public static Vector3 CameraOffset { get; private set; }
+        public static bool IsHitStopActive { get; private set; }
+
+        private Coroutine activeShakeCoroutine;
+        private Coroutine activeHitStopCoroutine;
 
         private void Awake()
         {
-            if (Instance != null && Instance != this)
+            if (instance != null && instance != this)
             {
                 Destroy(gameObject);
                 return;
             }
-            Instance = this;
+            instance = this;
         }
 
         private void OnDestroy()
         {
-            if (Instance == this)
+            if (instance == this)
             {
-                Instance = null;
+                instance = null;
             }
+            CameraOffset = Vector3.zero;
         }
 
         private void OnEnable()
@@ -34,41 +57,103 @@ namespace StarStrike.Gameplay.FX
         private void OnDisable()
         {
             GameEvents.OnAsteroidDestroyed -= SpawnExplosion;
+            CameraOffset = Vector3.zero;
         }
 
         public void CameraShake(float duration, float magnitude)
         {
-            StartCoroutine(ShakeRoutine(duration, magnitude));
+            CameraShake(duration, magnitude, 24f);
         }
 
-        private IEnumerator ShakeRoutine(float duration, float magnitude)
+        public void CameraShake(float duration, float magnitude, float frequency)
         {
-            Transform camTransform = Camera.main.transform;
-            Vector3 originalPos = camTransform.localPosition; // assumes no parent or parent is moving
-            // In our game, camera follows player via LateUpdate, so localPosition isn't great.
-            // A better way is to add an offset per frame in LateUpdate, but for a quick shake,
-            // we'll just offset it directly and let LateUpdate override it if necessary, or we add a shakeOffset.
-            // Let's implement a global shake offset.
-            
+            if (!isActiveAndEnabled) return;
+            if (activeShakeCoroutine != null) StopCoroutine(activeShakeCoroutine);
+            activeShakeCoroutine = StartCoroutine(DampedShakeRoutine(duration, magnitude, frequency));
+        }
+
+        public void CameraShakeImpulse(Vector2 direction, float force, float duration = 0.2f)
+        {
+            if (!isActiveAndEnabled) return;
+            if (activeShakeCoroutine != null) StopCoroutine(activeShakeCoroutine);
+            activeShakeCoroutine = StartCoroutine(ImpulseShakeRoutine(direction.normalized, force, duration));
+        }
+
+        public void TriggerPlayerDamageShake(float damageRatio)
+        {
+            float mag = Mathf.Clamp(damageRatio * 0.75f, 0.15f, 0.55f);
+            CameraShake(0.25f, mag, 28f);
+        }
+
+        public void ApplyHitStop(float durationSeconds = 0.05f, float targetTimeScale = 0.05f)
+        {
+            if (!isActiveAndEnabled) return;
+            if (GameManager.Instance != null && GameManager.Instance.CurrentState != GameState.Playing) return;
+            if (activeHitStopCoroutine != null) StopCoroutine(activeHitStopCoroutine);
+            activeHitStopCoroutine = StartCoroutine(HitStopRoutine(durationSeconds, targetTimeScale));
+        }
+
+        private IEnumerator DampedShakeRoutine(float duration, float magnitude, float frequency)
+        {
             float elapsed = 0f;
             while (elapsed < duration)
             {
-                float x = Random.Range(-1f, 1f) * magnitude;
-                float y = Random.Range(-1f, 1f) * magnitude;
-                
-                CameraOffset = new Vector3(x, y, 0);
-                
-                elapsed += Time.deltaTime;
+                elapsed += Time.unscaledDeltaTime;
+                float progress = Mathf.Clamp01(elapsed / duration);
+                // Smooth quadratic falloff curve so shake fades out naturally
+                float damping = (1f - progress) * (1f - progress);
+                float wave = Mathf.Sin(elapsed * frequency * Mathf.PI * 2f);
+
+                float pX = Mathf.PerlinNoise(elapsed * 12f, 0f) * 2f - 1f;
+                float pY = Mathf.PerlinNoise(0f, elapsed * 12f) * 2f - 1f;
+
+                float x = (wave * 0.6f + pX * 0.4f) * magnitude * damping;
+                float y = (wave * 0.6f + pY * 0.4f) * magnitude * damping;
+
+                CameraOffset = new Vector3(x, y, 0f);
                 yield return null;
             }
             CameraOffset = Vector3.zero;
+            activeShakeCoroutine = null;
         }
 
-        public static Vector3 CameraOffset { get; private set; }
+        private IEnumerator ImpulseShakeRoutine(Vector2 dir, float force, float duration)
+        {
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float progress = Mathf.Clamp01(elapsed / duration);
+                float decay = Ease.OutQuad(1f - progress);
+                CameraOffset = (Vector3)(dir * force * decay);
+                yield return null;
+            }
+            CameraOffset = Vector3.zero;
+            activeShakeCoroutine = null;
+        }
+
+        private IEnumerator HitStopRoutine(float durationSeconds, float targetTimeScale)
+        {
+            IsHitStopActive = true;
+            float prevScale = Time.timeScale;
+            if (prevScale > 0.01f)
+            {
+                Time.timeScale = targetTimeScale;
+            }
+
+            yield return new WaitForSecondsRealtime(durationSeconds);
+
+            if (GameManager.Instance == null || GameManager.Instance.CurrentState == GameState.Playing)
+            {
+                Time.timeScale = 1f;
+            }
+            IsHitStopActive = false;
+            activeHitStopCoroutine = null;
+        }
 
         public void FlashSprite(SpriteRenderer sr, Color flashColor, float duration = 0.05f)
         {
-            if (sr != null)
+            if (sr != null && isActiveAndEnabled)
                 StartCoroutine(FlashRoutine(sr, flashColor, duration));
         }
 
@@ -82,8 +167,21 @@ namespace StarStrike.Gameplay.FX
 
         private void SpawnExplosion(Vector2 pos, string size)
         {
-            CameraShake(0.2f, size == "Large" ? 0.4f : (size == "Medium" ? 0.2f : 0.1f));
-            
+            if (size == "Large")
+            {
+                CameraShake(0.35f, 0.45f, 26f);
+                ApplyHitStop(0.06f, 0.05f);
+            }
+            else if (size == "Medium")
+            {
+                CameraShake(0.22f, 0.25f, 24f);
+                ApplyHitStop(0.03f, 0.1f);
+            }
+            else
+            {
+                CameraShake(0.12f, 0.12f, 20f);
+            }
+
             if (PoolManager.Instance != null)
             {
                 PoolManager.Instance.Spawn("ExplosionFX", pos, Quaternion.identity, () => {

@@ -112,6 +112,7 @@ namespace StarStrike.Gameplay
                 if (damageable != null)
                 {
                     damageable.TakeDamage(damage);
+                    GameEvents.TriggerDamageDealt(transform.position, damage, isCrit: Random.value < 0.2f);
                 }
                 gameObject.SetActive(false);
             }

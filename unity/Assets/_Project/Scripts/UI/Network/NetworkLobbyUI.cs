@@ -117,9 +117,9 @@ namespace StarStrike.UI
             UIHelper.CreateTextMeshPro(lobbyContainer.transform, "NameLabel", "PILOT CALL-SIGN:", 16, FontStyles.Bold, Color.white, TextAlignmentOptions.Right, new Vector2(0.35f, 0.68f), new Vector2(0.35f, 0.68f), new Vector2(-150, -20), new Vector2(0, 20));
             nameInput = CreateInputField(lobbyContainer.transform, "NameInput", "AcePilot", new Vector2(0.37f, 0.68f), new Vector2(0.65f, 0.68f), new Vector2(0, -20), new Vector2(0, 20));
 
-            // Server IP Label & Input
-            UIHelper.CreateTextMeshPro(lobbyContainer.transform, "IpLabel", "SERVER IP / HOST:", 16, FontStyles.Bold, Color.white, TextAlignmentOptions.Right, new Vector2(0.35f, 0.58f), new Vector2(0.35f, 0.58f), new Vector2(-150, -20), new Vector2(0, 20));
-            ipInput = CreateInputField(lobbyContainer.transform, "IpInput", "127.0.0.1", new Vector2(0.37f, 0.58f), new Vector2(0.65f, 0.58f), new Vector2(0, -20), new Vector2(0, 20));
+            // Room Code / Server IP Label & Input
+            UIHelper.CreateTextMeshPro(lobbyContainer.transform, "IpLabel", "ROOM CODE / IP:", 16, FontStyles.Bold, Color.white, TextAlignmentOptions.Right, new Vector2(0.35f, 0.58f), new Vector2(0.35f, 0.58f), new Vector2(-150, -20), new Vector2(0, 20));
+            ipInput = CreateInputField(lobbyContainer.transform, "IpInput", "STAR-1001", new Vector2(0.37f, 0.58f), new Vector2(0.65f, 0.58f), new Vector2(0, -20), new Vector2(0, 20));
 
             // Server Port Label & Input
             UIHelper.CreateTextMeshPro(lobbyContainer.transform, "PortLabel", "PORT:", 16, FontStyles.Bold, Color.white, TextAlignmentOptions.Right, new Vector2(0.35f, 0.48f), new Vector2(0.35f, 0.48f), new Vector2(-150, -20), new Vector2(0, 20));
@@ -147,54 +147,41 @@ namespace StarStrike.UI
 
             EnsureNetworkInfrastructure();
 
-            if (NetworkManager.Singleton != null)
+            bool success = NetworkSessionManager.Instance.CreateSession(pilotName, 8, port);
+            if (success)
             {
-                var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-                if (transport != null)
+                var session = NetworkSessionManager.Instance.CurrentSession;
+                if (statusText != null)
                 {
-                    transport.SetConnectionData("127.0.0.1", port);
+                    statusText.text = $"<color=#00e5ff>HOSTING ROOM: [{session.JoinCode}]</color> on port {port}...";
                 }
-
-                bool success = NetworkManager.Singleton.StartHost();
-                if (success)
-                {
-                    statusText.text = $"Hosting match on port {port}...";
-                    OnSessionStarted(pilotName);
-                }
-                else
-                {
-                    statusText.text = "Failed to start host.";
-                }
+                OnSessionStarted(pilotName);
+            }
+            else
+            {
+                if (statusText != null) statusText.text = "Failed to start host.";
             }
         }
 
         private void OnJoinClicked()
         {
             string pilotName = string.IsNullOrEmpty(nameInput.text) ? "ClientPilot" : nameInput.text;
-            string ip = string.IsNullOrEmpty(ipInput.text) ? "127.0.0.1" : ipInput.text.Trim();
-            ushort port = 7777;
-            if (ushort.TryParse(portInput.text, out ushort parsedPort)) port = parsedPort;
+            string target = string.IsNullOrEmpty(ipInput.text) ? "STAR-1001" : ipInput.text.Trim();
 
             EnsureNetworkInfrastructure();
 
-            if (NetworkManager.Singleton != null)
+            bool success = NetworkSessionManager.Instance.JoinSessionByCode(target, pilotName);
+            if (success)
             {
-                var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-                if (transport != null)
+                if (statusText != null)
                 {
-                    transport.SetConnectionData(ip, port);
+                    statusText.text = $"<color=#4ade80>CONNECTING TO [{target}]...</color>";
                 }
-
-                bool success = NetworkManager.Singleton.StartClient();
-                if (success)
-                {
-                    statusText.text = $"Connecting to {ip}:{port}...";
-                    OnSessionStarted(pilotName);
-                }
-                else
-                {
-                    statusText.text = "Failed to start client.";
-                }
+                OnSessionStarted(pilotName);
+            }
+            else
+            {
+                if (statusText != null) statusText.text = $"Failed to connect to room '{target}'.";
             }
         }
 
@@ -252,39 +239,9 @@ namespace StarStrike.UI
 
         private void EnsureNetworkInfrastructure()
         {
-            if (NetworkManager.Singleton == null)
+            if (NetworkSessionManager.Instance != null)
             {
-                var netMgrObj = new GameObject("NetworkManager", typeof(NetworkManager), typeof(UnityTransport));
-                var netMgr = netMgrObj.GetComponent<NetworkManager>();
-                var transport = netMgrObj.GetComponent<UnityTransport>();
-                netMgr.NetworkConfig = new NetworkConfig();
-                netMgr.NetworkConfig.NetworkTransport = transport;
-            }
-
-            var singleton = NetworkManager.Singleton;
-            if (singleton != null && singleton.NetworkConfig != null && singleton.NetworkConfig.PlayerPrefab == null)
-            {
-                var shipPrefab = Resources.Load<GameObject>("Prefabs/Network/NetworkPlayerShip");
-                var laserPrefab = Resources.Load<GameObject>("Prefabs/Network/NetworkLaserProjectile");
-                if (shipPrefab != null)
-                {
-                    singleton.NetworkConfig.PlayerPrefab = shipPrefab;
-                    singleton.NetworkConfig.Prefabs.Add(new NetworkPrefab { Prefab = shipPrefab });
-                }
-                if (laserPrefab != null)
-                {
-                    singleton.NetworkConfig.Prefabs.Add(new NetworkPrefab { Prefab = laserPrefab });
-                }
-            }
-
-            if (NetworkMatchManager.Instance == null)
-            {
-                var matchMgrObj = new GameObject("NetworkMatchManager", typeof(NetworkMatchManager), typeof(NetworkObject));
-                var netObj = matchMgrObj.GetComponent<NetworkObject>();
-                if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer && !netObj.IsSpawned)
-                {
-                    netObj.Spawn();
-                }
+                NetworkSessionManager.Instance.EnsureInfrastructure();
             }
         }
 
