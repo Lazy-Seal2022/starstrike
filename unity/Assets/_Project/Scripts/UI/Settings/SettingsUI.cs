@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using TMPro;
 using StarStrike.Core;
 using StarStrike.Gameplay;
 using StarStrike.Gameplay.Audio;
@@ -31,30 +32,30 @@ namespace StarStrike.UI
 
         private Button audioTabBtn;
         private Button controlsTabBtn;
-        private Text audioTabBtnText;
-        private Text controlsTabBtnText;
+        private TMP_Text audioTabBtnText;
+        private TMP_Text controlsTabBtnText;
 
         // Audio controls
-        private Text masterVolText;
+        private TMP_Text masterVolText;
         private Image masterVolFill;
-        private Text sfxVolText;
+        private TMP_Text sfxVolText;
         private Image sfxVolFill;
-        private Text musicVolText;
+        private TMP_Text musicVolText;
         private Image musicVolFill;
         private Button muteBtn;
-        private Text muteBtnText;
+        private TMP_Text muteBtnText;
 
         // Controls
         private Button aimModeBtn;
-        private Text aimModeBtnText;
-        private Text aimModeDesc;
+        private TMP_Text aimModeBtnText;
+        private TMP_Text aimModeDesc;
         private Button autoBrakeBtn;
-        private Text autoBrakeBtnText;
-        private Text autoBrakeDesc;
+        private TMP_Text autoBrakeBtnText;
+        private TMP_Text autoBrakeDesc;
         private Button invertTurnBtn;
-        private Text invertTurnBtnText;
+        private TMP_Text invertTurnBtnText;
         private Button touchHudBtn;
-        private Text touchHudBtnText;
+        private TMP_Text touchHudBtnText;
 
         private GameState stateBeforeOpening = GameState.Menu;
         private bool wasMainMenuVisible = false;
@@ -398,7 +399,6 @@ namespace StarStrike.UI
         // --- UI Construction ---
         private void BuildUI()
         {
-            Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             Sprite roundedSprite = ProceduralSpriteHelper.GetRoundedBoxSprite(32, 6);
 
             // Container stretches to cover the entire screen so backdrop covers everything behind
@@ -448,15 +448,15 @@ namespace StarStrike.UI
             cardImg.color = new Color(0.05f, 0.08f, 0.14f, 1.0f);
 
             // 3. Header Section
-            CreateTextExplicit(dialogCard.transform, "HeaderTitle", "⚙ SYSTEM SETTINGS", 24, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter,
-                new Vector2(0.5f, 1f), new Vector2(0f, -28f), new Vector2(700f, 36f), defaultFont);
+            CreateTextExplicit(dialogCard.transform, "HeaderTitle", "⚙ SYSTEM SETTINGS", 24, FontStyles.Bold, Color.white, TextAlignmentOptions.Center,
+                new Vector2(0.5f, 1f), new Vector2(0f, -28f), new Vector2(700f, 36f));
 
-            CreateTextExplicit(dialogCard.transform, "HeaderSub", "Audio Fidelity & Flight Controls Configuration", 12, FontStyle.Normal, new Color(0.6f, 0.8f, 0.95f, 0.85f), TextAnchor.MiddleCenter,
-                new Vector2(0.5f, 1f), new Vector2(0f, -56f), new Vector2(700f, 20f), defaultFont);
+            CreateTextExplicit(dialogCard.transform, "HeaderSub", "Audio Fidelity & Flight Controls Configuration", 12, FontStyles.Normal, new Color(0.6f, 0.8f, 0.95f, 0.85f), TextAlignmentOptions.Center,
+                new Vector2(0.5f, 1f), new Vector2(0f, -56f), new Vector2(700f, 20f));
 
             // Top-Right Close '✕' Button
             var xBtn = CreateButtonExplicit(dialogCard.transform, "BtnCloseX", "✕", new Vector2(1f, 1f), new Vector2(-28f, -28f), new Vector2(36f, 36f),
-                new Color(0.35f, 0.15f, 0.18f), defaultFont, 16);
+                new Color(0.35f, 0.15f, 0.18f), 16);
             xBtn.onClick.AddListener(Close);
 
             // 4. Tab Navigation Bar (y = -85)
@@ -470,18 +470,18 @@ namespace StarStrike.UI
             tnRt.sizeDelta = new Vector2(700f, 44f);
 
             audioTabBtn = CreateButtonExplicit(tabNav.transform, "BtnAudioTab", "🔊 AUDIO SETTINGS", new Vector2(0f, 0.5f), new Vector2(170f, 0f), new Vector2(340f, 42f),
-                new Color(0.18f, 0.45f, 0.75f), defaultFont, 15);
+                new Color(0.18f, 0.45f, 0.75f), 15);
             audioTabBtn.onClick.AddListener(() => SwitchTab(SettingsTab.Audio));
-            audioTabBtnText = audioTabBtn.GetComponentInChildren<Text>();
+            audioTabBtnText = audioTabBtn.GetComponentInChildren<TMP_Text>();
 
             controlsTabBtn = CreateButtonExplicit(tabNav.transform, "BtnControlsTab", "🎮 FLIGHT CONTROLS", new Vector2(1f, 0.5f), new Vector2(-170f, 0f), new Vector2(340f, 42f),
-                new Color(0.1f, 0.18f, 0.28f), defaultFont, 15);
+                new Color(0.1f, 0.18f, 0.28f), 15);
             controlsTabBtn.onClick.AddListener(() => SwitchTab(SettingsTab.Controls));
-            controlsTabBtnText = controlsTabBtn.GetComponentInChildren<Text>();
+            controlsTabBtnText = controlsTabBtn.GetComponentInChildren<TMP_Text>();
 
             // 5. Content Area Panels
-            BuildAudioPanel(dialogCard.transform, defaultFont, roundedSprite);
-            BuildControlsPanel(dialogCard.transform, defaultFont, roundedSprite);
+            BuildAudioPanel(dialogCard.transform, roundedSprite);
+            BuildControlsPanel(dialogCard.transform, roundedSprite);
 
             // 6. Footer Section (Bottom 20px)
             GameObject footer = new GameObject("Footer", typeof(RectTransform));
@@ -494,18 +494,18 @@ namespace StarStrike.UI
             fRt.sizeDelta = new Vector2(700f, 46f);
 
             var resetBtn = CreateButtonExplicit(footer.transform, "BtnResetDefaults", "↺ RESET DEFAULTS", new Vector2(0f, 0.5f), new Vector2(105f, 0f), new Vector2(210f, 44f),
-                new Color(0.35f, 0.18f, 0.18f), defaultFont, 14);
+                new Color(0.35f, 0.18f, 0.18f), 14);
             resetBtn.onClick.AddListener(ResetDefaults);
 
             var closeBtn = CreateButtonExplicit(footer.transform, "BtnClose", "✔ SAVE & CLOSE [ESC]", new Vector2(1f, 0.5f), new Vector2(-140f, 0f), new Vector2(280f, 44f),
-                new Color(0.12f, 0.55f, 0.35f), defaultFont, 15);
+                new Color(0.12f, 0.55f, 0.35f), 15);
             closeBtn.onClick.AddListener(Close);
 
             // Initially set active tab visibility
             SwitchTab(SettingsTab.Audio);
         }
 
-        private void BuildAudioPanel(Transform parent, Font font, Sprite roundedSprite)
+        private void BuildAudioPanel(Transform parent, Sprite roundedSprite)
         {
             audioTabPanel = new GameObject("AudioTabPanel", typeof(RectTransform));
             audioTabPanel.transform.SetParent(parent, false);
@@ -519,33 +519,33 @@ namespace StarStrike.UI
             float rowY = -15f;
 
             // Row 1: Master Volume
-            CreateVolumeRow(audioTabPanel.transform, "Master", "MASTER VOLUME: 100%", rowY, font, roundedSprite,
+            CreateVolumeRow(audioTabPanel.transform, "Master", "MASTER VOLUME: 100%", rowY, roundedSprite,
                 out masterVolText, out masterVolFill, () => AdjustMasterVolume(-0.1f), () => AdjustMasterVolume(0.1f));
 
             rowY -= 85f;
             // Row 2: SFX Volume
-            CreateVolumeRow(audioTabPanel.transform, "SFX", "SFX VOLUME: 80%", rowY, font, roundedSprite,
+            CreateVolumeRow(audioTabPanel.transform, "SFX", "SFX VOLUME: 80%", rowY, roundedSprite,
                 out sfxVolText, out sfxVolFill, () => AdjustSfxVolume(-0.1f), () => AdjustSfxVolume(0.1f));
 
             rowY -= 85f;
             // Row 3: Music Volume
-            CreateVolumeRow(audioTabPanel.transform, "Music", "MUSIC VOLUME: 70%", rowY, font, roundedSprite,
+            CreateVolumeRow(audioTabPanel.transform, "Music", "MUSIC VOLUME: 70%", rowY, roundedSprite,
                 out musicVolText, out musicVolFill, () => AdjustMusicVolume(-0.1f), () => AdjustMusicVolume(0.1f));
 
             rowY -= 95f;
             // Row 4: Mute Audio Button & Test Sound Button
             muteBtn = CreateButtonExplicit(audioTabPanel.transform, "BtnMute", "🔊 AUDIO: ACTIVE", new Vector2(0f, 1f), new Vector2(165f, rowY), new Vector2(330f, 46f),
-                new Color(0.12f, 0.35f, 0.25f), font, 14);
+                new Color(0.12f, 0.35f, 0.25f), 14);
             muteBtn.onClick.AddListener(ToggleMute);
-            muteBtnText = muteBtn.GetComponentInChildren<Text>();
+            muteBtnText = muteBtn.GetComponentInChildren<TMP_Text>();
 
             var testBtn = CreateButtonExplicit(audioTabPanel.transform, "BtnTestSfx", "► TEST SFX AUDIO", new Vector2(1f, 1f), new Vector2(-165f, rowY), new Vector2(330f, 46f),
-                new Color(0.18f, 0.35f, 0.55f), font, 14);
+                new Color(0.18f, 0.35f, 0.55f), 14);
             testBtn.onClick.AddListener(PlayTestAudio);
         }
 
-        private void CreateVolumeRow(Transform parent, string prefix, string label, float topY, Font font, Sprite roundedSprite,
-            out Text labelText, out Image fillImg, Action onMinus, Action onPlus)
+        private void CreateVolumeRow(Transform parent, string prefix, string label, float topY, Sprite roundedSprite,
+            out TMP_Text labelText, out Image fillImg, Action onMinus, Action onPlus)
         {
             GameObject rowObj = new GameObject($"Row_{prefix}", typeof(RectTransform));
             rowObj.transform.SetParent(parent, false);
@@ -556,9 +556,8 @@ namespace StarStrike.UI
             rt.anchoredPosition = new Vector2(0f, topY);
             rt.sizeDelta = new Vector2(700f, 75f);
 
-            var lblObj = CreateTextExplicit(rowObj.transform, "Label", label, 15, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft,
-                new Vector2(0.5f, 1f), new Vector2(0f, -12f), new Vector2(700f, 24f), font);
-            labelText = lblObj.GetComponent<Text>();
+            labelText = CreateTextExplicit(rowObj.transform, "Label", label, 15, FontStyles.Bold, Color.white, TextAlignmentOptions.Left,
+                new Vector2(0.5f, 1f), new Vector2(0f, -12f), new Vector2(700f, 24f));
 
             // Stepper controls container
             GameObject ctrlObj = new GameObject("Controls", typeof(RectTransform));
@@ -572,7 +571,7 @@ namespace StarStrike.UI
 
             // [-] button
             var minusBtn = CreateButtonExplicit(ctrlObj.transform, "BtnMinus", "-", new Vector2(0f, 0.5f), new Vector2(22f, 0f), new Vector2(44f, 32f),
-                new Color(0.12f, 0.22f, 0.35f), font, 18);
+                new Color(0.12f, 0.22f, 0.35f), 18);
             minusBtn.onClick.AddListener(() => onMinus());
 
             // Progress bar (between minus and plus)
@@ -606,11 +605,11 @@ namespace StarStrike.UI
 
             // [+] button
             var plusBtn = CreateButtonExplicit(ctrlObj.transform, "BtnPlus", "+", new Vector2(1f, 0.5f), new Vector2(-22f, 0f), new Vector2(44f, 32f),
-                new Color(0.12f, 0.22f, 0.35f), font, 18);
+                new Color(0.12f, 0.22f, 0.35f), 18);
             plusBtn.onClick.AddListener(() => onPlus());
         }
 
-        private void BuildControlsPanel(Transform parent, Font font, Sprite roundedSprite)
+        private void BuildControlsPanel(Transform parent, Sprite roundedSprite)
         {
             controlsTabPanel = new GameObject("ControlsTabPanel", typeof(RectTransform));
             controlsTabPanel.transform.SetParent(parent, false);
@@ -625,38 +624,36 @@ namespace StarStrike.UI
 
             // 1. Aim / Steering Mode Card
             aimModeBtn = CreateButtonExplicit(controlsTabPanel.transform, "BtnAimMode", "AIM MODE: [MOUSE DIRECT / STICK]", new Vector2(0.5f, 1f), new Vector2(0f, rowY - 18f), new Vector2(700f, 38f),
-                new Color(0.12f, 0.25f, 0.45f), font, 15);
+                new Color(0.12f, 0.25f, 0.45f), 15);
             aimModeBtn.onClick.AddListener(ToggleAimMode);
-            aimModeBtnText = aimModeBtn.GetComponentInChildren<Text>();
+            aimModeBtnText = aimModeBtn.GetComponentInChildren<TMP_Text>();
 
             rowY -= 44f;
-            var desc1 = CreateTextExplicit(controlsTabPanel.transform, "AimDesc", "• Ship points towards Mouse Cursor or Gamepad Stick. Press W to thrust forward.", 12, FontStyle.Normal, new Color(0.75f, 0.88f, 0.98f), TextAnchor.MiddleLeft,
-                new Vector2(0.5f, 1f), new Vector2(0f, rowY - 15f), new Vector2(680f, 30f), font);
-            aimModeDesc = desc1.GetComponent<Text>();
+            aimModeDesc = CreateTextExplicit(controlsTabPanel.transform, "AimDesc", "• Ship points towards Mouse Cursor or Gamepad Stick. Press W to thrust forward.", 12, FontStyles.Normal, new Color(0.75f, 0.88f, 0.98f), TextAlignmentOptions.Left,
+                new Vector2(0.5f, 1f), new Vector2(0f, rowY - 15f), new Vector2(680f, 30f));
 
             rowY -= 45f;
             // 2. Auto-Brake (Inertia Stabilizer) Card
             autoBrakeBtn = CreateButtonExplicit(controlsTabPanel.transform, "BtnAutoBrake", "INERTIA STABILIZER: [AUTO-BRAKE ON]", new Vector2(0.5f, 1f), new Vector2(0f, rowY - 18f), new Vector2(700f, 38f),
-                new Color(0.12f, 0.25f, 0.45f), font, 15);
+                new Color(0.12f, 0.25f, 0.45f), 15);
             autoBrakeBtn.onClick.AddListener(ToggleAutoBrake);
-            autoBrakeBtnText = autoBrakeBtn.GetComponentInChildren<Text>();
+            autoBrakeBtnText = autoBrakeBtn.GetComponentInChildren<TMP_Text>();
 
             rowY -= 44f;
-            var desc2 = CreateTextExplicit(controlsTabPanel.transform, "AutoBrakeDesc", "• Automatically decelerates ship when thrust is released.", 12, FontStyle.Normal, new Color(0.75f, 0.88f, 0.98f), TextAnchor.MiddleLeft,
-                new Vector2(0.5f, 1f), new Vector2(0f, rowY - 15f), new Vector2(680f, 30f), font);
-            autoBrakeDesc = desc2.GetComponent<Text>();
+            autoBrakeDesc = CreateTextExplicit(controlsTabPanel.transform, "AutoBrakeDesc", "• Automatically decelerates ship when thrust is released.", 12, FontStyles.Normal, new Color(0.75f, 0.88f, 0.98f), TextAlignmentOptions.Left,
+                new Vector2(0.5f, 1f), new Vector2(0f, rowY - 15f), new Vector2(680f, 30f));
 
             rowY -= 48f;
             // 3. Quick Toggles Row (Side-by-side)
             invertTurnBtn = CreateButtonExplicit(controlsTabPanel.transform, "BtnInvertTurn", "STEERING: [NORMAL]", new Vector2(0f, 1f), new Vector2(165f, rowY - 18f), new Vector2(330f, 38f),
-                new Color(0.12f, 0.22f, 0.35f), font, 13);
+                new Color(0.12f, 0.22f, 0.35f), 13);
             invertTurnBtn.onClick.AddListener(ToggleInvertTurn);
-            invertTurnBtnText = invertTurnBtn.GetComponentInChildren<Text>();
+            invertTurnBtnText = invertTurnBtn.GetComponentInChildren<TMP_Text>();
 
             touchHudBtn = CreateButtonExplicit(controlsTabPanel.transform, "BtnTouchHud", "ON-SCREEN HUD: [AUTO / MOBILE]", new Vector2(1f, 1f), new Vector2(-165f, rowY - 18f), new Vector2(330f, 38f),
-                new Color(0.12f, 0.22f, 0.35f), font, 13);
+                new Color(0.12f, 0.22f, 0.35f), 13);
             touchHudBtn.onClick.AddListener(ToggleTouchHud);
-            touchHudBtnText = touchHudBtn.GetComponentInChildren<Text>();
+            touchHudBtnText = touchHudBtn.GetComponentInChildren<TMP_Text>();
 
             rowY -= 54f;
             // 4. Quick Key Reference Card
@@ -680,36 +677,18 @@ namespace StarStrike.UI
                               "<color=#FBBF24>Space / Left Click / RT</color>: Fire Weapon     •    <color=#A78BFA>U Key</color>: Upgrades Drawer\n" +
                               "<color=#94A3B8>ESC / O Key</color>: Toggle Settings / Pause";
 
-            CreateTextExplicit(keyBox.transform, "KeyGuideText", keyGuide, 12, FontStyle.Normal, Color.white, TextAnchor.MiddleLeft,
-                new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(660f, 95f), font);
+            CreateTextExplicit(keyBox.transform, "KeyGuideText", keyGuide, 12, FontStyles.Normal, Color.white, TextAlignmentOptions.Left,
+                new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(660f, 95f));
         }
 
         // --- Explicit Helpers (Safe RectTransform geometry) ---
-        private GameObject CreateTextExplicit(Transform parent, string name, string text, int fontSize, FontStyle style, Color color, TextAnchor align,
-            Vector2 anchor, Vector2 pos, Vector2 size, Font font)
+        private TextMeshProUGUI CreateTextExplicit(Transform parent, string name, string text, int fontSize, FontStyles style, Color color, TextAlignmentOptions align,
+            Vector2 anchor, Vector2 pos, Vector2 size)
         {
-            GameObject obj = new GameObject(name, typeof(RectTransform), typeof(Text));
-            obj.transform.SetParent(parent, false);
-
-            var rt = obj.GetComponent<RectTransform>();
-            rt.anchorMin = anchor;
-            rt.anchorMax = anchor;
-            rt.pivot = anchor;
-            rt.anchoredPosition = pos;
-            rt.sizeDelta = size;
-
-            var txt = obj.GetComponent<Text>();
-            txt.text = text;
-            txt.font = font;
-            txt.fontSize = fontSize;
-            txt.fontStyle = style;
-            txt.color = color;
-            txt.alignment = align;
-            txt.supportRichText = true;
-            return obj;
+            return UIHelper.CreateTextMeshProExplicit(parent, name, text, fontSize, style, color, align, anchor, pos, size);
         }
 
-        private Button CreateButtonExplicit(Transform parent, string name, string label, Vector2 anchor, Vector2 pos, Vector2 size, Color color, Font font, int fontSize)
+        private Button CreateButtonExplicit(Transform parent, string name, string label, Vector2 anchor, Vector2 pos, Vector2 size, Color color, int fontSize)
         {
             Sprite roundedSprite = ProceduralSpriteHelper.GetRoundedBoxSprite(32, 6);
 
@@ -734,21 +713,8 @@ namespace StarStrike.UI
             colors.pressedColor = color * 0.85f;
             btn.colors = colors;
 
-            GameObject textObj = new GameObject("Text", typeof(RectTransform), typeof(Text));
-            textObj.transform.SetParent(obj.transform, false);
-            var trt = textObj.GetComponent<RectTransform>();
-            trt.anchorMin = Vector2.zero;
-            trt.anchorMax = Vector2.one;
-            trt.offsetMin = Vector2.zero;
-            trt.offsetMax = Vector2.zero;
-
-            var txt = textObj.GetComponent<Text>();
-            txt.text = label;
-            txt.font = font;
-            txt.fontSize = fontSize;
-            txt.fontStyle = FontStyle.Bold;
-            txt.alignment = TextAnchor.MiddleCenter;
-            txt.color = Color.white;
+            UIHelper.CreateTextMeshPro(obj.transform, "Text", label, fontSize, FontStyles.Bold, Color.white, TextAlignmentOptions.Center,
+                Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
             return btn;
         }

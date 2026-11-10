@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using StarStrike.Core;
 
 namespace StarStrike.UI
@@ -13,17 +14,21 @@ namespace StarStrike.UI
         public Image shieldFill;
         public Image shieldGhostFill;
         public Text shieldText;
+        public TMP_Text shieldTmpText;
 
         [Header("Energy Bar")]
         public Image energyFill;
         public Text energyText;
+        public TMP_Text energyTmpText;
 
         [Header("Afterburner Boost Bar")]
         public Image boostFill;
 
         [Header("Badges & Counters")]
         public Text shipNameText;
+        public TMP_Text shipNameTmpText;
         public Text gemsText;
+        public TMP_Text gemsTmpText;
 
         // Current internal targets
         private float targetShieldRatio = 1f;
@@ -69,9 +74,13 @@ namespace StarStrike.UI
             if (energyFill != null) energyFill.color = themeConfig.energyColor;
             if (boostFill != null) boostFill.color = themeConfig.boostColor;
             if (shieldText != null) shieldText.color = themeConfig.textPrimary;
+            if (shieldTmpText != null) shieldTmpText.color = themeConfig.textPrimary;
             if (energyText != null) energyText.color = themeConfig.textPrimary;
+            if (energyTmpText != null) energyTmpText.color = themeConfig.textPrimary;
             if (shipNameText != null) shipNameText.color = themeConfig.primaryAccent;
+            if (shipNameTmpText != null) shipNameTmpText.color = themeConfig.primaryAccent;
             if (gemsText != null) gemsText.color = themeConfig.energyColor;
+            if (gemsTmpText != null) gemsTmpText.color = themeConfig.energyColor;
         }
 
         private void Update()
@@ -138,36 +147,32 @@ namespace StarStrike.UI
 
             targetShieldRatio = newRatio;
 
-            if (shieldText != null)
-            {
-                shieldText.text = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
-            }
+            string shieldStr = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
+            if (shieldText != null) shieldText.text = shieldStr;
+            if (shieldTmpText != null) shieldTmpText.text = shieldStr;
         }
 
         public void HandleEnergyChanged(float current, float max)
         {
             targetEnergyRatio = max > 0 ? Mathf.Clamp01(current / max) : 0f;
 
-            if (energyText != null)
-            {
-                energyText.text = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
-            }
+            string energyStr = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
+            if (energyText != null) energyText.text = energyStr;
+            if (energyTmpText != null) energyTmpText.text = energyStr;
         }
 
         public void HandleGemCollected(int amount, int total)
         {
-            if (gemsText != null)
-            {
-                gemsText.text = $"◈ {total}";
-            }
+            string gemStr = $"◈ {total}";
+            if (gemsText != null) gemsText.text = gemStr;
+            if (gemsTmpText != null) gemsTmpText.text = gemStr;
         }
 
         public void HandlePlayerEvolved(string shipId)
         {
-            if (shipNameText != null)
-            {
-                shipNameText.text = $"• {shipId.ToUpper()} •";
-            }
+            string shipStr = $"• {shipId.ToUpper()} •";
+            if (shipNameText != null) shipNameText.text = shipStr;
+            if (shipNameTmpText != null) shipNameTmpText.text = shipStr;
         }
 
         public void SetBoostRatio(float ratio)

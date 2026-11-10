@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 using StarStrike.Core;
 using StarStrike.Platform.Storage;
 
@@ -14,8 +15,16 @@ namespace StarStrike.Gameplay.Audio
         public float sfxVolume = 0.8f;
         public float musicVolume = 0.7f;
 
+        [Header("Audio Mixer Routing")]
+        public AudioMixer audioMixer;
+        public AudioMixerGroup masterGroup;
+        public AudioMixerGroup musicGroup;
+        public AudioMixerGroup sfxGroup;
+        public AudioMixerGroup uiGroup;
+
         private AudioSource audioSource;
         private AudioSource musicSource;
+        private AudioSource uiSource;
         private Dictionary<string, AudioClip> proceduralClips = new Dictionary<string, AudioClip>();
 
         private void Awake()
@@ -34,9 +43,49 @@ namespace StarStrike.Gameplay.Audio
             musicSource.playOnAwake = false;
             musicSource.loop = true;
 
+            uiSource = gameObject.AddComponent<AudioSource>();
+            uiSource.playOnAwake = false;
+
+            ApplyMixerRouting();
             LoadSettings();
             GenerateClips();
             StartBackgroundMusic();
+        }
+
+        public void ApplyMixerRouting()
+        {
+            if (audioMixer == null)
+            {
+                audioMixer = Resources.Load<AudioMixer>("Audio/StarStrikeMasterMixer");
+            }
+
+            if (audioMixer != null)
+            {
+                if (masterGroup == null)
+                {
+                    var groups = audioMixer.FindMatchingGroups("Master");
+                    if (groups != null && groups.Length > 0) masterGroup = groups[0];
+                }
+                if (musicGroup == null)
+                {
+                    var groups = audioMixer.FindMatchingGroups("Music");
+                    if (groups != null && groups.Length > 0) musicGroup = groups[0];
+                }
+                if (sfxGroup == null)
+                {
+                    var groups = audioMixer.FindMatchingGroups("SFX");
+                    if (groups != null && groups.Length > 0) sfxGroup = groups[0];
+                }
+                if (uiGroup == null)
+                {
+                    var groups = audioMixer.FindMatchingGroups("UI");
+                    if (groups != null && groups.Length > 0) uiGroup = groups[0];
+                }
+
+                if (musicSource != null && musicGroup != null) musicSource.outputAudioMixerGroup = musicGroup;
+                if (audioSource != null && sfxGroup != null) audioSource.outputAudioMixerGroup = sfxGroup;
+                if (uiSource != null && uiGroup != null) uiSource.outputAudioMixerGroup = uiGroup;
+            }
         }
 
         public void LoadSettings()
@@ -45,6 +94,7 @@ namespace StarStrike.Gameplay.Audio
             masterVolume = StorageService.GetMasterVolume();
             sfxVolume = StorageService.GetSfxVolume();
             musicVolume = StorageService.GetMusicVolume();
+            ApplyMixerVolumes();
             UpdateMusicVolume();
         }
 
@@ -52,6 +102,7 @@ namespace StarStrike.Gameplay.Audio
         {
             masterVolume = Mathf.Clamp01(volume);
             StorageService.SaveMasterVolume(masterVolume);
+            ApplyMixerVolumes();
             UpdateMusicVolume();
         }
 
@@ -59,12 +110,14 @@ namespace StarStrike.Gameplay.Audio
         {
             sfxVolume = Mathf.Clamp01(volume);
             StorageService.SaveSfxVolume(sfxVolume);
+            ApplyMixerVolumes();
         }
 
         public void SetMusicVolume(float volume)
         {
             musicVolume = Mathf.Clamp01(volume);
             StorageService.SaveMusicVolume(musicVolume);
+            ApplyMixerVolumes();
             UpdateMusicVolume();
         }
 
@@ -72,7 +125,24 @@ namespace StarStrike.Gameplay.Audio
         {
             isMuted = muted;
             StorageService.SaveAudioMuted(isMuted);
+            ApplyMixerVolumes();
             UpdateMusicVolume();
+        }
+
+        public static float LinearToDecibels(float linear)
+        {
+            return linear > 0.0001f ? Mathf.Log10(linear) * 20f : -80f;
+        }
+
+        public void ApplyMixerVolumes()
+        {
+            if (audioMixer != null)
+            {
+                audioMixer.SetFloat("MasterVolume", isMuted ? -80f : LinearToDecibels(masterVolume));
+                audioMixer.SetFloat("MusicVolume", LinearToDecibels(musicVolume));
+                audioMixer.SetFloat("SFXVolume", LinearToDecibels(sfxVolume));
+                audioMixer.SetFloat("UIVolume", LinearToDecibels(sfxVolume));
+            }
         }
 
         public void UpdateMusicVolume()
@@ -132,6 +202,19 @@ namespace StarStrike.Gameplay.Audio
             if (proceduralClips.TryGetValue(id, out AudioClip clip))
             {
                 audioSource.PlayOneShot(clip, effectiveVolume);
+            }
+        }
+
+        public void PlayUISound(string id, float volume = 1f)
+        {
+            if (isMuted) return;
+            float effectiveVolume = Mathf.Clamp01(volume * sfxVolume * masterVolume);
+            if (effectiveVolume <= 0.001f) return;
+            AudioSource targetSource = uiSource != null ? uiSource : audioSource;
+            if (targetSource == null) return;
+            if (proceduralClips.TryGetValue(id, out AudioClip clip))
+            {
+                targetSource.PlayOneShot(clip, effectiveVolume);
             }
         }
 

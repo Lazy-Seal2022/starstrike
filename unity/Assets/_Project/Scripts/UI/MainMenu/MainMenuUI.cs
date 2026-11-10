@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using TMPro;
 using StarStrike.Core;
 using StarStrike.Gameplay;
 using StarStrike.Platform.Storage;
@@ -12,7 +13,7 @@ namespace StarStrike.UI
         public static MainMenuUI Instance { get; private set; }
 
         private GameObject menuContainer;
-        private Text gemsText;
+        private TMP_Text gemsText;
         private Transform shipListContainer;
 
         public bool IsVisible => menuContainer != null && menuContainer.activeSelf;
@@ -155,7 +156,7 @@ namespace StarStrike.UI
 
             // Gems
             GameObject gemsObj = CreateText(menuContainer.transform, "GemsText", "Meta-Gems: 0", 24, FontStyle.Bold, Color.cyan, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.7f), new Vector2(0.5f, 0.7f), new Vector2(-200, -30), new Vector2(200, 30), defaultFont);
-            gemsText = gemsObj.GetComponent<Text>();
+            gemsText = gemsObj.GetComponent<TMP_Text>();
 
             // Mode 1: PvE Survival Button
             GameObject pveBtnObj = CreateButton(menuContainer.transform, "PvEStartButton", "► PvE SURVIVAL", new Vector2(0.5f, 0.18f), new Vector2(0.5f, 0.18f), new Vector2(-155, 0), new Vector2(290, 64), new Color(0.15f, 0.70f, 0.35f), defaultFont, 22);
@@ -265,24 +266,11 @@ namespace StarStrike.UI
             }
         }
 
-        private GameObject CreateText(Transform parent, string name, string text, int fontSize, FontStyle fontStyle, Color color, TextAnchor alignment, Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax, Font font)
+        private GameObject CreateText(Transform parent, string name, string text, int fontSize, FontStyle fontStyle, Color color, TextAnchor alignment, Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax, Font font = null)
         {
-            GameObject obj = new GameObject(name, typeof(RectTransform), typeof(Text));
-            obj.transform.SetParent(parent, false);
-            RectTransform rt = obj.GetComponent<RectTransform>();
-            rt.anchorMin = anchorMin;
-            rt.anchorMax = anchorMax;
-            rt.offsetMin = offsetMin;
-            rt.offsetMax = offsetMax;
-
-            Text txt = obj.GetComponent<Text>();
-            txt.text = text;
-            txt.fontSize = fontSize;
-            txt.fontStyle = fontStyle;
-            txt.color = color;
-            txt.alignment = alignment;
-            txt.font = font;
-            return obj;
+            FontStyles style = (fontStyle == FontStyle.Bold) ? FontStyles.Bold : FontStyles.Normal;
+            var tmp = UIHelper.CreateTextMeshPro(parent, name, text, fontSize, style, color, UIHelper.ConvertTextAnchor(alignment), anchorMin, anchorMax, offsetMin, offsetMax);
+            return tmp.gameObject;
         }
 
         private GameObject CreateButton(Transform parent, string name, string label, Vector2 anchorMin, Vector2 anchorMax, Vector2 pos, Vector2 size, Color bgColor, Font font, int fontSize = 16)

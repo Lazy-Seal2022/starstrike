@@ -11,7 +11,8 @@
         "StarStrike.Network",
         "StarStrike.Editor",
         "Unity.Netcode.Runtime",
-        "Unity.Collections"
+        "Unity.Collections",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [
         "Editor"

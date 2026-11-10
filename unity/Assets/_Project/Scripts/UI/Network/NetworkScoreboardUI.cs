@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using TMPro;
 using StarStrike.Core;
 using StarStrike.Gameplay;
 using StarStrike.Network;
@@ -15,9 +16,9 @@ namespace StarStrike.UI
 
         private GameObject scoreboardContainer;
         private Transform rowsParent;
-        private Text killfeedText;
+        private TMP_Text killfeedText;
         private GameObject victoryModal;
-        private Text victoryWinnerText;
+        private TMP_Text victoryWinnerText;
         private readonly List<string> recentKills = new List<string>();
 
         private void Awake()
@@ -31,6 +32,15 @@ namespace StarStrike.UI
 
             BuildUI();
             SetVisible(false);
+        }
+
+        public void EnsureUIBuilt()
+        {
+            if (Instance == null) Instance = this;
+            if (scoreboardContainer == null)
+            {
+                BuildUI();
+            }
         }
 
         private void OnEnable()
@@ -49,6 +59,7 @@ namespace StarStrike.UI
 
         public void SetVisible(bool visible)
         {
+            EnsureUIBuilt();
             if (scoreboardContainer != null)
             {
                 scoreboardContainer.SetActive(visible);
@@ -107,8 +118,6 @@ namespace StarStrike.UI
                 Destroy(child.gameObject);
             }
 
-            Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-
             // Convert scoreboard to list and sort by score descending
             List<NetworkScoreEntry> sorted = new List<NetworkScoreEntry>();
             for (int i = 0; i < NetworkMatchManager.Instance.Scoreboard.Count; i++)
@@ -121,14 +130,12 @@ namespace StarStrike.UI
             {
                 var entry = sorted[i];
                 string rowText = $"#{i + 1}  {entry.PlayerName,-12}  {entry.ShipId.ToString().ToUpper(),-10}  K: {entry.Kills,-3}  D: {entry.Deaths,-3}  Score: {entry.Score}";
-                CreateText(rowsParent, $"Row_{i}", rowText, 14, FontStyle.Normal, Color.white, TextAnchor.MiddleLeft, new Vector2(0, 1), new Vector2(1, 1), new Vector2(10, -(i * 24 + 20)), new Vector2(-10, -(i * 24)), defaultFont);
+                UIHelper.CreateTextMeshPro(rowsParent, $"Row_{i}", rowText, 14, FontStyles.Normal, Color.white, TextAlignmentOptions.Left, new Vector2(0, 1), new Vector2(1, 1), new Vector2(10, -(i * 24 + 20)), new Vector2(-10, -(i * 24)));
             }
         }
 
         private void BuildUI()
         {
-            Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-
             scoreboardContainer = new GameObject("NetworkScoreboardContainer", typeof(RectTransform));
             scoreboardContainer.transform.SetParent(transform, false);
             RectTransform rt = scoreboardContainer.GetComponent<RectTransform>();
@@ -138,8 +145,7 @@ namespace StarStrike.UI
             rt.offsetMax = Vector2.zero;
 
             // 1. Killfeed (Top Left)
-            GameObject kfObj = CreateText(scoreboardContainer.transform, "KillfeedText", "", 16, FontStyle.Bold, Color.white, TextAnchor.UpperLeft, new Vector2(0.02f, 0.75f), new Vector2(0.40f, 0.98f), Vector2.zero, Vector2.zero, defaultFont);
-            killfeedText = kfObj.GetComponent<Text>();
+            killfeedText = UIHelper.CreateTextMeshPro(scoreboardContainer.transform, "KillfeedText", "", 16, FontStyles.Bold, Color.white, TextAlignmentOptions.TopLeft, new Vector2(0.02f, 0.75f), new Vector2(0.40f, 0.98f), Vector2.zero, Vector2.zero);
 
             // 2. Leaderboard Card (Top Right)
             GameObject boardCard = new GameObject("LeaderboardCard", typeof(RectTransform), typeof(Image));
@@ -152,7 +158,7 @@ namespace StarStrike.UI
             boardCard.GetComponent<Image>().color = new Color(0.05f, 0.08f, 0.16f, 0.85f);
 
             // Leaderboard Header
-            CreateText(boardCard.transform, "Header", "MULTIPLAYER LEADERBOARD [TAB]", 14, FontStyle.Bold, Color.yellow, TextAnchor.MiddleCenter, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, -28), Vector2.zero, defaultFont);
+            UIHelper.CreateTextMeshPro(boardCard.transform, "Header", "MULTIPLAYER LEADERBOARD [TAB]", 14, FontStyles.Bold, Color.yellow, TextAlignmentOptions.Center, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, -28), Vector2.zero);
 
             // Rows Container
             GameObject rowsObj = new GameObject("RowsContainer", typeof(RectTransform));
@@ -165,10 +171,10 @@ namespace StarStrike.UI
             rowsParent = rowsObj.transform;
 
             // 3. Victory Modal (Center)
-            BuildVictoryModal(defaultFont);
+            BuildVictoryModal();
         }
 
-        private void BuildVictoryModal(Font font)
+        private void BuildVictoryModal()
         {
             victoryModal = new GameObject("NetworkVictoryModal", typeof(RectTransform), typeof(Image));
             victoryModal.transform.SetParent(scoreboardContainer.transform, false);
@@ -181,8 +187,7 @@ namespace StarStrike.UI
             victoryModal.GetComponent<Image>().raycastTarget = true;
 
             // Title & Winner Text
-            GameObject winObj = CreateText(victoryModal.transform, "WinnerText", "MATCH CHAMPION\nWINNER!\nREACHED 10 KILLS!", 24, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.65f), new Vector2(0.5f, 0.65f), new Vector2(-220, -60), new Vector2(220, 60), font);
-            victoryWinnerText = winObj.GetComponent<Text>();
+            victoryWinnerText = UIHelper.CreateTextMeshPro(victoryModal.transform, "WinnerText", "MATCH CHAMPION\nWINNER!\nREACHED 10 KILLS!", 24, FontStyles.Bold, Color.white, TextAlignmentOptions.Center, new Vector2(0.5f, 0.65f), new Vector2(0.5f, 0.65f), new Vector2(-220, -60), new Vector2(220, 60));
 
             // Return to Menu Button
             GameObject retBtnObj = new GameObject("ReturnBtn", typeof(RectTransform), typeof(Image), typeof(Button));
@@ -206,29 +211,9 @@ namespace StarStrike.UI
                 SetVisible(false);
             });
 
-            CreateText(retBtnObj.transform, "BtnText", "RETURN TO HANGAR", 16, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, font);
+            UIHelper.CreateTextMeshPro(retBtnObj.transform, "BtnText", "RETURN TO HANGAR", 16, FontStyles.Bold, Color.white, TextAlignmentOptions.Center, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
             victoryModal.SetActive(false);
-        }
-
-        private GameObject CreateText(Transform parent, string name, string text, int fontSize, FontStyle fontStyle, Color color, TextAnchor alignment, Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax, Font font)
-        {
-            GameObject obj = new GameObject(name, typeof(RectTransform), typeof(Text));
-            obj.transform.SetParent(parent, false);
-            RectTransform rt = obj.GetComponent<RectTransform>();
-            rt.anchorMin = anchorMin;
-            rt.anchorMax = anchorMax;
-            rt.offsetMin = offsetMin;
-            rt.offsetMax = offsetMax;
-
-            Text txt = obj.GetComponent<Text>();
-            txt.text = text;
-            txt.fontSize = fontSize;
-            txt.fontStyle = fontStyle;
-            txt.color = color;
-            txt.alignment = alignment;
-            txt.font = font;
-            return obj;
         }
     }
 }

@@ -17,70 +17,63 @@ namespace StarStrike.Gameplay
         private static Sprite cachedGem;
         private static Sprite cachedStar;
         private static Sprite cachedRadar;
+        private static Sprite cachedPowerUp;
+
+        private static Sprite LoadAssetOrDefault(string resourcePath, ref Sprite cache, System.Func<Sprite> fallback)
+        {
+            if (cache != null) return cache;
+            cache = Resources.Load<Sprite>(resourcePath);
+            if (cache == null)
+            {
+                cache = fallback();
+            }
+            return cache;
+        }
 
         public static Sprite GetShipSprite(string type)
         {
             if (type == "fighter")
-            {
-                if (cachedFighter == null) cachedFighter = GenerateShip(new Color(0.96f, 0.25f, 0.37f), 64, 2);
-                return cachedFighter;
-            }
+                return LoadAssetOrDefault("Sprites/Ship_Fighter", ref cachedFighter, () => GenerateShip(new Color(0.96f, 0.25f, 0.37f), 64, 2));
             if (type == "miner")
-            {
-                if (cachedMiner == null) cachedMiner = GenerateShip(new Color(0.96f, 0.62f, 0.04f), 64, 3);
-                return cachedMiner;
-            }
+                return LoadAssetOrDefault("Sprites/Ship_Miner", ref cachedMiner, () => GenerateShip(new Color(0.96f, 0.62f, 0.04f), 64, 3));
             if (type == "drone")
-            {
-                if (cachedDrone == null) cachedDrone = GenerateShip(new Color(0.9f, 0.15f, 0.15f), 48, 4);
-                return cachedDrone;
-            }
+                return LoadAssetOrDefault("Sprites/Ship_Drone", ref cachedDrone, () => GenerateShip(new Color(0.9f, 0.15f, 0.15f), 48, 4));
             if (type == "interceptor")
-            {
-                if (cachedInterceptor == null) cachedInterceptor = GenerateShip(new Color(0.45f, 0.35f, 0.98f), 64, 5);
-                return cachedInterceptor;
-            }
+                return LoadAssetOrDefault("Sprites/Ship_Interceptor", ref cachedInterceptor, () => GenerateShip(new Color(0.45f, 0.35f, 0.98f), 64, 5));
             if (type == "juggernaut")
-            {
-                if (cachedJuggernaut == null) cachedJuggernaut = GenerateShip(new Color(0.95f, 0.45f, 0.15f), 64, 6);
-                return cachedJuggernaut;
-            }
+                return LoadAssetOrDefault("Sprites/Ship_Juggernaut", ref cachedJuggernaut, () => GenerateShip(new Color(0.95f, 0.45f, 0.15f), 64, 6));
             if (type == "boss")
-            {
-                if (cachedBoss == null) cachedBoss = GenerateShip(new Color(0.95f, 0.12f, 0.22f), 96, 7);
-                return cachedBoss;
-            }
-            if (cachedScout == null) cachedScout = GenerateShip(new Color(0.22f, 0.74f, 0.97f), 64, 1);
-            return cachedScout;
+                return LoadAssetOrDefault("Sprites/Ship_Boss", ref cachedBoss, () => GenerateShip(new Color(0.95f, 0.12f, 0.22f), 96, 7));
+
+            return LoadAssetOrDefault("Sprites/Ship_Scout", ref cachedScout, () => GenerateShip(new Color(0.22f, 0.74f, 0.97f), 64, 1));
         }
 
         public static Sprite GetLaserSprite(bool isEnemy = false)
         {
             if (isEnemy)
-            {
-                if (cachedEnemyLaser == null) cachedEnemyLaser = GenerateCapsule(new Color(1f, 0.25f, 0.25f), 16, 48);
-                return cachedEnemyLaser;
-            }
-            if (cachedLaser == null) cachedLaser = GenerateCapsule(new Color(0.2f, 0.9f, 1f), 16, 48);
-            return cachedLaser;
+                return LoadAssetOrDefault("Sprites/Laser_Enemy", ref cachedEnemyLaser, () => GenerateCapsule(new Color(1f, 0.25f, 0.25f), 16, 48));
+
+            return LoadAssetOrDefault("Sprites/Laser_Player", ref cachedLaser, () => GenerateCapsule(new Color(0.2f, 0.9f, 1f), 16, 48));
         }
 
         public static Sprite GetAsteroidSprite()
         {
-            if (cachedAsteroid == null) cachedAsteroid = GenerateAsteroid(new Color(0.6f, 0.65f, 0.72f), 64);
-            return cachedAsteroid;
+            return LoadAssetOrDefault("Sprites/Asteroid", ref cachedAsteroid, () => GenerateAsteroid(new Color(0.6f, 0.65f, 0.72f), 64));
         }
 
         public static Sprite GetGemSprite()
         {
-            if (cachedGem == null) cachedGem = GenerateDiamond(new Color(0.2f, 0.95f, 0.45f), 32);
-            return cachedGem;
+            return LoadAssetOrDefault("Sprites/Gem", ref cachedGem, () => GenerateDiamond(new Color(0.2f, 0.95f, 0.45f), 32));
         }
 
         public static Sprite GetStarSprite()
         {
-            if (cachedStar == null) cachedStar = GenerateCircle(Color.white, 16);
-            return cachedStar;
+            return LoadAssetOrDefault("Sprites/Star", ref cachedStar, () => GenerateCircle(Color.white, 16));
+        }
+
+        public static Sprite GetPowerUpSprite()
+        {
+            return LoadAssetOrDefault("Sprites/PowerUp", ref cachedPowerUp, () => GenerateDiamond(new Color(1f, 0.85f, 0.2f), 32));
         }
 
         private static Sprite GenerateCircle(Color color, int size)
@@ -345,51 +338,52 @@ namespace StarStrike.Gameplay
 
         public static Sprite GetRadarSprite(int size = 128)
         {
-            if (cachedRadar == null)
+            return LoadAssetOrDefault("Sprites/Radar", ref cachedRadar, () => GenerateRadarInternal(size));
+        }
+
+        private static Sprite GenerateRadarInternal(int size)
+        {
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Bilinear;
+            Color[] cols = new Color[size * size];
+            Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
+            float radius = size * 0.48f;
+            float innerRingRadius = radius * 0.5f;
+
+            for (int y = 0; y < size; y++)
             {
-                Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
-                tex.filterMode = FilterMode.Bilinear;
-                Color[] cols = new Color[size * size];
-                Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
-                float radius = size * 0.48f;
-                float innerRingRadius = radius * 0.5f;
-
-                for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
                 {
-                    for (int x = 0; x < size; x++)
+                    float dist = Vector2.Distance(new Vector2(x, y), center);
+                    if (dist <= radius)
                     {
-                        float dist = Vector2.Distance(new Vector2(x, y), center);
-                        if (dist <= radius)
-                        {
-                            Color col = new Color(0.02f, 0.05f, 0.12f, 0.75f);
+                        Color col = new Color(0.02f, 0.05f, 0.12f, 0.75f);
 
-                            if (dist >= radius - 2.5f)
-                            {
-                                col = new Color(0.2f, 0.8f, 1f, 0.85f);
-                            }
-                            else if (Mathf.Abs(dist - innerRingRadius) <= 1.0f)
-                            {
-                                col = new Color(0.2f, 0.8f, 1f, 0.3f);
-                            }
-                            else if ((Mathf.Abs(x - center.x) <= 0.6f || Mathf.Abs(y - center.y) <= 0.6f) && dist > 4f)
-                            {
-                                col = new Color(0.2f, 0.8f, 1f, 0.25f);
-                            }
-
-                            float aa = Mathf.Clamp01((radius - dist) + 0.5f);
-                            cols[y * size + x] = new Color(col.r, col.g, col.b, col.a * aa);
-                        }
-                        else
+                        if (dist >= radius - 2.5f)
                         {
-                            cols[y * size + x] = Color.clear;
+                            col = new Color(0.2f, 0.8f, 1f, 0.85f);
                         }
+                        else if (Mathf.Abs(dist - innerRingRadius) <= 1.0f)
+                        {
+                            col = new Color(0.2f, 0.8f, 1f, 0.3f);
+                        }
+                        else if ((Mathf.Abs(x - center.x) <= 0.6f || Mathf.Abs(y - center.y) <= 0.6f) && dist > 4f)
+                        {
+                            col = new Color(0.2f, 0.8f, 1f, 0.25f);
+                        }
+
+                        float aa = Mathf.Clamp01((radius - dist) + 0.5f);
+                        cols[y * size + x] = new Color(col.r, col.g, col.b, col.a * aa);
+                    }
+                    else
+                    {
+                        cols[y * size + x] = Color.clear;
                     }
                 }
-                tex.SetPixels(cols);
-                tex.Apply();
-                cachedRadar = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100);
             }
-            return cachedRadar;
+            tex.SetPixels(cols);
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100);
         }
 
         public static Sprite GetRoundedBoxSprite(int size = 32, int cornerRadius = 6)

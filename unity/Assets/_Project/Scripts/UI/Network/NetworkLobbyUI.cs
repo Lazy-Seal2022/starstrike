@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Collections;
@@ -17,10 +18,10 @@ namespace StarStrike.UI
         public static event Action<bool> OnLobbyVisibilityChanged;
 
         private GameObject lobbyContainer;
-        private InputField nameInput;
-        private InputField ipInput;
-        private InputField portInput;
-        private Text statusText;
+        private TMP_InputField nameInput;
+        private TMP_InputField ipInput;
+        private TMP_InputField portInput;
+        private TMP_Text statusText;
         private string selectedShipId = "scout";
 
         public bool IsVisible => lobbyContainer != null && lobbyContainer.activeSelf;
@@ -76,8 +77,6 @@ namespace StarStrike.UI
 
         private void BuildUI()
         {
-            Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-
             lobbyContainer = new GameObject("NetworkLobbyContainer", typeof(RectTransform));
             lobbyContainer.transform.SetParent(transform, false);
             RectTransform rt = lobbyContainer.GetComponent<RectTransform>();
@@ -109,35 +108,34 @@ namespace StarStrike.UI
             bgImg.raycastTarget = true;
 
             // Title
-            CreateText(lobbyContainer.transform, "TitleText", "MULTIPLAYER DOGFIGHT", 44, FontStyle.Bold, new Color(1f, 0.35f, 0.2f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.85f), new Vector2(0.5f, 0.85f), new Vector2(-300, -35), new Vector2(300, 35), defaultFont);
+            UIHelper.CreateTextMeshPro(lobbyContainer.transform, "TitleText", "MULTIPLAYER DOGFIGHT", 44, FontStyles.Bold, new Color(1f, 0.35f, 0.2f), TextAlignmentOptions.Center, new Vector2(0.5f, 0.85f), new Vector2(0.5f, 0.85f), new Vector2(-300, -35), new Vector2(300, 35));
 
             // Subtitle
-            CreateText(lobbyContainer.transform, "SubtitleText", "ONLINE & LAN FREE-FOR-ALL COMBAT", 18, FontStyle.Normal, Color.cyan, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.78f), new Vector2(0.5f, 0.78f), new Vector2(-250, -20), new Vector2(250, 20), defaultFont);
+            UIHelper.CreateTextMeshPro(lobbyContainer.transform, "SubtitleText", "ONLINE & LAN FREE-FOR-ALL COMBAT", 18, FontStyles.Normal, Color.cyan, TextAlignmentOptions.Center, new Vector2(0.5f, 0.78f), new Vector2(0.5f, 0.78f), new Vector2(-250, -20), new Vector2(250, 20));
 
             // Pilot Name Label & Input
-            CreateText(lobbyContainer.transform, "NameLabel", "PILOT CALL-SIGN:", 16, FontStyle.Bold, Color.white, TextAnchor.MiddleRight, new Vector2(0.35f, 0.68f), new Vector2(0.35f, 0.68f), new Vector2(-150, -20), new Vector2(0, 20), defaultFont);
-            nameInput = CreateInputField(lobbyContainer.transform, "NameInput", "AcePilot", new Vector2(0.37f, 0.68f), new Vector2(0.65f, 0.68f), new Vector2(0, -20), new Vector2(0, 20), defaultFont);
+            UIHelper.CreateTextMeshPro(lobbyContainer.transform, "NameLabel", "PILOT CALL-SIGN:", 16, FontStyles.Bold, Color.white, TextAlignmentOptions.Right, new Vector2(0.35f, 0.68f), new Vector2(0.35f, 0.68f), new Vector2(-150, -20), new Vector2(0, 20));
+            nameInput = CreateInputField(lobbyContainer.transform, "NameInput", "AcePilot", new Vector2(0.37f, 0.68f), new Vector2(0.65f, 0.68f), new Vector2(0, -20), new Vector2(0, 20));
 
             // Server IP Label & Input
-            CreateText(lobbyContainer.transform, "IpLabel", "SERVER IP / HOST:", 16, FontStyle.Bold, Color.white, TextAnchor.MiddleRight, new Vector2(0.35f, 0.58f), new Vector2(0.35f, 0.58f), new Vector2(-150, -20), new Vector2(0, 20), defaultFont);
-            ipInput = CreateInputField(lobbyContainer.transform, "IpInput", "127.0.0.1", new Vector2(0.37f, 0.58f), new Vector2(0.65f, 0.58f), new Vector2(0, -20), new Vector2(0, 20), defaultFont);
+            UIHelper.CreateTextMeshPro(lobbyContainer.transform, "IpLabel", "SERVER IP / HOST:", 16, FontStyles.Bold, Color.white, TextAlignmentOptions.Right, new Vector2(0.35f, 0.58f), new Vector2(0.35f, 0.58f), new Vector2(-150, -20), new Vector2(0, 20));
+            ipInput = CreateInputField(lobbyContainer.transform, "IpInput", "127.0.0.1", new Vector2(0.37f, 0.58f), new Vector2(0.65f, 0.58f), new Vector2(0, -20), new Vector2(0, 20));
 
             // Server Port Label & Input
-            CreateText(lobbyContainer.transform, "PortLabel", "PORT:", 16, FontStyle.Bold, Color.white, TextAnchor.MiddleRight, new Vector2(0.35f, 0.48f), new Vector2(0.35f, 0.48f), new Vector2(-150, -20), new Vector2(0, 20), defaultFont);
-            portInput = CreateInputField(lobbyContainer.transform, "PortInput", "7777", new Vector2(0.37f, 0.48f), new Vector2(0.65f, 0.48f), new Vector2(0, -20), new Vector2(0, 20), defaultFont);
+            UIHelper.CreateTextMeshPro(lobbyContainer.transform, "PortLabel", "PORT:", 16, FontStyles.Bold, Color.white, TextAlignmentOptions.Right, new Vector2(0.35f, 0.48f), new Vector2(0.35f, 0.48f), new Vector2(-150, -20), new Vector2(0, 20));
+            portInput = CreateInputField(lobbyContainer.transform, "PortInput", "7777", new Vector2(0.37f, 0.48f), new Vector2(0.65f, 0.48f), new Vector2(0, -20), new Vector2(0, 20));
 
             // Status Text
-            GameObject stObj = CreateText(lobbyContainer.transform, "StatusText", "Ready to engage.", 16, FontStyle.Italic, Color.yellow, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.38f), new Vector2(0.5f, 0.38f), new Vector2(-250, -20), new Vector2(250, 20), defaultFont);
-            statusText = stObj.GetComponent<Text>();
+            statusText = UIHelper.CreateTextMeshPro(lobbyContainer.transform, "StatusText", "Ready to engage.", 16, FontStyles.Italic, Color.yellow, TextAlignmentOptions.Center, new Vector2(0.5f, 0.38f), new Vector2(0.5f, 0.38f), new Vector2(-250, -20), new Vector2(250, 20));
 
             // Buttons: Host, Join, Back
-            GameObject hostBtnObj = CreateButton(lobbyContainer.transform, "HostBtn", "HOST MATCH", new Vector2(0.32f, 0.25f), new Vector2(0.32f, 0.25f), Vector2.zero, new Vector2(200, 55), new Color(0.85f, 0.3f, 0.15f), defaultFont, 20);
+            GameObject hostBtnObj = CreateButton(lobbyContainer.transform, "HostBtn", "HOST MATCH", new Vector2(0.32f, 0.25f), new Vector2(0.32f, 0.25f), Vector2.zero, new Vector2(200, 55), new Color(0.85f, 0.3f, 0.15f), 20);
             hostBtnObj.GetComponent<Button>().onClick.AddListener(OnHostClicked);
 
-            GameObject joinBtnObj = CreateButton(lobbyContainer.transform, "JoinBtn", "JOIN MATCH", new Vector2(0.52f, 0.25f), new Vector2(0.52f, 0.25f), Vector2.zero, new Vector2(200, 55), new Color(0.18f, 0.65f, 0.35f), defaultFont, 20);
+            GameObject joinBtnObj = CreateButton(lobbyContainer.transform, "JoinBtn", "JOIN MATCH", new Vector2(0.52f, 0.25f), new Vector2(0.52f, 0.25f), Vector2.zero, new Vector2(200, 55), new Color(0.18f, 0.65f, 0.35f), 20);
             joinBtnObj.GetComponent<Button>().onClick.AddListener(OnJoinClicked);
 
-            GameObject backBtnObj = CreateButton(lobbyContainer.transform, "BackBtn", "BACK TO MENU", new Vector2(0.72f, 0.25f), new Vector2(0.72f, 0.25f), Vector2.zero, new Vector2(200, 55), new Color(0.3f, 0.35f, 0.45f), defaultFont, 18);
+            GameObject backBtnObj = CreateButton(lobbyContainer.transform, "BackBtn", "BACK TO MENU", new Vector2(0.72f, 0.25f), new Vector2(0.72f, 0.25f), Vector2.zero, new Vector2(200, 55), new Color(0.3f, 0.35f, 0.45f), 18);
             backBtnObj.GetComponent<Button>().onClick.AddListener(OnBackClicked);
         }
 
@@ -290,29 +288,9 @@ namespace StarStrike.UI
             }
         }
 
-        private GameObject CreateText(Transform parent, string name, string text, int fontSize, FontStyle fontStyle, Color color, TextAnchor alignment, Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax, Font font)
+        private TMP_InputField CreateInputField(Transform parent, string name, string defaultText, Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax)
         {
-            GameObject obj = new GameObject(name, typeof(RectTransform), typeof(Text));
-            obj.transform.SetParent(parent, false);
-            RectTransform rt = obj.GetComponent<RectTransform>();
-            rt.anchorMin = anchorMin;
-            rt.anchorMax = anchorMax;
-            rt.offsetMin = offsetMin;
-            rt.offsetMax = offsetMax;
-
-            Text txt = obj.GetComponent<Text>();
-            txt.text = text;
-            txt.fontSize = fontSize;
-            txt.fontStyle = fontStyle;
-            txt.color = color;
-            txt.alignment = alignment;
-            txt.font = font;
-            return obj;
-        }
-
-        private InputField CreateInputField(Transform parent, string name, string defaultText, Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax, Font font)
-        {
-            GameObject inputObj = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(InputField));
+            GameObject inputObj = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(TMP_InputField));
             inputObj.transform.SetParent(parent, false);
             RectTransform rt = inputObj.GetComponent<RectTransform>();
             rt.anchorMin = anchorMin;
@@ -323,17 +301,26 @@ namespace StarStrike.UI
             Image img = inputObj.GetComponent<Image>();
             img.color = new Color(0.12f, 0.16f, 0.24f, 0.95f);
 
-            InputField ifield = inputObj.GetComponent<InputField>();
+            TMP_InputField ifield = inputObj.GetComponent<TMP_InputField>();
 
-            GameObject textObj = CreateText(inputObj.transform, "Text", defaultText, 16, FontStyle.Normal, Color.white, TextAnchor.MiddleLeft, Vector2.zero, Vector2.one, new Vector2(10, 0), new Vector2(-10, 0), font);
-            Text txt = textObj.GetComponent<Text>();
+            GameObject textViewport = new GameObject("Text Area", typeof(RectTransform), typeof(RectMask2D));
+            textViewport.transform.SetParent(inputObj.transform, false);
+            RectTransform tvRt = textViewport.GetComponent<RectTransform>();
+            tvRt.anchorMin = Vector2.zero;
+            tvRt.anchorMax = Vector2.one;
+            tvRt.offsetMin = new Vector2(10, 0);
+            tvRt.offsetMax = new Vector2(-10, 0);
+
+            TextMeshProUGUI txt = UIHelper.CreateTextMeshPro(textViewport.transform, "Text", defaultText, 16, FontStyles.Normal, Color.white, TextAlignmentOptions.Left, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+
+            ifield.textViewport = tvRt;
             ifield.textComponent = txt;
             ifield.text = defaultText;
 
             return ifield;
         }
 
-        private GameObject CreateButton(Transform parent, string name, string label, Vector2 anchorMin, Vector2 anchorMax, Vector2 pos, Vector2 size, Color bgColor, Font font, int fontSize = 16)
+        private GameObject CreateButton(Transform parent, string name, string label, Vector2 anchorMin, Vector2 anchorMax, Vector2 pos, Vector2 size, Color bgColor, int fontSize = 16)
         {
             GameObject btnObj = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
             btnObj.transform.SetParent(parent, false);
@@ -353,7 +340,7 @@ namespace StarStrike.UI
             cb.pressedColor = bgColor * 0.8f;
             btn.colors = cb;
 
-            CreateText(btnObj.transform, "Text", label, fontSize, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, font);
+            UIHelper.CreateTextMeshPro(btnObj.transform, "Text", label, fontSize, FontStyles.Bold, Color.white, TextAlignmentOptions.Center, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             return btnObj;
         }
     }
