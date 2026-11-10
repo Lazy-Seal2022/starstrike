@@ -56,6 +56,8 @@ namespace StarStrike.UI
         private TMP_Text invertTurnBtnText;
         private Button touchHudBtn;
         private TMP_Text touchHudBtnText;
+        private Button zoomBtn;
+        private TMP_Text zoomBtnText;
 
         private GameState stateBeforeOpening = GameState.Menu;
         private bool wasMainMenuVisible = false;
@@ -302,6 +304,12 @@ namespace StarStrike.UI
                 touchHudBtnText.text = touch ? "ON-SCREEN HUD: [FORCE SHOWN]" : "ON-SCREEN HUD: [AUTO / MOBILE]";
             }
 
+            float zoom = StorageService.GetCameraZoom();
+            if (zoomBtnText != null)
+            {
+                zoomBtnText.text = $"CAMERA VIEW: [{GetZoomLabel(zoom)}]";
+            }
+
             SwitchTab(activeTab);
         }
 
@@ -387,12 +395,38 @@ namespace StarStrike.UI
             RefreshAllUI();
         }
 
+        public void CycleZoom()
+        {
+            float cur = StorageService.GetCameraZoom();
+            float next;
+            if (cur < 16f) next = 18f;
+            else if (cur < 20f) next = 22f;
+            else if (cur < 24f) next = 26f;
+            else next = 14f;
+
+            StorageService.SaveCameraZoom(next);
+            if (CameraController.Instance != null)
+            {
+                CameraController.Instance.SetBaseZoom(next);
+            }
+            RefreshAllUI();
+        }
+
+        private string GetZoomLabel(float zoom)
+        {
+            if (zoom <= 15f) return "CLOSE (14.0)";
+            if (zoom <= 19f) return "BROAD (18.0)";
+            if (zoom <= 23f) return "WIDE (22.0)";
+            return "ULTRA-WIDE (26.0)";
+        }
+
         public void ResetDefaults()
         {
             StorageService.ResetSettingsToDefaults();
             if (AudioService.Instance != null) AudioService.Instance.LoadSettings();
             if (PlayerInputReader.Instance != null) PlayerInputReader.Instance.ApplySettings();
             if (CanvasHUD.Instance != null) CanvasHUD.Instance.forceShowMobileControls = false;
+            if (CameraController.Instance != null) CameraController.Instance.SetBaseZoom(18f);
             RefreshAllUI();
         }
 
@@ -643,20 +677,27 @@ namespace StarStrike.UI
             autoBrakeDesc = CreateTextExplicit(controlsTabPanel.transform, "AutoBrakeDesc", "• Automatically decelerates ship when thrust is released.", 12, FontStyles.Normal, new Color(0.75f, 0.88f, 0.98f), TextAlignmentOptions.Left,
                 new Vector2(0.5f, 1f), new Vector2(0f, rowY - 15f), new Vector2(680f, 30f));
 
-            rowY -= 48f;
-            // 3. Quick Toggles Row (Side-by-side)
-            invertTurnBtn = CreateButtonExplicit(controlsTabPanel.transform, "BtnInvertTurn", "STEERING: [NORMAL]", new Vector2(0f, 1f), new Vector2(165f, rowY - 18f), new Vector2(330f, 38f),
+            rowY -= 45f;
+            // 3. Camera Zoom View Card
+            zoomBtn = CreateButtonExplicit(controlsTabPanel.transform, "BtnZoom", "CAMERA VIEW: [BROAD (18.0)]", new Vector2(0.5f, 1f), new Vector2(0f, rowY - 16f), new Vector2(700f, 36f),
+                new Color(0.14f, 0.28f, 0.45f), 14);
+            zoomBtn.onClick.AddListener(CycleZoom);
+            zoomBtnText = zoomBtn.GetComponentInChildren<TMP_Text>();
+
+            rowY -= 44f;
+            // 4. Quick Toggles Row (Side-by-side)
+            invertTurnBtn = CreateButtonExplicit(controlsTabPanel.transform, "BtnInvertTurn", "STEERING: [NORMAL]", new Vector2(0f, 1f), new Vector2(165f, rowY - 16f), new Vector2(330f, 36f),
                 new Color(0.12f, 0.22f, 0.35f), 13);
             invertTurnBtn.onClick.AddListener(ToggleInvertTurn);
             invertTurnBtnText = invertTurnBtn.GetComponentInChildren<TMP_Text>();
 
-            touchHudBtn = CreateButtonExplicit(controlsTabPanel.transform, "BtnTouchHud", "ON-SCREEN HUD: [AUTO / MOBILE]", new Vector2(1f, 1f), new Vector2(-165f, rowY - 18f), new Vector2(330f, 38f),
+            touchHudBtn = CreateButtonExplicit(controlsTabPanel.transform, "BtnTouchHud", "ON-SCREEN HUD: [AUTO / MOBILE]", new Vector2(1f, 1f), new Vector2(-165f, rowY - 16f), new Vector2(330f, 36f),
                 new Color(0.12f, 0.22f, 0.35f), 13);
             touchHudBtn.onClick.AddListener(ToggleTouchHud);
             touchHudBtnText = touchHudBtn.GetComponentInChildren<TMP_Text>();
 
-            rowY -= 54f;
-            // 4. Quick Key Reference Card
+            rowY -= 44f;
+            // 5. Quick Key Reference Card
             GameObject keyBox = new GameObject("KeyReferenceBox", typeof(RectTransform), typeof(Image));
             keyBox.transform.SetParent(controlsTabPanel.transform, false);
             var kbRt = keyBox.GetComponent<RectTransform>();
@@ -664,15 +705,15 @@ namespace StarStrike.UI
             kbRt.anchorMax = new Vector2(0.5f, 1f);
             kbRt.pivot = new Vector2(0.5f, 1f);
             kbRt.anchoredPosition = new Vector2(0f, rowY);
-            kbRt.sizeDelta = new Vector2(700f, 110f);
+            kbRt.sizeDelta = new Vector2(700f, 105f);
 
             var kbImg = keyBox.GetComponent<Image>();
             kbImg.sprite = roundedSprite;
             kbImg.type = Image.Type.Sliced;
             kbImg.color = new Color(0.04f, 0.07f, 0.12f, 0.92f);
 
-            string keyGuide = "<b>FLIGHT CONTROLS REFERENCE:</b>\n" +
-                              "<color=#38BDF8>W / Up / Left Stick</color>: Thrust Forward    •    <color=#F87171>S / Down</color>: Brake Ship\n" +
+            string keyGuide = "<b>FLIGHT CONTROLS & CAMERA:</b>\n" +
+                              "<color=#38BDF8>W / Up / Left Stick</color>: Thrust    •    <color=#F87171>S / Down</color>: Brake    •    <color=#38BDF8>Mouse Wheel</color>: Zoom\n" +
                               "<color=#38BDF8>A / D Keys</color>: Steer Ship (or Mouse Aim)      •    <color=#4ADE80>Shift / Right Click</color>: Boost Engines\n" +
                               "<color=#FBBF24>Space / Left Click / RT</color>: Fire Weapon     •    <color=#A78BFA>U Key</color>: Upgrades Drawer\n" +
                               "<color=#94A3B8>ESC / O Key</color>: Toggle Settings / Pause";

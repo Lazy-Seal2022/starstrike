@@ -38,6 +38,7 @@ namespace StarStrike.Tests.EditMode
             Assert.IsTrue(StorageService.GetAutoBrake());
             Assert.IsFalse(StorageService.GetShowMobileControls());
             Assert.IsFalse(StorageService.GetInvertTurn());
+            Assert.AreEqual(18.0f, StorageService.GetCameraZoom(), 0.01f);
         }
 
         [Test]
@@ -64,10 +65,14 @@ namespace StarStrike.Tests.EditMode
             StorageService.SaveShowMobileControls(true);
             Assert.IsTrue(StorageService.GetShowMobileControls());
 
+            StorageService.SaveCameraZoom(24.5f);
+            Assert.AreEqual(24.5f, StorageService.GetCameraZoom(), 0.01f);
+
             // Reset back
             StorageService.ResetSettingsToDefaults();
             Assert.AreEqual(1.0f, StorageService.GetMasterVolume(), 0.01f);
             Assert.AreEqual(0, StorageService.GetControlAimMode());
+            Assert.AreEqual(18.0f, StorageService.GetCameraZoom(), 0.01f);
         }
 
         [Test]

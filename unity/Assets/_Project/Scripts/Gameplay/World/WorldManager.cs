@@ -117,8 +117,11 @@ namespace StarStrike.Gameplay
             if (cam != null)
             {
                 cam.orthographic = true;
-                cam.orthographicSize = 10f;
                 cam.backgroundColor = new Color(0.015f, 0.03f, 0.07f);
+
+                var camCtrl = cam.GetComponent<CameraController>();
+                if (camCtrl == null) camCtrl = cam.gameObject.AddComponent<CameraController>();
+                if (playerTransform != null) camCtrl.SetTarget(playerTransform);
             }
         }
 
@@ -175,7 +178,7 @@ namespace StarStrike.Gameplay
 
         private void LateUpdate()
         {
-            if (playerTransform != null && Camera.main != null)
+            if (CameraController.Instance == null && playerTransform != null && Camera.main != null)
             {
                 Vector3 targetPos = new Vector3(playerTransform.position.x, playerTransform.position.y, -10f);
                 Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, targetPos, 8f * Time.deltaTime);

@@ -20,6 +20,7 @@ namespace StarStrike.Platform.Storage
         public bool autoBrakeEnabled = true;
         public bool showMobileControls = false;
         public bool invertTurn = false;
+        public float cameraZoom = 18f;
 
         public string lastShipId = "scout";
         public List<string> unlockedShips = new List<string> { "scout" };
@@ -79,6 +80,10 @@ namespace StarStrike.Platform.Storage
                 profile.musicVolume = 0.7f;
                 profile.mouseSensitivity = 1.0f;
                 profile.autoBrakeEnabled = true;
+            }
+            if (profile.cameraZoom <= 0.001f)
+            {
+                profile.cameraZoom = 18f;
             }
         }
 
@@ -171,6 +176,13 @@ namespace StarStrike.Platform.Storage
             SaveProfile();
         }
 
+        public static float GetCameraZoom() => Profile.cameraZoom > 0f ? Profile.cameraZoom : 18f;
+        public static void SaveCameraZoom(float zoom)
+        {
+            Profile.cameraZoom = Mathf.Clamp(zoom, 10f, 32f);
+            SaveProfile();
+        }
+
         public static void ResetSettingsToDefaults()
         {
             Profile.isAudioMuted = false;
@@ -182,6 +194,7 @@ namespace StarStrike.Platform.Storage
             Profile.autoBrakeEnabled = true;
             Profile.showMobileControls = false;
             Profile.invertTurn = false;
+            Profile.cameraZoom = 18f;
             SaveProfile();
         }
 

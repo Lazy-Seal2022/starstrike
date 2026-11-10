@@ -108,6 +108,9 @@ namespace StarStrike.Network
                 if (Camera.main != null)
                 {
                     Camera.main.transform.position = new Vector3(transform.position.x, transform.position.y, -10f);
+                    var camCtrl = Camera.main.GetComponent<StarStrike.Gameplay.CameraController>();
+                    if (camCtrl == null) camCtrl = Camera.main.gameObject.AddComponent<StarStrike.Gameplay.CameraController>();
+                    camCtrl.SetTarget(transform);
                 }
             }
         }
@@ -233,8 +236,8 @@ namespace StarStrike.Network
             NetworkPosition.Value = transform.position;
             NetworkRotation.Value = transform.eulerAngles.z;
 
-            // Camera follow for local player
-            if (Camera.main != null)
+            // Camera follow for local player fallback if no CameraController
+            if (StarStrike.Gameplay.CameraController.Instance == null && Camera.main != null)
             {
                 Vector3 camPos = new Vector3(transform.position.x, transform.position.y, -10f);
                 Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, camPos, 10f * Time.deltaTime);
