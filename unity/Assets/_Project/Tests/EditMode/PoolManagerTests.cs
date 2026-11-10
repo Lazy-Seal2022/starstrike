@@ -64,5 +64,39 @@ namespace StarStrike.Tests.EditMode
             Assert.IsTrue(second.activeInHierarchy);
             Assert.AreEqual(new Vector3(10, 0, 0), second.transform.position);
         }
+
+        [Test]
+        public void Prewarm_PopulatesPoolWithInactiveObjects()
+        {
+            int factoryCalls = 0;
+            pool.Prewarm("PrewarmTag", () =>
+            {
+                factoryCalls++;
+                return new GameObject($"Prewarmed_{factoryCalls}");
+            }, 5);
+
+            Assert.AreEqual(5, factoryCalls);
+
+            // Spawning should immediately reuse prewarmed objects without invoking factory
+            GameObject spawned = pool.Spawn("PrewarmTag", Vector3.zero, Quaternion.identity, () =>
+            {
+                factoryCalls++;
+                return new GameObject("Unexpected_New");
+            });
+
+            Assert.IsNotNull(spawned);
+            Assert.IsTrue(spawned.activeInHierarchy);
+            Assert.AreEqual(5, factoryCalls, "Factory should not be called when prewarmed objects exist");
+        }
+
+        [Test]
+        public void Despawn_SetsObjectInactive()
+        {
+            GameObject obj = new GameObject("TestDespawn");
+            obj.SetActive(true);
+            pool.Despawn(obj);
+            Assert.IsFalse(obj.activeInHierarchy);
+            Object.DestroyImmediate(obj);
+        }
     }
 }

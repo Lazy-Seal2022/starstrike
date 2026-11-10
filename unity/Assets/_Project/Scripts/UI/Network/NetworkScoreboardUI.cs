@@ -5,8 +5,9 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using StarStrike.Core;
 using StarStrike.Gameplay;
+using StarStrike.Network;
 
-namespace StarStrike.Network
+namespace StarStrike.UI
 {
     public class NetworkScoreboardUI : MonoBehaviour
     {
@@ -230,4 +231,10 @@ namespace StarStrike.Network
             return obj;
         }
     }
+}
+
+namespace StarStrike.Network
+{
+    [System.Obsolete("NetworkScoreboardUI has moved to StarStrike.UI namespace")]
+    public class NetworkScoreboardUI : StarStrike.UI.NetworkScoreboardUI { }
 }

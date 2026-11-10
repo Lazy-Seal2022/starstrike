@@ -6,6 +6,9 @@
         "StarStrike.Gameplay",
         "StarStrike.Platform",
         "StarStrike.Network",
+        "Unity.Netcode.Runtime",
+        "Unity.Networking.Transport",
+        "Unity.Collections",
         "Unity.InputSystem",
         "UnityEngine.UI",
         "Unity.TextMeshPro"

@@ -12,6 +12,15 @@ namespace StarStrike.Bootstrap
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         public static void Initialize()
         {
+            // 0. Ensure PoolManager exists
+            if (PoolManager.Instance == null)
+            {
+                var poolGO = new GameObject("[PoolManager]");
+                var pm = poolGO.AddComponent<PoolManager>();
+                pm.Initialize();
+                Object.DontDestroyOnLoad(poolGO);
+            }
+
             // 1. Create GameManager
             if (GameManager.Instance == null)
             {
@@ -55,17 +64,17 @@ namespace StarStrike.Bootstrap
             // 6. Create NetworkLobbyUI
             var lobbyGO = new GameObject("NetworkLobbyUI");
             lobbyGO.transform.SetParent(canvasGO.transform, false);
-            lobbyGO.AddComponent<StarStrike.Network.NetworkLobbyUI>();
+            lobbyGO.AddComponent<NetworkLobbyUI>();
 
             // 7. Create NetworkScoreboardUI
             var scoreboardGO = new GameObject("NetworkScoreboardUI");
             scoreboardGO.transform.SetParent(canvasGO.transform, false);
-            scoreboardGO.AddComponent<StarStrike.Network.NetworkScoreboardUI>();
+            scoreboardGO.AddComponent<NetworkScoreboardUI>();
 
             // 8. Create SettingsUI
             var settingsGO = new GameObject("SettingsUI");
             settingsGO.transform.SetParent(canvasGO.transform, false);
-            settingsGO.AddComponent<StarStrike.UI.SettingsUI>();
+            settingsGO.AddComponent<SettingsUI>();
 
             Debug.Log("GameBootstrapper: Core systems instantiated.");
         }

@@ -130,7 +130,7 @@ namespace StarStrike.UI
             }
 
             wasLobbyVisible = false;
-            var lobby = Network.NetworkLobbyUI.Instance ?? FindAnyObjectByType<Network.NetworkLobbyUI>();
+            var lobby = NetworkLobbyUI.Instance ?? FindAnyObjectByType<NetworkLobbyUI>();
             if (lobby != null && lobby.IsVisible)
             {
                 wasLobbyVisible = true;
@@ -173,7 +173,7 @@ namespace StarStrike.UI
 
             if (wasLobbyVisible)
             {
-                var lobby = Network.NetworkLobbyUI.Instance ?? FindAnyObjectByType<Network.NetworkLobbyUI>();
+                var lobby = NetworkLobbyUI.Instance ?? FindAnyObjectByType<NetworkLobbyUI>();
                 if (lobby != null)
                 {
                     lobby.SetVisible(true);

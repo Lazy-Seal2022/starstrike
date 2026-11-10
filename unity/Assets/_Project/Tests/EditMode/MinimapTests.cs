@@ -71,5 +71,45 @@ namespace StarStrike.Tests.EditMode
             Assert.AreEqual(new Vector2(1f, 0f), minimap.mapContainer.pivot);
             Assert.AreEqual(new Vector2(-25f, 25f), minimap.mapContainer.anchoredPosition);
         }
+
+        [Test]
+        public void Minimap_MapContainer_HasIsolatedSubCanvasAndCanvasGroup()
+        {
+            Canvas subCanvas = minimap.mapContainer.GetComponent<Canvas>();
+            Assert.IsNotNull(subCanvas, "Minimap container must have nested Canvas to isolate vertex dirtying");
+
+            CanvasGroup cg = minimap.mapContainer.GetComponent<CanvasGroup>();
+            Assert.IsNotNull(cg, "Minimap container must have CanvasGroup");
+            Assert.IsFalse(cg.blocksRaycasts, "Minimap radar must not block raycasts");
+        }
+
+        [Test]
+        public void Minimap_UnregisterTrackable_RecyclesDotToPool()
+        {
+            GameObject trackableGO = new GameObject("TestTrackable");
+            MinimapTrackable trackable = trackableGO.AddComponent<MinimapTrackable>();
+            trackable.Type = TrackableType.Enemy;
+
+            minimap.RegisterTrackable(trackable);
+            Transform firstDot = minimap.mapContainer.Find("Dot_Enemy");
+            Assert.IsNotNull(firstDot);
+            Assert.IsTrue(firstDot.gameObject.activeInHierarchy);
+
+            minimap.UnregisterTrackable(trackable);
+            Assert.IsFalse(firstDot.gameObject.activeInHierarchy, "Unregistered dot must be deactivated into pool");
+
+            // Re-register another trackable; it should reuse the existing pooled dot object
+            GameObject trackable2GO = new GameObject("TestTrackable2");
+            MinimapTrackable trackable2 = trackable2GO.AddComponent<MinimapTrackable>();
+            trackable2.Type = TrackableType.Gem;
+
+            minimap.RegisterTrackable(trackable2);
+            Transform secondDot = minimap.mapContainer.Find("Dot_Gem");
+            Assert.IsNotNull(secondDot);
+            Assert.AreSame(firstDot.gameObject, secondDot.gameObject, "Pooled dot GameObject must be reused");
+
+            Object.DestroyImmediate(trackableGO);
+            Object.DestroyImmediate(trackable2GO);
+        }
     }
 }

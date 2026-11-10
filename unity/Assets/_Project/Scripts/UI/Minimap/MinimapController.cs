@@ -25,6 +25,7 @@ namespace StarStrike.UI
 
         private List<MinimapTrackable> trackables = new List<MinimapTrackable>();
         private Dictionary<MinimapTrackable, RectTransform> trackableDots = new Dictionary<MinimapTrackable, RectTransform>();
+        private readonly Queue<RectTransform> dotPool = new Queue<RectTransform>();
         
         private Transform playerTransform;
 
@@ -102,6 +103,23 @@ namespace StarStrike.UI
                 mapContainer.anchoredPosition = new Vector2(-25f, 25f);
                 mapContainer.sizeDelta = new Vector2(mapSize, mapSize);
             }
+
+            // Isolate minimap geometry into a nested Canvas so dynamic dot movement doesn't dirty the root HUD canvas
+            Canvas subCanvas = mapContainer.GetComponent<Canvas>();
+            if (subCanvas == null) subCanvas = mapContainer.gameObject.AddComponent<Canvas>();
+            
+            Canvas parentCanvas = GetComponentInParent<Canvas>();
+            if (parentCanvas != null && parentCanvas != subCanvas)
+            {
+                subCanvas.overrideSorting = true;
+                subCanvas.sortingLayerID = parentCanvas.sortingLayerID;
+                subCanvas.sortingOrder = parentCanvas.sortingOrder + 1;
+            }
+
+            CanvasGroup cg = mapContainer.GetComponent<CanvasGroup>();
+            if (cg == null) cg = mapContainer.gameObject.AddComponent<CanvasGroup>();
+            cg.blocksRaycasts = false;
+            cg.interactable = false;
         }
 
         public void RegisterTrackable(MinimapTrackable trackable)
@@ -129,10 +147,13 @@ namespace StarStrike.UI
             if (trackables.Contains(trackable))
             {
                 trackables.Remove(trackable);
-                if (trackableDots.ContainsKey(trackable))
+                if (trackableDots.TryGetValue(trackable, out RectTransform dotRt))
                 {
-                    if (trackableDots[trackable] != null)
-                        Destroy(trackableDots[trackable].gameObject);
+                    if (dotRt != null)
+                    {
+                        dotRt.gameObject.SetActive(false);
+                        dotPool.Enqueue(dotRt);
+                    }
                     trackableDots.Remove(trackable);
                 }
             }
@@ -190,26 +211,45 @@ namespace StarStrike.UI
 
         private RectTransform CreateDot(MinimapTrackable trackable)
         {
-            GameObject dotObj = new GameObject("Dot_" + trackable.Type, typeof(RectTransform), typeof(Image));
-            dotObj.transform.SetParent(mapContainer, false);
-            
-            RectTransform rt = dotObj.GetComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0.5f, 0.5f);
-            rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.pivot = new Vector2(0.5f, 0.5f);
-            
+            RectTransform rt = null;
+            while (dotPool.Count > 0 && rt == null)
+            {
+                rt = dotPool.Dequeue();
+            }
+
+            if (rt == null)
+            {
+                GameObject dotObj = new GameObject("Dot_" + trackable.Type, typeof(RectTransform), typeof(Image));
+                dotObj.transform.SetParent(mapContainer, false);
+                rt = dotObj.GetComponent<RectTransform>();
+                rt.anchorMin = new Vector2(0.5f, 0.5f);
+                rt.anchorMax = new Vector2(0.5f, 0.5f);
+                rt.pivot = new Vector2(0.5f, 0.5f);
+                
+                Image img = dotObj.GetComponent<Image>();
+                img.raycastTarget = false;
+                img.sprite = ProceduralSpriteHelper.GetCircleSprite(16);
+            }
+            else
+            {
+                rt.gameObject.name = "Dot_" + trackable.Type;
+                rt.gameObject.SetActive(true);
+            }
+
             float dotSize = trackable.Type == TrackableType.Player ? 8f : 5f;
             if (trackable.Type == TrackableType.Asteroid) dotSize = 4f;
             rt.sizeDelta = new Vector2(dotSize, dotSize);
 
-            Image img = dotObj.GetComponent<Image>();
-            img.sprite = ProceduralSpriteHelper.GetCircleSprite(16);
-            switch (trackable.Type)
+            Image dotImage = rt.GetComponent<Image>();
+            if (dotImage != null)
             {
-                case TrackableType.Player: img.color = playerColor; break;
-                case TrackableType.Enemy: img.color = enemyColor; break;
-                case TrackableType.Asteroid: img.color = asteroidColor; break;
-                case TrackableType.Gem: img.color = gemColor; break;
+                switch (trackable.Type)
+                {
+                    case TrackableType.Player: dotImage.color = playerColor; break;
+                    case TrackableType.Enemy: dotImage.color = enemyColor; break;
+                    case TrackableType.Asteroid: dotImage.color = asteroidColor; break;
+                    case TrackableType.Gem: dotImage.color = gemColor; break;
+                }
             }
 
             return rt;

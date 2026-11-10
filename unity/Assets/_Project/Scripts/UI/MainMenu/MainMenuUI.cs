@@ -31,13 +31,13 @@ namespace StarStrike.UI
         private void OnEnable()
         {
             GameEvents.OnGameStarted += HandleGameStarted;
-            Network.NetworkLobbyUI.OnLobbyVisibilityChanged += HandleLobbyVisibilityChanged;
+            NetworkLobbyUI.OnLobbyVisibilityChanged += HandleLobbyVisibilityChanged;
         }
 
         private void OnDisable()
         {
             GameEvents.OnGameStarted -= HandleGameStarted;
-            Network.NetworkLobbyUI.OnLobbyVisibilityChanged -= HandleLobbyVisibilityChanged;
+            NetworkLobbyUI.OnLobbyVisibilityChanged -= HandleLobbyVisibilityChanged;
         }
 
         private void HandleGameStarted()
@@ -93,7 +93,7 @@ namespace StarStrike.UI
             if (GameManager.Instance != null && menuContainer != null)
             {
                 bool isOverlayOpen = (SettingsUI.Instance != null && SettingsUI.Instance.IsVisible) ||
-                                     (Network.NetworkLobbyUI.Instance != null && Network.NetworkLobbyUI.Instance.IsVisible);
+                                     (NetworkLobbyUI.Instance != null && NetworkLobbyUI.Instance.IsVisible);
 
                 bool shouldShow = GameManager.Instance.CurrentState == GameState.Menu && !isOverlayOpen;
                 if (menuContainer.activeSelf != shouldShow)
@@ -176,9 +176,9 @@ namespace StarStrike.UI
                 {
                     GameManager.Instance.SetGameMode(GameMode.PvP);
                 }
-                if (StarStrike.Network.NetworkLobbyUI.Instance != null)
+                if (NetworkLobbyUI.Instance != null)
                 {
-                    StarStrike.Network.NetworkLobbyUI.Instance.SetVisible(true);
+                    NetworkLobbyUI.Instance.SetVisible(true);
                 }
             });
 

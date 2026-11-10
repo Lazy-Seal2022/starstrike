@@ -6,9 +6,10 @@ using Unity.Netcode.Transports.UTP;
 using Unity.Collections;
 using StarStrike.Core;
 using StarStrike.Gameplay;
+using StarStrike.Network;
 using StarStrike.Platform.Storage;
 
-namespace StarStrike.Network
+namespace StarStrike.UI
 {
     public class NetworkLobbyUI : MonoBehaviour
     {
@@ -60,23 +61,14 @@ namespace StarStrike.Network
                 }
             }
 
-            // Decoupled cross-assembly notification to hide/show MainMenu and HUD
-            var allBehaviours = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
-            for (int i = 0; i < allBehaviours.Length; i++)
+            // Direct strongly-typed UI state synchronization
+            if (MainMenuUI.Instance != null)
             {
-                var b = allBehaviours[i];
-                if (b == null) continue;
-                string typeName = b.GetType().Name;
-                if (typeName == "MainMenuUI")
-                {
-                    var mi = b.GetType().GetMethod("SetMenuVisible", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                    mi?.Invoke(b, new object[] { !visible });
-                }
-                else if (visible && typeName == "CanvasHUD")
-                {
-                    var mi = b.GetType().GetMethod("SetHUDVisible", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                    mi?.Invoke(b, new object[] { false });
-                }
+                MainMenuUI.Instance.SetMenuVisible(!visible);
+            }
+            if (visible && CanvasHUD.Instance != null)
+            {
+                CanvasHUD.Instance.SetHUDVisible(false);
             }
 
             OnLobbyVisibilityChanged?.Invoke(visible);
@@ -365,4 +357,10 @@ namespace StarStrike.Network
             return btnObj;
         }
     }
+}
+
+namespace StarStrike.Network
+{
+    [System.Obsolete("NetworkLobbyUI has moved to StarStrike.UI namespace")]
+    public class NetworkLobbyUI : StarStrike.UI.NetworkLobbyUI { }
 }

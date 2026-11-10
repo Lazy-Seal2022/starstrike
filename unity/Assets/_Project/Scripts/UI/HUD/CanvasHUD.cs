@@ -102,7 +102,7 @@ namespace StarStrike.UI
             GameEvents.OnGemCollected += HandleGemCollected;
             GameEvents.OnPlayerEvolved += HandlePlayerEvolved;
             GameEvents.OnGameStarted += HandleGameStarted;
-            Network.NetworkLobbyUI.OnLobbyVisibilityChanged += HandleLobbyVisibilityChanged;
+            NetworkLobbyUI.OnLobbyVisibilityChanged += HandleLobbyVisibilityChanged;
         }
 
         private void OnDisable()
@@ -112,7 +112,7 @@ namespace StarStrike.UI
             GameEvents.OnGemCollected -= HandleGemCollected;
             GameEvents.OnPlayerEvolved -= HandlePlayerEvolved;
             GameEvents.OnGameStarted -= HandleGameStarted;
-            Network.NetworkLobbyUI.OnLobbyVisibilityChanged -= HandleLobbyVisibilityChanged;
+            NetworkLobbyUI.OnLobbyVisibilityChanged -= HandleLobbyVisibilityChanged;
         }
 
         private void HandleLobbyVisibilityChanged(bool isLobbyVisible)
@@ -183,7 +183,7 @@ namespace StarStrike.UI
             {
                 bool isOverlayOpen = (SettingsUI.Instance != null && SettingsUI.Instance.IsVisible) ||
                                      (MainMenuUI.Instance != null && MainMenuUI.Instance.IsVisible) ||
-                                     (StarStrike.Network.NetworkLobbyUI.Instance != null && StarStrike.Network.NetworkLobbyUI.Instance.IsVisible);
+                                     (NetworkLobbyUI.Instance != null && NetworkLobbyUI.Instance.IsVisible);
 
                 bool isPlaying = GameManager.Instance.CurrentState == GameState.Playing && !isOverlayOpen;
                 SetHUDVisible(isPlaying);
