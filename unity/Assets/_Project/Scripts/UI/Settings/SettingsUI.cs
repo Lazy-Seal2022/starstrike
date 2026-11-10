@@ -261,7 +261,7 @@ namespace StarStrike.UI
 
             if (muteBtnText != null && muteBtn != null)
             {
-                muteBtnText.text = muted ? "🔇 AUDIO: MUTED" : "🔊 AUDIO: ACTIVE";
+                muteBtnText.text = muted ? "AUDIO: MUTED" : "AUDIO: ACTIVE";
                 muteBtn.GetComponent<Image>().color = muted
                     ? (themeConfig != null ? themeConfig.dangerColor : new Color(0.85f, 0.2f, 0.2f))
                     : (themeConfig != null ? themeConfig.buttonNormal : new Color(0.12f, 0.35f, 0.25f));
@@ -482,14 +482,14 @@ namespace StarStrike.UI
             cardImg.color = new Color(0.05f, 0.08f, 0.14f, 1.0f);
 
             // 3. Header Section
-            CreateTextExplicit(dialogCard.transform, "HeaderTitle", "⚙ SYSTEM SETTINGS", 24, FontStyles.Bold, Color.white, TextAlignmentOptions.Center,
+            CreateTextExplicit(dialogCard.transform, "HeaderTitle", "SYSTEM SETTINGS", 24, FontStyles.Bold, Color.white, TextAlignmentOptions.Center,
                 new Vector2(0.5f, 1f), new Vector2(0f, -28f), new Vector2(700f, 36f));
 
             CreateTextExplicit(dialogCard.transform, "HeaderSub", "Audio Fidelity & Flight Controls Configuration", 12, FontStyles.Normal, new Color(0.6f, 0.8f, 0.95f, 0.85f), TextAlignmentOptions.Center,
                 new Vector2(0.5f, 1f), new Vector2(0f, -56f), new Vector2(700f, 20f));
 
-            // Top-Right Close '✕' Button
-            var xBtn = CreateButtonExplicit(dialogCard.transform, "BtnCloseX", "✕", new Vector2(1f, 1f), new Vector2(-28f, -28f), new Vector2(36f, 36f),
+            // Top-Right Close 'X' Button
+            var xBtn = CreateButtonExplicit(dialogCard.transform, "BtnCloseX", "X", new Vector2(1f, 1f), new Vector2(-28f, -28f), new Vector2(36f, 36f),
                 new Color(0.35f, 0.15f, 0.18f), 16);
             xBtn.onClick.AddListener(Close);
 
@@ -503,12 +503,12 @@ namespace StarStrike.UI
             tnRt.anchoredPosition = new Vector2(0f, -85f);
             tnRt.sizeDelta = new Vector2(700f, 44f);
 
-            audioTabBtn = CreateButtonExplicit(tabNav.transform, "BtnAudioTab", "🔊 AUDIO SETTINGS", new Vector2(0f, 0.5f), new Vector2(170f, 0f), new Vector2(340f, 42f),
+            audioTabBtn = CreateButtonExplicit(tabNav.transform, "BtnAudioTab", "AUDIO SETTINGS", new Vector2(0f, 0.5f), new Vector2(170f, 0f), new Vector2(340f, 42f),
                 new Color(0.18f, 0.45f, 0.75f), 15);
             audioTabBtn.onClick.AddListener(() => SwitchTab(SettingsTab.Audio));
             audioTabBtnText = audioTabBtn.GetComponentInChildren<TMP_Text>();
 
-            controlsTabBtn = CreateButtonExplicit(tabNav.transform, "BtnControlsTab", "🎮 FLIGHT CONTROLS", new Vector2(1f, 0.5f), new Vector2(-170f, 0f), new Vector2(340f, 42f),
+            controlsTabBtn = CreateButtonExplicit(tabNav.transform, "BtnControlsTab", "FLIGHT CONTROLS", new Vector2(1f, 0.5f), new Vector2(-170f, 0f), new Vector2(340f, 42f),
                 new Color(0.1f, 0.18f, 0.28f), 15);
             controlsTabBtn.onClick.AddListener(() => SwitchTab(SettingsTab.Controls));
             controlsTabBtnText = controlsTabBtn.GetComponentInChildren<TMP_Text>();
@@ -527,11 +527,11 @@ namespace StarStrike.UI
             fRt.anchoredPosition = new Vector2(0f, 20f);
             fRt.sizeDelta = new Vector2(700f, 46f);
 
-            var resetBtn = CreateButtonExplicit(footer.transform, "BtnResetDefaults", "↺ RESET DEFAULTS", new Vector2(0f, 0.5f), new Vector2(105f, 0f), new Vector2(210f, 44f),
+            var resetBtn = CreateButtonExplicit(footer.transform, "BtnResetDefaults", "RESET DEFAULTS", new Vector2(0f, 0.5f), new Vector2(105f, 0f), new Vector2(210f, 44f),
                 new Color(0.35f, 0.18f, 0.18f), 14);
             resetBtn.onClick.AddListener(ResetDefaults);
 
-            var closeBtn = CreateButtonExplicit(footer.transform, "BtnClose", "✔ SAVE & CLOSE [ESC]", new Vector2(1f, 0.5f), new Vector2(-140f, 0f), new Vector2(280f, 44f),
+            var closeBtn = CreateButtonExplicit(footer.transform, "BtnClose", "SAVE & CLOSE [ESC]", new Vector2(1f, 0.5f), new Vector2(-140f, 0f), new Vector2(280f, 44f),
                 new Color(0.12f, 0.55f, 0.35f), 15);
             closeBtn.onClick.AddListener(Close);
 
@@ -568,12 +568,12 @@ namespace StarStrike.UI
 
             rowY -= 95f;
             // Row 4: Mute Audio Button & Test Sound Button
-            muteBtn = CreateButtonExplicit(audioTabPanel.transform, "BtnMute", "🔊 AUDIO: ACTIVE", new Vector2(0f, 1f), new Vector2(165f, rowY), new Vector2(330f, 46f),
+            muteBtn = CreateButtonExplicit(audioTabPanel.transform, "BtnMute", "AUDIO: ACTIVE", new Vector2(0f, 1f), new Vector2(165f, rowY), new Vector2(330f, 46f),
                 new Color(0.12f, 0.35f, 0.25f), 14);
             muteBtn.onClick.AddListener(ToggleMute);
             muteBtnText = muteBtn.GetComponentInChildren<TMP_Text>();
 
-            var testBtn = CreateButtonExplicit(audioTabPanel.transform, "BtnTestSfx", "► TEST SFX AUDIO", new Vector2(1f, 1f), new Vector2(-165f, rowY), new Vector2(330f, 46f),
+            var testBtn = CreateButtonExplicit(audioTabPanel.transform, "BtnTestSfx", "TEST SFX AUDIO", new Vector2(1f, 1f), new Vector2(-165f, rowY), new Vector2(330f, 46f),
                 new Color(0.18f, 0.35f, 0.55f), 14);
             testBtn.onClick.AddListener(PlayTestAudio);
         }

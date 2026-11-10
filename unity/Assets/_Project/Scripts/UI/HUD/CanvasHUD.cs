@@ -256,7 +256,7 @@ namespace StarStrike.UI
             totalGems = total;
             if (gemsText != null)
             {
-                gemsText.text = $"💎 <color=#4ade80><b>{totalGems}</b></color> Gems";
+                gemsText.text = $"<color=#4ade80><b>{totalGems}</b></color> GEMS";
             }
             if (playerStatus != null) playerStatus.HandleGemCollected(added, total);
             if (isUpgradesOpen)
@@ -309,7 +309,7 @@ namespace StarStrike.UI
         {
             UpdateShieldVisuals();
             UpdateEnergyVisuals();
-            if (gemsText != null) gemsText.text = $"💎 <color=#4ade80><b>{totalGems}</b></color> Gems";
+            if (gemsText != null) gemsText.text = $"<color=#4ade80><b>{totalGems}</b></color> GEMS";
             UpdateEvolutionBanner();
             UpdateUpgradeRows();
         }
@@ -323,7 +323,7 @@ namespace StarStrike.UI
             }
             if (toggleUpgradesButtonText != null)
             {
-                toggleUpgradesButtonText.text = isUpgradesOpen ? "▲ HIDE [U]" : "▼ UPGRADES [U]";
+                toggleUpgradesButtonText.text = isUpgradesOpen ? "HIDE [U]" : "UPGRADES [U]";
             }
             if (isUpgradesOpen)
             {
@@ -348,7 +348,7 @@ namespace StarStrike.UI
 
                 if (upgradeRowButtonTexts.TryGetValue(def.Key, out Text btnTxt) && btnTxt != null)
                 {
-                    btnTxt.text = $"+ {cost}💎";
+                    btnTxt.text = $"+ {cost} G";
                 }
 
                 if (upgradeRowButtons.TryGetValue(def.Key, out Button btn) && btn != null)
@@ -478,8 +478,7 @@ namespace StarStrike.UI
                 }
 
                 Color btnColor = GetEvoButtonColor(target.id);
-                string icon = target.id == "miner" ? "⛏ " : (target.id == "fighter" ? "⚔ " : (target.id == "interceptor" ? "⚡ " : "★ "));
-                string label = $"{icon}{target.shipName.ToUpper()}";
+                string label = target.shipName.ToUpper();
 
                 GameObject btnObj = CreateButton(parent, $"EvoBtn_{target.id}", label, anchorMin, anchorMax, pos, size, btnColor, roundedSprite, defaultFont);
                 Button btn = btnObj.GetComponent<Button>();
@@ -559,7 +558,7 @@ namespace StarStrike.UI
             shipNameText = nameObj.GetComponent<Text>();
 
             // Gem Count
-            GameObject gemsObj = CreateText(statusCard.transform, "GemsText", "💎 0 Gems", 15, FontStyle.Bold, new Color(0.3f, 0.95f, 0.5f), TextAnchor.MiddleLeft, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(16f, -40f), new Vector2(-16f, -64f), defaultFont);
+            GameObject gemsObj = CreateText(statusCard.transform, "GemsText", "0 GEMS", 15, FontStyle.Bold, new Color(0.3f, 0.95f, 0.5f), TextAnchor.MiddleLeft, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(16f, -40f), new Vector2(-16f, -64f), defaultFont);
             gemsText = gemsObj.GetComponent<Text>();
 
             // Shield Bar
@@ -585,13 +584,13 @@ namespace StarStrike.UI
             energyValueText = energyValObj.GetComponent<Text>();
 
             // Toggle Upgrades Button
-            GameObject toggleBtnObj = CreateButton(statusCard.transform, "ToggleUpgradesBtn", "▼ UPGRADES [U]", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -122f), new Vector2(170f, 30f), new Color(0.12f, 0.25f, 0.45f, 0.95f), roundedSprite, defaultFont);
+            GameObject toggleBtnObj = CreateButton(statusCard.transform, "ToggleUpgradesBtn", "UPGRADES [U]", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -122f), new Vector2(170f, 30f), new Color(0.12f, 0.25f, 0.45f, 0.95f), roundedSprite, defaultFont);
             toggleUpgradesButton = toggleBtnObj.GetComponent<Button>();
             toggleUpgradesButton.onClick.AddListener(ToggleUpgrades);
             toggleUpgradesButtonText = toggleBtnObj.GetComponentInChildren<Text>();
 
             // Settings Button
-            GameObject hudSettingsBtnObj = CreateButton(statusCard.transform, "HUDSettingsBtn", "⚙ [ESC]", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(195f, -122f), new Vector2(150f, 30f), new Color(0.12f, 0.22f, 0.35f, 0.95f), roundedSprite, defaultFont);
+            GameObject hudSettingsBtnObj = CreateButton(statusCard.transform, "HUDSettingsBtn", "SETTINGS [ESC]", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(195f, -122f), new Vector2(150f, 30f), new Color(0.12f, 0.22f, 0.35f, 0.95f), roundedSprite, defaultFont);
             Button hudSettingsBtn = hudSettingsBtnObj.GetComponent<Button>();
             hudSettingsBtn.onClick.AddListener(() => {
                 if (StarStrike.UI.SettingsUI.Instance != null)
@@ -612,7 +611,7 @@ namespace StarStrike.UI
                 GameObject rowLblObj = CreateText(drawerObj.transform, $"Label_{key}", def.Label, 13, FontStyle.Normal, Color.white, TextAnchor.MiddleLeft, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, rowY - 26f), new Vector2(230f, rowY), defaultFont);
                 upgradeRowLabels[key] = rowLblObj.GetComponent<Text>();
 
-                GameObject rowBtnObj = CreateButton(drawerObj.transform, $"Btn_{key}", "+ 10💎", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(245f, rowY - 28f), new Vector2(95f, 26f), new Color(0.12f, 0.45f, 0.25f, 1f), roundedSprite, defaultFont);
+                GameObject rowBtnObj = CreateButton(drawerObj.transform, $"Btn_{key}", "+ 10 G", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(245f, rowY - 28f), new Vector2(95f, 26f), new Color(0.12f, 0.45f, 0.25f, 1f), roundedSprite, defaultFont);
                 Button btn = rowBtnObj.GetComponent<Button>();
                 btn.onClick.AddListener(() => OnUpgradeClicked(key));
                 upgradeRowButtons[key] = btn;
@@ -625,7 +624,7 @@ namespace StarStrike.UI
             // 3. Evolution Banner
             GameObject evoObj = CreatePanel(transform, "EvolutionBanner", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-220f, -20f), new Vector2(440f, 95f), new Color(0.12f, 0.08f, 0.25f, 0.95f), roundedSprite);
             evolutionBanner = evoObj;
-            CreateText(evoObj.transform, "EvoHeader", "★ SHIP EVOLUTION AVAILABLE ★", 15, FontStyle.Bold, new Color(1f, 0.84f, 0.25f), TextAnchor.MiddleCenter, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -8f), new Vector2(0f, -32f), defaultFont);
+            CreateText(evoObj.transform, "EvoHeader", "SHIP EVOLUTION AVAILABLE", 15, FontStyle.Bold, new Color(1f, 0.84f, 0.25f), TextAnchor.MiddleCenter, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -8f), new Vector2(0f, -32f), defaultFont);
 
             evolutionButtonsContainer = new GameObject("ButtonsContainer", typeof(RectTransform));
             evolutionButtonsContainer.transform.SetParent(evoObj.transform, false);

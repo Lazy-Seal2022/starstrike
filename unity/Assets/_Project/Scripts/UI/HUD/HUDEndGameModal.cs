@@ -73,12 +73,12 @@ namespace StarStrike.UI
             {
                 if (summary.isVictory)
                 {
-                    titleText.text = "★ VICTORY ACHIEVED ★";
+                    titleText.text = "VICTORY ACHIEVED";
                     titleText.color = themeConfig != null ? themeConfig.textHighlight : Color.cyan;
                 }
                 else
                 {
-                    titleText.text = "✖ VESSEL DESTROYED ✖";
+                    titleText.text = "VESSEL DESTROYED";
                     titleText.color = themeConfig != null ? themeConfig.dangerColor : Color.red;
                 }
             }
@@ -86,7 +86,7 @@ namespace StarStrike.UI
             if (statsSummaryText != null)
             {
                 statsSummaryText.text = $"TIME SURVIVED: <color=#FFFFFF><b>{timeFormatted}</b></color>\n" +
-                                        $"GEMS EXTRACTED: <color=#4ADE80><b>{summary.gemsCollected} ◈</b></color>\n" +
+                                        $"GEMS EXTRACTED: <color=#4ADE80><b>{summary.gemsCollected} GEMS</b></color>\n" +
                                         $"ASTEROIDS MINED: <color=#94A3B8><b>{summary.asteroidsMined}</b></color>\n" +
                                         $"HOSTILES PURGED: <color=#F87171><b>{summary.enemiesDestroyed}</b></color>\n" +
                                         $"FLAGSHIP TIER: <color=#38BDF8><b>{summary.finalShipId.ToUpper()}</b></color>";
@@ -208,10 +208,10 @@ namespace StarStrike.UI
             btnContainerRt.offsetMin = new Vector2(24f, 16f);
             btnContainerRt.offsetMax = new Vector2(-24f, 0f);
 
-            playAgainButton = CreateButton(btnContainer.transform, "BtnPlayAgain", "▶ PLAY AGAIN", new Vector2(0f, 0f), new Vector2(0.48f, 1f));
+            playAgainButton = CreateButton(btnContainer.transform, "BtnPlayAgain", "PLAY AGAIN", new Vector2(0f, 0f), new Vector2(0.48f, 1f));
             playAgainButton.onClick.AddListener(OnClickPlayAgain);
 
-            returnHangarButton = CreateButton(btnContainer.transform, "BtnHangar", "⌂ HANGAR", new Vector2(0.52f, 0f), new Vector2(1f, 1f));
+            returnHangarButton = CreateButton(btnContainer.transform, "BtnHangar", "HANGAR", new Vector2(0.52f, 0f), new Vector2(1f, 1f));
             returnHangarButton.onClick.AddListener(OnClickReturnToHangar);
         }
 

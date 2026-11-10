@@ -88,7 +88,7 @@ namespace StarStrike.UI
             IsOpen = !IsOpen;
             if (toggleButtonText != null)
             {
-                toggleButtonText.text = IsOpen ? "✖ CLOSE" : "▲ UPGRADES";
+                toggleButtonText.text = IsOpen ? "CLOSE [U]" : "UPGRADES [U]";
             }
             if (IsOpen)
             {
@@ -122,7 +122,7 @@ namespace StarStrike.UI
                     }
                     else
                     {
-                        itemCostTexts[i].text = $"Lvl {currentLvl} ({cost} ◈)";
+                        itemCostTexts[i].text = $"Lvl {currentLvl} ({cost} G)";
                         itemCostTexts[i].color = canAfford ? (themeConfig != null ? themeConfig.textHighlight : Color.cyan) : (themeConfig != null ? themeConfig.dangerColor : Color.red);
                     }
                 }

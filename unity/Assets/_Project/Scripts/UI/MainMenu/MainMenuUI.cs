@@ -159,7 +159,7 @@ namespace StarStrike.UI
             gemsText = gemsObj.GetComponent<TMP_Text>();
 
             // Mode 1: PvE Survival Button
-            GameObject pveBtnObj = CreateButton(menuContainer.transform, "PvEStartButton", "► PvE SURVIVAL", new Vector2(0.5f, 0.18f), new Vector2(0.5f, 0.18f), new Vector2(-155, 0), new Vector2(290, 64), new Color(0.15f, 0.70f, 0.35f), defaultFont, 22);
+            GameObject pveBtnObj = CreateButton(menuContainer.transform, "PvEStartButton", "PvE SURVIVAL", new Vector2(0.5f, 0.18f), new Vector2(0.5f, 0.18f), new Vector2(-155, 0), new Vector2(290, 64), new Color(0.15f, 0.70f, 0.35f), defaultFont, 22);
             pveBtnObj.GetComponent<Button>().onClick.AddListener(() => {
                 SetMenuVisible(false);
                 if (GameManager.Instance != null)
@@ -170,7 +170,7 @@ namespace StarStrike.UI
             });
 
             // Mode 2: Multiplayer PvP Button
-            GameObject pvpBtnObj = CreateButton(menuContainer.transform, "PvPStartButton", "⚔ MULTIPLAYER PvP", new Vector2(0.5f, 0.18f), new Vector2(0.5f, 0.18f), new Vector2(155, 0), new Vector2(290, 64), new Color(0.90f, 0.35f, 0.15f), defaultFont, 22);
+            GameObject pvpBtnObj = CreateButton(menuContainer.transform, "PvPStartButton", "MULTIPLAYER PvP", new Vector2(0.5f, 0.18f), new Vector2(0.5f, 0.18f), new Vector2(155, 0), new Vector2(290, 64), new Color(0.90f, 0.35f, 0.15f), defaultFont, 22);
             pvpBtnObj.GetComponent<Button>().onClick.AddListener(() => {
                 SetMenuVisible(false);
                 if (GameManager.Instance != null)
@@ -187,7 +187,7 @@ namespace StarStrike.UI
             CreateText(menuContainer.transform, "StartHintText", "[ ENTER / SPACE: Launch PvE  |  Or Click Multiplayer PvP ]", 15, FontStyle.Normal, new Color(0.85f, 0.9f, 1f, 0.9f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.09f), new Vector2(0.5f, 0.09f), new Vector2(-300, -15), new Vector2(300, 15), defaultFont);
 
             // Settings Button (Top Right)
-            GameObject settingsBtnObj = CreateButton(menuContainer.transform, "SettingsButton", "⚙ SETTINGS [O]", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-120f, -40f), new Vector2(180f, 44f), new Color(0.12f, 0.22f, 0.35f), defaultFont, 16);
+            GameObject settingsBtnObj = CreateButton(menuContainer.transform, "SettingsButton", "SETTINGS [O]", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-120f, -40f), new Vector2(180f, 44f), new Color(0.12f, 0.22f, 0.35f), defaultFont, 16);
             settingsBtnObj.GetComponent<Button>().onClick.AddListener(() => {
                 if (StarStrike.UI.SettingsUI.Instance != null)
                 {

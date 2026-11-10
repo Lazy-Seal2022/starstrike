@@ -57,7 +57,7 @@ namespace StarStrike.UI
         private void HandleGemCollected(int amount, int total)
         {
             Color col = themeConfig != null ? themeConfig.energyColor : Color.yellow;
-            SpawnFloatingNotice($"+{amount} ◈", col);
+            SpawnFloatingNotice($"+{amount} GEMS", col);
         }
 
         private void HandleDamageDealt(Vector3 worldPos, float damage, bool isCrit)

@@ -163,7 +163,7 @@ namespace StarStrike.UI
 
         public void HandleGemCollected(int amount, int total)
         {
-            string gemStr = $"◈ {total}";
+            string gemStr = $"{total} GEMS";
             if (gemsText != null) gemsText.text = gemStr;
             if (gemsTmpText != null) gemsTmpText.text = gemStr;
         }

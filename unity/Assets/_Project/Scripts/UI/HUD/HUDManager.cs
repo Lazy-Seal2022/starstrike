@@ -103,7 +103,7 @@ namespace StarStrike.UI
             // 1. Top Bar: Ship Info & Gems
             GUI.Box(new Rect(10, 10, 320, 95), "");
             GUI.Label(new Rect(20, 14, 280, 24), $"<b><color=#38bdf8>{shipName}</color></b>");
-            GUI.Label(new Rect(20, 36, 280, 24), $"💎 <color=#4ade80><b>{totalGems}</b> Gems</color>");
+            GUI.Label(new Rect(20, 36, 280, 24), $"<color=#4ade80><b>{totalGems}</b> GEMS</color>");
 
             // Shield Bar (Blue)
             float shieldRatio = Mathf.Clamp01(shieldCurrent / Mathf.Max(1f, shieldMax));
@@ -118,7 +118,7 @@ namespace StarStrike.UI
             GUI.Label(new Rect(250, 78, 70, 20), $"<size=11>{Mathf.RoundToInt(energyCurrent)}/{Mathf.RoundToInt(energyMax)}</size>");
 
             // 2. Toggle Upgrades Button
-            if (GUI.Button(new Rect(10, 115, 140, 32), showUpgradeDrawer ? "▲ HIDE UPGRADES" : "▼ UPGRADES [U]"))
+            if (GUI.Button(new Rect(10, 115, 140, 32), showUpgradeDrawer ? "HIDE UPGRADES" : "UPGRADES [U]"))
             {
                 showUpgradeDrawer = !showUpgradeDrawer;
             }
@@ -146,12 +146,12 @@ namespace StarStrike.UI
             // 4. Evolution Banner
             if (player != null && player.CanEvolve())
             {
-                GUI.Box(new Rect(screenW / 2 - 160, 20, 320, 80), "<b>★ EVOLUTION AVAILABLE ★</b>");
-                if (GUI.Button(new Rect(screenW / 2 - 150, 50, 140, 38), "⚔ ARES FIGHTER"))
+                GUI.Box(new Rect(screenW / 2 - 160, 20, 320, 80), "<b>EVOLUTION AVAILABLE</b>");
+                if (GUI.Button(new Rect(screenW / 2 - 150, 50, 140, 38), "ARES FIGHTER"))
                 {
                     player.EvolveToId("fighter");
                 }
-                if (GUI.Button(new Rect(screenW / 2 + 10, 50, 140, 38), "⛏ GOLIATH MINER"))
+                if (GUI.Button(new Rect(screenW / 2 + 10, 50, 140, 38), "GOLIATH MINER"))
                 {
                     player.EvolveToId("miner");
                 }
@@ -185,7 +185,7 @@ namespace StarStrike.UI
 
             GUI.Label(new Rect(20, y, 160, 24), label);
 
-            string btnText = $"{cost} 💎";
+            string btnText = $"{cost} G";
             GUI.color = canAfford ? Color.white : new Color(0.6f, 0.6f, 0.6f);
             if (GUI.Button(new Rect(230, y, 105, 26), btnText) && canAfford)
             {
