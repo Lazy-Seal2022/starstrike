@@ -30,7 +30,7 @@ namespace StarStrike.Bootstrap
             }
 
             // 2. Create EventSystem if not exists
-            if (Object.FindObjectOfType<EventSystem>() == null)
+            if (Object.FindAnyObjectByType<EventSystem>() == null)
             {
                 var eventSystemGO = new GameObject("EventSystem");
                 eventSystemGO.AddComponent<EventSystem>();
@@ -54,7 +54,7 @@ namespace StarStrike.Bootstrap
             mainMenuGO.AddComponent<MainMenuUI>();
 
             // 5. Create CanvasHUD if not already present
-            if (CanvasHUD.Instance == null && Object.FindObjectOfType<CanvasHUD>() == null)
+            if (CanvasHUD.Instance == null && Object.FindAnyObjectByType<CanvasHUD>() == null)
             {
                 var hudGO = new GameObject("CanvasHUD");
                 hudGO.transform.SetParent(canvasGO.transform, false);

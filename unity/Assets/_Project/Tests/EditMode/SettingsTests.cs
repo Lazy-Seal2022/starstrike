@@ -199,7 +199,7 @@ namespace StarStrike.Tests.EditMode
 
             var lobbyGO = new GameObject("NetworkLobbyUI");
             lobbyGO.transform.SetParent(trackObject.transform, false);
-            var lobby = lobbyGO.AddComponent<StarStrike.Network.NetworkLobbyUI>();
+            var lobby = lobbyGO.AddComponent<StarStrike.UI.NetworkLobbyUI>();
 
             lobby.SetVisible(true);
             Assert.IsTrue(lobby.IsVisible);

@@ -84,7 +84,7 @@ namespace StarStrike.UI
             BuildCanvasIfNeeded();
             SetHUDVisible(false);
 
-            if (FindObjectOfType<AchievementUI>() == null)
+            if (FindAnyObjectByType<AchievementUI>() == null)
             {
                 new GameObject("AchievementUI").AddComponent<AchievementUI>();
             }

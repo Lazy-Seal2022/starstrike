@@ -38,19 +38,19 @@ namespace StarStrike.Gameplay
             {
                 new GameObject("FXService").AddComponent<StarStrike.Gameplay.FX.FXService>();
             }
-            if (FindObjectOfType<AchievementManager>() == null)
+            if (FindAnyObjectByType<AchievementManager>() == null)
             {
                 new GameObject("AchievementManager").AddComponent<AchievementManager>();
             }
-            if (FindObjectOfType<ParallaxBackground>() == null)
+            if (FindAnyObjectByType<ParallaxBackground>() == null)
             {
                 new GameObject("ParallaxBackground").AddComponent<ParallaxBackground>();
             }
-            if (FindObjectOfType<StarStrike.Gameplay.FX.PostProcessingSetup>() == null)
+            if (FindAnyObjectByType<StarStrike.Gameplay.FX.PostProcessingSetup>() == null)
             {
                 new GameObject("PostProcessingSetup").AddComponent<StarStrike.Gameplay.FX.PostProcessingSetup>();
             }
-            if (FindObjectOfType<GameManager>() == null)
+            if (FindAnyObjectByType<GameManager>() == null)
             {
                 new GameObject("GameManager").AddComponent<GameManager>();
             }
@@ -165,7 +165,7 @@ namespace StarStrike.Gameplay
             gameTimer = 0f;
             bossSpawned = false;
 
-            var existingAsteroids = FindObjectsOfType<StarStrike.Gameplay.Asteroid>();
+            var existingAsteroids = FindObjectsByType<StarStrike.Gameplay.Asteroid>(FindObjectsSortMode.None);
             if (existingAsteroids.Length < 15)
             {
                 foreach (var a in existingAsteroids)

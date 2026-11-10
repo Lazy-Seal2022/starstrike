@@ -54,7 +54,7 @@ namespace StarStrike.UI
 
                 inputVector = handleRange > 0f ? handlePos / handleRange : Vector2.zero;
 
-                // Send to ShipController
+                // Send to PlayerInputReader
                 if (PlayerInputReader.Instance != null)
                 {
                     PlayerInputReader.Instance.SetAim(inputVector);

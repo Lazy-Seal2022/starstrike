@@ -46,7 +46,7 @@ namespace StarStrike.Gameplay
             Instance = this;
             DontDestroyOnLoad(gameObject);
             
-            // Auto-upgrade Player GameObject from legacy ShipController to Domain-Driven components
+            // Configure Player GameObject physics and rendering if present
             GameObject player = GameObject.FindGameObjectWithTag("Player");
             if (player != null)
             {
@@ -61,20 +61,6 @@ namespace StarStrike.Gameplay
                 var sr = player.GetComponent<SpriteRenderer>();
                 if (sr == null) sr = player.AddComponent<SpriteRenderer>();
                 sr.sortingOrder = 10;
-
-                var legacy = player.GetComponent("ShipController");
-                if (legacy != null)
-                {
-                    DestroyImmediate(legacy);
-                    
-                    var pp = player.AddComponent<PlayerProgression>();
-                    pp.health = player.AddComponent<ShipHealth>();
-                    pp.movement = player.AddComponent<ShipMovement>();
-                    pp.weapon = player.AddComponent<ShipWeapon>();
-                    pp.shipRenderer = sr;
-                    
-                    player.AddComponent<PlayerInputReader>();
-                }
             }
         }
 
@@ -197,7 +183,7 @@ namespace StarStrike.Gameplay
             {
                 PlayerProgression.Instance.ResetForNewRun();
             }
-            WorldManager wm = FindObjectOfType<WorldManager>();
+            WorldManager wm = FindAnyObjectByType<WorldManager>();
             if (wm != null)
             {
                 wm.ResetWorld();
