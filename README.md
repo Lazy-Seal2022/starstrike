@@ -1,7 +1,26 @@
-# 🚀 StarStrike
+# StarStrike Blueprint
 
-> **Modular 2D Multiplatform Spaceship Shooter inspired by Starblast.io**  
-> Built with **Phaser 3 + TypeScript + Vite** using **ECS (Entity-Component-System)** architecture.
+## System Overview
+StarStrike is a high-performance, modular 2D spaceship combat and mining game inspired by Starblast.io. The project features a dual-target architecture with an active **Unity 6 (URP 2D)** multiplatform client and a lightweight **Phaser 3 + TypeScript** web prototype.
+
+## Subdirectories & System Boundaries
+- **[prototype](./prototype/README.md)**: StarStrike web prototype project root and build tooling.
+- **[scripts](./scripts/README.md)**: Project synchronization and cross-environment deployment utilities.
+- **[unity](./unity/README.md)**: Unity 6 multiplatform game project root and WSL-Windows workflow blueprint.
+
+## Global Invariants
+- **Deterministic Audio Fallback**: Production CC0 44.1kHz sound assets in `AudioService` fall back cleanly to procedural tone synthesizers if missing.
+- **Authoritative Server Networking**: Multiplayer ship physics and weapon trajectories are authoritatively resolved on the host/server.
+- **VCS & Workspace Isolation**: The Git repository lives in WSL (`projects/starstrike`) while Unity runs on Windows (`C:\Data\Unity\StarStrike`), synchronized via `scripts/sync-unity.sh`.
+- **Zero Missing Glyph Warnings**: UI typography standardizes on LiberationSans SDF compatible character sets across all HUD dialogs.
+
+## Global Side Effects
+- **Filesystem Storage**: Player preferences, audio mixer volume, and flight control bindings are persisted to `PlayerPrefs` / `StorageService`.
+- **Network I/O**: Multiplayer state synchronization over UDP transport.
+- **Audio Mixer Channels**: Decibel-attenuated audio routing across Master, SFX, Music, and UI groups.
+
+## System Verification
+- Run: `npm test && ./scripts/sync-unity.sh push`
 
 ---
 
@@ -124,3 +143,4 @@ A Unity version of the game lives in [`unity/`](unity/README.md).
 ## 📜 License
 
 MIT License © 2026 Lazy-Seal2022
+

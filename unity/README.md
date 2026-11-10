@@ -1,7 +1,13 @@
-# StarStrike: Unity
+# unity
 
-Unity version of StarStrike, side by side with the Phaser/web version in `../src`.
+## Overview
+Unity 6 multiplatform game project root and WSL-Windows workflow blueprint.
 Targets: **Android, iOS, Windows, WebGL**, all from this one project.
+
+## Subdirectories & Boundaries
+- **[Assets](./Assets/README.md)**: Unity Assets directory blueprint.
+
+---
 
 ## WSL & Windows Development Workflow (Option 2)
 
@@ -58,3 +64,4 @@ Core  ←  Platform  ←  Gameplay  ←  UI        Editor → all (editor only)
 - Platform-specific code (`#if UNITY_ANDROID`, `UNITY_IOS`, `UNITY_WEBGL`, `UNITY_STANDALONE_WIN`) goes **only** in `Platform/`. Gameplay never branches on platform.
 - Input goes through the Input System action asset in `Settings/Input`. Gameplay reads actions, not devices, so touch, keyboard and gamepad work automatically.
 - New feature = new folder in `Scripts/Gameplay/`. New ship = new ScriptableObject in `Data/Ships/`.
+
