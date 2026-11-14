@@ -1,9 +1,17 @@
 # Progression
 
 ## Overview
-Mathematical formulas for upgrade curves, player progression state calculations, and stat evaluation.
+Comprehensive progression system containing upgrade definitions, scaling math formulas, and player upgrade state tracking.
 
 ## Interface
+- `class UpgradeDefinition` [UpgradeDefinition.cs]
+  - `id: string`
+  - `upgradeName: string`
+  - `description: string`
+  - `baseCost: int`
+  - `costMultiplier: float`
+  - `maxLevel: int`
+  - `statMultiplierPerLevel: float`
 - `class ProgressionMath` [ProgressionMath.cs]
   - `CalculateStat(float baseValue, float multiplier, int level) -> float`
   - `CalculateCost(int baseCost, float costMultiplier, int level) -> int`
@@ -14,11 +22,8 @@ Mathematical formulas for upgrade curves, player progression state calculations,
   - `AreAllStatsMaxed(int maxLevel) -> bool`
 
 ## Invariants
-- Progression calculations are functional, deterministic, and free of floating-point runaway.
-- State mutation preserves lifecycle invariants.
-
-## Side Effects
-- In-memory progression state tracking.
+- Cost calculation enforces integer values and exponential scaling without floating-point runaway.
+- MonoBehaviour lifecycle contracts strictly preserved.
 
 ## Verification
 - Run: `Unity Test Runner (EditMode tests in active Unity Editor or via unity-cli)`
