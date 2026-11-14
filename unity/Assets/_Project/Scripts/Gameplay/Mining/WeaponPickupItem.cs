@@ -59,15 +59,21 @@ namespace StarStrike.Gameplay
             }
         }
 
-        public void OnSpawnFromPool()
+        private void OnEnable()
+        {
+            OnSpawned();
+        }
+
+        public void OnSpawned()
         {
             gameObject.SetActive(true);
             UpdateVisualColor();
         }
 
-        public void OnReturnToPool()
+        public void OnDespawned()
         {
-            gameObject.SetActive(false);
+            var rb = GetComponent<Rigidbody2D>();
+            if (rb != null) rb.linearVelocity = Vector2.zero;
         }
 
         private void OnTriggerEnter2D(Collider2D collision)

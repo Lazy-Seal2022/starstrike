@@ -9,8 +9,8 @@ Pure interface abstractions enforcing OOP polymorphism across damage handling, s
 - `interface ISkillBehavior` [ISkillBehavior.cs]
   - `Execute(GameObject caster, SkillDefinition definition) -> void`
 - `interface IPoolable` [IPoolable.cs]
-  - `OnSpawnFromPool() -> void`
-  - `OnReturnToPool() -> void`
+  - `OnSpawned() -> void`
+  - `OnDespawned() -> void`
 - `interface IWeapon` [IWeapon.cs]
   - `WeaponName -> string`
   - `FireRate -> float`
