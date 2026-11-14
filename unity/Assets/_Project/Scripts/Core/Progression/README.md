@@ -1,17 +1,9 @@
 # Progression
 
 ## Overview
-Mathematical formulas for upgrade curves, player progression state, and upgrade tier metadata definitions.
+Mathematical formulas for upgrade curves, player progression state calculations, and stat evaluation.
 
 ## Interface
-- `class UpgradeDefinition` [UpgradeDefinition.cs]
-  - `id: string`
-  - `upgradeName: string`
-  - `description: string`
-  - `baseCost: int`
-  - `costMultiplier: float`
-  - `maxLevel: int`
-  - `statMultiplierPerLevel: float`
 - `class ProgressionMath` [ProgressionMath.cs]
   - `CalculateStat(float baseValue, float multiplier, int level) -> float`
   - `CalculateCost(int baseCost, float costMultiplier, int level) -> int`
@@ -22,8 +14,8 @@ Mathematical formulas for upgrade curves, player progression state, and upgrade 
   - `AreAllStatsMaxed(int maxLevel) -> bool`
 
 ## Invariants
-- MonoBehaviour lifecycle contracts strictly preserved.
-- Upgrade costs and stat bonuses scale deterministically without floating-point runaway.
+- Progression calculations are functional, deterministic, and free of floating-point runaway.
+- State mutation preserves lifecycle invariants.
 
 ## Side Effects
 - In-memory progression state tracking.
