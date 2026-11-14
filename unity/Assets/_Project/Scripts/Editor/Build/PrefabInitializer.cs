@@ -714,6 +714,56 @@ namespace StarStrike.Editor
                 failed++;
             }
 
+            // 7. Advanced Weapon Systems & Controller Verification
+            try
+            {
+                var go = new GameObject("Test_Weapons");
+                go.tag = "Player";
+                var health = go.AddComponent<ShipHealth>();
+                health.maxEnergy = 100f;
+                health.ResetMeters();
+
+                var controller = go.AddComponent<ShipWeaponController>();
+                controller.InitializeWeapons();
+
+                if (controller.WeaponCount < 4)
+                    throw new System.Exception($"Expected at least 4 weapons, got {controller.WeaponCount}");
+
+                if (controller.CurrentWeapon.WeaponName != "Pulse Laser")
+                    throw new System.Exception($"Weapon 0 should be Pulse Laser, got {controller.CurrentWeapon.WeaponName}");
+
+                controller.SwitchWeapon(1);
+                if (controller.CurrentWeapon.WeaponName != "Scattergun")
+                    throw new System.Exception($"Weapon 1 should be Scattergun, got {controller.CurrentWeapon.WeaponName}");
+
+                bool scatterFired = controller.CurrentWeapon.TryFire(health);
+                if (!scatterFired) throw new System.Exception("Scattergun failed to fire");
+
+                controller.SwitchWeapon(2);
+                if (controller.CurrentWeapon.WeaponName != "Homing Missiles")
+                    throw new System.Exception($"Weapon 2 should be Homing Missiles, got {controller.CurrentWeapon.WeaponName}");
+
+                bool missileFired = controller.CurrentWeapon.TryFire(health);
+                if (!missileFired) throw new System.Exception("Homing Missiles failed to fire");
+
+                controller.SwitchWeapon(3);
+                if (controller.CurrentWeapon.WeaponName != "Beam Laser")
+                    throw new System.Exception($"Weapon 3 should be Beam Laser, got {controller.CurrentWeapon.WeaponName}");
+
+                bool beamFired = controller.CurrentWeapon.TryFire(health);
+                if (!beamFired) throw new System.Exception("Beam Laser failed to fire");
+                controller.CurrentWeapon.StopFiring();
+
+                Object.DestroyImmediate(go);
+                Debug.Log("[PASS] 7. Advanced Weapon Systems & Controller (Scattergun, Homing Missiles, Continuous Beam, Swapping) verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 7. Advanced weapon systems test failed: {ex.Message}");
+                failed++;
+            }
+
             Debug.Log($"=== TOTAL VERIFICATION RESULT: {passed} PASSED, {failed} FAILED ===");
         }
     }

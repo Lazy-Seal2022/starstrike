@@ -16,10 +16,12 @@ namespace StarStrike.Core
     /// </summary>
     public interface IWeapon
     {
+        string WeaponName { get; }
         float FireRate { get; set; }
         float EnergyCost { get; }
         int WeaponSlots { get; set; }
         bool TryFire(IEnergyConsumer energySource = null);
+        void StopFiring();
         void ResetCooldown();
     }
 }

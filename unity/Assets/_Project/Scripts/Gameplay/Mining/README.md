@@ -11,6 +11,8 @@ Procedural asteroid fields, destructible rocks, gem drops, and powerups.
 - `class PowerUpItem` [PowerUpItem.cs]
 - `enum PowerUpType` [PowerUpItem.cs]
 - `ApplyPowerUp(GameObject player) -> void` [PowerUpItem.cs]
+- `class WeaponPickupItem` [WeaponPickupItem.cs]
+- `enum WeaponPickupType` [WeaponPickupItem.cs]
 
 ## Invariants
 - Mandatory component dependency enforced via `RequireComponent` [Asteroid.cs]

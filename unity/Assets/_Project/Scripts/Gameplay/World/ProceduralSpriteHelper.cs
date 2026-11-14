@@ -18,6 +18,8 @@ namespace StarStrike.Gameplay
         private static Sprite cachedStar;
         private static Sprite cachedRadar;
         private static Sprite cachedPowerUp;
+        private static Sprite cachedMissile;
+        private static Sprite cachedPellet;
 
         private static Sprite LoadAssetOrDefault(string resourcePath, ref Sprite cache, System.Func<Sprite> fallback)
         {
@@ -74,6 +76,16 @@ namespace StarStrike.Gameplay
         public static Sprite GetPowerUpSprite()
         {
             return LoadAssetOrDefault("Sprites/PowerUp", ref cachedPowerUp, () => GenerateDiamond(new Color(1f, 0.85f, 0.2f), 32));
+        }
+
+        public static Sprite GetMissileSprite()
+        {
+            return LoadAssetOrDefault("Sprites/Missile", ref cachedMissile, () => GenerateCapsule(new Color(1f, 0.4f, 0.1f), 16, 40));
+        }
+
+        public static Sprite GetPelletSprite()
+        {
+            return LoadAssetOrDefault("Sprites/Pellet", ref cachedPellet, () => GenerateCircle(new Color(1f, 0.8f, 0.2f), 16));
         }
 
         private static Sprite GenerateCircle(Color color, int size)

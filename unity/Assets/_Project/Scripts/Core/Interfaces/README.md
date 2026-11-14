@@ -12,9 +12,13 @@ Pure interface abstractions enforcing OOP polymorphism across damage handling, s
   - `OnSpawnFromPool() -> void`
   - `OnReturnToPool() -> void`
 - `interface IWeapon` [IWeapon.cs]
+  - `WeaponName -> string`
   - `FireRate -> float`
-  - `CanFire -> bool`
-  - `Fire(Transform origin, Vector2 direction) -> void`
+  - `EnergyCost -> float`
+  - `WeaponSlots -> int`
+  - `TryFire(IEnergyConsumer energySource) -> bool`
+  - `StopFiring() -> void`
+  - `ResetCooldown() -> void`
 - `interface IEnergyConsumer` [IWeapon.cs]
   - `EnergyCost -> float`
   - `HasEnergy(float availableEnergy) -> bool`

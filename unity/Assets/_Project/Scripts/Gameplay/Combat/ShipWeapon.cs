@@ -18,9 +18,11 @@ namespace StarStrike.Gameplay
         public float fireRate = 0.22f;
         public float energyCost = 6f;
 
+        public string WeaponName => "Pulse Laser";
         public float FireRate { get => fireRate; set => fireRate = value; }
         public float EnergyCost => energyCost;
         public int WeaponSlots { get => weaponSlots; set => weaponSlots = value; }
+        public void StopFiring() { }
 
         public bool isPlayer = false;
 

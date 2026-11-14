@@ -11,7 +11,8 @@ namespace StarStrike.Gameplay
 
         public ShipMovement movement;
         public ShipWeapon weapon;
-        public IWeapon ActiveWeapon => weapon;
+        public ShipWeaponController weaponController;
+        public IWeapon ActiveWeapon => (weaponController != null && weaponController.CurrentWeapon != null) ? weaponController.CurrentWeapon : (IWeapon)weapon;
         public ShipHealth health;
         public ShipSkillController skillController;
 
@@ -81,6 +82,11 @@ namespace StarStrike.Gameplay
         private void ResolveComponents()
         {
             if (movement == null) movement = GetComponent<ShipMovement>();
+            if (weaponController == null) weaponController = GetComponent<ShipWeaponController>();
+            if (weaponController == null && (CompareTag("Player") || gameObject.name == "Player"))
+            {
+                weaponController = gameObject.AddComponent<ShipWeaponController>();
+            }
             if (weapon == null) weapon = GetComponent<ShipWeapon>();
             if (health == null) health = GetComponent<ShipHealth>();
             if (skillController == null) skillController = GetComponent<ShipSkillController>();
@@ -216,6 +222,7 @@ namespace StarStrike.Gameplay
 
         public void ProcessFiring(float dt)
         {
+            IWeapon currentWeapon = ActiveWeapon;
             bool isFireTriggered = false;
             if (inputFire)
             {
@@ -230,8 +237,8 @@ namespace StarStrike.Gameplay
                 {
                     // Button held down: advance hold timer
                     fireHeldDuration += dt;
-                    float minRepeat = weapon != null && weapon.combatConfig != null ? weapon.combatConfig.minFireRate : 0.10f;
-                    float repeatInterval = weapon != null ? Mathf.Max(minRepeat, weapon.fireRate) : 0.22f;
+                    float minRepeat = (currentWeapon is ShipWeapon sw && sw.combatConfig != null) ? sw.combatConfig.minFireRate : 0.10f;
+                    float repeatInterval = currentWeapon != null ? Mathf.Max(minRepeat, currentWeapon.FireRate) : 0.22f;
                     float requiredTime = hasAutoFired ? repeatInterval : Mathf.Max(0.18f, repeatInterval);
                     if (autoFireEnabled && fireHeldDuration >= requiredTime)
                     {
@@ -244,12 +251,13 @@ namespace StarStrike.Gameplay
             {
                 fireHeldDuration = 0f;
                 hasAutoFired = false;
+                currentWeapon?.StopFiring();
             }
             wasFirePressedLastFrame = inputFire;
 
-            if (isFireTriggered && weapon != null)
+            if (isFireTriggered && currentWeapon != null)
             {
-                bool fired = weapon.TryFire(health);
+                bool fired = currentWeapon.TryFire(health);
                 if (fired)
                 {
                     fireHeldDuration = 0f; // Reset repeat timer after each successful shot
@@ -262,6 +270,30 @@ namespace StarStrike.Gameplay
             Keyboard kb = Keyboard.current;
             Mouse mouse = Mouse.current;
             Gamepad pad = Gamepad.current;
+
+            if (weaponController != null)
+            {
+                if (kb != null)
+                {
+                    if (kb.digit1Key.wasPressedThisFrame) weaponController.SwitchWeapon(0);
+                    else if (kb.digit2Key.wasPressedThisFrame) weaponController.SwitchWeapon(1);
+                    else if (kb.digit3Key.wasPressedThisFrame) weaponController.SwitchWeapon(2);
+                    else if (kb.digit4Key.wasPressedThisFrame) weaponController.SwitchWeapon(3);
+                }
+
+                if (mouse != null)
+                {
+                    float scroll = mouse.scroll.ReadValue().y;
+                    if (scroll > 0.5f) weaponController.PreviousWeapon();
+                    else if (scroll < -0.5f) weaponController.NextWeapon();
+                }
+
+                if (pad != null)
+                {
+                    if (pad.dpad.left.wasPressedThisFrame) weaponController.PreviousWeapon();
+                    else if (pad.dpad.right.wasPressedThisFrame) weaponController.NextWeapon();
+                }
+            }
 
             bool keyW = kb != null && (kb.wKey.isPressed || kb.upArrowKey.isPressed);
             bool keyS = kb != null && (kb.sKey.isPressed || kb.downArrowKey.isPressed);

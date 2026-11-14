@@ -44,5 +44,8 @@ namespace StarStrike.Core
         public static void TriggerSkillCast(SkillCastEvent evt) => OnSkillCast?.Invoke(evt);
         public static void TriggerSkillCooldownChanged(SkillCooldownEvent evt) => OnSkillCooldownChanged?.Invoke(evt);
         public static void TriggerSkillBlocked(SkillBlockedEvent evt) => OnSkillBlocked?.Invoke(evt);
+
+        public static event Action<string, int> OnWeaponSwapped;
+        public static void TriggerWeaponSwapped(string weaponName, int weaponIndex) => OnWeaponSwapped?.Invoke(weaponName, weaponIndex);
     }
 }
