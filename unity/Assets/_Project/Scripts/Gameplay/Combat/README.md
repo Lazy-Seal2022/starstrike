@@ -15,6 +15,7 @@ Player and enemy ship weaponry, projectile collision, and shield/health systems.
 - `HasEnergy(float amount) -> bool` [ShipHealth.cs]
 - `ConsumeEnergy(float amount) -> bool` [ShipHealth.cs]
 - `class ShipWeapon` [ShipWeapon.cs]
+- `TryFire(IEnergyConsumer energySource) -> bool` [ShipWeapon.cs]
 - `TryFire(ShipHealth health) -> bool` [ShipWeapon.cs]
 - `ResetCooldown() -> void` [ShipWeapon.cs]
 - `class ShipSkillController` [ShipSkillController.cs]

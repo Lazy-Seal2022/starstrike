@@ -4,7 +4,7 @@ using StarStrike.Core;
 namespace StarStrike.Gameplay
 {
     [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
-    public class PowerUpItem : MonoBehaviour
+    public class PowerUpItem : MonoBehaviour, IPoolable
     {
         public enum PowerUpType { ShieldOvercharge, WeaponOverdrive }
 
@@ -12,6 +12,11 @@ namespace StarStrike.Gameplay
         public LootConfig lootConfig;
 
         public PowerUpType type = PowerUpType.ShieldOvercharge;
+
+        private static readonly IPowerUpEffect ShieldEffect = new ShieldOverchargeEffect();
+        private static readonly IPowerUpEffect WeaponEffect = new WeaponOverdriveEffect();
+
+        public IPowerUpEffect CurrentEffect => type == PowerUpType.ShieldOvercharge ? ShieldEffect : WeaponEffect;
 
         private void Awake()
         {
@@ -38,12 +43,23 @@ namespace StarStrike.Gameplay
 
         private void OnEnable()
         {
+            OnSpawned();
+        }
+
+        public void OnSpawned()
+        {
             type = Random.value > 0.5f ? PowerUpType.ShieldOvercharge : PowerUpType.WeaponOverdrive;
             var sr = GetComponent<SpriteRenderer>();
-            sr.color = type == PowerUpType.ShieldOvercharge ? Color.blue : Color.red;
+            if (sr != null) sr.color = CurrentEffect.EffectColor;
 
             var rb = GetComponent<Rigidbody2D>();
-            rb.linearVelocity = Random.insideUnitCircle * 2f;
+            if (rb != null) rb.linearVelocity = Random.insideUnitCircle * 2f;
+        }
+
+        public void OnDespawned()
+        {
+            var rb = GetComponent<Rigidbody2D>();
+            if (rb != null) rb.linearVelocity = Vector2.zero;
         }
 
         private void OnTriggerEnter2D(Collider2D collision)
@@ -57,30 +73,44 @@ namespace StarStrike.Gameplay
 
         public void ApplyPowerUp(GameObject player)
         {
-            if (type == PowerUpType.ShieldOvercharge)
-            {
-                var health = player.GetComponent<ShipHealth>();
-                if (health != null)
-                {
-                    float bonus = lootConfig != null ? lootConfig.shieldOverchargeBonus : 100f;
-                    health.maxShield += bonus;
-                    health.currentShield = health.maxShield;
-                }
-            }
-            else if (type == PowerUpType.WeaponOverdrive)
-            {
-                var weapon = player.GetComponent<ShipWeapon>();
-                if (weapon != null)
-                {
-                    weapon.weaponSlots = Mathf.Min(weapon.weaponSlots + 1, 3);
-                    float fireMult = lootConfig != null ? lootConfig.weaponOverdriveFireRateMultiplier : 0.8f;
-                    float minRate = lootConfig != null ? lootConfig.minFireRate : (weapon.combatConfig != null ? weapon.combatConfig.minFireRate : 0.10f);
-                    weapon.fireRate = Mathf.Max(minRate, weapon.fireRate * fireMult);
-                }
-            }
-
-            // Could also trigger a sound
+            CurrentEffect.Apply(player, lootConfig);
             StarStrike.Gameplay.Audio.AudioService.Instance?.PlaySound("upgrade", 1.0f);
         }
+    }
+
+    public class ShieldOverchargeEffect : IPowerUpEffect
+    {
+        public string Name => "Shield Overcharge";
+        public Color EffectColor => Color.blue;
+
+        public void Apply(GameObject target, LootConfig config)
+        {
+            var health = target.GetComponent<ShipHealth>();
+            if (health != null)
+            {
+                float bonus = config != null ? config.shieldOverchargeBonus : 100f;
+                health.maxShield = Mathf.Min(500f, health.maxShield + bonus);
+                health.currentShield = health.maxShield;
+            }
+        }
+    }
+
+    public class WeaponOverdriveEffect : IPowerUpEffect
+    {
+        public string Name => "Weapon Overdrive";
+        public Color EffectColor => Color.red;
+
+        public void Apply(GameObject target, LootConfig config)
+        {
+            var weapon = target.GetComponent<ShipWeapon>();
+            if (weapon != null)
+            {
+                weapon.WeaponSlots = Mathf.Min(weapon.WeaponSlots + 1, 3);
+                float fireMult = config != null ? config.weaponOverdriveFireRateMultiplier : 0.8f;
+                float minRate = config != null ? config.minFireRate : (weapon.combatConfig != null ? weapon.combatConfig.minFireRate : 0.10f);
+                weapon.FireRate = Mathf.Max(minRate, weapon.FireRate * fireMult);
+            }
+        }
+    }
     }
 }

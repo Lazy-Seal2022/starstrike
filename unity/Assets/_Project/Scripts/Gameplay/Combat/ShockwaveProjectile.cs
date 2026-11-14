@@ -5,7 +5,7 @@ using StarStrike.Core;
 namespace StarStrike.Gameplay
 {
     [RequireComponent(typeof(CircleCollider2D))]
-    public class ShockwaveProjectile : MonoBehaviour
+    public class ShockwaveProjectile : MonoBehaviour, IProjectile, IPoolable
     {
         public float damage = 40f;
         public float speed = 22f;
@@ -13,6 +13,10 @@ namespace StarStrike.Gameplay
         public float knockbackForce = 12f;
         public int maxHits = 3;
         public float energyRefundOnMultiHit = 15f;
+
+        public float Damage => damage;
+        public float Speed => speed;
+        public bool IsEnemy => false;
 
         private Rigidbody2D rb;
         private CircleCollider2D col;
@@ -71,6 +75,20 @@ namespace StarStrike.Gameplay
             sr.color = new Color(0.2f, 0.9f, 1f, 0.9f);
             sr.sortingOrder = 6;
             transform.localScale = new Vector3(1.8f, 2.5f, 1f);
+        }
+
+        public void OnSpawned()
+        {
+            spawnTime = Time.time;
+        }
+
+        public void OnDespawned()
+        {
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector2.zero;
+            }
+            hitEntityIds.Clear();
         }
 
         private void Update()

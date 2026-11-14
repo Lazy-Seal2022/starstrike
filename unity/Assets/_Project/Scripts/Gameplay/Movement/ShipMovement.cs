@@ -26,6 +26,16 @@ namespace StarStrike.Gameplay
         public bool IsThrusting { get; set; }
         public bool IsBoosting { get; set; }
         public bool IsBraking { get; set; }
+
+        public void ApplyInput(IShipInputProvider input)
+        {
+            if (input == null) return;
+            AimDirection = input.AimDirection;
+            TurnInput = input.TurnInput;
+            IsThrusting = input.IsThrusting;
+            IsBoosting = input.IsBoosting;
+            IsBraking = input.IsBraking;
+        }
         
         private ParticleSystem thrustFX;
         private StarStrike.Gameplay.FX.ShipThrusterEffect thrusterEffect;

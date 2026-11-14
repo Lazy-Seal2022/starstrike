@@ -667,6 +667,53 @@ namespace StarStrike.Editor
                 failed++;
             }
 
+            // 6. Polymorphic Interfaces Verification (IWeapon, IEnergyConsumer, IPowerUpEffect, IPoolable, IShipInputProvider, IProjectile)
+            try
+            {
+                var go = new GameObject("Test_Polymorphism");
+                var health = go.AddComponent<ShipHealth>();
+                health.maxEnergy = 80f;
+                health.ResetMeters();
+
+                var weapon = go.AddComponent<ShipWeapon>();
+                weapon.energyCost = 6f;
+                weapon.fireRate = 0.22f;
+
+                IWeapon weaponInt = weapon;
+                IEnergyConsumer energyInt = health;
+
+                bool fireOk = weaponInt.TryFire(energyInt);
+                if (!fireOk) throw new System.Exception("IWeapon.TryFire failed with IEnergyConsumer");
+                if (Mathf.Abs(energyInt.CurrentEnergy - 74f) > 0.01f)
+                    throw new System.Exception($"IWeapon deducted energy incorrectly: {energyInt.CurrentEnergy}");
+
+                // IPowerUpEffect
+                var config = ScriptableObject.CreateInstance<LootConfig>();
+                config.shieldOverchargeBonus = 50f;
+                IPowerUpEffect shieldEff = new ShieldOverchargeEffect();
+                shieldEff.Apply(go, config);
+                if (Mathf.Abs(health.maxShield - 150f) > 0.01f)
+                    throw new System.Exception($"IPowerUpEffect failed: maxShield is {health.maxShield}");
+
+                // IShipInputProvider
+                var movement = go.AddComponent<ShipMovement>();
+                var reader = go.AddComponent<PlayerInputReader>();
+                reader.inputThrust = true;
+                IShipInputProvider inputInt = reader;
+                movement.ApplyInput(inputInt);
+                if (!movement.IsThrusting)
+                    throw new System.Exception("IShipInputProvider did not set IsThrusting on ShipMovement");
+
+                Object.DestroyImmediate(go);
+                Debug.Log("[PASS] 6. Polymorphic Interfaces (IWeapon, IEnergyConsumer, IPowerUpEffect, IShipInputProvider, IPoolable) verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 6. Polymorphic interfaces test failed: {ex.Message}");
+                failed++;
+            }
+
             Debug.Log($"=== TOTAL VERIFICATION RESULT: {passed} PASSED, {failed} FAILED ===");
         }
     }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using StarStrike.Core;
 
 namespace StarStrike.Gameplay
 {
@@ -88,6 +89,8 @@ namespace StarStrike.Gameplay
         {
             if (obj != null)
             {
+                var poolable = obj.GetComponent<IPoolable>();
+                poolable?.OnDespawned();
                 obj.SetActive(false);
             }
         }
@@ -135,6 +138,8 @@ namespace StarStrike.Gameplay
                 objectToSpawn.transform.position = position;
                 objectToSpawn.transform.rotation = rotation;
                 objectToSpawn.SetActive(true);
+                var poolable = objectToSpawn.GetComponent<IPoolable>();
+                poolable?.OnSpawned();
                 queue.Enqueue(objectToSpawn);
                 return objectToSpawn;
             }

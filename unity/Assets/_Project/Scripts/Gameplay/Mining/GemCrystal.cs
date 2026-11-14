@@ -4,7 +4,7 @@ using StarStrike.Core;
 namespace StarStrike.Gameplay
 {
     [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
-    public class GemCrystal : MonoBehaviour
+    public class GemCrystal : MonoBehaviour, IPoolable
     {
         [Header("Configuration")]
         public LootConfig lootConfig;
@@ -46,14 +46,28 @@ namespace StarStrike.Gameplay
 
         private void OnEnable()
         {
-            GameObject p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null) playerTarget = p.transform;
+            OnSpawned();
 
             // Small initial ejection impulse
             Vector2 randomDir = Random.insideUnitCircle.normalized;
             float minSpd = lootConfig != null ? lootConfig.minEjectionSpeed : 1.5f;
             float maxSpd = lootConfig != null ? lootConfig.maxEjectionSpeed : 4.0f;
-            rb.linearVelocity = randomDir * Random.Range(minSpd, maxSpd);
+            if (rb != null) rb.linearVelocity = randomDir * Random.Range(minSpd, maxSpd);
+        }
+
+        public void OnSpawned()
+        {
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null) playerTarget = p.transform;
+        }
+
+        public void OnDespawned()
+        {
+            playerTarget = null;
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector2.zero;
+            }
         }
 
         private void Update()

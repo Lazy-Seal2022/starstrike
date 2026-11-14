@@ -5,12 +5,13 @@ using StarStrike.Platform.Storage;
 
 namespace StarStrike.Gameplay
 {
-    public class PlayerInputReader : MonoBehaviour
+    public class PlayerInputReader : MonoBehaviour, IShipInputProvider
     {
         public static PlayerInputReader Instance { get; private set; }
 
         public ShipMovement movement;
         public ShipWeapon weapon;
+        public IWeapon ActiveWeapon => weapon;
         public ShipHealth health;
         public ShipSkillController skillController;
 
@@ -34,6 +35,12 @@ namespace StarStrike.Gameplay
         public bool inputFire;
         public float inputTurn;
         public Vector2 inputAimDirection;
+
+        public Vector2 AimDirection => inputAimDirection;
+        public float TurnInput => inputTurn;
+        public bool IsThrusting => inputThrust;
+        public bool IsBoosting => inputBoost;
+        public bool IsBraking => inputBrake;
         public bool hasDirectAim = false;
 
         [Header("Firing Management")]
@@ -172,11 +179,7 @@ namespace StarStrike.Gameplay
 
             if (movement != null)
             {
-                movement.AimDirection = inputAimDirection;
-                movement.TurnInput = inputTurn;
-                movement.IsThrusting = inputThrust;
-                movement.IsBoosting = inputBoost;
-                movement.IsBraking = inputBrake;
+                movement.ApplyInput(this);
             }
 
             if (skillAction != null && skillAction.WasPressedThisFrame())

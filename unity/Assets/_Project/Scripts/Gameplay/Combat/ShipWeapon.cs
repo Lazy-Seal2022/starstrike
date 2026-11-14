@@ -3,7 +3,7 @@ using StarStrike.Core;
 
 namespace StarStrike.Gameplay
 {
-    public class ShipWeapon : MonoBehaviour
+    public class ShipWeapon : MonoBehaviour, IWeapon
     {
         [Header("Configuration")]
         public CombatConfig combatConfig;
@@ -17,6 +17,10 @@ namespace StarStrike.Gameplay
         public int weaponSlots = 1;
         public float fireRate = 0.22f;
         public float energyCost = 6f;
+
+        public float FireRate { get => fireRate; set => fireRate = value; }
+        public float EnergyCost => energyCost;
+        public int WeaponSlots { get => weaponSlots; set => weaponSlots = value; }
 
         public bool isPlayer = false;
 
@@ -64,13 +68,15 @@ namespace StarStrike.Gameplay
             return new float[] { 0f };
         }
 
-        public bool TryFire(ShipHealth health)
+        public bool TryFire(ShipHealth health) => TryFire((IEnergyConsumer)health);
+
+        public bool TryFire(IEnergyConsumer energySource = null)
         {
             float minRate = combatConfig != null ? combatConfig.minFireRate : 0.10f;
             float effectiveFireRate = Mathf.Max(minRate, fireRate);
             if (Time.time - lastFiredTime < effectiveFireRate) return false;
             
-            if (health != null && !health.ConsumeEnergy(energyCost))
+            if (energySource != null && !energySource.ConsumeEnergy(energyCost))
             {
                 return false;
             }

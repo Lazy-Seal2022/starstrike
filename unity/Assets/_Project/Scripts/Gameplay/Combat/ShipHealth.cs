@@ -4,7 +4,7 @@ using System;
 
 namespace StarStrike.Gameplay
 {
-    public class ShipHealth : MonoBehaviour, IDamageable
+    public class ShipHealth : MonoBehaviour, IDamageable, IEnergyConsumer
     {
         [Header("Stats")]
         public float maxShield = 100f;
@@ -15,6 +15,9 @@ namespace StarStrike.Gameplay
         [Header("Current State")]
         public float currentShield;
         public float currentEnergy;
+
+        public float CurrentEnergy => currentEnergy;
+        public float MaxEnergy => maxEnergy;
 
         public bool isPlayer = false;
 

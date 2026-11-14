@@ -4,7 +4,7 @@ using StarStrike.Core;
 namespace StarStrike.Gameplay
 {
     [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
-    public class LaserProjectile : MonoBehaviour
+    public class LaserProjectile : MonoBehaviour, IProjectile, IPoolable
     {
         [Header("Configuration")]
         public CombatConfig combatConfig;
@@ -14,6 +14,10 @@ namespace StarStrike.Gameplay
         public bool isEnemy = false;
         public float speed = 25f;
         public float lifetime = 3f;
+
+        public float Damage => damage;
+        public float Speed => speed;
+        public bool IsEnemy => isEnemy;
 
         private Rigidbody2D rb;
 
@@ -71,8 +75,22 @@ namespace StarStrike.Gameplay
         private float spawnTime;
         private void OnEnable()
         {
+            OnSpawned();
+        }
+
+        public void OnSpawned()
+        {
             spawnTime = Time.time;
         }
+
+        public void OnDespawned()
+        {
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector2.zero;
+            }
+        }
+
         private void Update()
         {
             if (Time.time - spawnTime > lifetime) {
