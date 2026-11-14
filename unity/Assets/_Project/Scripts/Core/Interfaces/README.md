@@ -20,7 +20,7 @@ Pure interface abstractions enforcing OOP polymorphism across damage handling, s
   - `HasEnergy(float availableEnergy) -> bool`
   - `ConsumeEnergy(ref float currentEnergy) -> bool`
 - `interface IPowerUpEffect` [IPowerUpEffect.cs]
-  - `Apply(GameObject target) -> void`
+  - `Apply(GameObject target, LootConfig config) -> void`
 - `interface IProjectile` [IProjectile.cs]
   - `Initialize(Vector2 velocity, float damage, float lifetime) -> void`
 - `interface IShipInputProvider` [IShipInputProvider.cs]
