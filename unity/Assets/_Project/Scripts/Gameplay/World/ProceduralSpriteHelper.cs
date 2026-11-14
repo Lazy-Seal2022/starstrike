@@ -21,10 +21,29 @@ namespace StarStrike.Gameplay
         private static Sprite cachedMissile;
         private static Sprite cachedPellet;
 
+        private static readonly string[] SubFolders = { "Ships", "Projectiles", "World", "UI" };
+
         private static Sprite LoadAssetOrDefault(string resourcePath, ref Sprite cache, System.Func<Sprite> fallback)
         {
             if (cache != null) return cache;
+
+            // Direct path lookup (e.g., "Sprites/Ships/Ship_Fighter")
             cache = Resources.Load<Sprite>(resourcePath);
+            if (cache != null) return cache;
+
+            // Fallback for unqualified legacy paths (e.g., "Sprites/Ship_Fighter" or "Ship_Fighter")
+            string filename = resourcePath;
+            if (filename.StartsWith("Sprites/"))
+            {
+                filename = filename.Substring("Sprites/".Length);
+            }
+
+            foreach (var folder in SubFolders)
+            {
+                cache = Resources.Load<Sprite>($"Sprites/{folder}/{filename}");
+                if (cache != null) return cache;
+            }
+
             if (cache == null)
             {
                 cache = fallback();
@@ -32,60 +51,117 @@ namespace StarStrike.Gameplay
             return cache;
         }
 
-        public static Sprite GetShipSprite(string type)
+        public static Sprite GenerateShipSprite(string type)
         {
+            if (type == "fighter") return GenerateShip(new Color(0.96f, 0.25f, 0.37f), 64, 2);
+            if (type == "miner") return GenerateShip(new Color(0.96f, 0.62f, 0.04f), 64, 3);
+            if (type == "drone") return GenerateShip(new Color(0.9f, 0.15f, 0.15f), 48, 4);
+            if (type == "interceptor") return GenerateShip(new Color(0.45f, 0.35f, 0.98f), 64, 5);
+            if (type == "juggernaut") return GenerateShip(new Color(0.95f, 0.45f, 0.15f), 64, 6);
+            if (type == "boss") return GenerateShip(new Color(0.95f, 0.12f, 0.22f), 96, 7);
+            return GenerateShip(new Color(0.22f, 0.74f, 0.97f), 64, 1);
+        }
+
+        public static Sprite GenerateLaserSprite(bool isEnemy = false)
+        {
+            if (isEnemy) return GenerateCapsule(new Color(1f, 0.25f, 0.25f), 16, 48);
+            return GenerateCapsule(new Color(0.2f, 0.9f, 1f), 16, 48);
+        }
+
+        public static Sprite GenerateAsteroidSprite()
+        {
+            return GenerateAsteroid(new Color(0.6f, 0.65f, 0.72f), 64);
+        }
+
+        public static Sprite GenerateGemSprite()
+        {
+            return GenerateDiamond(new Color(0.2f, 0.95f, 0.45f), 32);
+        }
+
+        public static Sprite GenerateStarSprite()
+        {
+            return GenerateCircle(Color.white, 16);
+        }
+
+        public static Sprite GeneratePowerUpSprite()
+        {
+            return GenerateDiamond(new Color(1f, 0.85f, 0.2f), 32);
+        }
+
+        public static Sprite GenerateMissileSprite()
+        {
+            return GenerateCapsule(new Color(1f, 0.4f, 0.1f), 16, 40);
+        }
+
+        public static Sprite GeneratePelletSprite()
+        {
+            return GenerateCircle(new Color(1f, 0.8f, 0.2f), 16);
+        }
+
+        public static Sprite GetShipSprite(string type, bool forceProcedural = false)
+        {
+            if (forceProcedural) return GenerateShipSprite(type);
+
             if (type == "fighter")
-                return LoadAssetOrDefault("Sprites/Ship_Fighter", ref cachedFighter, () => GenerateShip(new Color(0.96f, 0.25f, 0.37f), 64, 2));
+                return LoadAssetOrDefault("Sprites/Ships/Ship_Fighter", ref cachedFighter, () => GenerateShipSprite("fighter"));
             if (type == "miner")
-                return LoadAssetOrDefault("Sprites/Ship_Miner", ref cachedMiner, () => GenerateShip(new Color(0.96f, 0.62f, 0.04f), 64, 3));
+                return LoadAssetOrDefault("Sprites/Ships/Ship_Miner", ref cachedMiner, () => GenerateShipSprite("miner"));
             if (type == "drone")
-                return LoadAssetOrDefault("Sprites/Ship_Drone", ref cachedDrone, () => GenerateShip(new Color(0.9f, 0.15f, 0.15f), 48, 4));
+                return LoadAssetOrDefault("Sprites/Ships/Ship_Drone", ref cachedDrone, () => GenerateShipSprite("drone"));
             if (type == "interceptor")
-                return LoadAssetOrDefault("Sprites/Ship_Interceptor", ref cachedInterceptor, () => GenerateShip(new Color(0.45f, 0.35f, 0.98f), 64, 5));
+                return LoadAssetOrDefault("Sprites/Ships/Ship_Interceptor", ref cachedInterceptor, () => GenerateShipSprite("interceptor"));
             if (type == "juggernaut")
-                return LoadAssetOrDefault("Sprites/Ship_Juggernaut", ref cachedJuggernaut, () => GenerateShip(new Color(0.95f, 0.45f, 0.15f), 64, 6));
+                return LoadAssetOrDefault("Sprites/Ships/Ship_Juggernaut", ref cachedJuggernaut, () => GenerateShipSprite("juggernaut"));
             if (type == "boss")
-                return LoadAssetOrDefault("Sprites/Ship_Boss", ref cachedBoss, () => GenerateShip(new Color(0.95f, 0.12f, 0.22f), 96, 7));
+                return LoadAssetOrDefault("Sprites/Ships/Ship_Boss", ref cachedBoss, () => GenerateShipSprite("boss"));
 
-            return LoadAssetOrDefault("Sprites/Ship_Scout", ref cachedScout, () => GenerateShip(new Color(0.22f, 0.74f, 0.97f), 64, 1));
+            return LoadAssetOrDefault("Sprites/Ships/Ship_Scout", ref cachedScout, () => GenerateShipSprite("scout"));
         }
 
-        public static Sprite GetLaserSprite(bool isEnemy = false)
+        public static Sprite GetLaserSprite(bool isEnemy = false, bool forceProcedural = false)
         {
+            if (forceProcedural) return GenerateLaserSprite(isEnemy);
+
             if (isEnemy)
-                return LoadAssetOrDefault("Sprites/Laser_Enemy", ref cachedEnemyLaser, () => GenerateCapsule(new Color(1f, 0.25f, 0.25f), 16, 48));
+                return LoadAssetOrDefault("Sprites/Projectiles/Laser_Enemy", ref cachedEnemyLaser, () => GenerateLaserSprite(true));
 
-            return LoadAssetOrDefault("Sprites/Laser_Player", ref cachedLaser, () => GenerateCapsule(new Color(0.2f, 0.9f, 1f), 16, 48));
+            return LoadAssetOrDefault("Sprites/Projectiles/Laser_Player", ref cachedLaser, () => GenerateLaserSprite(false));
         }
 
-        public static Sprite GetAsteroidSprite()
+        public static Sprite GetAsteroidSprite(bool forceProcedural = false)
         {
-            return LoadAssetOrDefault("Sprites/Asteroid", ref cachedAsteroid, () => GenerateAsteroid(new Color(0.6f, 0.65f, 0.72f), 64));
+            if (forceProcedural) return GenerateAsteroidSprite();
+            return LoadAssetOrDefault("Sprites/World/Asteroid", ref cachedAsteroid, () => GenerateAsteroidSprite());
         }
 
-        public static Sprite GetGemSprite()
+        public static Sprite GetGemSprite(bool forceProcedural = false)
         {
-            return LoadAssetOrDefault("Sprites/Gem", ref cachedGem, () => GenerateDiamond(new Color(0.2f, 0.95f, 0.45f), 32));
+            if (forceProcedural) return GenerateGemSprite();
+            return LoadAssetOrDefault("Sprites/World/Gem", ref cachedGem, () => GenerateGemSprite());
         }
 
-        public static Sprite GetStarSprite()
+        public static Sprite GetStarSprite(bool forceProcedural = false)
         {
-            return LoadAssetOrDefault("Sprites/Star", ref cachedStar, () => GenerateCircle(Color.white, 16));
+            if (forceProcedural) return GenerateStarSprite();
+            return LoadAssetOrDefault("Sprites/World/Star", ref cachedStar, () => GenerateStarSprite());
         }
 
-        public static Sprite GetPowerUpSprite()
+        public static Sprite GetPowerUpSprite(bool forceProcedural = false)
         {
-            return LoadAssetOrDefault("Sprites/PowerUp", ref cachedPowerUp, () => GenerateDiamond(new Color(1f, 0.85f, 0.2f), 32));
+            if (forceProcedural) return GeneratePowerUpSprite();
+            return LoadAssetOrDefault("Sprites/World/PowerUp", ref cachedPowerUp, () => GeneratePowerUpSprite());
         }
 
-        public static Sprite GetMissileSprite()
+        public static Sprite GetMissileSprite(bool forceProcedural = false)
         {
-            return LoadAssetOrDefault("Sprites/Missile", ref cachedMissile, () => GenerateCapsule(new Color(1f, 0.4f, 0.1f), 16, 40));
+            if (forceProcedural) return GenerateMissileSprite();
+            return LoadAssetOrDefault("Sprites/Projectiles/Missile", ref cachedMissile, () => GenerateMissileSprite());
         }
 
-        public static Sprite GetPelletSprite()
+        public static Sprite GetPelletSprite(bool forceProcedural = false)
         {
-            return LoadAssetOrDefault("Sprites/Pellet", ref cachedPellet, () => GenerateCircle(new Color(1f, 0.8f, 0.2f), 16));
+            if (forceProcedural) return GeneratePelletSprite();
+            return LoadAssetOrDefault("Sprites/Projectiles/Pellet", ref cachedPellet, () => GeneratePelletSprite());
         }
 
         private static Sprite GenerateCircle(Color color, int size)
@@ -322,35 +398,20 @@ namespace StarStrike.Gameplay
             return cachedWhite;
         }
 
-        public static Sprite GetCircleSprite(int size = 64)
+        public static Sprite GetCircleSprite(int size = 64, bool forceProcedural = false)
         {
+            if (forceProcedural) return GenerateCircle(Color.white, size);
             if (cachedCircle == null)
             {
-                Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
-                tex.filterMode = FilterMode.Bilinear;
-                Color[] cols = new Color[size * size];
-                Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
-                float radius = size * 0.48f;
-
-                for (int y = 0; y < size; y++)
-                {
-                    for (int x = 0; x < size; x++)
-                    {
-                        float dist = Vector2.Distance(new Vector2(x, y), center);
-                        float alpha = Mathf.Clamp01((radius - dist) + 0.5f);
-                        cols[y * size + x] = new Color(1f, 1f, 1f, alpha);
-                    }
-                }
-                tex.SetPixels(cols);
-                tex.Apply();
-                cachedCircle = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100);
+                cachedCircle = GenerateCircle(Color.white, size);
             }
             return cachedCircle;
         }
 
-        public static Sprite GetRadarSprite(int size = 128)
+        public static Sprite GetRadarSprite(int size = 128, bool forceProcedural = false)
         {
-            return LoadAssetOrDefault("Sprites/Radar", ref cachedRadar, () => GenerateRadarInternal(size));
+            if (forceProcedural) return GenerateRadarInternal(size);
+            return LoadAssetOrDefault("Sprites/UI/Radar", ref cachedRadar, () => GenerateRadarInternal(size));
         }
 
         private static Sprite GenerateRadarInternal(int size)

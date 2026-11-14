@@ -23,28 +23,28 @@ namespace StarStrike.Editor
 
             var spritePairs = new Dictionary<string, Sprite>
             {
-                { "Ship_Scout", ProceduralSpriteHelper.GetShipSprite("scout") },
-                { "Ship_Fighter", ProceduralSpriteHelper.GetShipSprite("fighter") },
-                { "Ship_Miner", ProceduralSpriteHelper.GetShipSprite("miner") },
-                { "Ship_Drone", ProceduralSpriteHelper.GetShipSprite("drone") },
-                { "Ship_Interceptor", ProceduralSpriteHelper.GetShipSprite("interceptor") },
-                { "Ship_Juggernaut", ProceduralSpriteHelper.GetShipSprite("juggernaut") },
-                { "Ship_Boss", ProceduralSpriteHelper.GetShipSprite("boss") },
-                { "Laser_Player", ProceduralSpriteHelper.GetLaserSprite(false) },
-                { "Laser_Enemy", ProceduralSpriteHelper.GetLaserSprite(true) },
-                { "Asteroid", ProceduralSpriteHelper.GetAsteroidSprite() },
-                { "Gem", ProceduralSpriteHelper.GetGemSprite() },
-                { "PowerUp", ProceduralSpriteHelper.GetPowerUpSprite() },
-                { "Radar", ProceduralSpriteHelper.GetRadarSprite(128) },
-                { "Circle_16", ProceduralSpriteHelper.GetCircleSprite(16) },
-                { "Star", ProceduralSpriteHelper.GetStarSprite() }
+                { "Ships/Ship_Scout", ProceduralSpriteHelper.GetShipSprite("scout", forceProcedural: true) },
+                { "Ships/Ship_Fighter", ProceduralSpriteHelper.GetShipSprite("fighter", forceProcedural: true) },
+                { "Ships/Ship_Miner", ProceduralSpriteHelper.GetShipSprite("miner", forceProcedural: true) },
+                { "Ships/Ship_Drone", ProceduralSpriteHelper.GetShipSprite("drone", forceProcedural: true) },
+                { "Ships/Ship_Interceptor", ProceduralSpriteHelper.GetShipSprite("interceptor", forceProcedural: true) },
+                { "Ships/Ship_Juggernaut", ProceduralSpriteHelper.GetShipSprite("juggernaut", forceProcedural: true) },
+                { "Ships/Ship_Boss", ProceduralSpriteHelper.GetShipSprite("boss", forceProcedural: true) },
+                { "Projectiles/Laser_Player", ProceduralSpriteHelper.GetLaserSprite(false, forceProcedural: true) },
+                { "Projectiles/Laser_Enemy", ProceduralSpriteHelper.GetLaserSprite(true, forceProcedural: true) },
+                { "World/Asteroid", ProceduralSpriteHelper.GetAsteroidSprite(forceProcedural: true) },
+                { "World/Gem", ProceduralSpriteHelper.GetGemSprite(forceProcedural: true) },
+                { "World/PowerUp", ProceduralSpriteHelper.GetPowerUpSprite(forceProcedural: true) },
+                { "World/Star", ProceduralSpriteHelper.GetStarSprite(forceProcedural: true) },
+                { "UI/Radar", ProceduralSpriteHelper.GetRadarSprite(128, forceProcedural: true) },
+                { "UI/Circle_16", ProceduralSpriteHelper.GetCircleSprite(16, forceProcedural: true) }
             };
 
             var loadedSpriteAssets = new List<UnityEngine.Object>();
 
             foreach (var kvp in spritePairs)
             {
-                string name = kvp.Key;
+                string relPath = kvp.Key;
                 Sprite sprite = kvp.Value;
                 if (sprite == null || sprite.texture == null) continue;
 
@@ -52,11 +52,13 @@ namespace StarStrike.Editor
                 if (pngBytes == null || pngBytes.Length == 0) continue;
 
                 // Save to Resources/Sprites for instant runtime loading
-                string resPath = Path.Combine(ResourcesDir, name + ".png");
+                string resPath = Path.Combine(ResourcesDir, relPath + ".png");
+                EnsureDirectory(Path.GetDirectoryName(resPath));
                 File.WriteAllBytes(resPath, pngBytes);
 
                 // Save to Art/Sprites for the master atlas source
-                string artPath = Path.Combine(ArtDir, name + ".png");
+                string artPath = Path.Combine(ArtDir, relPath + ".png");
+                EnsureDirectory(Path.GetDirectoryName(artPath));
                 File.WriteAllBytes(artPath, pngBytes);
             }
 
@@ -65,9 +67,9 @@ namespace StarStrike.Editor
             // Configure texture importers
             foreach (var kvp in spritePairs)
             {
-                string name = kvp.Key;
-                string artPath = $"{ArtDir}/{name}.png";
-                string resPath = $"{ResourcesDir}/{name}.png";
+                string relPath = kvp.Key;
+                string artPath = $"{ArtDir}/{relPath}.png";
+                string resPath = $"{ResourcesDir}/{relPath}.png";
 
                 ConfigureImporter(artPath);
                 ConfigureImporter(resPath);
@@ -100,6 +102,7 @@ namespace StarStrike.Editor
                 importer.filterMode = FilterMode.Bilinear;
                 importer.mipmapEnabled = false;
                 importer.alphaIsTransparency = true;
+                importer.isReadable = true;
                 importer.textureCompression = TextureImporterCompression.Uncompressed;
                 importer.SaveAndReimport();
             }
