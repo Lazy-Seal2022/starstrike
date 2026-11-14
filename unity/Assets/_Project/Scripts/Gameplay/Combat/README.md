@@ -12,9 +12,16 @@ Player and enemy ship weaponry, projectile collision, and shield/health systems.
 - `ResetMeters() -> void` [ShipHealth.cs]
 - `RegenerateMeters(float dt) -> void` [ShipHealth.cs]
 - `TakeDamage(float amount) -> void` [ShipHealth.cs]
+- `HasEnergy(float amount) -> bool` [ShipHealth.cs]
 - `ConsumeEnergy(float amount) -> bool` [ShipHealth.cs]
 - `class ShipWeapon` [ShipWeapon.cs]
 - `TryFire(ShipHealth health) -> bool` [ShipWeapon.cs]
+- `ResetCooldown() -> void` [ShipWeapon.cs]
+- `class ShipSkillController` [ShipSkillController.cs]
+- `TryCastActiveSkill(SkillSlotType slotType) -> bool` [ShipSkillController.cs]
+- `class ShockwaveProjectile` [ShockwaveProjectile.cs]
+- `class ForwardShockwaveBehavior` [Behaviors/ForwardShockwaveBehavior.cs]
+- `class ReactiveBarrierPassiveBehavior` [Behaviors/ReactiveBarrierPassiveBehavior.cs]
 
 ## Invariants
 - Mandatory component dependency enforced via `RequireComponent` [LaserProjectile.cs]

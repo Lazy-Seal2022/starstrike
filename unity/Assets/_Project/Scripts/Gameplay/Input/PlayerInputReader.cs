@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using StarStrike.Core;
 using StarStrike.Platform.Storage;
 
 namespace StarStrike.Gameplay
@@ -11,6 +12,7 @@ namespace StarStrike.Gameplay
         public ShipMovement movement;
         public ShipWeapon weapon;
         public ShipHealth health;
+        public ShipSkillController skillController;
 
         [Header("Control Settings")]
         public int aimMode = 0; // 0 = Mouse / Direct Aim, 1 = Keyboard Turn
@@ -23,6 +25,7 @@ namespace StarStrike.Gameplay
         private InputAction lookAction;
         private InputAction attackAction;
         private InputAction sprintAction;
+        private InputAction skillAction;
 
         [Header("Input State")]
         public bool inputThrust;
@@ -37,6 +40,7 @@ namespace StarStrike.Gameplay
         public bool autoFireEnabled = true;
         private bool wasFirePressedLastFrame = false;
         private float fireHeldDuration = 0f;
+        private bool hasAutoFired = false;
 
         private bool virtualThrust;
         private bool virtualBrake;
@@ -72,6 +76,7 @@ namespace StarStrike.Gameplay
             if (movement == null) movement = GetComponent<ShipMovement>();
             if (weapon == null) weapon = GetComponent<ShipWeapon>();
             if (health == null) health = GetComponent<ShipHealth>();
+            if (skillController == null) skillController = GetComponent<ShipSkillController>();
         }
 
         private void SetupInputActions()
@@ -98,10 +103,15 @@ namespace StarStrike.Gameplay
             sprintAction.AddBinding("<Keyboard>/shift");
             sprintAction.AddBinding("<Mouse>/rightButton");
 
+            skillAction = new InputAction("Skill", type: InputActionType.Button);
+            skillAction.AddBinding("<Keyboard>/e");
+            skillAction.AddBinding("<Gamepad>/buttonNorth"); // Y on Xbox
+
             moveAction.Enable();
             lookAction.Enable();
             attackAction.Enable();
             sprintAction.Enable();
+            skillAction.Enable();
         }
 
         private void OnDisable()
@@ -115,6 +125,7 @@ namespace StarStrike.Gameplay
             lookAction?.Disable();
             attackAction?.Disable();
             sprintAction?.Disable();
+            skillAction?.Disable();
         }
 
         public void SetThrust(bool value) => virtualThrust = value;
@@ -168,7 +179,20 @@ namespace StarStrike.Gameplay
                 movement.IsBraking = inputBrake;
             }
 
+            if (skillAction != null && skillAction.WasPressedThisFrame())
+            {
+                TriggerSkill(SkillSlotType.Active1);
+            }
+
             ProcessFiring(Time.deltaTime);
+        }
+
+        public void TriggerSkill(SkillSlotType slot = SkillSlotType.Active1)
+        {
+            if (skillController != null)
+            {
+                skillController.TryCastActiveSkill(slot);
+            }
         }
 
         public void ResetInputState()
@@ -184,6 +208,7 @@ namespace StarStrike.Gameplay
             virtualFire = false;
             wasFirePressedLastFrame = false;
             fireHeldDuration = 0f;
+            hasAutoFired = false;
         }
 
         public void ProcessFiring(float dt)
@@ -196,21 +221,26 @@ namespace StarStrike.Gameplay
                     // Tap / Initial press: immediately fire exactly 1 shot
                     isFireTriggered = true;
                     fireHeldDuration = 0f;
+                    hasAutoFired = false;
                 }
                 else
                 {
                     // Button held down: advance hold timer
                     fireHeldDuration += dt;
-                    float repeatInterval = weapon != null ? weapon.fireRate : 0.22f;
-                    if (autoFireEnabled && fireHeldDuration >= repeatInterval)
+                    float minRepeat = weapon != null && weapon.combatConfig != null ? weapon.combatConfig.minFireRate : 0.10f;
+                    float repeatInterval = weapon != null ? Mathf.Max(minRepeat, weapon.fireRate) : 0.22f;
+                    float requiredTime = hasAutoFired ? repeatInterval : Mathf.Max(0.18f, repeatInterval);
+                    if (autoFireEnabled && fireHeldDuration >= requiredTime)
                     {
                         isFireTriggered = true;
+                        hasAutoFired = true;
                     }
                 }
             }
             else
             {
                 fireHeldDuration = 0f;
+                hasAutoFired = false;
             }
             wasFirePressedLastFrame = inputFire;
 

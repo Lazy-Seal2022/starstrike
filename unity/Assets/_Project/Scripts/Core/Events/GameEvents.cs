@@ -36,5 +36,13 @@ namespace StarStrike.Core
 
         public static event Action OnGameStarted;
         public static void TriggerGameStarted() => OnGameStarted?.Invoke();
+
+        public static event Action<SkillCastEvent> OnSkillCast;
+        public static event Action<SkillCooldownEvent> OnSkillCooldownChanged;
+        public static event Action<SkillBlockedEvent> OnSkillBlocked;
+
+        public static void TriggerSkillCast(SkillCastEvent evt) => OnSkillCast?.Invoke(evt);
+        public static void TriggerSkillCooldownChanged(SkillCooldownEvent evt) => OnSkillCooldownChanged?.Invoke(evt);
+        public static void TriggerSkillBlocked(SkillBlockedEvent evt) => OnSkillBlocked?.Invoke(evt);
     }
 }

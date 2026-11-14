@@ -13,6 +13,7 @@ Unity Input System action readers, mouse aim direction, and virtual controls.
 - `SetAim(Vector2 dir) -> void` [PlayerInputReader.cs]
 - `ResetInputState() -> void` [PlayerInputReader.cs]
 - `ProcessFiring(float dt) -> void` [PlayerInputReader.cs]
+- `TriggerSkill(SkillSlotType slot) -> void` [PlayerInputReader.cs]
 
 ## Invariants
 - Singleton instance exclusivity maintained via `Awake` guard [PlayerInputReader.cs]

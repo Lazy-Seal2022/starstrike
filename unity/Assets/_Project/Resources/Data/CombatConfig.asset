@@ -17,6 +17,7 @@ MonoBehaviour:
   projectileLifetime: 3
   laserColliderRadius: 0.35
   defaultFireRate: 0.22
+  minFireRate: 0.1
   defaultEnergyCost: 6
   recoilForce: 1.5
   muzzleForwardOffset: 0.65

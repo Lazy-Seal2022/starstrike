@@ -20,4 +20,5 @@ MonoBehaviour:
   gemColliderRadius: 0.5
   shieldOverchargeBonus: 100
   weaponOverdriveDamageMultiplier: 1.5
-  weaponOverdriveFireRateMultiplier: 0.5
+  weaponOverdriveFireRateMultiplier: 0.8
+  minFireRate: 0.1

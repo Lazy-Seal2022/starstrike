@@ -58,5 +58,30 @@ namespace StarStrike.Tests.EditMode
             Assert.AreEqual(2, weapon.weaponSlots, "Weapon slots should increment");
             Assert.AreEqual(0.16f, weapon.fireRate, 0.001f, "Fire rate cooldown should reduce by 20%");
         }
+
+        [Test]
+        public void ApplyPowerUp_WeaponOverdrive_DoesNotReduceFireRateBelowMinimum()
+        {
+            powerUp.type = PowerUpItem.PowerUpType.WeaponOverdrive;
+            for (int i = 0; i < 15; i++)
+            {
+                powerUp.ApplyPowerUp(playerGo);
+            }
+
+            Assert.AreEqual(3, weapon.weaponSlots, "Weapon slots should clamp to 3");
+            Assert.GreaterOrEqual(weapon.fireRate, 0.10f, "Fire rate should never drop below minimum cap (0.10s)");
+        }
+
+        [Test]
+        public void ApplyPowerUp_ShieldOvercharge_CapsAtMaximum()
+        {
+            powerUp.type = PowerUpItem.PowerUpType.ShieldOvercharge;
+            for (int i = 0; i < 10; i++)
+            {
+                powerUp.ApplyPowerUp(playerGo);
+            }
+
+            Assert.LessOrEqual(health.maxShield, 500f, "Shield capacity should clamp at 500");
+        }
     }
 }

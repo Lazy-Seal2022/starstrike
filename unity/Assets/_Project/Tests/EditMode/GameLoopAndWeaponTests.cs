@@ -284,5 +284,63 @@ namespace StarStrike.Tests.EditMode
 
             Assert.AreEqual(6f, weapon.energyCost, 0.01f, "Default energy cost should be 6f for sustainable combat");
         }
+
+        [Test]
+        public void PlayerInputReader_NormalClickDuration_DoesNotDoubleFireAtHighFireRate()
+        {
+            var go = Track(new GameObject("TestPlayer_Click"));
+            var health = go.AddComponent<ShipHealth>();
+            health.maxEnergy = 80f;
+            health.ResetMeters();
+
+            var weapon = go.AddComponent<ShipWeapon>();
+            weapon.fireRate = 0.10f; // High fire rate from overdrive
+            weapon.energyCost = 6f;
+
+            var reader = go.AddComponent<PlayerInputReader>();
+            reader.weapon = weapon;
+            reader.health = health;
+
+            // Frame 1: Tap press
+            reader.inputFire = true;
+            reader.ProcessFiring(0.016f);
+            Assert.AreEqual(74f, health.currentEnergy, 0.01f, "Initial click must fire exactly 1 shot deducting 6 energy");
+
+            // Frame 2 to 7: Held for typical 100ms click duration (6 * 16ms = ~96ms, total ~112ms < 180ms tap threshold)
+            for (int i = 0; i < 6; i++)
+            {
+                reader.ProcessFiring(0.016f);
+            }
+            Assert.AreEqual(74f, health.currentEnergy, 0.01f, "Within 100ms tap duration, no burst shot should fire even at 0.10s fireRate");
+
+            // Release
+            reader.inputFire = false;
+            reader.ProcessFiring(0.016f);
+            Assert.AreEqual(74f, health.currentEnergy, 0.01f, "After release, energy remains at 74");
+        }
+
+        [Test]
+        public void PlayerProgression_ApplyCurrentStats_RestoresWeaponFireRate()
+        {
+            var go = Track(new GameObject("TestPlayer_ProgressionFireRate"));
+            var health = go.AddComponent<ShipHealth>();
+            var movement = go.AddComponent<ShipMovement>();
+            var weapon = go.AddComponent<ShipWeapon>();
+            var prog = go.AddComponent<PlayerProgression>();
+
+            prog.health = health;
+            prog.movement = movement;
+            prog.weapon = weapon;
+            prog.Initialize();
+
+            // Simulate collecting overdrive powerups that reduced fireRate
+            weapon.fireRate = 0.10f;
+            Assert.AreEqual(0.10f, weapon.fireRate, 0.001f);
+
+            // Re-apply stats (e.g. evolution or new run)
+            prog.ResetForNewRun();
+
+            Assert.AreEqual(0.22f, weapon.fireRate, 0.001f, "ApplyCurrentStats must reset weapon fireRate back to default");
+        }
     }
 }

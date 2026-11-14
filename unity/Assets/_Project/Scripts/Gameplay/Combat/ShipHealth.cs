@@ -92,6 +92,11 @@ namespace StarStrike.Gameplay
             NotifyChanges();
         }
 
+        public bool HasEnergy(float amount)
+        {
+            return currentEnergy >= amount;
+        }
+
         public bool ConsumeEnergy(float amount)
         {
             if (currentEnergy >= amount)

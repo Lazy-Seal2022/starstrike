@@ -5,6 +5,7 @@ StarStrike foundational architectural primitives and damage interfaces.
 
 ## Interface
 - `interface IDamageable` [IDamageable.cs]
+- `interface ISkillBehavior` [ISkillBehavior.cs]
 
 ### Subdirectories
 - **[Events](./Events/README.md)**: Type-safe decoupled event bus channels for game-wide notifications.

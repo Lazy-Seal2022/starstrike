@@ -46,12 +46,26 @@ namespace StarStrike.UI
         {
             GameEvents.OnGemCollected += HandleGemCollected;
             GameEvents.OnDamageDealt += HandleDamageDealt;
+            GameEvents.OnSkillCast += HandleSkillCast;
         }
 
         private void OnDisable()
         {
             GameEvents.OnGemCollected -= HandleGemCollected;
             GameEvents.OnDamageDealt -= HandleDamageDealt;
+            GameEvents.OnSkillCast -= HandleSkillCast;
+        }
+
+        private void HandleSkillCast(SkillCastEvent evt)
+        {
+            if (evt.Slot == SkillSlotType.Passive1)
+            {
+                SpawnWorldNotice(evt.CastOrigin, "DEFLECTOR SURGE!", new Color(0.2f, 0.9f, 1f), 18f, true);
+            }
+            else if (evt.Slot == SkillSlotType.Active1)
+            {
+                SpawnWorldNotice(evt.CastOrigin, "SHOCKWAVE!", new Color(0.38f, 0.85f, 1f), 16f, false);
+            }
         }
 
         private void HandleGemCollected(int amount, int total)

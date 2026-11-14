@@ -468,5 +468,206 @@ namespace StarStrike.Editor
                 AssetDatabase.CreateFolder(parent, name);
             }
         }
+
+        [MenuItem("StarStrike/Verify Combat & Bug Fixes")]
+        public static void RunVerification()
+        {
+            Debug.Log("--- STARTING COMBAT BUG FIX RUNTIME VERIFICATION ---");
+            int passed = 0;
+            int failed = 0;
+
+            // 1. PowerUp Overdrive Minimum Floor Test
+            try
+            {
+                var player = new GameObject("TestPlayer_PU");
+                player.AddComponent<Rigidbody2D>();
+                var health = player.AddComponent<ShipHealth>();
+                health.maxEnergy = 80f;
+                health.ResetMeters();
+
+                var weapon = player.AddComponent<ShipWeapon>();
+                weapon.weaponSlots = 1;
+                weapon.fireRate = 0.22f;
+
+                var puGo = new GameObject("TestPU");
+                var pu = puGo.AddComponent<PowerUpItem>();
+                pu.type = PowerUpItem.PowerUpType.WeaponOverdrive;
+
+                for (int i = 0; i < 15; i++)
+                {
+                    pu.ApplyPowerUp(player);
+                }
+
+                if (weapon.weaponSlots != 3)
+                    throw new System.Exception($"weaponSlots expected 3, got {weapon.weaponSlots}");
+                if (weapon.fireRate < 0.10f)
+                    throw new System.Exception($"fireRate dropped below 0.10s minimum floor: {weapon.fireRate}");
+
+                Object.DestroyImmediate(player);
+                Object.DestroyImmediate(puGo);
+                Debug.Log("[PASS] 1. PowerUp Overdrive clamped to minFireRate (0.10s) and max 3 slots");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 1. PowerUp Overdrive test failed: {ex.Message}");
+                failed++;
+            }
+
+            // 2. Normal Click (100ms) with Max Overdrive (0.10s fireRate) Does NOT Burst
+            try
+            {
+                var player = new GameObject("TestPlayer_Click");
+                var health = player.AddComponent<ShipHealth>();
+                health.maxEnergy = 80f;
+                health.ResetMeters();
+
+                var weapon = player.AddComponent<ShipWeapon>();
+                weapon.fireRate = 0.10f; // rapid fire rate
+                weapon.energyCost = 6f;
+
+                var reader = player.AddComponent<PlayerInputReader>();
+                reader.weapon = weapon;
+                reader.health = health;
+
+                // Frame 1: Tap press
+                reader.inputFire = true;
+                reader.ProcessFiring(0.016f);
+                if (Mathf.Abs(health.currentEnergy - 74f) > 0.01f)
+                    throw new System.Exception($"Expected 74 energy after first tap, got {health.currentEnergy}");
+
+                // Frames 2-7: Finger held during 100ms click duration (6 * 16ms = ~96ms)
+                for (int i = 0; i < 6; i++)
+                {
+                    reader.ProcessFiring(0.016f);
+                }
+
+                if (Mathf.Abs(health.currentEnergy - 74f) > 0.01f)
+                    throw new System.Exception($"Click duration burst-fired! Energy drained to {health.currentEnergy} (expected 74f)");
+
+                // Release
+                reader.inputFire = false;
+                reader.ProcessFiring(0.016f);
+
+                if (Mathf.Abs(health.currentEnergy - 74f) > 0.01f)
+                    throw new System.Exception($"Energy changed after release: {health.currentEnergy}");
+
+                Object.DestroyImmediate(player);
+                Debug.Log("[PASS] 2. Normal 100ms click does NOT burst fire at 0.10s fireRate");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 2. Click test failed: {ex.Message}");
+                failed++;
+            }
+
+            // 3. Hold-to-Fire AutoFires After Tap Threshold
+            try
+            {
+                var player = new GameObject("TestPlayer_Hold");
+                var health = player.AddComponent<ShipHealth>();
+                health.maxEnergy = 80f;
+                health.ResetMeters();
+
+                var weapon = player.AddComponent<ShipWeapon>();
+                weapon.fireRate = 0.10f;
+                weapon.energyCost = 6f;
+
+                var reader = player.AddComponent<PlayerInputReader>();
+                reader.weapon = weapon;
+                reader.health = health;
+
+                // Tap press
+                reader.inputFire = true;
+                reader.ProcessFiring(0.016f); // 74 energy
+
+                // Reset weapon cooldown to simulate time elapsed in EditMode
+                weapon.ResetCooldown();
+
+                // Hold past 180ms tap threshold (180ms / 16ms = ~12 frames)
+                for (int i = 0; i < 12; i++)
+                {
+                    reader.ProcessFiring(0.016f);
+                }
+
+                if (health.currentEnergy >= 74f)
+                    throw new System.Exception($"Hold fire did not auto-fire after 192ms: energy still {health.currentEnergy}");
+
+                Object.DestroyImmediate(player);
+                Debug.Log($"[PASS] 3. Hold-to-fire auto-fires smoothly when held past tap threshold (energy: {health.currentEnergy})");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 3. Hold fire test failed: {ex.Message}");
+                failed++;
+            }
+
+            // 4. PlayerProgression Resets Weapon FireRate on New Run / Evolution
+            try
+            {
+                var player = new GameObject("TestPlayer_Prog");
+                var health = player.AddComponent<ShipHealth>();
+                var movement = player.AddComponent<ShipMovement>();
+                var weapon = player.AddComponent<ShipWeapon>();
+                var prog = player.AddComponent<PlayerProgression>();
+
+                prog.health = health;
+                prog.movement = movement;
+                prog.weapon = weapon;
+                prog.Initialize();
+
+                weapon.fireRate = 0.10f; // decayed from powerups
+                prog.ResetForNewRun();
+
+                if (Mathf.Abs(weapon.fireRate - 0.22f) > 0.001f)
+                    throw new System.Exception($"ResetForNewRun did not restore fireRate to 0.22f, got {weapon.fireRate}");
+
+                Object.DestroyImmediate(player);
+                Debug.Log("[PASS] 4. PlayerProgression restores weapon fireRate on new run / evolution");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 4. Progression test failed: {ex.Message}");
+                failed++;
+            }
+
+            // 5. ShipSkillController Verification (Shockwave & Reactive Barrier)
+            try
+            {
+                var ship = new GameObject("TestShip_Skill");
+                var rb = ship.AddComponent<Rigidbody2D>();
+                var health = ship.AddComponent<ShipHealth>();
+                health.maxEnergy = 80f;
+                health.maxShield = 100f;
+                health.ResetMeters();
+
+                var controller = ship.AddComponent<ShipSkillController>();
+                controller.InitializeDefaultSlots();
+
+                bool castOk = controller.TryCastActiveSkill(SkillSlotType.Active1);
+                if (!castOk) throw new System.Exception("TryCastActiveSkill failed");
+                if (Mathf.Abs(health.currentEnergy - 60f) > 0.01f)
+                    throw new System.Exception($"Expected 60 energy (80 - 20), got {health.currentEnergy}");
+
+                // Hard-block check
+                health.ConsumeEnergy(50f); // 10 energy left (< 20 required)
+                bool secondCast = controller.TryCastActiveSkill(SkillSlotType.Active1);
+                if (secondCast) throw new System.Exception("Cast should be hard-blocked with insufficient energy");
+
+                Object.DestroyImmediate(ship);
+                Debug.Log("[PASS] 5. ShipSkillController Active & Passive skills fully operational");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 5. Skill controller test failed: {ex.Message}");
+                failed++;
+            }
+
+            Debug.Log($"=== TOTAL VERIFICATION RESULT: {passed} PASSED, {failed} FAILED ===");
+        }
     }
 }

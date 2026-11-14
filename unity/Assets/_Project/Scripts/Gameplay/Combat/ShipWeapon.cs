@@ -21,6 +21,7 @@ namespace StarStrike.Gameplay
         public bool isPlayer = false;
 
         private float lastFiredTime = -999f;
+        public void ResetCooldown() => lastFiredTime = -999f;
         private Rigidbody2D rb;
 
         private void Awake()
@@ -33,6 +34,9 @@ namespace StarStrike.Gameplay
                 if (energyCost == 12f || energyCost <= 0f) energyCost = combatConfig.defaultEnergyCost;
                 if (fireRate <= 0f) fireRate = combatConfig.defaultFireRate;
             }
+
+            float minRate = combatConfig != null ? combatConfig.minFireRate : 0.10f;
+            if (fireRate < minRate) fireRate = minRate;
 
             rb = GetComponent<Rigidbody2D>();
             if (CompareTag("Player") || gameObject.name == "Player")
@@ -62,7 +66,9 @@ namespace StarStrike.Gameplay
 
         public bool TryFire(ShipHealth health)
         {
-            if (Time.time - lastFiredTime < fireRate) return false;
+            float minRate = combatConfig != null ? combatConfig.minFireRate : 0.10f;
+            float effectiveFireRate = Mathf.Max(minRate, fireRate);
+            if (Time.time - lastFiredTime < effectiveFireRate) return false;
             
             if (health != null && !health.ConsumeEnergy(energyCost))
             {

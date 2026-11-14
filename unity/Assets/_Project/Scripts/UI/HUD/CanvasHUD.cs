@@ -39,6 +39,7 @@ namespace StarStrike.UI
         public Button evolveFighterButton;
         public Button evolveMinerButton;
         public GameObject mobileControlsRoot;
+        public HUDSkillSlotView skillSlotView;
 
         private float currentShield = 100f;
         private float maxShield = 100f;
@@ -551,7 +552,7 @@ namespace StarStrike.UI
             Sprite roundedSprite = ProceduralSpriteHelper.GetRoundedBoxSprite(32, 6);
 
             // 1. Top-Left Status Panel
-            GameObject statusCard = CreatePanel(transform, "StatusPanel", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -20f), new Vector2(360f, 160f), new Color(0.04f, 0.08f, 0.16f, 0.88f), roundedSprite);
+            GameObject statusCard = CreatePanel(transform, "StatusPanel", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -20f), new Vector2(360f, 195f), new Color(0.04f, 0.08f, 0.16f, 0.88f), roundedSprite);
 
             // Ship Name
             GameObject nameObj = CreateText(statusCard.transform, "ShipNameText", "T1 • DELTA SCOUT", 16, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(16f, -12f), new Vector2(-16f, -36f), defaultFont);
@@ -598,6 +599,21 @@ namespace StarStrike.UI
                     StarStrike.UI.SettingsUI.Instance.Toggle();
                 }
             });
+
+            // Active Skill Slot [E]
+            GameObject skillSlotObj = CreatePanel(statusCard.transform, "SkillSlot_Active1", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -158f), new Vector2(330f, 28f), new Color(0.08f, 0.16f, 0.28f, 0.95f), roundedSprite);
+            skillSlotView = skillSlotObj.AddComponent<HUDSkillSlotView>();
+            skillSlotView.borderImage = skillSlotObj.GetComponent<Image>();
+            GameObject cdOverlayObj = CreateImage(skillSlotObj.transform, "CooldownOverlay", new Color(0f, 0f, 0f, 0.65f), roundedSprite, Image.Type.Filled);
+            skillSlotView.cooldownOverlay = cdOverlayObj.GetComponent<Image>();
+            skillSlotView.cooldownOverlay.fillMethod = Image.FillMethod.Horizontal;
+            skillSlotView.cooldownOverlay.fillAmount = 0f;
+            GameObject skillTxtObj = CreateText(skillSlotObj.transform, "SkillLabel", "SKILL [E]: SHOCKWAVE (20 EN)", 11, FontStyle.Bold, new Color(0.38f, 0.85f, 1f), TextAnchor.MiddleLeft, new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(10f, 0f), new Vector2(-60f, 0f), defaultFont);
+            skillSlotView.keybindLabel = skillTxtObj.GetComponent<Text>();
+            GameObject cdTxtObj = CreateText(skillSlotObj.transform, "CooldownVal", "", 11, FontStyle.Bold, Color.yellow, TextAnchor.MiddleRight, new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(-60f, 0f), new Vector2(-10f, 0f), defaultFont);
+            skillSlotView.cooldownText = cdTxtObj.GetComponent<Text>();
+            Button slotBtn = skillSlotObj.AddComponent<Button>();
+            skillSlotView.triggerButton = slotBtn;
 
             // 2. Upgrades Drawer
             GameObject drawerObj = CreatePanel(transform, "UpgradesDrawer", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -190f), new Vector2(360f, 360f), new Color(0.04f, 0.08f, 0.16f, 0.94f), roundedSprite);
@@ -686,6 +702,11 @@ namespace StarStrike.UI
             GameObject brakeBtn = CreatePanel(mobileRoot.transform, "Btn_Brake", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-280f, 60f), new Vector2(75f, 75f), new Color(0.45f, 0.5f, 0.6f, 0.65f), circleSprite);
             brakeBtn.AddComponent<TouchButton>().action = TouchButtonAction.Brake;
             CreateText(brakeBtn.transform, "Label", "BRAKE", 12, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, defaultFont);
+
+            // Skill Button (Above Brake / Radial Cluster)
+            GameObject skillBtn = CreatePanel(mobileRoot.transform, "Btn_Skill", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-260f, 150f), new Vector2(75f, 75f), new Color(0.7f, 0.3f, 0.95f, 0.75f), circleSprite);
+            skillBtn.AddComponent<TouchButton>().action = TouchButtonAction.Skill1;
+            CreateText(skillBtn.transform, "Label", "SKILL", 12, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, defaultFont);
 
             mobileControlsRoot.SetActive(showMobile);
             

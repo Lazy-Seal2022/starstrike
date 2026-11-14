@@ -13,6 +13,7 @@ namespace StarStrike.Core
 
         [Header("Weapon Systems")]
         public float defaultFireRate = 0.22f;
+        public float minFireRate = 0.10f;
         public float defaultEnergyCost = 6f;
         public float recoilForce = 1.5f;
         public float muzzleForwardOffset = 0.65f;

@@ -16,6 +16,7 @@ namespace StarStrike.Core
         [Header("Power-Ups")]
         public float shieldOverchargeBonus = 100f;
         public float weaponOverdriveDamageMultiplier = 1.5f;
-        public float weaponOverdriveFireRateMultiplier = 0.5f;
+        public float weaponOverdriveFireRateMultiplier = 0.8f;
+        public float minFireRate = 0.10f;
     }
 }

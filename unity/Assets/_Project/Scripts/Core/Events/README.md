@@ -13,6 +13,10 @@ Type-safe decoupled event bus channels for game-wide notifications.
 - `TriggerDamageDealt(Vector3 pos, float damage, bool isCrit = false) -> void` [GameEvents.cs]
 - `TriggerEnemyDestroyed(string enemyId) -> void` [GameEvents.cs]
 - `TriggerBossDefeated() -> void` [GameEvents.cs]
+- `enum SkillBlockReason` [SkillEvents.cs]
+- `struct SkillCastEvent` [SkillEvents.cs]
+- `struct SkillCooldownEvent` [SkillEvents.cs]
+- `struct SkillBlockedEvent` [SkillEvents.cs]
 
 ## Invariants
 - MonoBehaviour lifecycle contracts strictly preserved [GameEvents.cs]

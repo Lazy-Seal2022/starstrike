@@ -74,7 +74,8 @@ namespace StarStrike.Gameplay
                 {
                     weapon.weaponSlots = Mathf.Min(weapon.weaponSlots + 1, 3);
                     float fireMult = lootConfig != null ? lootConfig.weaponOverdriveFireRateMultiplier : 0.8f;
-                    weapon.fireRate *= fireMult;
+                    float minRate = lootConfig != null ? lootConfig.minFireRate : (weapon.combatConfig != null ? weapon.combatConfig.minFireRate : 0.10f);
+                    weapon.fireRate = Mathf.Max(minRate, weapon.fireRate * fireMult);
                 }
             }
 

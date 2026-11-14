@@ -363,6 +363,7 @@ namespace StarStrike.Gameplay
                 if (pSpd <= 0f) pSpd = 22f;
                 weapon.pulseSpeed = pSpd;
                 weapon.weaponSlots = currentShip.weaponSlots > 0 ? currentShip.weaponSlots : 1;
+                weapon.fireRate = weapon.combatConfig != null ? weapon.combatConfig.defaultFireRate : 0.22f;
             }
         }
 

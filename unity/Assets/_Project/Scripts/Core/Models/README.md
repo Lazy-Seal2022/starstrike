@@ -24,6 +24,8 @@ Data definitions, ScriptableObject configurations, and gameplay stats.
 - `CreateFighter() -> ShipStats` [ShipStats.cs]
 - `CreateMiner() -> ShipStats` [ShipStats.cs]
 - `struct StatValues` [StatValues.cs]
+- `enum SkillSlotType` [SkillSlotType.cs]
+- `class SkillDefinition` [SkillDefinition.cs]
 
 ## Invariants
 - MonoBehaviour lifecycle contracts strictly preserved [AsteroidConfig.cs]

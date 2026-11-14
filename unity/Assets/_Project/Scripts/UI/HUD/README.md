@@ -24,6 +24,8 @@ In-game flight HUD, status gauges, upgrade drawer, floating combat text, and tou
 - `class HUDManager` [HUDManager.cs]
 - `class HUDPlayerStatus` [HUDPlayerStatus.cs]
 - `ApplyThemeStyles() -> void` [HUDPlayerStatus.cs]
+- `class HUDSkillSlotView` [HUDSkillSlotView.cs]
+- `enum TouchButtonAction` [TouchButton.cs]
 
 ## Invariants
 - Mandatory component dependency enforced via `RequireComponent` [SafeArea.cs]

@@ -9,7 +9,8 @@ namespace StarStrike.UI
         Fire,
         Boost,
         Brake,
-        Thrust
+        Thrust,
+        Skill1
     }
 
     public class TouchButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerExitHandler
@@ -52,6 +53,12 @@ namespace StarStrike.UI
                     break;
                 case TouchButtonAction.Thrust:
                     PlayerInputReader.Instance.SetThrust(state);
+                    break;
+                case TouchButtonAction.Skill1:
+                    if (state)
+                    {
+                        PlayerInputReader.Instance.TriggerSkill(StarStrike.Core.SkillSlotType.Active1);
+                    }
                     break;
             }
         }
