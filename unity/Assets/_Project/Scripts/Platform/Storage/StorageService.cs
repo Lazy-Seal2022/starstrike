@@ -30,6 +30,7 @@ namespace StarStrike.Platform.Storage
         public string inputBindingOverrides = "";
 
         public string lastShipId = "scout";
+        public string selectedSkill = "forward_shockwave";
         public List<string> unlockedShips = new List<string> { "scout" };
         public List<string> achievements = new List<string>();
         
@@ -256,6 +257,13 @@ namespace StarStrike.Platform.Storage
         }
 
         public static string GetLastShipEvolved() => Profile.lastShipId;
+
+        public static string GetSelectedSkill() => string.IsNullOrEmpty(Profile.selectedSkill) ? "forward_shockwave" : Profile.selectedSkill;
+        public static void SaveSelectedSkill(string skillId)
+        {
+            Profile.selectedSkill = string.IsNullOrEmpty(skillId) ? "forward_shockwave" : skillId;
+            SaveProfile();
+        }
         
         public static void AddMetaGems(int amount)
         {

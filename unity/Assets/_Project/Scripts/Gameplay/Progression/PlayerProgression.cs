@@ -185,11 +185,29 @@ namespace StarStrike.Gameplay
             juggernaut.weaponSlots = 3;
             juggernaut.baseStats = new StatValues { shieldCapacity = 400, shieldRegen = 25, energyCapacity = 200, energyRegen = 25, pulseDamage = 75, pulseSpeed = 480, speed = 180, agility = 2.5f };
 
+            var phantom = ScriptableObject.CreateInstance<ShipDefinition>();
+            phantom.id = "phantom";
+            phantom.shipName = "Shadow Phantom";
+            phantom.tier = 3;
+            phantom.maxUpgradeLevel = 6;
+            phantom.weaponSlots = 2;
+            phantom.baseStats = new StatValues { shieldCapacity = 160, shieldRegen = 16, energyCapacity = 160, energyRegen = 35, pulseDamage = 45, pulseSpeed = 850, speed = 420, agility = 7.0f };
+
+            var vanguard = ScriptableObject.CreateInstance<ShipDefinition>();
+            vanguard.id = "vanguard";
+            vanguard.shipName = "Vanguard Carrier";
+            vanguard.tier = 3;
+            vanguard.maxUpgradeLevel = 6;
+            vanguard.weaponSlots = 3;
+            vanguard.baseStats = new StatValues { shieldCapacity = 320, shieldRegen = 22, energyCapacity = 280, energyRegen = 32, pulseDamage = 55, pulseSpeed = 580, speed = 220, agility = 3.8f };
+
             scout.evolvesTo = new ShipDefinition[] { fighter, miner };
-            fighter.evolvesTo = new ShipDefinition[] { interceptor };
-            miner.evolvesTo = new ShipDefinition[] { juggernaut };
+            fighter.evolvesTo = new ShipDefinition[] { interceptor, phantom };
+            miner.evolvesTo = new ShipDefinition[] { juggernaut, vanguard };
             interceptor.evolvesTo = new ShipDefinition[0];
             juggernaut.evolvesTo = new ShipDefinition[0];
+            phantom.evolvesTo = new ShipDefinition[0];
+            vanguard.evolvesTo = new ShipDefinition[0];
 
             return scout;
         }
@@ -412,6 +430,10 @@ namespace StarStrike.Gameplay
                 transform.localScale = Vector3.one * 1.2f;
             else if (shipId == "juggernaut")
                 transform.localScale = Vector3.one * 1.6f;
+            else if (shipId == "vanguard")
+                transform.localScale = Vector3.one * 1.5f;
+            else if (shipId == "phantom")
+                transform.localScale = Vector3.one * 1.15f;
             else
                 transform.localScale = Vector3.one * 1.0f;
         }

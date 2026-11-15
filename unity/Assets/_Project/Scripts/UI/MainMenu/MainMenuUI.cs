@@ -17,6 +17,7 @@ namespace StarStrike.UI
         private GameObject menuContainer;
         private TMP_Text gemsText;
         private Transform shipListContainer;
+        private Transform skillListContainer;
 
         public bool IsVisible => menuContainer != null && menuContainer.activeSelf;
 
@@ -183,7 +184,7 @@ namespace StarStrike.UI
             gemsText = gemsObj.GetComponent<TMP_Text>();
 
             // Mode 1: PvE Survival Button
-            GameObject pveBtnObj = CreateButton(menuContainer.transform, "PvEStartButton", "PvE SURVIVAL", new Vector2(0.5f, 0.22f), new Vector2(0.5f, 0.22f), new Vector2(-160, 0), new Vector2(280, 58), new Color(0.15f, 0.70f, 0.35f), defaultFont, 20);
+            GameObject pveBtnObj = CreateButton(menuContainer.transform, "PvEStartButton", "PvE SURVIVAL", new Vector2(0.5f, 0.16f), new Vector2(0.5f, 0.16f), new Vector2(-160, 0), new Vector2(280, 52), new Color(0.15f, 0.70f, 0.35f), defaultFont, 20);
             pveBtnObj.GetComponent<Button>().onClick.AddListener(() => {
                 SetMenuVisible(false);
                 if (GameManager.Instance != null)
@@ -193,7 +194,7 @@ namespace StarStrike.UI
             });
 
             // Mode 2: Multiplayer PvP Button
-            GameObject pvpBtnObj = CreateButton(menuContainer.transform, "PvPStartButton", "MULTIPLAYER PvP", new Vector2(0.5f, 0.22f), new Vector2(0.5f, 0.22f), new Vector2(160, 0), new Vector2(280, 58), new Color(0.90f, 0.35f, 0.15f), defaultFont, 20);
+            GameObject pvpBtnObj = CreateButton(menuContainer.transform, "PvPStartButton", "MULTIPLAYER PvP", new Vector2(0.5f, 0.16f), new Vector2(0.5f, 0.16f), new Vector2(160, 0), new Vector2(280, 52), new Color(0.90f, 0.35f, 0.15f), defaultFont, 20);
             pvpBtnObj.GetComponent<Button>().onClick.AddListener(() => {
                 SetMenuVisible(false);
                 if (GameManager.Instance != null)
@@ -211,7 +212,7 @@ namespace StarStrike.UI
             });
 
             // Start Key Hint
-            CreateText(menuContainer.transform, "StartHintText", "[ ENTER / SPACE: Launch PvE  |  Or Click Multiplayer PvP ]", 15, FontStyle.Normal, new Color(0.85f, 0.9f, 1f, 0.85f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.11f), new Vector2(0.5f, 0.11f), new Vector2(-350, -15), new Vector2(350, 15), defaultFont);
+            CreateText(menuContainer.transform, "StartHintText", "[ ENTER / SPACE: Launch PvE  |  Or Click Multiplayer PvP ]", 14, FontStyle.Normal, new Color(0.85f, 0.9f, 1f, 0.85f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.08f), new Vector2(0.5f, 0.08f), new Vector2(-350, -15), new Vector2(350, 15), defaultFont);
 
             // Settings Button (Top Right)
             GameObject settingsBtnObj = CreateButton(menuContainer.transform, "SettingsButton", "SETTINGS [O]", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-120f, -40f), new Vector2(180f, 44f), new Color(0.12f, 0.22f, 0.35f), defaultFont, 16);
@@ -227,16 +228,28 @@ namespace StarStrike.UI
             });
 
             // Ship Hangar
-            GameObject shipHeader = CreateText(menuContainer.transform, "ShipHeader", "SELECT HANGAR SHIP", 18, FontStyle.Bold, Color.yellow, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.60f), new Vector2(0.5f, 0.60f), new Vector2(-250, -20), new Vector2(250, 20), defaultFont);
+            GameObject shipHeader = CreateText(menuContainer.transform, "ShipHeader", "SELECT HANGAR SHIP", 17, FontStyle.Bold, Color.yellow, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.62f), new Vector2(0.5f, 0.62f), new Vector2(-250, -18), new Vector2(250, 18), defaultFont);
 
             GameObject shipListObj = new GameObject("ShipListContainer", typeof(RectTransform));
             shipListObj.transform.SetParent(menuContainer.transform, false);
             RectTransform slRt = shipListObj.GetComponent<RectTransform>();
-            slRt.anchorMin = new Vector2(0.5f, 0.44f);
-            slRt.anchorMax = new Vector2(0.5f, 0.44f);
+            slRt.anchorMin = new Vector2(0.5f, 0.49f);
+            slRt.anchorMax = new Vector2(0.5f, 0.49f);
             slRt.anchoredPosition = Vector2.zero;
-            slRt.sizeDelta = new Vector2(650, 90);
+            slRt.sizeDelta = new Vector2(720, 80);
             shipListContainer = shipListObj.transform;
+
+            // Combat Skill Selector
+            CreateText(menuContainer.transform, "SkillHeader", "ACTIVE COMBAT SKILL (SPACE / RIGHT-CLICK)", 15, FontStyle.Bold, Color.cyan, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.36f), new Vector2(0.5f, 0.36f), new Vector2(-300, -15), new Vector2(300, 15), defaultFont);
+
+            GameObject skillListObj = new GameObject("SkillListContainer", typeof(RectTransform));
+            skillListObj.transform.SetParent(menuContainer.transform, false);
+            RectTransform sklRt = skillListObj.GetComponent<RectTransform>();
+            sklRt.anchorMin = new Vector2(0.5f, 0.29f);
+            sklRt.anchorMax = new Vector2(0.5f, 0.29f);
+            sklRt.anchoredPosition = Vector2.zero;
+            sklRt.sizeDelta = new Vector2(650, 48);
+            skillListContainer = skillListObj.transform;
             
             // We'll populate ships in RefreshData
         }
@@ -248,7 +261,7 @@ namespace StarStrike.UI
                 gemsText.text = $"Meta-Gems: {StorageService.Profile.totalMetaGems}";
             }
 
-            // Clear old children
+            // 1. Ships
             for (int i = shipListContainer.childCount - 1; i >= 0; i--)
             {
                 var child = shipListContainer.GetChild(i);
@@ -258,13 +271,10 @@ namespace StarStrike.UI
 
             Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             
-            // For this demo, let's just hardcode the known ships or load from resources.
-            // Let's assume we can load them if they were in Resources, but since they are in Data, we can't easily load them dynamically without a reference.
-            // As a quick workaround, we'll just show the IDs.
-            string[] availableShips = new string[] { "scout", "fighter", "miner", "interceptor", "juggernaut" };
-            int[] costs = new int[] { 0, 500, 500, 1500, 2000 };
+            string[] availableShips = new string[] { "scout", "fighter", "miner", "interceptor", "juggernaut", "phantom", "vanguard" };
+            int[] costs = new int[] { 0, 500, 500, 1500, 2000, 2500, 2500 };
 
-            float spacing = 120f;
+            float spacing = 100f;
             float startX = -((availableShips.Length - 1) * spacing) / 2f;
 
             for (int i = 0; i < availableShips.Length; i++)
@@ -277,7 +287,7 @@ namespace StarStrike.UI
                 string btnText = isUnlocked ? (isSelected ? $"[ {shipId.ToUpper()} ]" : shipId.ToUpper()) : $"{shipId.ToUpper()}\n{cost} G";
                 Color btnColor = isUnlocked ? (isSelected ? Color.green : Color.gray) : new Color(0.8f, 0.2f, 0.2f);
 
-                GameObject btnObj = CreateButton(shipListContainer, $"Btn_{shipId}", btnText, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * spacing), 0), new Vector2(110, 80), btnColor, defaultFont);
+                GameObject btnObj = CreateButton(shipListContainer, $"Btn_{shipId}", btnText, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * spacing), 0), new Vector2(94, 70), btnColor, defaultFont, 14);
                 
                 Button btn = btnObj.GetComponent<Button>();
                 btn.onClick.AddListener(() => {
@@ -294,6 +304,46 @@ namespace StarStrike.UI
                         RefreshData();
                     }
                 });
+            }
+
+            // 2. Active Skills
+            if (skillListContainer != null)
+            {
+                for (int i = skillListContainer.childCount - 1; i >= 0; i--)
+                {
+                    var child = skillListContainer.GetChild(i);
+                    if (Application.isPlaying) Destroy(child.gameObject);
+                    else DestroyImmediate(child.gameObject);
+                }
+
+                string[] skillIds = new string[] { "forward_shockwave", "blink_teleport", "emp_nova" };
+                string[] skillLabels = new string[] { "SHOCKWAVE", "BLINK WARP", "EMP NOVA" };
+                string currentSkill = StorageService.GetSelectedSkill();
+
+                float skillSpacing = 190f;
+                float skillStartX = -((skillIds.Length - 1) * skillSpacing) / 2f;
+
+                for (int i = 0; i < skillIds.Length; i++)
+                {
+                    string sId = skillIds[i];
+                    string sLabel = skillLabels[i];
+                    bool isSelected = currentSkill == sId;
+
+                    string btnLabel = isSelected ? $"[ {sLabel} ]" : sLabel;
+                    Color btnColor = isSelected ? new Color(0.1f, 0.7f, 0.85f) : new Color(0.2f, 0.25f, 0.35f);
+
+                    GameObject skillBtnObj = CreateButton(skillListContainer, $"SkillBtn_{sId}", btnLabel, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(skillStartX + (i * skillSpacing), 0), new Vector2(175, 42), btnColor, defaultFont, 15);
+                    Button skillBtn = skillBtnObj.GetComponent<Button>();
+                    skillBtn.onClick.AddListener(() => {
+                        StorageService.SaveSelectedSkill(sId);
+                        var shipSkill = FindAnyObjectByType<ShipSkillController>();
+                        if (shipSkill != null)
+                        {
+                            shipSkill.EquipActiveSkill(sId);
+                        }
+                        RefreshData();
+                    });
+                }
             }
         }
 

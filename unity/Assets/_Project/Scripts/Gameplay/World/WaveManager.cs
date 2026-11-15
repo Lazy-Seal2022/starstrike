@@ -224,10 +224,12 @@ namespace StarStrike.Gameplay
                     {
                         var inst = Instantiate(entry.prefab, spawnPos, Quaternion.identity);
                         inst.name = tag;
+                        ConfigureEnemyAI(inst, tag);
                         return inst;
                     }
                     var fallback = new GameObject(tag);
                     fallback.AddComponent<EnemyAI>();
+                    ConfigureEnemyAI(fallback, tag);
                     return fallback;
                 });
             }
@@ -236,10 +238,46 @@ namespace StarStrike.Gameplay
                 enemyObj = Instantiate(entry.prefab, spawnPos, Quaternion.identity);
                 enemyObj.name = tag;
             }
+            else
+            {
+                enemyObj = new GameObject(tag);
+                enemyObj.transform.position = spawnPos;
+                enemyObj.AddComponent<EnemyAI>();
+            }
 
             if (enemyObj != null)
             {
+                ConfigureEnemyAI(enemyObj, tag);
                 activeWaveEnemies.Add(enemyObj);
+            }
+        }
+
+        public static void ConfigureEnemyAI(GameObject enemyObj, string tagOrId)
+        {
+            if (enemyObj == null) return;
+            var ai = enemyObj.GetComponent<EnemyAI>();
+            if (ai == null) ai = enemyObj.AddComponent<EnemyAI>();
+
+            string lower = (tagOrId ?? "").ToLowerInvariant();
+            if (lower.Contains("kamikaze"))
+            {
+                ai.ConfigureArchetype(EnemyArchetype.Kamikaze);
+            }
+            else if (lower.Contains("sniper"))
+            {
+                ai.ConfigureArchetype(EnemyArchetype.Sniper);
+            }
+            else if (lower.Contains("support") || lower.Contains("aegis") || lower.Contains("shield"))
+            {
+                ai.ConfigureArchetype(EnemyArchetype.SupportShield);
+            }
+            else if (lower.Contains("boss") || lower.Contains("dreadnought"))
+            {
+                ai.ConfigureArchetype(EnemyArchetype.Boss);
+            }
+            else
+            {
+                ai.ConfigureArchetype(EnemyArchetype.Drone);
             }
         }
 

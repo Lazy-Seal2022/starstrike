@@ -11,6 +11,11 @@ namespace StarStrike.Gameplay
         private static Sprite cachedInterceptor;
         private static Sprite cachedJuggernaut;
         private static Sprite cachedBoss;
+        private static Sprite cachedKamikaze;
+        private static Sprite cachedSniper;
+        private static Sprite cachedSupport;
+        private static Sprite cachedVanguard;
+        private static Sprite cachedPhantom;
         private static Sprite cachedLaser;
         private static Sprite cachedEnemyLaser;
         private static Sprite cachedAsteroid;
@@ -39,6 +44,11 @@ namespace StarStrike.Gameplay
             if (type == "interceptor") return GenerateShip(new Color(0.45f, 0.35f, 0.98f), 64, 5);
             if (type == "juggernaut") return GenerateShip(new Color(0.95f, 0.45f, 0.15f), 64, 6);
             if (type == "boss") return GenerateShip(new Color(0.95f, 0.12f, 0.22f), 96, 7);
+            if (type == "kamikaze") return GenerateShip(new Color(0.95f, 0.15f, 0.22f), 64, 8);
+            if (type == "sniper") return GenerateShip(new Color(0.68f, 0.25f, 0.98f), 64, 9);
+            if (type == "support" || type == "support_shield") return GenerateShip(new Color(0.95f, 0.82f, 0.15f), 64, 10);
+            if (type == "vanguard") return GenerateShip(new Color(0.18f, 0.85f, 0.65f), 64, 11);
+            if (type == "phantom") return GenerateShip(new Color(0.35f, 0.45f, 0.62f), 64, 12);
             return GenerateShip(new Color(0.22f, 0.74f, 0.97f), 64, 1);
         }
 
@@ -92,6 +102,16 @@ namespace StarStrike.Gameplay
                 return GetCachedOrGenerate(ref cachedJuggernaut, () => GenerateShipSprite("juggernaut"), forceProcedural);
             if (type == "boss")
                 return GetCachedOrGenerate(ref cachedBoss, () => GenerateShipSprite("boss"), forceProcedural);
+            if (type == "kamikaze")
+                return GetCachedOrGenerate(ref cachedKamikaze, () => GenerateShipSprite("kamikaze"), forceProcedural);
+            if (type == "sniper")
+                return GetCachedOrGenerate(ref cachedSniper, () => GenerateShipSprite("sniper"), forceProcedural);
+            if (type == "support" || type == "support_shield")
+                return GetCachedOrGenerate(ref cachedSupport, () => GenerateShipSprite("support"), forceProcedural);
+            if (type == "vanguard")
+                return GetCachedOrGenerate(ref cachedVanguard, () => GenerateShipSprite("vanguard"), forceProcedural);
+            if (type == "phantom")
+                return GetCachedOrGenerate(ref cachedPhantom, () => GenerateShipSprite("phantom"), forceProcedural);
 
             return GetCachedOrGenerate(ref cachedScout, () => GenerateShipSprite("scout"), forceProcedural);
         }
@@ -235,6 +255,48 @@ namespace StarStrike.Gameplay
                         bool claws = (nx >= -0.2f && nx <= 0.85f && ny >= 0.5f && ny <= 0.95f);
                         bool rearEngines = (nx <= -0.4f && nx >= -0.95f && ny >= 0.3f && ny <= 0.85f);
                         inside = core || claws || rearEngines;
+                    }
+                    else if (style == 8) // Kamikaze (Razor Spear / Forward Arrowhead)
+                    {
+                        float nx = p.x / r;
+                        float ny = Mathf.Abs(p.y) / r;
+                        bool spear = (nx >= -0.7f && nx <= 0.95f && ny <= (0.95f - nx) * 0.45f);
+                        bool barbWings = (nx >= -0.5f && nx <= -0.1f && ny <= 0.85f && (ny - (nx + 0.5f) * 0.8f) >= 0f);
+                        inside = spear || barbWings;
+                    }
+                    else if (style == 9) // Sniper (Elongated needle railgun hull)
+                    {
+                        float nx = p.x / r;
+                        float ny = Mathf.Abs(p.y) / r;
+                        bool railgunBarrel = (nx >= 0.0f && nx <= 0.98f && ny <= 0.12f);
+                        bool fuselage = (nx >= -0.8f && nx <= 0.3f && ny <= (0.5f - nx * 0.4f) * 0.45f);
+                        bool stabilizerFins = (nx >= -0.75f && nx <= -0.2f && ny <= 0.75f && ny >= 0.25f);
+                        inside = railgunBarrel || fuselage || stabilizerFins;
+                    }
+                    else if (style == 10) // Support Shield (Hexagonal Bastion with core dome)
+                    {
+                        float nx = Mathf.Abs(p.x) / (r * 0.85f);
+                        float ny = Mathf.Abs(p.y) / (r * 0.85f);
+                        bool hexagon = (nx <= 0.85f && ny <= 0.85f && (nx * 0.5f + ny * 0.866f) <= 0.95f);
+                        bool core = (dist <= r * 0.45f);
+                        inside = hexagon || core;
+                    }
+                    else if (style == 11) // Vanguard Carrier (Dual flight bay catamaran)
+                    {
+                        float nx = p.x / r;
+                        float ny = Mathf.Abs(p.y) / r;
+                        bool bridge = (nx >= -0.7f && nx <= 0.4f && ny <= 0.35f);
+                        bool bays = (nx >= -0.85f && nx <= 0.8f && ny >= 0.4f && ny <= 0.85f);
+                        bool crossbars = (nx >= -0.3f && nx <= 0.2f && ny <= 0.8f);
+                        inside = bridge || bays || crossbars;
+                    }
+                    else if (style == 12) // Shadow Phantom (Stealth delta with forward swept wings)
+                    {
+                        float nx = p.x / r;
+                        float ny = Mathf.Abs(p.y) / r;
+                        bool fuselage = (nx >= -0.6f && nx <= 0.9f && ny <= (0.9f - nx) * 0.35f);
+                        bool sweptWings = (nx >= -0.4f && nx <= 0.6f && ny <= 0.85f && (ny + nx * 0.4f) <= 0.9f && (ny + nx * 0.4f) >= 0.35f);
+                        inside = fuselage || sweptWings;
                     }
 
                     if (inside)

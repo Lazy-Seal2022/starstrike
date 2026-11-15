@@ -24,6 +24,7 @@ namespace StarStrike.Tests.EditMode
             health.maxEnergy = 80f;
             health.ResetMeters();
 
+            StarStrike.Platform.Storage.StorageService.SaveSelectedSkill("forward_shockwave");
             skillController = shipGo.AddComponent<ShipSkillController>();
             skillController.InitializeDefaultSlots();
         }

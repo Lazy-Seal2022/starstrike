@@ -188,7 +188,14 @@ namespace StarStrike.Bootstrap
             {
                 var waveGO = new GameObject("[WaveManager]");
                 waveGO.AddComponent<WaveManager>();
+                waveGO.AddComponent<SectorHazardController>();
                 Object.DontDestroyOnLoad(waveGO);
+            }
+            else if (Object.FindAnyObjectByType<SectorHazardController>() == null)
+            {
+                var hazardGO = new GameObject("[SectorHazardController]");
+                hazardGO.AddComponent<SectorHazardController>();
+                Object.DontDestroyOnLoad(hazardGO);
             }
 
             Canvas canvas = EnsureCanvas();

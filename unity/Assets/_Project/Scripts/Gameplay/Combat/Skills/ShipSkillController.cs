@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using StarStrike.Core;
+using StarStrike.Platform.Storage;
 
 namespace StarStrike.Gameplay
 {
@@ -38,22 +39,17 @@ namespace StarStrike.Gameplay
             if (health == null) health = GetComponent<ShipHealth>();
             slots.Clear();
 
-            // 1. Setup Active 1 (Forward Shockwave)
-            if (defaultActiveSkill == null)
-            {
-                defaultActiveSkill = ScriptableObject.CreateInstance<SkillDefinition>();
-                defaultActiveSkill.skillId = "forward_shockwave";
-                defaultActiveSkill.displayName = "Forward Shockwave";
-                defaultActiveSkill.slotType = SkillSlotType.Active1;
-                defaultActiveSkill.energyCost = 20f;
-                defaultActiveSkill.cooldownDuration = 6.0f;
-            }
+            string savedActiveSkillId = StorageService.GetSelectedSkill();
+            if (string.IsNullOrEmpty(savedActiveSkillId)) savedActiveSkillId = "forward_shockwave";
+
+            // 1. Setup Active 1 (Forward Shockwave / Blink / EMP)
+            defaultActiveSkill = CreateSkillDefinition(savedActiveSkillId);
 
             var activeSlot = new RuntimeSkillSlot
             {
                 slotType = SkillSlotType.Active1,
                 definition = defaultActiveSkill,
-                behaviorInstance = new ForwardShockwaveBehavior(),
+                behaviorInstance = CreateBehaviorForSkill(savedActiveSkillId),
                 currentCooldown = 0f
             };
             activeSlot.behaviorInstance.Initialize(gameObject, defaultActiveSkill);
@@ -79,6 +75,62 @@ namespace StarStrike.Gameplay
             };
             passiveSlot.behaviorInstance.Initialize(gameObject, defaultPassiveSkill);
             slots.Add(passiveSlot);
+        }
+
+        public void EquipActiveSkill(string skillId)
+        {
+            if (string.IsNullOrEmpty(skillId)) skillId = "forward_shockwave";
+
+            defaultActiveSkill = CreateSkillDefinition(skillId);
+            RuntimeSkillSlot activeSlot = GetSlot(SkillSlotType.Active1);
+            if (activeSlot != null)
+            {
+                activeSlot.behaviorInstance?.Terminate();
+                activeSlot.definition = defaultActiveSkill;
+                activeSlot.behaviorInstance = CreateBehaviorForSkill(skillId);
+                activeSlot.behaviorInstance.Initialize(gameObject, defaultActiveSkill);
+                activeSlot.currentCooldown = 0f;
+            }
+
+            StorageService.SaveSelectedSkill(skillId);
+        }
+
+        public static SkillDefinition CreateSkillDefinition(string skillId)
+        {
+            var def = ScriptableObject.CreateInstance<SkillDefinition>();
+            def.skillId = skillId;
+            def.slotType = SkillSlotType.Active1;
+
+            if (skillId == "blink_teleport")
+            {
+                def.displayName = "Micro-Warp Blink";
+                def.description = "Instantly warps the vessel 8 units forward with a brief invulnerability window.";
+                def.energyCost = 25f;
+                def.cooldownDuration = 4.5f;
+            }
+            else if (skillId == "emp_nova")
+            {
+                def.displayName = "EMP Nova";
+                def.description = "Emits an omnidirectional electromagnetic shockwave stripping enemy shields and disabling weapons for 3 seconds.";
+                def.energyCost = 35f;
+                def.cooldownDuration = 8.0f;
+            }
+            else // forward_shockwave
+            {
+                def.displayName = "Forward Shockwave";
+                def.description = "Fires a piercing shockwave that repels asteroids and enemies while pushing the ship backward.";
+                def.energyCost = 20f;
+                def.cooldownDuration = 6.0f;
+            }
+
+            return def;
+        }
+
+        public static ISkillBehavior CreateBehaviorForSkill(string skillId)
+        {
+            if (skillId == "blink_teleport") return new BlinkTeleportBehavior();
+            if (skillId == "emp_nova") return new EMPNovaBehavior();
+            return new ForwardShockwaveBehavior();
         }
 
         private void Update()
@@ -152,7 +204,8 @@ namespace StarStrike.Gameplay
 
             if (slot.slotType == SkillSlotType.Active1)
             {
-                slot.behaviorInstance = new ForwardShockwaveBehavior();
+                string id = (slot.definition != null && !string.IsNullOrEmpty(slot.definition.skillId)) ? slot.definition.skillId : "forward_shockwave";
+                slot.behaviorInstance = CreateBehaviorForSkill(id);
                 slot.behaviorInstance.Initialize(gameObject, slot.definition ?? defaultActiveSkill);
             }
             else if (slot.slotType == SkillSlotType.Passive1)

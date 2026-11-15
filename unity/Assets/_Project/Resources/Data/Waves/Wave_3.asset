@@ -22,5 +22,20 @@ MonoBehaviour:
     spawnInterval: 5
     maxConcurrent: 4
     totalToSpawn: -1
+  - enemyId: EnemyKamikaze
+    prefab: {fileID: 0}
+    spawnInterval: 7
+    maxConcurrent: 3
+    totalToSpawn: -1
+  - enemyId: EnemySniper
+    prefab: {fileID: 0}
+    spawnInterval: 9
+    maxConcurrent: 2
+    totalToSpawn: -1
+  - enemyId: EnemySupport
+    prefab: {fileID: 0}
+    spawnInterval: 12
+    maxConcurrent: 2
+    totalToSpawn: -1
   bossPrefab: {fileID: 7529469353253515448, guid: b843d8c1f0b2ae541ada8606d6932b45, type: 3}
   clearGemReward: 100

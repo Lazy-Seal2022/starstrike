@@ -58,5 +58,16 @@ namespace StarStrike.Core
         public static void TriggerWaveStarted(int waveNumber, string waveName, float duration) => OnWaveStarted?.Invoke(waveNumber, waveName, duration);
         public static void TriggerWaveCompleted(int waveNumber, int rewardGems) => OnWaveCompleted?.Invoke(waveNumber, rewardGems);
         public static void TriggerWaveTimeUpdated(float remainingSeconds) => OnWaveTimeUpdated?.Invoke(remainingSeconds);
+
+        // Hazard & Environmental Events
+        public static event Action<string, float> OnHazardWarning; // hazardName, duration
+        public static event Action<string> OnHazardTriggered;     // hazardName
+        public static event Action<string> OnHazardEnded;         // hazardName
+        public static event Action<float> OnRadarJitterChanged;   // jitterAmount
+
+        public static void TriggerHazardWarning(string hazardName, float duration) => OnHazardWarning?.Invoke(hazardName, duration);
+        public static void TriggerHazardTriggered(string hazardName) => OnHazardTriggered?.Invoke(hazardName);
+        public static void TriggerHazardEnded(string hazardName) => OnHazardEnded?.Invoke(hazardName);
+        public static void TriggerRadarJitterChanged(float jitter) => OnRadarJitterChanged?.Invoke(jitter);
     }
 }

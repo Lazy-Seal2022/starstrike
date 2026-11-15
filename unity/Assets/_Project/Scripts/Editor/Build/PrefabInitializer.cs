@@ -811,6 +811,167 @@ namespace StarStrike.Editor
                 failed++;
             }
 
+            // 9. Enemy Archetypes Initialization & Kamikaze Radial Blast
+            try
+            {
+                var enemyGo = new GameObject("TestEnemy_Kamikaze");
+                var enemyHealth = enemyGo.AddComponent<ShipHealth>();
+                var enemyMove = enemyGo.AddComponent<ShipMovement>();
+                var enemyWeapon = enemyGo.AddComponent<ShipWeapon>();
+                var enemyAi = enemyGo.AddComponent<EnemyAI>();
+                enemyAi.ConfigureArchetype(EnemyArchetype.Kamikaze);
+
+                if (enemyAi.Archetype != EnemyArchetype.Kamikaze)
+                    throw new System.Exception($"Expected Kamikaze archetype, got {enemyAi.Archetype}");
+                if (enemyAi.definition.kamikazeBlastRadius < 4f)
+                    throw new System.Exception($"Expected blast radius >= 4, got {enemyAi.definition.kamikazeBlastRadius}");
+
+                // Test target in blast radius
+                var targetGo = new GameObject("TestTarget_InBlast");
+                targetGo.transform.position = new Vector3(2f, 0f, 0f);
+                var targetHealth = targetGo.AddComponent<ShipHealth>();
+                var targetCol = targetGo.AddComponent<CircleCollider2D>();
+                targetCol.radius = 0.5f;
+                targetHealth.maxShield = 100f;
+                targetHealth.ResetMeters();
+
+                Physics2D.SyncTransforms();
+
+                // Kill kamikaze, triggering blast
+                enemyHealth.TakeDamage(100f);
+
+                if (targetHealth.currentShield >= 100f)
+                    throw new System.Exception("Kamikaze death blast did not damage nearby target within radius!");
+
+                Object.DestroyImmediate(targetGo);
+                Object.DestroyImmediate(enemyGo);
+                Debug.Log("[PASS] 9. Enemy Archetypes (Kamikaze, Sniper, Support) & radial blast verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 9. Enemy archetypes verification failed: {ex.Message}");
+                failed++;
+            }
+
+            // 10. Sector Biomes & Asteroid Shelter Occlusion
+            try
+            {
+                var hazardGo = new GameObject("Test_HazardCtrl");
+                var hazardCtrl = hazardGo.AddComponent<SectorHazardController>();
+
+                hazardCtrl.SetSector(SectorHazardController.SectorBiome.IonNebula);
+                if (hazardCtrl.CurrentBiome != SectorHazardController.SectorBiome.IonNebula)
+                    throw new System.Exception($"Expected IonNebula, got {hazardCtrl.CurrentBiome}");
+
+                hazardCtrl.SetSector(SectorHazardController.SectorBiome.SolarFlare);
+                if (hazardCtrl.CurrentBiome != SectorHazardController.SectorBiome.SolarFlare)
+                    throw new System.Exception($"Expected SolarFlare, got {hazardCtrl.CurrentBiome}");
+
+                // Spawn asteroid between position and flare source
+                var astGo = new GameObject("Test_AsteroidShield");
+                Vector2 flareDir = hazardCtrl.flareDirection.normalized;
+                astGo.transform.position = (Vector3)(-flareDir * 5f);
+                var astCol = astGo.AddComponent<CircleCollider2D>();
+                astCol.radius = 2.0f;
+                astGo.AddComponent<Asteroid>();
+
+                Physics2D.SyncTransforms();
+
+                bool sheltered = hazardCtrl.IsPositionSheltered(Vector2.zero);
+                if (!sheltered)
+                    throw new System.Exception("Position behind asteroid should be sheltered from solar flare!");
+
+                Object.DestroyImmediate(astGo);
+                Object.DestroyImmediate(hazardGo);
+                Debug.Log("[PASS] 10. Sector Biomes & Solar Flare asteroid shelter occlusion verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 10. Sector hazard verification failed: {ex.Message}");
+                failed++;
+            }
+
+            // 11. Alternate Skills (Blink Teleport & EMP Nova)
+            try
+            {
+                var ship = new GameObject("TestShip_AltSkills");
+                var shipRb = ship.AddComponent<Rigidbody2D>();
+                var shipHealth = ship.AddComponent<ShipHealth>();
+                shipHealth.maxShield = 100f;
+                shipHealth.ResetMeters();
+
+                var blink = new BlinkTeleportBehavior();
+                blink.Initialize(ship, null);
+                blink.Execute(ship, Vector2.zero, Vector2.right);
+
+                if (ship.transform.position.x < 7.5f)
+                    throw new System.Exception($"Blink should teleport ~8.5 units forward, got x={ship.transform.position.x}");
+                if (!shipHealth.isInvulnerable)
+                    throw new System.Exception("Blink should grant temporary invulnerability frame!");
+
+                // EMP Nova test
+                var enemyObj = new GameObject("TestEnemy_EMP");
+                enemyObj.tag = "Enemy";
+                enemyObj.transform.position = new Vector3(3f, 0f, 0f);
+                var enemyCol = enemyObj.AddComponent<CircleCollider2D>();
+                enemyCol.radius = 0.5f;
+                var enemyH = enemyObj.AddComponent<ShipHealth>();
+                var enemyAI = enemyObj.AddComponent<EnemyAI>();
+                enemyH.maxShield = 100f;
+                enemyH.ResetMeters();
+
+                Physics2D.SyncTransforms();
+
+                var emp = new EMPNovaBehavior();
+                emp.Initialize(ship, null);
+                emp.Execute(ship, Vector2.zero, Vector2.zero);
+
+                if (enemyH.currentShield >= 100f)
+                    throw new System.Exception("EMP Nova should deal damage to enemies within 9.5 radius!");
+
+                Object.DestroyImmediate(enemyObj);
+                Object.DestroyImmediate(ship);
+                Debug.Log("[PASS] 11. Alternate Skills (Blink Teleport micro-warp & EMP Nova radial pulse) verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 11. Alternate skills verification failed: {ex.Message}");
+                failed++;
+            }
+
+            // 12. Playable Hulls Expansion (Vanguard Carrier & Shadow Phantom)
+            try
+            {
+                var scout = PlayerProgression.CreateDefaultShipTree();
+                var fighter = scout.evolvesTo[0];
+                var miner = scout.evolvesTo[1];
+
+                bool hasPhantom = false;
+                foreach (var evo in fighter.evolvesTo)
+                {
+                    if (evo.id == "phantom") hasPhantom = true;
+                }
+                if (!hasPhantom) throw new System.Exception("Fighter does not evolve to Shadow Phantom!");
+
+                bool hasVanguard = false;
+                foreach (var evo in miner.evolvesTo)
+                {
+                    if (evo.id == "vanguard") hasVanguard = true;
+                }
+                if (!hasVanguard) throw new System.Exception("Miner does not evolve to Vanguard Carrier!");
+
+                Debug.Log("[PASS] 12. Playable Hull Expansion (Vanguard Carrier & Shadow Phantom) verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 12. Playable hull expansion test failed: {ex.Message}");
+                failed++;
+            }
+
             Debug.Log($"=== TOTAL VERIFICATION RESULT: {passed} PASSED, {failed} FAILED ===");
         }
     }

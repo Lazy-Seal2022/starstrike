@@ -119,10 +119,10 @@ namespace StarStrike.Tests.EditMode
             Assert.AreEqual("fighter", fighter.id);
             Assert.AreEqual("miner", miner.id);
 
-            Assert.AreEqual(1, fighter.evolvesTo.Length);
+            Assert.GreaterOrEqual(fighter.evolvesTo.Length, 1);
             Assert.AreEqual("interceptor", fighter.evolvesTo[0].id);
 
-            Assert.AreEqual(1, miner.evolvesTo.Length);
+            Assert.GreaterOrEqual(miner.evolvesTo.Length, 1);
             Assert.AreEqual("juggernaut", miner.evolvesTo[0].id);
         }
 

@@ -20,6 +20,7 @@ namespace StarStrike.Gameplay
         public float MaxEnergy => maxEnergy;
 
         public bool isPlayer = false;
+        public bool isInvulnerable = false;
 
         public event Action<float, float> OnShieldChanged;
         public event Action<float, float> OnEnergyChanged;
@@ -74,6 +75,7 @@ namespace StarStrike.Gameplay
 
         public void TakeDamage(float amount)
         {
+            if (isInvulnerable) return;
             currentShield -= amount;
             
             if (StarStrike.Gameplay.FX.FXService.Instance != null)

@@ -26,6 +26,7 @@ namespace StarStrike.Gameplay
         public bool IsThrusting { get; set; }
         public bool IsBoosting { get; set; }
         public bool IsBraking { get; set; }
+        public bool autoBrakeEnabled = true;
 
         public void ApplyInput(IShipInputProvider input)
         {
@@ -142,10 +143,15 @@ namespace StarStrike.Gameplay
             }
             else
             {
-                if (IsBraking)
+                if (IsBraking && autoBrakeEnabled)
                 {
                     rb.linearVelocity = Vector2.MoveTowards(rb.linearVelocity, Vector2.zero, acceleration * brakeFactor * dt);
                 }
+            }
+
+            if (rb != null && flightConfig != null)
+            {
+                rb.linearDamping = autoBrakeEnabled ? flightConfig.linearDamping : 0f;
             }
         }
     }

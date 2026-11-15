@@ -13,6 +13,7 @@ namespace StarStrike.UI
         [Header("Settings")]
         public float radarRange = 50f; // World units
         public float mapSize = 150f; // UI units (width/height of the radar)
+        public float radarJitter = 0f;
 
         [Header("UI References")]
         public RectTransform mapContainer;
@@ -44,6 +45,7 @@ namespace StarStrike.UI
         private void OnEnable()
         {
             GameEvents.OnGameStarted += ClearAll;
+            GameEvents.OnRadarJitterChanged += HandleRadarJitterChanged;
             MinimapTrackable.OnTrackableEnabled += RegisterTrackable;
             MinimapTrackable.OnTrackableDisabled += UnregisterTrackable;
 
@@ -61,8 +63,14 @@ namespace StarStrike.UI
         private void OnDisable()
         {
             GameEvents.OnGameStarted -= ClearAll;
+            GameEvents.OnRadarJitterChanged -= HandleRadarJitterChanged;
             MinimapTrackable.OnTrackableEnabled -= RegisterTrackable;
             MinimapTrackable.OnTrackableDisabled -= UnregisterTrackable;
+        }
+
+        private void HandleRadarJitterChanged(float jitter)
+        {
+            radarJitter = jitter;
         }
 
         private void OnDestroy()
@@ -229,6 +237,13 @@ namespace StarStrike.UI
 
                         float scale = (mapSize / 2f) / radarRange;
                         Vector2 uiPos = offset * scale;
+
+                        if (radarJitter > 0.001f)
+                        {
+                            float noiseX = (Mathf.PerlinNoise(Time.time * 8f, i * 4.3f) - 0.5f) * radarJitter * 2f;
+                            float noiseY = (Mathf.PerlinNoise(i * 4.3f, Time.time * 8f) - 0.5f) * radarJitter * 2f;
+                            uiPos += new Vector2(noiseX, noiseY);
+                        }
 
                         float maxDist = (mapSize / 2f) - 6f;
                         if (uiPos.magnitude > maxDist)
