@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a4765a2be06dcd4fae13b9946fba986, type: 3}
+  m_Name: AudioConfig
+  m_EditorClassIdentifier: StarStrike.Core::StarStrike.Core.AudioConfig
+  ambientMusic: {fileID: 8300000, guid: 09adf41f90780a843af1dc6b02e87d2c, type: 3}
+  laser: {fileID: 8300000, guid: a8868f2456367bc419001e4132436ff3, type: 3}
+  enemyLaser: {fileID: 8300000, guid: cb0ab93b4c1c2934e88b126a6f714612, type: 3}
+  gem: {fileID: 8300000, guid: b9914d2c6c87446488fdcde4d2d3bc37, type: 3}
+  explosion: {fileID: 8300000, guid: 90ee6c508d768ad43895d74bb4733e0f, type: 3}
+  upgrade: {fileID: 8300000, guid: 55e8a3e85c7051045a6cf3b17fd04cab, type: 3}
+  click: {fileID: 8300000, guid: 5f90a5ee33ec3c94d9d848000e2b09a0, type: 3}

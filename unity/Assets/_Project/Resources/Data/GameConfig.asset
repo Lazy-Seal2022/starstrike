@@ -29,5 +29,6 @@ MonoBehaviour:
   bossConfig: {fileID: 11400000, guid: 3b2fd5486fd22ba449b720210354ef67, type: 2}
   lootConfig: {fileID: 11400000, guid: b46690167ae5cab4499b3c830166f4cf, type: 2}
   uiThemeConfig: {fileID: 11400000, guid: 47a4e455b0e819c4b816a46065258c61, type: 2}
+  audioConfig: {fileID: 11400000, guid: edc675e266c5f3146ad6128904689d9d, type: 2}
   upgradeDefinition: {fileID: 11400000, guid: fe4b7e646ab734d4fab33a2783cc82c7, type: 2}
   defaultShip: {fileID: 11400000, guid: 1f7b9d0ca0570064ca2506011046c62b, type: 2}

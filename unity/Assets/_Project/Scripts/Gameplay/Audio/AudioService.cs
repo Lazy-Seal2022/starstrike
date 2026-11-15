@@ -15,6 +15,9 @@ namespace StarStrike.Gameplay.Audio
         public float sfxVolume = 0.8f;
         public float musicVolume = 0.7f;
 
+        [Header("Audio Configuration")]
+        public AudioConfig audioConfig;
+
         [Header("Audio Mixer Routing")]
         public AudioMixer audioMixer;
         public AudioMixerGroup masterGroup;
@@ -62,6 +65,11 @@ namespace StarStrike.Gameplay.Audio
             {
                 uiSource = gameObject.AddComponent<AudioSource>();
                 uiSource.playOnAwake = false;
+            }
+
+            if (audioConfig == null)
+            {
+                audioConfig = Resources.Load<AudioConfig>("Data/AudioConfig");
             }
 
             ApplyMixerRouting();
@@ -184,7 +192,11 @@ namespace StarStrike.Gameplay.Audio
             if (musicSource == null) return;
             if (!proceduralClips.ContainsKey("ambient_music"))
             {
-                var musicClip = Resources.Load<AudioClip>("Audio/ambient_music");
+                var musicClip = audioConfig != null ? audioConfig.ambientMusic : null;
+                if (musicClip == null)
+                {
+                    musicClip = Resources.Load<AudioClip>("Audio/ambient_music");
+                }
                 if (musicClip != null)
                 {
                     proceduralClips["ambient_music"] = musicClip;
@@ -247,7 +259,11 @@ namespace StarStrike.Gameplay.Audio
 
         private void LoadClipWithFallback(string id, System.Func<AudioClip> fallbackGenerator)
         {
-            AudioClip clip = Resources.Load<AudioClip>("Audio/" + id);
+            AudioClip clip = audioConfig != null ? audioConfig.GetClip(id) : null;
+            if (clip == null)
+            {
+                clip = Resources.Load<AudioClip>("Audio/" + id);
+            }
             if (clip != null)
             {
                 proceduralClips[id] = clip;
@@ -269,7 +285,14 @@ namespace StarStrike.Gameplay.Audio
             {
                 return clip;
             }
-            clip = Resources.Load<AudioClip>("Audio/" + id);
+            if (audioConfig != null)
+            {
+                clip = audioConfig.GetClip(id);
+            }
+            if (clip == null)
+            {
+                clip = Resources.Load<AudioClip>("Audio/" + id);
+            }
             if (clip != null)
             {
                 proceduralClips[id] = clip;

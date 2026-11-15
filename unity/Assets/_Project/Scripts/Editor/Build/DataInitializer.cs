@@ -11,7 +11,6 @@ namespace StarStrike.Editor
         {
             EnsureFolder("Assets/_Project", "Resources");
             EnsureFolder("Assets/_Project/Resources", "Data");
-            EnsureFolder("Assets/_Project", "Data");
 
             string dataPath = "Assets/_Project/Resources/Data";
 
@@ -45,6 +44,17 @@ namespace StarStrike.Editor
 
             // 7. UI Theme Config
             var uiThemeConfig = CreateOrUpdateAsset(ScriptableObject.CreateInstance<UIThemeConfig>(), $"{dataPath}/UIThemeConfig.asset");
+
+            // 7b. Audio Config
+            var audioConfig = ScriptableObject.CreateInstance<AudioConfig>();
+            audioConfig.ambientMusic = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/Music/ambient_music.ogg");
+            audioConfig.laser = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/laser.ogg");
+            audioConfig.enemyLaser = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/enemy_laser.ogg");
+            audioConfig.gem = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/gem.ogg");
+            audioConfig.explosion = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/explosion.ogg");
+            audioConfig.upgrade = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/upgrade.ogg");
+            audioConfig.click = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/click.ogg");
+            audioConfig = CreateOrUpdateAsset(audioConfig, $"{dataPath}/AudioConfig.asset");
 
             // 8. Enemy Drone Definition
             var drone = ScriptableObject.CreateInstance<EnemyDefinition>();
@@ -136,6 +146,7 @@ namespace StarStrike.Editor
             gameConfig.bossConfig = bossConfig;
             gameConfig.lootConfig = lootConfig;
             gameConfig.uiThemeConfig = uiThemeConfig;
+            gameConfig.audioConfig = audioConfig;
             gameConfig.upgradeDefinition = upgradeDef;
             gameConfig.defaultShip = scout;
             CreateOrUpdateAsset(gameConfig, $"{dataPath}/GameConfig.asset");

@@ -28,8 +28,20 @@ namespace StarStrike.Tests.EditMode
             Assert.IsNotNull(config.asteroidConfig, "AsteroidConfig must be attached to GameConfig");
             Assert.IsNotNull(config.bossConfig, "BossConfig must be attached to GameConfig");
             Assert.IsNotNull(config.lootConfig, "LootConfig must be attached to GameConfig");
+            Assert.IsNotNull(config.audioConfig, "AudioConfig must be attached to GameConfig");
             Assert.IsNotNull(config.upgradeDefinition, "UpgradeDefinition must be attached to GameConfig");
             Assert.IsNotNull(config.defaultShip, "DefaultShip must be attached to GameConfig");
+        }
+
+        [Test]
+        public void AudioConfig_DefaultValues_AreSensible()
+        {
+            var config = Resources.Load<AudioConfig>("Data/AudioConfig");
+            if (config == null) config = ScriptableObject.CreateInstance<AudioConfig>();
+
+            Assert.IsNotNull(config.GetClip("laser"), "AudioConfig should resolve laser SFX");
+            Assert.IsNotNull(config.GetClip("gem"), "AudioConfig should resolve gem SFX");
+            Assert.IsNotNull(config.GetClip("explosion"), "AudioConfig should resolve explosion SFX");
         }
 
         [Test]

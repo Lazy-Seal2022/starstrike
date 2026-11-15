@@ -31,6 +31,7 @@ namespace StarStrike.Core
         public BossConfig bossConfig;
         public LootConfig lootConfig;
         public UIThemeConfig uiThemeConfig;
+        public AudioConfig audioConfig;
         public UpgradeDefinition upgradeDefinition;
         public ShipDefinition defaultShip;
     }
