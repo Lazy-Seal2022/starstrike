@@ -61,7 +61,10 @@ namespace StarStrike.Gameplay
 
             SpriteRenderer sr = GetComponent<SpriteRenderer>();
             if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSpriteHelper.GetAsteroidSprite();
+            if (sr.sprite == null)
+            {
+                sr.sprite = config != null && config.sprite != null ? config.sprite : ProceduralSpriteHelper.GetAsteroidSprite();
+            }
             sr.sortingOrder = 2;
         }
 

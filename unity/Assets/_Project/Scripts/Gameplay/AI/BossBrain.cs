@@ -47,7 +47,14 @@ namespace StarStrike.Gameplay
 
             SpriteRenderer sr = GetComponent<SpriteRenderer>();
             if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSpriteHelper.GetShipSprite("boss");
+            if (config != null && config.sprite != null)
+            {
+                sr.sprite = config.sprite;
+            }
+            else if (sr.sprite == null)
+            {
+                sr.sprite = ProceduralSpriteHelper.GetShipSprite("boss");
+            }
             sr.sortingOrder = 5;
             sr.color = new Color(1f, 0.4f, 0.4f);
             transform.localScale = Vector3.one * config.visualScale;

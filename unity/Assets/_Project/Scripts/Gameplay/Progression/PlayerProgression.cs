@@ -376,7 +376,14 @@ namespace StarStrike.Gameplay
             }
             shipRenderer.sortingOrder = 10;
             string shipId = currentShip != null && !string.IsNullOrEmpty(currentShip.id) ? currentShip.id : "scout";
-            shipRenderer.sprite = ProceduralSpriteHelper.GetShipSprite(shipId);
+            if (currentShip != null && currentShip.sprite != null)
+            {
+                shipRenderer.sprite = currentShip.sprite;
+            }
+            else if (shipRenderer.sprite == null)
+            {
+                shipRenderer.sprite = ProceduralSpriteHelper.GetShipSprite(shipId);
+            }
 
             if (shipId == "fighter")
                 transform.localScale = Vector3.one * 1.25f;

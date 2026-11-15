@@ -40,7 +40,14 @@ namespace StarStrike.Gameplay
 
             SpriteRenderer sr = GetComponent<SpriteRenderer>();
             if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSpriteHelper.GetShipSprite("drone");
+            if (definition != null && definition.sprite != null)
+            {
+                sr.sprite = definition.sprite;
+            }
+            else if (sr.sprite == null)
+            {
+                sr.sprite = ProceduralSpriteHelper.GetShipSprite("drone");
+            }
             sr.sortingOrder = 4;
 
             var trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();

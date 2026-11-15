@@ -63,7 +63,17 @@ namespace StarStrike.Gameplay
 
             SpriteRenderer sr = GetComponent<SpriteRenderer>();
             if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSpriteHelper.GetLaserSprite(isEnemy);
+            if (sr.sprite == null)
+            {
+                if (combatConfig != null)
+                {
+                    sr.sprite = isEnemy ? combatConfig.enemyLaserSprite : combatConfig.playerLaserSprite;
+                }
+                if (sr.sprite == null)
+                {
+                    sr.sprite = ProceduralSpriteHelper.GetLaserSprite(isEnemy);
+                }
+            }
             sr.sortingOrder = 5;
 
             if (rb != null)

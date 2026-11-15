@@ -12,12 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42952994d4f35fe44abe0f7a13b21286, type: 3}
   m_Name: LootConfig
   m_EditorClassIdentifier: StarStrike.Core::StarStrike.Core.LootConfig
+  gemSprite: {fileID: 21300000, guid: 4eec43aa23567854b8eb9d8ae24067cf, type: 3}
   defaultGemValue: 1
   magnetRadius: 6.5
   magnetSpeed: 14
   minEjectionSpeed: 1.5
   maxEjectionSpeed: 4
   gemColliderRadius: 0.5
+  powerUpSprite: {fileID: 21300000, guid: d36b96309d9d2f54aba2e2c97f8cc07d, type: 3}
   shieldOverchargeBonus: 100
   weaponOverdriveDamageMultiplier: 1.5
   weaponOverdriveFireRateMultiplier: 0.8

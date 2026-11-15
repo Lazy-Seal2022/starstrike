@@ -12,14 +12,12 @@ namespace StarStrike.Editor
     public static class SpriteAssetGenerator
     {
         private const string ArtDir = "Assets/_Project/Art/Sprites";
-        private const string ResourcesDir = "Assets/_Project/Resources/Sprites";
         private const string AtlasPath = "Assets/_Project/Art/Sprites/StarStrikeMasterAtlas.spriteatlasv2";
 
         [MenuItem("StarStrike/Generate Sprite Assets & Master Atlas")]
         public static void GenerateAllSpritesAndAtlas()
         {
             EnsureDirectory(ArtDir);
-            EnsureDirectory(ResourcesDir);
 
             var spritePairs = new Dictionary<string, Sprite>
             {
@@ -51,12 +49,7 @@ namespace StarStrike.Editor
                 byte[] pngBytes = sprite.texture.EncodeToPNG();
                 if (pngBytes == null || pngBytes.Length == 0) continue;
 
-                // Save to Resources/Sprites for instant runtime loading
-                string resPath = Path.Combine(ResourcesDir, relPath + ".png");
-                EnsureDirectory(Path.GetDirectoryName(resPath));
-                File.WriteAllBytes(resPath, pngBytes);
-
-                // Save to Art/Sprites for the master atlas source
+                // Save to Art/Sprites as single source of truth for assets & master atlas
                 string artPath = Path.Combine(ArtDir, relPath + ".png");
                 EnsureDirectory(Path.GetDirectoryName(artPath));
                 File.WriteAllBytes(artPath, pngBytes);
@@ -69,10 +62,8 @@ namespace StarStrike.Editor
             {
                 string relPath = kvp.Key;
                 string artPath = $"{ArtDir}/{relPath}.png";
-                string resPath = $"{ResourcesDir}/{relPath}.png";
 
                 ConfigureImporter(artPath);
-                ConfigureImporter(resPath);
 
                 Sprite loadedSprite = AssetDatabase.LoadAssetAtPath<Sprite>(artPath);
                 if (loadedSprite != null)

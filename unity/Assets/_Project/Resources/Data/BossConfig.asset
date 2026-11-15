@@ -25,6 +25,7 @@ MonoBehaviour:
   weaponSlots: 3
   visualScale: 3
   colliderRadius: 0.8
+  sprite: {fileID: 21300000, guid: 4d8a4ed502957914e9c8ddd70ae5e90f, type: 3}
   phase1Threshold: 0.75
   phase2Threshold: 0.5
   phase3Threshold: 0.25

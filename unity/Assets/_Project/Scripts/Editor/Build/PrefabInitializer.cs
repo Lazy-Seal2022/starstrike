@@ -65,6 +65,23 @@ namespace StarStrike.Editor
             Debug.Log("StarStrike Prefabs successfully generated in Assets/_Project/Prefabs and Assets/_Project/Resources/Prefabs!");
         }
 
+        private static Sprite LoadArtSprite(string relativePath)
+        {
+            string path = $"Assets/_Project/Art/Sprites/{relativePath}";
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (sprite != null) return sprite;
+
+            var all = AssetDatabase.LoadAllAssetsAtPath(path);
+            if (all != null)
+            {
+                foreach (var obj in all)
+                {
+                    if (obj is Sprite s) return s;
+                }
+            }
+            return ProceduralSpriteHelper.GetWhiteSprite();
+        }
+
         private static void CreatePlayerLaserPrefab()
         {
             GameObject go = new GameObject("PlayerLaser");
@@ -79,7 +96,7 @@ namespace StarStrike.Editor
             col.radius = 0.15f;
 
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSpriteHelper.GetLaserSprite(false);
+            sr.sprite = LoadArtSprite("Projectiles/Laser_Player.png");
             sr.sortingOrder = 5;
             sr.color = new Color(0.2f, 0.9f, 1f, 1f);
 
@@ -116,7 +133,7 @@ namespace StarStrike.Editor
             col.radius = 0.15f;
 
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSpriteHelper.GetLaserSprite(true);
+            sr.sprite = LoadArtSprite("Projectiles/Laser_Enemy.png");
             sr.sortingOrder = 5;
             sr.color = new Color(1f, 0.3f, 0.2f, 1f);
 
@@ -154,7 +171,7 @@ namespace StarStrike.Editor
             col.isTrigger = false;
 
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSpriteHelper.GetAsteroidSprite();
+            sr.sprite = LoadArtSprite("World/Asteroid.png");
             sr.sortingOrder = 1;
 
             var ast = go.AddComponent<Asteroid>();
@@ -179,7 +196,7 @@ namespace StarStrike.Editor
             col.radius = 0.35f;
 
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSpriteHelper.GetGemSprite();
+            sr.sprite = LoadArtSprite("World/Gem.png");
             sr.sortingOrder = 3;
 
             var gem = go.AddComponent<GemCrystal>();
@@ -202,7 +219,7 @@ namespace StarStrike.Editor
             col.radius = 0.45f;
 
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSpriteHelper.GetStarSprite();
+            sr.sprite = LoadArtSprite("World/PowerUp.png");
             sr.color = new Color(1f, 0.85f, 0.2f, 1f);
             sr.sortingOrder = 3;
 
@@ -227,7 +244,7 @@ namespace StarStrike.Editor
             col.isTrigger = false;
 
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSpriteHelper.GetShipSprite("drone");
+            sr.sprite = LoadArtSprite("Ships/Ship_Drone.png");
             sr.sortingOrder = 4;
 
             var mov = go.AddComponent<ShipMovement>();
@@ -266,7 +283,7 @@ namespace StarStrike.Editor
             col.isTrigger = false;
 
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSpriteHelper.GetShipSprite("boss");
+            sr.sprite = LoadArtSprite("Ships/Ship_Boss.png");
             sr.sortingOrder = 4;
 
             var mov = go.AddComponent<ShipMovement>();
@@ -305,7 +322,7 @@ namespace StarStrike.Editor
             col.isTrigger = false;
 
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSpriteHelper.GetShipSprite(shipId);
+            sr.sprite = LoadArtSprite($"Ships/Ship_{capId}.png");
             sr.sortingOrder = 4;
 
             var mov = go.AddComponent<ShipMovement>();
@@ -400,7 +417,7 @@ namespace StarStrike.Editor
             col.radius = 0.2f;
 
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSpriteHelper.GetLaserSprite(false);
+            sr.sprite = LoadArtSprite("Projectiles/Laser_Player.png");
             sr.sortingOrder = 6;
             sr.color = new Color(0.2f, 0.95f, 1f, 1f);
 
@@ -429,7 +446,7 @@ namespace StarStrike.Editor
             col.isTrigger = false;
 
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSpriteHelper.GetShipSprite("scout");
+            sr.sprite = LoadArtSprite("Ships/Ship_Scout.png");
             sr.sortingOrder = 10;
 
             var ship = go.AddComponent<NetworkPlayerShip>();

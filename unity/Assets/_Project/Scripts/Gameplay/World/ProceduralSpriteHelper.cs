@@ -21,32 +21,12 @@ namespace StarStrike.Gameplay
         private static Sprite cachedMissile;
         private static Sprite cachedPellet;
 
-        private static readonly string[] SubFolders = { "Ships", "Projectiles", "World", "UI" };
-
-        private static Sprite LoadAssetOrDefault(string resourcePath, ref Sprite cache, System.Func<Sprite> fallback)
+        private static Sprite GetCachedOrGenerate(ref Sprite cache, System.Func<Sprite> generator, bool forceNew = false)
         {
-            if (cache != null) return cache;
-
-            // Direct path lookup (e.g., "Sprites/Ships/Ship_Fighter")
-            cache = Resources.Load<Sprite>(resourcePath);
-            if (cache != null) return cache;
-
-            // Fallback for unqualified legacy paths (e.g., "Sprites/Ship_Fighter" or "Ship_Fighter")
-            string filename = resourcePath;
-            if (filename.StartsWith("Sprites/"))
-            {
-                filename = filename.Substring("Sprites/".Length);
-            }
-
-            foreach (var folder in SubFolders)
-            {
-                cache = Resources.Load<Sprite>($"Sprites/{folder}/{filename}");
-                if (cache != null) return cache;
-            }
-
+            if (forceNew) return generator();
             if (cache == null)
             {
-                cache = fallback();
+                cache = generator();
             }
             return cache;
         }
@@ -100,68 +80,58 @@ namespace StarStrike.Gameplay
 
         public static Sprite GetShipSprite(string type, bool forceProcedural = false)
         {
-            if (forceProcedural) return GenerateShipSprite(type);
-
             if (type == "fighter")
-                return LoadAssetOrDefault("Sprites/Ships/Ship_Fighter", ref cachedFighter, () => GenerateShipSprite("fighter"));
+                return GetCachedOrGenerate(ref cachedFighter, () => GenerateShipSprite("fighter"), forceProcedural);
             if (type == "miner")
-                return LoadAssetOrDefault("Sprites/Ships/Ship_Miner", ref cachedMiner, () => GenerateShipSprite("miner"));
+                return GetCachedOrGenerate(ref cachedMiner, () => GenerateShipSprite("miner"), forceProcedural);
             if (type == "drone")
-                return LoadAssetOrDefault("Sprites/Ships/Ship_Drone", ref cachedDrone, () => GenerateShipSprite("drone"));
+                return GetCachedOrGenerate(ref cachedDrone, () => GenerateShipSprite("drone"), forceProcedural);
             if (type == "interceptor")
-                return LoadAssetOrDefault("Sprites/Ships/Ship_Interceptor", ref cachedInterceptor, () => GenerateShipSprite("interceptor"));
+                return GetCachedOrGenerate(ref cachedInterceptor, () => GenerateShipSprite("interceptor"), forceProcedural);
             if (type == "juggernaut")
-                return LoadAssetOrDefault("Sprites/Ships/Ship_Juggernaut", ref cachedJuggernaut, () => GenerateShipSprite("juggernaut"));
+                return GetCachedOrGenerate(ref cachedJuggernaut, () => GenerateShipSprite("juggernaut"), forceProcedural);
             if (type == "boss")
-                return LoadAssetOrDefault("Sprites/Ships/Ship_Boss", ref cachedBoss, () => GenerateShipSprite("boss"));
+                return GetCachedOrGenerate(ref cachedBoss, () => GenerateShipSprite("boss"), forceProcedural);
 
-            return LoadAssetOrDefault("Sprites/Ships/Ship_Scout", ref cachedScout, () => GenerateShipSprite("scout"));
+            return GetCachedOrGenerate(ref cachedScout, () => GenerateShipSprite("scout"), forceProcedural);
         }
 
         public static Sprite GetLaserSprite(bool isEnemy = false, bool forceProcedural = false)
         {
-            if (forceProcedural) return GenerateLaserSprite(isEnemy);
-
             if (isEnemy)
-                return LoadAssetOrDefault("Sprites/Projectiles/Laser_Enemy", ref cachedEnemyLaser, () => GenerateLaserSprite(true));
+                return GetCachedOrGenerate(ref cachedEnemyLaser, () => GenerateLaserSprite(true), forceProcedural);
 
-            return LoadAssetOrDefault("Sprites/Projectiles/Laser_Player", ref cachedLaser, () => GenerateLaserSprite(false));
+            return GetCachedOrGenerate(ref cachedLaser, () => GenerateLaserSprite(false), forceProcedural);
         }
 
         public static Sprite GetAsteroidSprite(bool forceProcedural = false)
         {
-            if (forceProcedural) return GenerateAsteroidSprite();
-            return LoadAssetOrDefault("Sprites/World/Asteroid", ref cachedAsteroid, () => GenerateAsteroidSprite());
+            return GetCachedOrGenerate(ref cachedAsteroid, () => GenerateAsteroidSprite(), forceProcedural);
         }
 
         public static Sprite GetGemSprite(bool forceProcedural = false)
         {
-            if (forceProcedural) return GenerateGemSprite();
-            return LoadAssetOrDefault("Sprites/World/Gem", ref cachedGem, () => GenerateGemSprite());
+            return GetCachedOrGenerate(ref cachedGem, () => GenerateGemSprite(), forceProcedural);
         }
 
         public static Sprite GetStarSprite(bool forceProcedural = false)
         {
-            if (forceProcedural) return GenerateStarSprite();
-            return LoadAssetOrDefault("Sprites/World/Star", ref cachedStar, () => GenerateStarSprite());
+            return GetCachedOrGenerate(ref cachedStar, () => GenerateStarSprite(), forceProcedural);
         }
 
         public static Sprite GetPowerUpSprite(bool forceProcedural = false)
         {
-            if (forceProcedural) return GeneratePowerUpSprite();
-            return LoadAssetOrDefault("Sprites/World/PowerUp", ref cachedPowerUp, () => GeneratePowerUpSprite());
+            return GetCachedOrGenerate(ref cachedPowerUp, () => GeneratePowerUpSprite(), forceProcedural);
         }
 
         public static Sprite GetMissileSprite(bool forceProcedural = false)
         {
-            if (forceProcedural) return GenerateMissileSprite();
-            return LoadAssetOrDefault("Sprites/Projectiles/Missile", ref cachedMissile, () => GenerateMissileSprite());
+            return GetCachedOrGenerate(ref cachedMissile, () => GenerateMissileSprite(), forceProcedural);
         }
 
         public static Sprite GetPelletSprite(bool forceProcedural = false)
         {
-            if (forceProcedural) return GeneratePelletSprite();
-            return LoadAssetOrDefault("Sprites/Projectiles/Pellet", ref cachedPellet, () => GeneratePelletSprite());
+            return GetCachedOrGenerate(ref cachedPellet, () => GeneratePelletSprite(), forceProcedural);
         }
 
         private static Sprite GenerateCircle(Color color, int size)
@@ -410,8 +380,7 @@ namespace StarStrike.Gameplay
 
         public static Sprite GetRadarSprite(int size = 128, bool forceProcedural = false)
         {
-            if (forceProcedural) return GenerateRadarInternal(size);
-            return LoadAssetOrDefault("Sprites/UI/Radar", ref cachedRadar, () => GenerateRadarInternal(size));
+            return GetCachedOrGenerate(ref cachedRadar, () => GenerateRadarInternal(size), forceProcedural);
         }
 
         private static Sprite GenerateRadarInternal(int size)

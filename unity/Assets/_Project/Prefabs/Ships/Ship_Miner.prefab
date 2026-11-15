@@ -214,15 +214,15 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 4
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: a03d391c087d3614ba0d82e2fbc04876, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 2, y: 2}
+  m_Size: {x: 4, y: 4}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
 --- !u!114 &8102006220065657743
 MonoBehaviour:
@@ -280,7 +280,7 @@ MonoBehaviour:
   pulseSpeed: 20
   weaponSlots: 2
   fireRate: 0.22
-  energyCost: 12
+  energyCost: 6
   isPlayer: 1
 --- !u!114 &9025031467661284112
 MonoBehaviour:
@@ -310,3 +310,4 @@ MonoBehaviour:
   movement: {fileID: 0}
   weapon: {fileID: 0}
   shipRenderer: {fileID: 0}
+  triggerGameOverOnDeath: 0

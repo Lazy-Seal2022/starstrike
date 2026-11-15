@@ -6,6 +6,7 @@ namespace StarStrike.Core
     public class LootConfig : ScriptableObject
     {
         [Header("Gems")]
+        public Sprite gemSprite;
         public int defaultGemValue = 1;
         public float magnetRadius = 6.5f;
         public float magnetSpeed = 14f;
@@ -14,6 +15,7 @@ namespace StarStrike.Core
         public float gemColliderRadius = 0.5f;
 
         [Header("Power-Ups")]
+        public Sprite powerUpSprite;
         public float shieldOverchargeBonus = 100f;
         public float weaponOverdriveDamageMultiplier = 1.5f;
         public float weaponOverdriveFireRateMultiplier = 0.8f;

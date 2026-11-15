@@ -27,6 +27,6 @@ MonoBehaviour:
     speed: 180
     agility: 2.5
   weaponSlots: 3
-  sprite: {fileID: 0}
+  sprite: {fileID: 21300000, guid: eeb58c0cc50f2c14093266c3f88cc18a, type: 3}
   color: {r: 1, g: 1, b: 1, a: 1}
   scale: 1

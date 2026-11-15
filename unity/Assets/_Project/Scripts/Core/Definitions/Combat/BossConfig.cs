@@ -22,6 +22,9 @@ namespace StarStrike.Core
         public float visualScale = 3f;
         public float colliderRadius = 0.8f;
 
+        [Header("Presentation")]
+        public Sprite sprite;
+
         [Header("Phase Thresholds (HP Ratio)")]
         [Range(0f, 1f)] public float phase1Threshold = 0.75f; // Sweeping Lasers
         [Range(0f, 1f)] public float phase2Threshold = 0.50f; // Bullet Hell

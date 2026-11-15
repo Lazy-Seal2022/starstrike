@@ -34,7 +34,10 @@ namespace StarStrike.Gameplay
 
             var sr = GetComponent<SpriteRenderer>();
             if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSpriteHelper.GetAsteroidSprite(); // Can replace with specific powerup sprite
+            if (sr.sprite == null)
+            {
+                sr.sprite = lootConfig != null && lootConfig.powerUpSprite != null ? lootConfig.powerUpSprite : ProceduralSpriteHelper.GetPowerUpSprite();
+            }
             sr.sortingOrder = 3;
             
             var trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();

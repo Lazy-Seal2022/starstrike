@@ -30,7 +30,10 @@ namespace StarStrike.Gameplay
 
             var sr = GetComponent<SpriteRenderer>();
             if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSpriteHelper.GetPowerUpSprite();
+            if (sr.sprite == null)
+            {
+                sr.sprite = ProceduralSpriteHelper.GetPowerUpSprite();
+            }
             sr.sortingOrder = 3;
 
             UpdateVisualColor();

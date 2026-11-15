@@ -139,6 +139,7 @@ MonoBehaviour:
   evolveFighterButton: {fileID: 0}
   evolveMinerButton: {fileID: 0}
   mobileControlsRoot: {fileID: 0}
+  skillSlotView: {fileID: 0}
 --- !u!114 &2234842512936025724
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -155,11 +156,15 @@ MonoBehaviour:
   shieldFill: {fileID: 0}
   shieldGhostFill: {fileID: 0}
   shieldText: {fileID: 0}
+  shieldTmpText: {fileID: 0}
   energyFill: {fileID: 0}
   energyText: {fileID: 0}
+  energyTmpText: {fileID: 0}
   boostFill: {fileID: 0}
   shipNameText: {fileID: 0}
+  shipNameTmpText: {fileID: 0}
   gemsText: {fileID: 0}
+  gemsTmpText: {fileID: 0}
 --- !u!114 &182982071724279986
 MonoBehaviour:
   m_ObjectHideFlags: 0

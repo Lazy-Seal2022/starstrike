@@ -1,6 +1,6 @@
 # Art/Sprites Directory Structure
 
-Source sprite assets categorized by domain. These textures feed into `StarStrikeMasterAtlas.spriteatlasv2` for draw call batching.
+Single source of truth for all sprite assets in StarStrike. These textures feed into `StarStrikeMasterAtlas.spriteatlasv2` for GPU draw call batching and are referenced directly by ScriptableObject definitions (`ShipDefinition`, `EnemyDefinition`, `BossConfig`, `AsteroidConfig`, `LootConfig`, `CombatConfig`) and Prefabs.
 
 ## Subdirectories
 
@@ -10,4 +10,7 @@ Source sprite assets categorized by domain. These textures feed into `StarStrike
 - **`UI/`**: In-game HUD and UI textures (`Radar`, `Circle_16`).
 
 ## Sprite Atlas
-- **`StarStrikeMasterAtlas.spriteatlasv2`**: Master sprite atlas packing all domain sprites for batching and runtime performance.
+- **`StarStrikeMasterAtlas.spriteatlasv2`**: Master sprite atlas packing all domain sprites for draw call batching and runtime performance.
+
+## Design Note
+All runtime components reference sprites via their assigned definition ScriptableObjects or prefab `SpriteRenderer.sprite` references. Procedural math in `ProceduralSpriteHelper.cs` serves strictly as an in-memory fallback for unit testing and headless execution. No duplicate sprites exist in `Resources/`.

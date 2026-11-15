@@ -37,7 +37,10 @@ namespace StarStrike.Gameplay
 
             SpriteRenderer sr = GetComponent<SpriteRenderer>();
             if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSpriteHelper.GetGemSprite();
+            if (sr.sprite == null)
+            {
+                sr.sprite = lootConfig != null && lootConfig.gemSprite != null ? lootConfig.gemSprite : ProceduralSpriteHelper.GetGemSprite();
+            }
             sr.sortingOrder = 3;
 
             var trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();

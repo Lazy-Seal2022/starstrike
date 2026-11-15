@@ -6,6 +6,8 @@ namespace StarStrike.Core
     public class CombatConfig : ScriptableObject
     {
         [Header("Laser Projectiles")]
+        public Sprite playerLaserSprite;
+        public Sprite enemyLaserSprite;
         public float defaultPulseDamage = 18f;
         public float defaultPulseSpeed = 22f;
         public float projectileLifetime = 3f;
