@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Audio;
 
 namespace StarStrike.Core
 {
@@ -15,6 +16,13 @@ namespace StarStrike.Core
         public AudioClip explosion;
         public AudioClip upgrade;
         public AudioClip click;
+
+        [Header("Audio Mixer Routing (Optional)")]
+        public AudioMixer masterMixer;
+        public AudioMixerGroup masterGroup;
+        public AudioMixerGroup musicGroup;
+        public AudioMixerGroup sfxGroup;
+        public AudioMixerGroup uiGroup;
 
         public AudioClip GetClip(string id)
         {

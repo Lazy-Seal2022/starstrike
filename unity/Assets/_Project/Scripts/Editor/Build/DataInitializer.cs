@@ -54,6 +54,18 @@ namespace StarStrike.Editor
             audioConfig.gem = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/World/gem.ogg");
             audioConfig.click = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/UI/click.ogg");
             audioConfig.upgrade = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/UI/upgrade.ogg");
+            audioConfig.masterMixer = AssetDatabase.LoadAssetAtPath<UnityEngine.Audio.AudioMixer>("Assets/_Project/Audio/StarStrikeMasterMixer.mixer");
+            if (audioConfig.masterMixer != null)
+            {
+                var masterGroups = audioConfig.masterMixer.FindMatchingGroups("Master");
+                if (masterGroups != null && masterGroups.Length > 0) audioConfig.masterGroup = masterGroups[0];
+                var musicGroups = audioConfig.masterMixer.FindMatchingGroups("Music");
+                if (musicGroups != null && musicGroups.Length > 0) audioConfig.musicGroup = musicGroups[0];
+                var sfxGroups = audioConfig.masterMixer.FindMatchingGroups("SFX");
+                if (sfxGroups != null && sfxGroups.Length > 0) audioConfig.sfxGroup = sfxGroups[0];
+                var uiGroups = audioConfig.masterMixer.FindMatchingGroups("UI");
+                if (uiGroups != null && uiGroups.Length > 0) audioConfig.uiGroup = uiGroups[0];
+            }
             audioConfig = CreateOrUpdateAsset(audioConfig, $"{dataPath}/AudioConfig.asset");
 
             // 8. Enemy Drone Definition

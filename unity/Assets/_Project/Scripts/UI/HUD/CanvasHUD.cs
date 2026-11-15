@@ -551,8 +551,17 @@ namespace StarStrike.UI
             Sprite circleSprite = ProceduralSpriteHelper.GetCircleSprite(64);
             Sprite roundedSprite = ProceduralSpriteHelper.GetRoundedBoxSprite(32, 6);
 
-            // 1. Top-Left Status Panel
+            // 1. Top-Left Status Panel (Isolated into a sub-canvas to prevent frequent fill updates from rebuilding root canvas mesh)
             GameObject statusCard = CreatePanel(transform, "StatusPanel", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -20f), new Vector2(360f, 195f), new Color(0.04f, 0.08f, 0.16f, 0.88f), roundedSprite);
+            Canvas statusCanvas = statusCard.GetComponent<Canvas>();
+            if (statusCanvas == null) statusCanvas = statusCard.AddComponent<Canvas>();
+            Canvas rootCanvas = GetComponent<Canvas>();
+            if (rootCanvas != null && rootCanvas != statusCanvas)
+            {
+                statusCanvas.overrideSorting = true;
+                statusCanvas.sortingLayerID = rootCanvas.sortingLayerID;
+                statusCanvas.sortingOrder = rootCanvas.sortingOrder + 1;
+            }
 
             // Ship Name
             GameObject nameObj = CreateText(statusCard.transform, "ShipNameText", "T1 • DELTA SCOUT", 16, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(16f, -12f), new Vector2(-16f, -36f), defaultFont);

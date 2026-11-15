@@ -88,7 +88,15 @@ namespace StarStrike.Gameplay.Audio
 
         public void ApplyMixerRouting()
         {
-            if (audioMixer == null)
+            if (audioConfig != null && audioConfig.masterMixer != null)
+            {
+                audioMixer = audioConfig.masterMixer;
+                masterGroup = audioConfig.masterGroup;
+                musicGroup = audioConfig.musicGroup;
+                sfxGroup = audioConfig.sfxGroup;
+                uiGroup = audioConfig.uiGroup;
+            }
+            else if (audioMixer == null)
             {
                 audioMixer = Resources.Load<AudioMixer>("Audio/StarStrikeMasterMixer");
             }

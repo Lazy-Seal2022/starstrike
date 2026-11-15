@@ -1,11 +1,16 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 using StarStrike.Core;
 
 namespace StarStrike.UI
 {
+    /// <summary>
+    /// Displays floating combat damage numbers and resource pickup alerts.
+    /// Uses an internal O(1) text object pool and an isolated nested Sub-Canvas
+    /// to eliminate GC allocations and prevent dirtying the root HUD canvas.
+    /// </summary>
     public class HUDFloatingText : MonoBehaviour
     {
         private static HUDFloatingText instance;
@@ -24,6 +29,16 @@ namespace StarStrike.UI
         [Header("Configuration")]
         public UIThemeConfig themeConfig;
 
+        private class PooledText
+        {
+            public GameObject gameObject;
+            public RectTransform rectTransform;
+            public TextMeshProUGUI textMesh;
+        }
+
+        private readonly Stack<PooledText> pool = new Stack<PooledText>();
+        private Canvas subCanvas;
+
         private void Awake()
         {
             if (instance != null && instance != this)
@@ -35,6 +50,8 @@ namespace StarStrike.UI
 
             if (themeConfig == null) themeConfig = Resources.Load<UIThemeConfig>("Data/UIThemeConfig");
             if (themeConfig == null) themeConfig = ScriptableObject.CreateInstance<UIThemeConfig>();
+
+            EnsureSubCanvas();
         }
 
         private void OnDestroy()
@@ -54,6 +71,68 @@ namespace StarStrike.UI
             GameEvents.OnGemCollected -= HandleGemCollected;
             GameEvents.OnDamageDealt -= HandleDamageDealt;
             GameEvents.OnSkillCast -= HandleSkillCast;
+        }
+
+        private void EnsureSubCanvas()
+        {
+            if (subCanvas == null)
+            {
+                subCanvas = GetComponent<Canvas>();
+                if (subCanvas == null)
+                {
+                    subCanvas = gameObject.AddComponent<Canvas>();
+                }
+
+                Canvas parentCanvas = transform.parent != null ? transform.parent.GetComponentInParent<Canvas>() : null;
+                if (parentCanvas != null && parentCanvas != subCanvas)
+                {
+                    subCanvas.overrideSorting = true;
+                    subCanvas.sortingLayerID = parentCanvas.sortingLayerID;
+                    subCanvas.sortingOrder = parentCanvas.sortingOrder + 25;
+                }
+
+                var cg = GetComponent<CanvasGroup>();
+                if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
+                cg.blocksRaycasts = false;
+                cg.interactable = false;
+            }
+        }
+
+        private PooledText GetOrCreateItem()
+        {
+            EnsureSubCanvas();
+
+            while (pool.Count > 0)
+            {
+                var candidate = pool.Pop();
+                if (candidate != null && candidate.gameObject != null)
+                {
+                    candidate.gameObject.SetActive(true);
+                    return candidate;
+                }
+            }
+
+            GameObject textObj = new GameObject("PooledNotice", typeof(RectTransform));
+            textObj.transform.SetParent(transform, false);
+
+            var rt = textObj.GetComponent<RectTransform>();
+            var tmp = UIHelper.CreateTextMeshPro(textObj.transform, "Text", "", 16, FontStyles.Normal, Color.white, TextAlignmentOptions.Center, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+
+            return new PooledText
+            {
+                gameObject = textObj,
+                rectTransform = rt,
+                textMesh = tmp
+            };
+        }
+
+        private void RecycleItem(PooledText item)
+        {
+            if (item != null && item.gameObject != null)
+            {
+                item.gameObject.SetActive(false);
+                pool.Push(item);
+            }
         }
 
         private void HandleSkillCast(SkillCastEvent evt)
@@ -102,97 +181,99 @@ namespace StarStrike.UI
                 screenPos = Camera.main.WorldToScreenPoint(worldPos);
             }
 
-            GameObject textObj = new GameObject("WorldNotice", typeof(RectTransform));
-            textObj.transform.SetParent(transform, false);
+            var item = GetOrCreateItem();
+            item.rectTransform.position = screenPos;
+            item.rectTransform.sizeDelta = new Vector2(200f, 32f);
+            item.rectTransform.localScale = Vector3.one;
 
-            var rt = textObj.GetComponent<RectTransform>();
-            rt.position = screenPos;
-            rt.sizeDelta = new Vector2(200f, 32f);
+            if (item.textMesh != null)
+            {
+                item.textMesh.text = message;
+                item.textMesh.fontSize = Mathf.RoundToInt(fontSize);
+                item.textMesh.fontStyle = isCrit ? FontStyles.Bold : FontStyles.Normal;
+                item.textMesh.color = color;
+            }
 
-            var tmp = UIHelper.CreateTextMeshPro(textObj.transform, "Text", message, Mathf.RoundToInt(fontSize), isCrit ? FontStyles.Bold : FontStyles.Normal, color, TextAlignmentOptions.Center, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-
-            StartCoroutine(AnimateWorldNotice(rt, tmp, isCrit));
+            StartCoroutine(AnimateWorldNotice(item, isCrit));
         }
 
         public void SpawnFloatingNotice(string message, Color color)
         {
             if (!isActiveAndEnabled) return;
 
-            GameObject textObj = new GameObject("FloatingNotice", typeof(RectTransform));
-            textObj.transform.SetParent(transform, false);
+            var item = GetOrCreateItem();
+            item.rectTransform.sizeDelta = new Vector2(250f, 36f);
+            item.rectTransform.anchoredPosition = new Vector2(0f, 75f);
+            item.rectTransform.localScale = Vector3.one;
 
-            var rt = textObj.GetComponent<RectTransform>();
-            rt.sizeDelta = new Vector2(250f, 36f);
-            rt.anchoredPosition = new Vector2(0f, 75f);
+            if (item.textMesh != null)
+            {
+                item.textMesh.text = message;
+                item.textMesh.fontSize = 18;
+                item.textMesh.fontStyle = FontStyles.Bold;
+                item.textMesh.color = color;
+            }
 
-            var tmp = UIHelper.CreateTextMeshPro(textObj.transform, "Text", message, 18, FontStyles.Bold, color, TextAlignmentOptions.Center, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-
-            StartCoroutine(AnimateNotice(rt, tmp));
+            StartCoroutine(AnimateNotice(item));
         }
 
-        private IEnumerator AnimateWorldNotice(RectTransform rt, TextMeshProUGUI tmp, bool isCrit)
+        private IEnumerator AnimateWorldNotice(PooledText item, bool isCrit)
         {
             float duration = isCrit ? 0.85f : 0.6f;
             float elapsed = 0f;
-            Vector3 startPos = rt.position;
+            Vector3 startPos = item.rectTransform.position;
             Vector3 endPos = startPos + new Vector3(Random.Range(-15f, 15f), 45f, 0f);
-            Color initialColor = tmp != null ? tmp.color : Color.white;
+            Color initialColor = item.textMesh != null ? item.textMesh.color : Color.white;
 
             while (elapsed < duration)
             {
                 elapsed += Time.unscaledDeltaTime;
                 float t = Mathf.Clamp01(elapsed / duration);
 
-                if (rt != null)
+                if (item.rectTransform != null)
                 {
-                    rt.position = Vector3.Lerp(startPos, endPos, Ease.OutCubic(t));
+                    item.rectTransform.position = Vector3.Lerp(startPos, endPos, Ease.OutCubic(t));
                     float scale = t < 0.25f
                         ? Mathf.Lerp(1.0f, isCrit ? 1.4f : 1.25f, t / 0.25f)
                         : Mathf.Lerp(isCrit ? 1.4f : 1.25f, 1.0f, (t - 0.25f) / 0.75f);
-                    rt.localScale = Vector3.one * scale;
+                    item.rectTransform.localScale = Vector3.one * scale;
                 }
-                if (tmp != null)
+                if (item.textMesh != null)
                 {
                     float alpha = t < 0.6f ? 1f : Mathf.Lerp(1f, 0f, (t - 0.6f) / 0.4f);
-                    tmp.color = new Color(initialColor.r, initialColor.g, initialColor.b, alpha);
+                    item.textMesh.color = new Color(initialColor.r, initialColor.g, initialColor.b, alpha);
                 }
                 yield return null;
             }
 
-            if (rt != null && rt.gameObject != null)
-            {
-                Destroy(rt.gameObject);
-            }
+            RecycleItem(item);
         }
 
-        private IEnumerator AnimateNotice(RectTransform rt, TextMeshProUGUI tmp)
+        private IEnumerator AnimateNotice(PooledText item)
         {
             float elapsed = 0f;
             float duration = 0.8f;
-            Vector2 startPos = rt.anchoredPosition;
+            Vector2 startPos = item.rectTransform.anchoredPosition;
             Vector2 endPos = startPos + new Vector2(0f, 40f);
-            Color initialColor = tmp != null ? tmp.color : Color.white;
+            Color initialColor = item.textMesh != null ? item.textMesh.color : Color.white;
 
             while (elapsed < duration)
             {
                 elapsed += Time.unscaledDeltaTime;
                 float t = Mathf.Clamp01(elapsed / duration);
 
-                if (rt != null)
+                if (item.rectTransform != null)
                 {
-                    rt.anchoredPosition = Vector2.Lerp(startPos, endPos, Ease.OutCubic(t));
+                    item.rectTransform.anchoredPosition = Vector2.Lerp(startPos, endPos, Ease.OutCubic(t));
                 }
-                if (tmp != null)
+                if (item.textMesh != null)
                 {
-                    tmp.color = new Color(initialColor.r, initialColor.g, initialColor.b, 1f - t);
+                    item.textMesh.color = new Color(initialColor.r, initialColor.g, initialColor.b, 1f - t);
                 }
                 yield return null;
             }
 
-            if (rt != null && rt.gameObject != null)
-            {
-                Destroy(rt.gameObject);
-            }
+            RecycleItem(item);
         }
     }
 }

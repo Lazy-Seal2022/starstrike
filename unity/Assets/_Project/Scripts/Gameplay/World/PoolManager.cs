@@ -5,6 +5,12 @@ using StarStrike.Core;
 
 namespace StarStrike.Gameplay
 {
+    /// <summary>
+    /// High-performance zero-allocation object pool manager.
+    /// Uses O(1) stack-based free lists for instant acquisition and recycling.
+    /// Interoperates with PooledObjectTracker to guarantee automatic return to the pool
+    /// even when objects are deactivated via SetActive(false).
+    /// </summary>
     public class PoolManager : MonoBehaviour
     {
         private static PoolManager _instance;
@@ -28,7 +34,20 @@ namespace StarStrike.Gameplay
             private set => _instance = value;
         }
 
-        private Dictionary<string, Queue<GameObject>> poolDictionary;
+        private class ObjectPool
+        {
+            public readonly string Tag;
+            public readonly Stack<GameObject> Inactive = new Stack<GameObject>();
+            public readonly HashSet<GameObject> Active = new HashSet<GameObject>();
+
+            public ObjectPool(string tag)
+            {
+                Tag = tag;
+            }
+        }
+
+        private readonly Dictionary<string, ObjectPool> pools = new Dictionary<string, ObjectPool>();
+        private readonly Dictionary<GameObject, string> objectToTag = new Dictionary<GameObject, string>();
 
         private void Awake()
         {
@@ -47,10 +66,6 @@ namespace StarStrike.Gameplay
             {
                 _instance = this;
             }
-            if (poolDictionary == null)
-            {
-                poolDictionary = new Dictionary<string, Queue<GameObject>>();
-            }
         }
 
         private void OnDestroy()
@@ -61,33 +76,121 @@ namespace StarStrike.Gameplay
             }
         }
 
+        private ObjectPool GetOrCreatePool(string tag)
+        {
+            if (!pools.TryGetValue(tag, out var pool))
+            {
+                pool = new ObjectPool(tag);
+                pools.Add(tag, pool);
+            }
+            return pool;
+        }
+
         public void Prewarm(string tag, Func<GameObject> factory, int count)
         {
             if (string.IsNullOrEmpty(tag) || factory == null || count <= 0) return;
-
             Initialize();
 
-            if (!poolDictionary.ContainsKey(tag))
-            {
-                poolDictionary.Add(tag, new Queue<GameObject>());
-            }
-
-            Queue<GameObject> queue = poolDictionary[tag];
+            var pool = GetOrCreatePool(tag);
             for (int i = 0; i < count; i++)
             {
                 GameObject obj = factory();
                 if (obj != null)
                 {
+                    var tracker = obj.GetComponent<PooledObjectTracker>();
+                    if (tracker == null) tracker = obj.AddComponent<PooledObjectTracker>();
+                    tracker.poolManager = this;
+                    tracker.poolTag = tag;
+                    tracker.isSpawned = false;
+
                     obj.transform.SetParent(transform);
                     obj.SetActive(false);
-                    queue.Enqueue(obj);
+                    pool.Inactive.Push(obj);
+                    objectToTag[obj] = tag;
                 }
             }
         }
 
+        public GameObject Spawn(string tag, Vector3 position, Quaternion rotation, Func<GameObject> factory)
+        {
+            Initialize();
+            var pool = GetOrCreatePool(tag);
+            GameObject obj = null;
+
+            // O(1) acquisition from inactive stack
+            while (pool.Inactive.Count > 0)
+            {
+                var candidate = pool.Inactive.Pop();
+                if (candidate != null)
+                {
+                    obj = candidate;
+                    break;
+                }
+            }
+
+            if (obj == null)
+            {
+                if (factory != null)
+                {
+                    obj = factory();
+                }
+                if (obj != null)
+                {
+                    obj.transform.SetParent(transform);
+                }
+            }
+
+            if (obj != null)
+            {
+                var tracker = obj.GetComponent<PooledObjectTracker>();
+                if (tracker == null) tracker = obj.AddComponent<PooledObjectTracker>();
+                tracker.poolManager = this;
+                tracker.poolTag = tag;
+                tracker.isSpawned = true;
+
+                objectToTag[obj] = tag;
+                pool.Active.Add(obj);
+
+                obj.transform.position = position;
+                obj.transform.rotation = rotation;
+                obj.SetActive(true);
+
+                var poolable = obj.GetComponent<IPoolable>();
+                poolable?.OnSpawned();
+                return obj;
+            }
+
+            return null;
+        }
+
         public void Despawn(GameObject obj)
         {
-            if (obj != null)
+            if (obj == null) return;
+
+            string tag = null;
+            var tracker = obj.GetComponent<PooledObjectTracker>();
+            if (tracker != null)
+            {
+                tag = tracker.poolTag;
+                tracker.isSpawned = false;
+            }
+            if (string.IsNullOrEmpty(tag) && objectToTag.TryGetValue(obj, out string mappedTag))
+            {
+                tag = mappedTag;
+            }
+
+            if (!string.IsNullOrEmpty(tag) && pools.TryGetValue(tag, out var pool))
+            {
+                pool.Active.Remove(obj);
+                
+                var poolable = obj.GetComponent<IPoolable>();
+                poolable?.OnDespawned();
+
+                obj.SetActive(false);
+                obj.transform.SetParent(transform);
+                pool.Inactive.Push(obj);
+            }
+            else
             {
                 var poolable = obj.GetComponent<IPoolable>();
                 poolable?.OnDespawned();
@@ -95,56 +198,61 @@ namespace StarStrike.Gameplay
             }
         }
 
-        public GameObject Spawn(string tag, Vector3 position, Quaternion rotation, Func<GameObject> factory)
+        /// <summary>
+        /// Callback invoked by PooledObjectTracker when a pooled object is deactivated via SetActive(false).
+        /// </summary>
+        public void NotifyDeactivated(GameObject obj, string tag)
         {
-            Initialize();
+            if (obj == null) return;
 
-            if (!poolDictionary.ContainsKey(tag))
+            var tracker = obj.GetComponent<PooledObjectTracker>();
+            if (tracker != null)
             {
-                poolDictionary.Add(tag, new Queue<GameObject>());
+                tracker.isSpawned = false;
             }
 
-            Queue<GameObject> queue = poolDictionary[tag];
-            GameObject objectToSpawn = null;
-
-            if (queue.Count > 0)
+            if (string.IsNullOrEmpty(tag) && objectToTag.TryGetValue(obj, out string mappedTag))
             {
-                int count = queue.Count;
-                for (int i = 0; i < count; i++)
-                {
-                    GameObject obj = queue.Dequeue();
-                    if (obj == null) continue;
+                tag = mappedTag;
+            }
 
-                    if (!obj.activeInHierarchy)
-                    {
-                        objectToSpawn = obj;
-                        break;
-                    }
-                    queue.Enqueue(obj);
+            if (!string.IsNullOrEmpty(tag) && pools.TryGetValue(tag, out var pool))
+            {
+                pool.Active.Remove(obj);
+
+                var poolable = obj.GetComponent<IPoolable>();
+                poolable?.OnDespawned();
+
+                obj.transform.SetParent(transform);
+                pool.Inactive.Push(obj);
+            }
+        }
+
+        public int GetActiveCount(string tag)
+        {
+            return pools.TryGetValue(tag, out var pool) ? pool.Active.Count : 0;
+        }
+
+        public int GetInactiveCount(string tag)
+        {
+            return pools.TryGetValue(tag, out var pool) ? pool.Inactive.Count : 0;
+        }
+
+        public void Clear()
+        {
+            foreach (var kvp in pools)
+            {
+                foreach (var obj in kvp.Value.Inactive)
+                {
+                    if (obj != null) Destroy(obj);
+                }
+                foreach (var obj in kvp.Value.Active)
+                {
+                    if (obj != null) Destroy(obj);
                 }
             }
-
-            if (objectToSpawn == null)
-            {
-                objectToSpawn = factory();
-                if (objectToSpawn != null)
-                {
-                    objectToSpawn.transform.SetParent(transform);
-                }
-            }
-
-            if (objectToSpawn != null)
-            {
-                objectToSpawn.transform.position = position;
-                objectToSpawn.transform.rotation = rotation;
-                objectToSpawn.SetActive(true);
-                var poolable = objectToSpawn.GetComponent<IPoolable>();
-                poolable?.OnSpawned();
-                queue.Enqueue(objectToSpawn);
-                return objectToSpawn;
-            }
-
-            return null;
+            pools.Clear();
+            objectToTag.Clear();
         }
     }
 }
