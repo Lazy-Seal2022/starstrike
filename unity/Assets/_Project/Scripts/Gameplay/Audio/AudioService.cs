@@ -8,7 +8,21 @@ namespace StarStrike.Gameplay.Audio
 {
     public class AudioService : MonoBehaviour
     {
-        public static AudioService Instance { get; private set; }
+        private static AudioService instance;
+        public static AudioService Instance
+        {
+            get
+            {
+                if (instance == null) return null;
+                return instance;
+            }
+            private set => instance = value;
+        }
+
+        public static void ResetStaticInstance()
+        {
+            instance = null;
+        }
 
         public bool isMuted = false;
         public float masterVolume = 1.0f;
@@ -25,9 +39,13 @@ namespace StarStrike.Gameplay.Audio
         public AudioMixerGroup sfxGroup;
         public AudioMixerGroup uiGroup;
 
+        public const int SFX_POOL_SIZE = 16;
         private AudioSource audioSource;
         private AudioSource musicSource;
         private AudioSource uiSource;
+        private AudioSource[] sfxPool;
+        private int sfxPoolIndex = 0;
+        private Coroutine musicDuckingCoroutine;
         private Dictionary<string, AudioClip> proceduralClips = new Dictionary<string, AudioClip>();
 
         private void Awake()
@@ -39,7 +57,8 @@ namespace StarStrike.Gameplay.Audio
         {
             if (Instance != null && Instance != this)
             {
-                Destroy(gameObject);
+                if (Application.isPlaying) Destroy(gameObject);
+                else DestroyImmediate(gameObject);
                 return;
             }
             Instance = this;
@@ -67,6 +86,8 @@ namespace StarStrike.Gameplay.Audio
                 uiSource.playOnAwake = false;
             }
 
+            EnsureSfxPool();
+
             if (audioConfig == null)
             {
                 audioConfig = Resources.Load<AudioConfig>("Data/AudioConfig");
@@ -76,6 +97,23 @@ namespace StarStrike.Gameplay.Audio
             LoadSettings();
             LoadAudioClips();
             StartBackgroundMusic();
+        }
+
+        public void EnsureSfxPool()
+        {
+            if (sfxPool == null || sfxPool.Length == 0)
+            {
+                sfxPool = new AudioSource[SFX_POOL_SIZE];
+                for (int i = 0; i < SFX_POOL_SIZE; i++)
+                {
+                    var sfxChild = new GameObject($"SfxSource_{i}");
+                    sfxChild.transform.SetParent(transform, false);
+                    var src = sfxChild.AddComponent<AudioSource>();
+                    src.playOnAwake = false;
+                    src.loop = false;
+                    sfxPool[i] = src;
+                }
+            }
         }
 
         private void OnDestroy()
@@ -127,6 +165,14 @@ namespace StarStrike.Gameplay.Audio
                 if (musicSource != null && musicGroup != null) musicSource.outputAudioMixerGroup = musicGroup;
                 if (audioSource != null && sfxGroup != null) audioSource.outputAudioMixerGroup = sfxGroup;
                 if (uiSource != null && uiGroup != null) uiSource.outputAudioMixerGroup = uiGroup;
+
+                if (sfxPool != null && sfxGroup != null)
+                {
+                    for (int i = 0; i < sfxPool.Length; i++)
+                    {
+                        if (sfxPool[i] != null) sfxPool[i].outputAudioMixerGroup = sfxGroup;
+                    }
+                }
             }
         }
 
@@ -308,18 +354,67 @@ namespace StarStrike.Gameplay.Audio
             return clip;
         }
 
+        public AudioSource GetNextSfxSource()
+        {
+            EnsureSfxPool();
+            if (sfxPool != null && sfxPool.Length > 0)
+            {
+                AudioSource src = sfxPool[sfxPoolIndex];
+                sfxPoolIndex = (sfxPoolIndex + 1) % sfxPool.Length;
+                if (src != null) return src;
+            }
+            if (audioSource == null)
+            {
+                audioSource = GetComponent<AudioSource>();
+                if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+            }
+            return audioSource;
+        }
+
         public void PlaySound(string id, float volume = 1f)
+        {
+            PlaySound(id, volume, 0.05f);
+        }
+
+        public void PlaySound(string id, float volume, float pitchJitter)
         {
             if (isMuted) return;
             float effectiveVolume = Mathf.Clamp01(volume * sfxVolume * masterVolume);
             if (effectiveVolume <= 0.001f) return;
-            if (audioSource == null) return;
 
             AudioClip clip = GetClip(id);
-            if (clip != null)
+            if (clip == null) return;
+
+            AudioSource targetSource = GetNextSfxSource();
+            if (targetSource == null) return;
+
+            targetSource.pitch = 1f + (pitchJitter > 0f ? Random.Range(-pitchJitter, pitchJitter) : 0f);
+            targetSource.PlayOneShot(clip, effectiveVolume);
+        }
+
+        public void DuckMusic(float duckFactor = 0.35f, float duration = 0.6f)
+        {
+            if (!isActiveAndEnabled || musicSource == null) return;
+            if (musicDuckingCoroutine != null) StopCoroutine(musicDuckingCoroutine);
+            musicDuckingCoroutine = StartCoroutine(DuckMusicRoutine(duckFactor, duration));
+        }
+
+        private System.Collections.IEnumerator DuckMusicRoutine(float duckFactor, float duration)
+        {
+            float baseVol = isMuted ? 0f : Mathf.Clamp01(musicVolume * masterVolume * 0.5f);
+            float duckedVol = baseVol * Mathf.Clamp01(duckFactor);
+            musicSource.volume = duckedVol;
+
+            float elapsed = 0f;
+            while (elapsed < duration)
             {
-                audioSource.PlayOneShot(clip, effectiveVolume);
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                musicSource.volume = Mathf.Lerp(duckedVol, baseVol, t);
+                yield return null;
             }
+            musicSource.volume = baseVol;
+            musicDuckingCoroutine = null;
         }
 
         public void PlayUISound(string id, float volume = 1f)
@@ -333,6 +428,7 @@ namespace StarStrike.Gameplay.Audio
             AudioClip clip = GetClip(id);
             if (clip != null)
             {
+                targetSource.pitch = 1.0f;
                 targetSource.PlayOneShot(clip, effectiveVolume);
             }
         }
@@ -376,20 +472,25 @@ namespace StarStrike.Gameplay.Audio
         // --- Event Handlers ---
         private void OnAsteroidDestroyed(Vector2 pos, string size)
         {
-            PlaySound("explosion", size == "Large" ? 0.8f : (size == "Medium" ? 0.6f : 0.4f));
+            PlaySound("explosion", size == "Large" ? 0.85f : (size == "Medium" ? 0.6f : 0.4f), 0.08f);
+            if (size == "Large")
+            {
+                DuckMusic(0.3f, 0.7f);
+            }
         }
 
         private void OnGemCollected(int amount, int total)
         {
             if (amount > 0)
             {
-                PlaySound("gem", 0.4f);
+                PlaySound("gem", 0.4f, 0.06f);
             }
         }
 
         private void OnPlayerEvolved(string shipId)
         {
-            PlaySound("upgrade", 0.8f);
+            PlaySound("upgrade", 0.85f, 0.02f);
+            DuckMusic(0.5f, 0.4f);
         }
 
         // --- Procedural Generation Methods ---

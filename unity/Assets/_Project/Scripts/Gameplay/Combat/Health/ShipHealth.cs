@@ -82,7 +82,7 @@ namespace StarStrike.Gameplay
                 if (isPlayer)
                 {
                     float ratio = maxShield > 0f ? amount / maxShield : 0.2f;
-                    StarStrike.Gameplay.FX.FXService.Instance.TriggerPlayerDamageShake(ratio);
+                    StarStrike.Core.GameEvents.TriggerPlayerDamaged(ratio);
                 }
             }
 

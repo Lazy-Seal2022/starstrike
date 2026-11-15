@@ -63,6 +63,10 @@ namespace StarStrike.Tests.EditMode
             fx.TriggerPlayerDamageShake(0.5f);
             // Verify service is active
             Assert.IsNotNull(FXService.Instance);
+            Assert.AreEqual(1.0f, fx.ShakeIntensity, 0.01f);
+
+            fx.ShakeIntensity = 0.5f;
+            Assert.AreEqual(0.5f, fx.ShakeIntensity, 0.01f);
         }
 
         [Test]

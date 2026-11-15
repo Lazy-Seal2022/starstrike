@@ -14,6 +14,12 @@ namespace StarStrike.Platform.Storage
         public float sfxVolume = 0.8f;
         public float musicVolume = 0.7f;
 
+        // Display & Visuals
+        public float screenShakeIntensity = 1.0f;
+        public bool isFullscreen = true;
+        public int vSyncCount = 1;
+        public int resolutionIndex = 0; // 0 = native / auto
+
         // Control settings
         public int controlAimMode = 0; // 0 = Mouse / Direct Aim, 1 = Keyboard Turn (Classic)
         public float mouseSensitivity = 1.0f;
@@ -21,6 +27,7 @@ namespace StarStrike.Platform.Storage
         public bool showMobileControls = false;
         public bool invertTurn = false;
         public float cameraZoom = 18f;
+        public string inputBindingOverrides = "";
 
         public string lastShipId = "scout";
         public List<string> unlockedShips = new List<string> { "scout" };
@@ -84,6 +91,10 @@ namespace StarStrike.Platform.Storage
             if (profile.cameraZoom <= 0.001f)
             {
                 profile.cameraZoom = 18f;
+            }
+            if (profile.screenShakeIntensity <= 0.001f && profile.masterVolume > 0f)
+            {
+                profile.screenShakeIntensity = 1.0f;
             }
         }
 
@@ -183,12 +194,52 @@ namespace StarStrike.Platform.Storage
             SaveProfile();
         }
 
+        public static float GetScreenShakeIntensity() => Profile.screenShakeIntensity;
+        public static void SaveScreenShakeIntensity(float intensity)
+        {
+            Profile.screenShakeIntensity = Mathf.Clamp01(intensity);
+            SaveProfile();
+        }
+
+        public static string GetInputBindingOverrides() => Profile.inputBindingOverrides ?? "";
+        public static void SaveInputBindingOverrides(string overridesJson)
+        {
+            Profile.inputBindingOverrides = overridesJson ?? "";
+            SaveProfile();
+        }
+
+        public static bool GetFullscreen() => Profile.isFullscreen;
+        public static void SaveFullscreen(bool fullscreen)
+        {
+            Profile.isFullscreen = fullscreen;
+            SaveProfile();
+        }
+
+        public static int GetVSync() => Profile.vSyncCount;
+        public static void SaveVSync(int vsync)
+        {
+            Profile.vSyncCount = Mathf.Clamp(vsync, 0, 2);
+            SaveProfile();
+        }
+
+        public static int GetResolutionIndex() => Profile.resolutionIndex;
+        public static void SaveResolutionIndex(int idx)
+        {
+            Profile.resolutionIndex = idx;
+            SaveProfile();
+        }
+
         public static void ResetSettingsToDefaults()
         {
             Profile.isAudioMuted = false;
             Profile.masterVolume = 1.0f;
             Profile.sfxVolume = 0.8f;
             Profile.musicVolume = 0.7f;
+            Profile.screenShakeIntensity = 1.0f;
+            Profile.inputBindingOverrides = "";
+            Profile.isFullscreen = true;
+            Profile.vSyncCount = 1;
+            Profile.resolutionIndex = 0;
             Profile.controlAimMode = 0;
             Profile.mouseSensitivity = 1.0f;
             Profile.autoBrakeEnabled = true;

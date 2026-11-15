@@ -16,6 +16,9 @@ namespace StarStrike.Tests.EditMode
             Assert.IsFalse(profile.isAudioMuted);
             Assert.AreEqual("scout", profile.lastShipId);
             Assert.Contains("scout", profile.unlockedShips);
+            Assert.AreEqual(1.0f, profile.screenShakeIntensity, 0.01f);
+            Assert.IsTrue(profile.isFullscreen);
+            Assert.AreEqual(1, profile.vSyncCount);
         }
 
         [Test]

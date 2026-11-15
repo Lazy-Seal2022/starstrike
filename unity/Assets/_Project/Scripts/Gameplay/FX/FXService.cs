@@ -27,6 +27,8 @@ namespace StarStrike.Gameplay.FX
         public static Vector3 CameraOffset { get; private set; }
         public static bool IsHitStopActive { get; private set; }
 
+        public float ShakeIntensity { get; set; } = 1.0f;
+
         public static void ResetStaticState()
         {
             CameraOffset = Vector3.zero;
@@ -44,6 +46,7 @@ namespace StarStrike.Gameplay.FX
                 return;
             }
             instance = this;
+            ShakeIntensity = StarStrike.Platform.Storage.StorageService.GetScreenShakeIntensity();
         }
 
         private void OnDestroy()
@@ -58,11 +61,13 @@ namespace StarStrike.Gameplay.FX
         private void OnEnable()
         {
             GameEvents.OnAsteroidDestroyed += SpawnExplosion;
+            GameEvents.OnPlayerDamaged += TriggerPlayerDamageShake;
         }
 
         private void OnDisable()
         {
             GameEvents.OnAsteroidDestroyed -= SpawnExplosion;
+            GameEvents.OnPlayerDamaged -= TriggerPlayerDamageShake;
             CameraOffset = Vector3.zero;
         }
 
@@ -116,7 +121,7 @@ namespace StarStrike.Gameplay.FX
                 float x = (wave * 0.6f + pX * 0.4f) * magnitude * damping;
                 float y = (wave * 0.6f + pY * 0.4f) * magnitude * damping;
 
-                CameraOffset = new Vector3(x, y, 0f);
+                CameraOffset = new Vector3(x, y, 0f) * ShakeIntensity;
                 yield return null;
             }
             CameraOffset = Vector3.zero;
@@ -131,7 +136,7 @@ namespace StarStrike.Gameplay.FX
                 elapsed += Time.unscaledDeltaTime;
                 float progress = Mathf.Clamp01(elapsed / duration);
                 float decay = Ease.OutQuad(1f - progress);
-                CameraOffset = (Vector3)(dir * force * decay);
+                CameraOffset = (Vector3)(dir * force * decay * ShakeIntensity);
                 yield return null;
             }
             CameraOffset = Vector3.zero;
@@ -167,7 +172,7 @@ namespace StarStrike.Gameplay.FX
         {
             Color original = sr.color;
             sr.color = flashColor;
-            yield return new WaitForSeconds(duration);
+            yield return new WaitForSecondsRealtime(duration);
             if (sr != null) sr.color = original;
         }
 

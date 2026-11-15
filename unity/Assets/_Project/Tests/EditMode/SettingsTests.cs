@@ -20,6 +20,11 @@ namespace StarStrike.Tests.EditMode
                 Object.DestroyImmediate(trackObject);
                 trackObject = null;
             }
+            if (AudioService.Instance != null && AudioService.Instance.gameObject != null)
+            {
+                Object.DestroyImmediate(AudioService.Instance.gameObject);
+            }
+            AudioService.ResetStaticInstance();
             StorageService.ResetSettingsToDefaults();
         }
 
@@ -39,6 +44,9 @@ namespace StarStrike.Tests.EditMode
             Assert.IsFalse(StorageService.GetShowMobileControls());
             Assert.IsFalse(StorageService.GetInvertTurn());
             Assert.AreEqual(18.0f, StorageService.GetCameraZoom(), 0.01f);
+            Assert.AreEqual(1.0f, StorageService.GetScreenShakeIntensity(), 0.01f);
+            Assert.IsTrue(StorageService.GetFullscreen());
+            Assert.AreEqual(1, StorageService.GetVSync());
         }
 
         [Test]
@@ -99,6 +107,32 @@ namespace StarStrike.Tests.EditMode
 
             audioService.SetMuted(false);
             Assert.IsFalse(audioService.isMuted);
+
+            // Audio pool pre-allocation
+            Assert.AreEqual(16, AudioService.SFX_POOL_SIZE);
+            var src = audioService.GetNextSfxSource();
+            Assert.IsNotNull(src);
+
+            // Test play sound with jitter
+            audioService.PlaySound("laser", 0.5f, 0.05f);
+            audioService.DuckMusic(0.5f, 0.2f);
+        }
+
+        [Test]
+        public void PlayerInputReader_BindingOverrides_SavesAndResets()
+        {
+            trackObject = new GameObject("TestPlayerInputBindings");
+            trackObject.AddComponent<ShipMovement>();
+            trackObject.AddComponent<ShipWeapon>();
+            trackObject.AddComponent<ShipHealth>();
+            var inputReader = trackObject.AddComponent<PlayerInputReader>();
+
+            string overrides = inputReader.SaveBindingOverrides();
+            Assert.IsNotNull(overrides);
+
+            inputReader.LoadBindingOverrides(overrides);
+            inputReader.ResetBindingOverrides();
+            Assert.AreEqual("", StorageService.GetInputBindingOverrides());
         }
 
         [Test]
@@ -135,6 +169,9 @@ namespace StarStrike.Tests.EditMode
             settings.SwitchTab(SettingsUI.SettingsTab.Controls);
             // Controls tab active
 
+            settings.SwitchTab(SettingsUI.SettingsTab.Display);
+            // Display tab active
+
             settings.SwitchTab(SettingsUI.SettingsTab.Audio);
             // Audio tab active
 
@@ -142,6 +179,22 @@ namespace StarStrike.Tests.EditMode
             float initialMaster = StorageService.GetMasterVolume();
             settings.AdjustMasterVolume(-0.2f);
             Assert.Less(StorageService.GetMasterVolume(), initialMaster);
+
+            // Test Display methods
+            float initialShake = StorageService.GetScreenShakeIntensity();
+            settings.AdjustScreenShake(-0.3f);
+            Assert.AreEqual(initialShake - 0.3f, StorageService.GetScreenShakeIntensity(), 0.02f);
+
+            bool initialFs = StorageService.GetFullscreen();
+            settings.ToggleFullscreen();
+            Assert.AreNotEqual(initialFs, StorageService.GetFullscreen());
+
+            int initialVsync = StorageService.GetVSync();
+            settings.ToggleVSync();
+            Assert.AreNotEqual(initialVsync, StorageService.GetVSync());
+
+            settings.CycleResolution();
+            Assert.AreEqual(1, StorageService.GetResolutionIndex());
 
             // Test toggles
             int initialAim = StorageService.GetControlAimMode();
@@ -151,6 +204,8 @@ namespace StarStrike.Tests.EditMode
             bool initialBrake = StorageService.GetAutoBrake();
             settings.ToggleAutoBrake();
             Assert.AreNotEqual(initialBrake, StorageService.GetAutoBrake());
+
+            settings.ResetKeybindings();
 
             settings.Close();
             Assert.IsFalse(settings.IsVisible, "Settings should be hidden after Close()");

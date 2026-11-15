@@ -132,6 +132,64 @@ namespace StarStrike.Gameplay
             attackAction.Enable();
             sprintAction.Enable();
             skillAction.Enable();
+
+            string savedOverrides = StorageService.GetInputBindingOverrides();
+            if (!string.IsNullOrEmpty(savedOverrides))
+            {
+                LoadBindingOverrides(savedOverrides);
+            }
+        }
+
+        [System.Serializable]
+        public class BindingOverridesData
+        {
+            public string moveOverrides;
+            public string attackOverrides;
+            public string sprintOverrides;
+            public string skillOverrides;
+        }
+
+        public string SaveBindingOverrides()
+        {
+            var data = new BindingOverridesData
+            {
+                moveOverrides = moveAction?.SaveBindingOverridesAsJson(),
+                attackOverrides = attackAction?.SaveBindingOverridesAsJson(),
+                sprintOverrides = sprintAction?.SaveBindingOverridesAsJson(),
+                skillOverrides = skillAction?.SaveBindingOverridesAsJson()
+            };
+            string json = JsonUtility.ToJson(data);
+            StorageService.SaveInputBindingOverrides(json);
+            return json;
+        }
+
+        public void LoadBindingOverrides(string json)
+        {
+            if (string.IsNullOrEmpty(json)) return;
+            try
+            {
+                var data = JsonUtility.FromJson<BindingOverridesData>(json);
+                if (data != null)
+                {
+                    if (!string.IsNullOrEmpty(data.moveOverrides)) moveAction?.LoadBindingOverridesFromJson(data.moveOverrides);
+                    if (!string.IsNullOrEmpty(data.attackOverrides)) attackAction?.LoadBindingOverridesFromJson(data.attackOverrides);
+                    if (!string.IsNullOrEmpty(data.sprintOverrides)) sprintAction?.LoadBindingOverridesFromJson(data.sprintOverrides);
+                    if (!string.IsNullOrEmpty(data.skillOverrides)) skillAction?.LoadBindingOverridesFromJson(data.skillOverrides);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"Failed to deserialize binding overrides: {ex.Message}");
+            }
+        }
+
+        public void ResetBindingOverrides()
+        {
+            moveAction?.RemoveAllBindingOverrides();
+            attackAction?.RemoveAllBindingOverrides();
+            sprintAction?.RemoveAllBindingOverrides();
+            skillAction?.RemoveAllBindingOverrides();
+            StorageService.SaveInputBindingOverrides("");
         }
 
         private void OnDisable()

@@ -21,6 +21,7 @@ namespace StarStrike.UI
         public enum SettingsTab
         {
             Audio,
+            Display,
             Controls
         }
 
@@ -32,12 +33,25 @@ namespace StarStrike.UI
 
         private SettingsTab activeTab = SettingsTab.Audio;
         private GameObject audioTabPanel;
+        private GameObject displayTabPanel;
         private GameObject controlsTabPanel;
 
         private Button audioTabBtn;
+        private Button displayTabBtn;
         private Button controlsTabBtn;
         private TMP_Text audioTabBtnText;
+        private TMP_Text displayTabBtnText;
         private TMP_Text controlsTabBtnText;
+
+        // Display controls
+        private TMP_Text shakeText;
+        private Image shakeFill;
+        private Button fullscreenBtn;
+        private TMP_Text fullscreenBtnText;
+        private Button vsyncBtn;
+        private TMP_Text vsyncBtnText;
+        private Button resolutionBtn;
+        private TMP_Text resolutionBtnText;
 
         // Audio controls
         private TMP_Text masterVolText;
@@ -252,6 +266,7 @@ namespace StarStrike.UI
             activeTab = tab;
 
             if (audioTabPanel != null) audioTabPanel.SetActive(activeTab == SettingsTab.Audio);
+            if (displayTabPanel != null) displayTabPanel.SetActive(activeTab == SettingsTab.Display);
             if (controlsTabPanel != null) controlsTabPanel.SetActive(activeTab == SettingsTab.Controls);
 
             Color activeColor = themeConfig != null ? themeConfig.buttonHover : new Color(0.18f, 0.45f, 0.75f, 1f);
@@ -260,6 +275,10 @@ namespace StarStrike.UI
             if (audioTabBtn != null)
             {
                 audioTabBtn.GetComponent<Image>().color = activeTab == SettingsTab.Audio ? activeColor : normalColor;
+            }
+            if (displayTabBtn != null)
+            {
+                displayTabBtn.GetComponent<Image>().color = activeTab == SettingsTab.Display ? activeColor : normalColor;
             }
             if (controlsTabBtn != null)
             {
@@ -337,6 +356,28 @@ namespace StarStrike.UI
                 zoomBtnText.text = $"CAMERA VIEW: [{GetZoomLabel(zoom)}]";
             }
 
+            // Display values
+            float shake = StorageService.GetScreenShakeIntensity();
+            if (shakeText != null) shakeText.text = $"SCREEN SHAKE: {Mathf.RoundToInt(shake * 100f)}%";
+            if (shakeFill != null) shakeFill.fillAmount = shake;
+
+            bool isFs = StorageService.GetFullscreen();
+            if (fullscreenBtnText != null)
+            {
+                fullscreenBtnText.text = isFs ? "DISPLAY MODE: [FULLSCREEN]" : "DISPLAY MODE: [WINDOWED]";
+            }
+
+            int vsync = StorageService.GetVSync();
+            if (vsyncBtnText != null)
+            {
+                vsyncBtnText.text = vsync > 0 ? "V-SYNC: [ENABLED (60 FPS)]" : "V-SYNC: [DISABLED]";
+            }
+
+            if (resolutionBtnText != null)
+            {
+                resolutionBtnText.text = $"RESOLUTION: [{GetResolutionLabel()}]";
+            }
+
             SwitchTab(activeTab);
         }
 
@@ -383,6 +424,80 @@ namespace StarStrike.UI
             {
                 AudioService.Instance.PlaySound("laser", 0.9f);
             }
+        }
+
+        // --- Display & Juice Event Handlers ---
+        public void AdjustScreenShake(float delta)
+        {
+            float cur = StorageService.GetScreenShakeIntensity();
+            float next = Mathf.Clamp01((float)Math.Round(cur + delta, 2));
+            StorageService.SaveScreenShakeIntensity(next);
+            if (StarStrike.Gameplay.FX.FXService.Instance != null)
+            {
+                StarStrike.Gameplay.FX.FXService.Instance.ShakeIntensity = next;
+            }
+            RefreshAllUI();
+        }
+
+        public void ToggleFullscreen()
+        {
+            bool next = !StorageService.GetFullscreen();
+            Screen.fullScreen = next;
+            StorageService.SaveFullscreen(next);
+            RefreshAllUI();
+        }
+
+        public void ToggleVSync()
+        {
+            int cur = StorageService.GetVSync();
+            int next = (cur == 0) ? 1 : 0;
+            QualitySettings.vSyncCount = next;
+            StorageService.SaveVSync(next);
+            RefreshAllUI();
+        }
+
+        private static readonly (int w, int h)[] SupportedResolutions = new (int, int)[]
+        {
+            (1920, 1080),
+            (2560, 1440),
+            (3840, 2160),
+            (1280, 720),
+            (1600, 900)
+        };
+
+        public void CycleResolution()
+        {
+            int curIdx = StorageService.GetResolutionIndex();
+            int nextIdx = (curIdx + 1) % (SupportedResolutions.Length + 1); // 0 = native, 1..N = presets
+            StorageService.SaveResolutionIndex(nextIdx);
+
+            if (nextIdx > 0 && nextIdx <= SupportedResolutions.Length)
+            {
+                var res = SupportedResolutions[nextIdx - 1];
+                Screen.SetResolution(res.w, res.h, Screen.fullScreenMode);
+            }
+            RefreshAllUI();
+        }
+
+        private string GetResolutionLabel()
+        {
+            int idx = StorageService.GetResolutionIndex();
+            if (idx == 0 || idx > SupportedResolutions.Length)
+            {
+                return $"NATIVE ({Screen.width}x{Screen.height})";
+            }
+            var res = SupportedResolutions[idx - 1];
+            return $"{res.w}x{res.h}";
+        }
+
+        public void ResetKeybindings()
+        {
+            if (PlayerInputReader.Instance != null)
+            {
+                PlayerInputReader.Instance.ResetBindingOverrides();
+            }
+            AudioService.Instance?.PlayUISound("click");
+            RefreshAllUI();
         }
 
         // --- Controls Event Handlers ---
@@ -451,9 +566,19 @@ namespace StarStrike.UI
         {
             StorageService.ResetSettingsToDefaults();
             if (AudioService.Instance != null) AudioService.Instance.LoadSettings();
-            if (PlayerInputReader.Instance != null) PlayerInputReader.Instance.ApplySettings();
+            if (PlayerInputReader.Instance != null)
+            {
+                PlayerInputReader.Instance.ApplySettings();
+                PlayerInputReader.Instance.ResetBindingOverrides();
+            }
+            if (StarStrike.Gameplay.FX.FXService.Instance != null)
+            {
+                StarStrike.Gameplay.FX.FXService.Instance.ShakeIntensity = 1.0f;
+            }
             if (CanvasHUD.Instance != null) CanvasHUD.Instance.forceShowMobileControls = false;
             if (CameraController.Instance != null) CameraController.Instance.SetBaseZoom(18f);
+            Screen.fullScreen = true;
+            QualitySettings.vSyncCount = 1;
             RefreshAllUI();
         }
 
@@ -512,7 +637,7 @@ namespace StarStrike.UI
             CreateTextExplicit(dialogCard.transform, "HeaderTitle", "SYSTEM SETTINGS", 24, FontStyles.Bold, Color.white, TextAlignmentOptions.Center,
                 new Vector2(0.5f, 1f), new Vector2(0f, -28f), new Vector2(700f, 36f));
 
-            CreateTextExplicit(dialogCard.transform, "HeaderSub", "Audio Fidelity & Flight Controls Configuration", 12, FontStyles.Normal, new Color(0.6f, 0.8f, 0.95f, 0.85f), TextAlignmentOptions.Center,
+            CreateTextExplicit(dialogCard.transform, "HeaderSub", "Audio Fidelity, Display Juice & Flight Controls Configuration", 12, FontStyles.Normal, new Color(0.6f, 0.8f, 0.95f, 0.85f), TextAlignmentOptions.Center,
                 new Vector2(0.5f, 1f), new Vector2(0f, -56f), new Vector2(700f, 20f));
 
             // Top-Right Close 'X' Button
@@ -530,18 +655,24 @@ namespace StarStrike.UI
             tnRt.anchoredPosition = new Vector2(0f, -85f);
             tnRt.sizeDelta = new Vector2(700f, 44f);
 
-            audioTabBtn = CreateButtonExplicit(tabNav.transform, "BtnAudioTab", "AUDIO SETTINGS", new Vector2(0f, 0.5f), new Vector2(170f, 0f), new Vector2(340f, 42f),
+            audioTabBtn = CreateButtonExplicit(tabNav.transform, "BtnAudioTab", "AUDIO", new Vector2(0.5f, 0.5f), new Vector2(-235f, 0f), new Vector2(225f, 42f),
                 new Color(0.18f, 0.45f, 0.75f), 15);
             audioTabBtn.onClick.AddListener(() => SwitchTab(SettingsTab.Audio));
             audioTabBtnText = audioTabBtn.GetComponentInChildren<TMP_Text>();
 
-            controlsTabBtn = CreateButtonExplicit(tabNav.transform, "BtnControlsTab", "FLIGHT CONTROLS", new Vector2(1f, 0.5f), new Vector2(-170f, 0f), new Vector2(340f, 42f),
+            displayTabBtn = CreateButtonExplicit(tabNav.transform, "BtnDisplayTab", "DISPLAY & JUICE", new Vector2(0.5f, 0.5f), new Vector2(0f, 0f), new Vector2(225f, 42f),
+                new Color(0.1f, 0.18f, 0.28f), 15);
+            displayTabBtn.onClick.AddListener(() => SwitchTab(SettingsTab.Display));
+            displayTabBtnText = displayTabBtn.GetComponentInChildren<TMP_Text>();
+
+            controlsTabBtn = CreateButtonExplicit(tabNav.transform, "BtnControlsTab", "CONTROLS", new Vector2(0.5f, 0.5f), new Vector2(235f, 0f), new Vector2(225f, 42f),
                 new Color(0.1f, 0.18f, 0.28f), 15);
             controlsTabBtn.onClick.AddListener(() => SwitchTab(SettingsTab.Controls));
             controlsTabBtnText = controlsTabBtn.GetComponentInChildren<TMP_Text>();
 
             // 5. Content Area Panels
             BuildAudioPanel(dialogCard.transform, roundedSprite);
+            BuildDisplayPanel(dialogCard.transform, roundedSprite);
             BuildControlsPanel(dialogCard.transform, roundedSprite);
 
             // 6. Footer Section (Bottom 20px)
@@ -681,6 +812,69 @@ namespace StarStrike.UI
             plusBtn.onClick.AddListener(() => onPlus());
         }
 
+        private void BuildDisplayPanel(Transform parent, Sprite roundedSprite)
+        {
+            displayTabPanel = new GameObject("DisplayTabPanel", typeof(RectTransform));
+            displayTabPanel.transform.SetParent(parent, false);
+            var rt = displayTabPanel.GetComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 1f);
+            rt.anchorMax = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.anchoredPosition = new Vector2(0f, -145f);
+            rt.sizeDelta = new Vector2(700f, 410f);
+
+            float rowY = -15f;
+
+            // Row 1: Screen Shake Intensity Stepper
+            CreateVolumeRow(displayTabPanel.transform, "ScreenShake", "SCREEN SHAKE: 100%", rowY, roundedSprite,
+                out shakeText, out shakeFill, () => AdjustScreenShake(-0.1f), () => AdjustScreenShake(0.1f));
+
+            rowY -= 85f;
+            // Row 2: Fullscreen Mode Toggle
+            fullscreenBtn = CreateButtonExplicit(displayTabPanel.transform, "BtnFullscreen", "DISPLAY MODE: [FULLSCREEN]", new Vector2(0.5f, 1f), new Vector2(0f, rowY - 18f), new Vector2(700f, 38f),
+                new Color(0.12f, 0.25f, 0.45f), 15);
+            fullscreenBtn.onClick.AddListener(ToggleFullscreen);
+            fullscreenBtnText = fullscreenBtn.GetComponentInChildren<TMP_Text>();
+
+            rowY -= 48f;
+            // Row 3: Resolution Presets Cycle
+            resolutionBtn = CreateButtonExplicit(displayTabPanel.transform, "BtnResolution", "RESOLUTION: [NATIVE]", new Vector2(0.5f, 1f), new Vector2(0f, rowY - 18f), new Vector2(700f, 38f),
+                new Color(0.12f, 0.25f, 0.45f), 15);
+            resolutionBtn.onClick.AddListener(CycleResolution);
+            resolutionBtnText = resolutionBtn.GetComponentInChildren<TMP_Text>();
+
+            rowY -= 48f;
+            // Row 4: V-Sync Toggle
+            vsyncBtn = CreateButtonExplicit(displayTabPanel.transform, "BtnVSync", "V-SYNC: [ENABLED (60 FPS)]", new Vector2(0.5f, 1f), new Vector2(0f, rowY - 18f), new Vector2(700f, 38f),
+                new Color(0.12f, 0.25f, 0.45f), 15);
+            vsyncBtn.onClick.AddListener(ToggleVSync);
+            vsyncBtnText = vsyncBtn.GetComponentInChildren<TMP_Text>();
+
+            rowY -= 52f;
+            // Row 5: Graphics & Post-Processing Status Card
+            GameObject postBox = new GameObject("PostProcessingInfoBox", typeof(RectTransform), typeof(Image));
+            postBox.transform.SetParent(displayTabPanel.transform, false);
+            var pbRt = postBox.GetComponent<RectTransform>();
+            pbRt.anchorMin = new Vector2(0.5f, 1f);
+            pbRt.anchorMax = new Vector2(0.5f, 1f);
+            pbRt.pivot = new Vector2(0.5f, 1f);
+            pbRt.anchoredPosition = new Vector2(0f, rowY);
+            pbRt.sizeDelta = new Vector2(700f, 85f);
+
+            var pbImg = postBox.GetComponent<Image>();
+            pbImg.sprite = roundedSprite;
+            pbImg.type = Image.Type.Sliced;
+            pbImg.color = new Color(0.04f, 0.07f, 0.12f, 0.92f);
+
+            string postGuide = "<b>URP 2D RENDERING & POST-PROCESSING PIPELINE:</b>\n" +
+                               "<color=#38BDF8>Bloom (Intensity 1.2, Threshold 0.9)</color>: Emissive Neon Glow on Lasers & Gems\n" +
+                               "<color=#4ADE80>Dynamic Batching</color>: Zero real-time point-light batch breaks in combat loop\n" +
+                               "<color=#FBBF24>Zero-Allocation FX</color>: Pre-allocated particle & audio source ring buffer pool";
+
+            CreateTextExplicit(postBox.transform, "PostGuideText", postGuide, 12, FontStyles.Normal, Color.white, TextAlignmentOptions.Left,
+                new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(660f, 75f));
+        }
+
         private void BuildControlsPanel(Transform parent, Sprite roundedSprite)
         {
             controlsTabPanel = new GameObject("ControlsTabPanel", typeof(RectTransform));
@@ -743,7 +937,7 @@ namespace StarStrike.UI
             kbRt.anchorMax = new Vector2(0.5f, 1f);
             kbRt.pivot = new Vector2(0.5f, 1f);
             kbRt.anchoredPosition = new Vector2(0f, rowY);
-            kbRt.sizeDelta = new Vector2(700f, 105f);
+            kbRt.sizeDelta = new Vector2(700f, 82f);
 
             var kbImg = keyBox.GetComponent<Image>();
             kbImg.sprite = roundedSprite;
@@ -753,11 +947,15 @@ namespace StarStrike.UI
             string keyGuide = "<b>FLIGHT CONTROLS & CAMERA:</b>\n" +
                               "<color=#38BDF8>W / Up / Left Stick</color>: Thrust    •    <color=#F87171>S / Down</color>: Brake    •    <color=#38BDF8>Mouse Wheel</color>: Zoom\n" +
                               "<color=#38BDF8>A / D Keys</color>: Steer Ship (or Mouse Aim)      •    <color=#4ADE80>Shift / Right Click</color>: Boost Engines\n" +
-                              "<color=#FBBF24>Space / Left Click / RT</color>: Fire Weapon     •    <color=#A78BFA>U Key</color>: Upgrades Drawer\n" +
-                              "<color=#94A3B8>ESC / O Key</color>: Toggle Settings / Pause";
+                              "<color=#FBBF24>Space / Left Click / RT</color>: Fire Weapon     •    <color=#A78BFA>U Key</color>: Upgrades Drawer";
 
             CreateTextExplicit(keyBox.transform, "KeyGuideText", keyGuide, 12, FontStyles.Normal, Color.white, TextAlignmentOptions.Left,
-                new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(660f, 95f));
+                new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(660f, 74f));
+
+            // 6. Reset Keybindings Button
+            var resetBindingsBtn = CreateButtonExplicit(controlsTabPanel.transform, "BtnResetBindings", "RESET KEYBINDINGS TO DEFAULT", new Vector2(0.5f, 1f), new Vector2(0f, rowY - 96f), new Vector2(700f, 32f),
+                new Color(0.24f, 0.14f, 0.20f), 13);
+            resetBindingsBtn.onClick.AddListener(ResetKeybindings);
         }
 
         // --- Explicit Helpers (Safe RectTransform geometry) ---
