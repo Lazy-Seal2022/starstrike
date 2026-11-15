@@ -44,8 +44,8 @@ namespace StarStrike.Gameplay
 
         public static Sprite GenerateLaserSprite(bool isEnemy = false)
         {
-            if (isEnemy) return GenerateCapsule(new Color(1f, 0.25f, 0.25f), 16, 48);
-            return GenerateCapsule(new Color(0.2f, 0.9f, 1f), 16, 48);
+            if (isEnemy) return GenerateCapsule(new Color(1f, 0.25f, 0.25f), 48, 16);
+            return GenerateCapsule(new Color(0.2f, 0.9f, 1f), 48, 16);
         }
 
         public static Sprite GenerateAsteroidSprite()
@@ -70,7 +70,7 @@ namespace StarStrike.Gameplay
 
         public static Sprite GenerateMissileSprite()
         {
-            return GenerateCapsule(new Color(1f, 0.4f, 0.1f), 16, 40);
+            return GenerateCapsule(new Color(1f, 0.4f, 0.1f), 40, 16);
         }
 
         public static Sprite GeneratePelletSprite()
@@ -266,7 +266,9 @@ namespace StarStrike.Gameplay
                 {
                     float nx = (x - w * 0.5f) / (w * 0.5f);
                     float ny = (y - h * 0.5f) / (h * 0.5f);
-                    float d = Mathf.Sqrt(nx * nx + ny * ny * 0.25f);
+                    float d = (w >= h)
+                        ? Mathf.Sqrt(nx * nx * 0.25f + ny * ny)
+                        : Mathf.Sqrt(nx * nx + ny * ny * 0.25f);
                     if (d < 1f)
                     {
                         float glow = Mathf.Pow(1f - d, 1.5f);
@@ -281,7 +283,7 @@ namespace StarStrike.Gameplay
 
             tex.SetPixels(cols);
             tex.Apply();
-            return Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), 32);
+            return Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), 16);
         }
 
         private static Sprite GenerateAsteroid(Color color, int size)

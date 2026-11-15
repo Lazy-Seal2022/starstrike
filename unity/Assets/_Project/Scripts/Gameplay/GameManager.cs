@@ -223,9 +223,12 @@ namespace StarStrike.Gameplay
             {
                 player.SetActive(true);
                 player.transform.position = Vector3.zero;
+                player.transform.rotation = Quaternion.Euler(0f, 0f, 90f);
                 var rb = player.GetComponent<Rigidbody2D>();
                 if (rb != null)
                 {
+                    rb.position = Vector2.zero;
+                    rb.rotation = 90f;
                     rb.linearVelocity = Vector2.zero;
                     rb.angularVelocity = 0f;
                     rb.gravityScale = 0f;

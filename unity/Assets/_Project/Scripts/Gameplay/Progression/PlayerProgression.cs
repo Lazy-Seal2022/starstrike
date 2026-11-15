@@ -122,11 +122,14 @@ namespace StarStrike.Gameplay
             ApplyShipVisuals();
 
             transform.position = Vector3.zero;
+            transform.rotation = Quaternion.Euler(0f, 0f, 90f);
             if (movement != null)
             {
                 var rb = movement.GetComponent<Rigidbody2D>();
                 if (rb != null)
                 {
+                    rb.position = Vector2.zero;
+                    rb.rotation = 90f;
                     rb.linearVelocity = Vector2.zero;
                     rb.angularVelocity = 0f;
                 }
@@ -249,9 +252,12 @@ namespace StarStrike.Gameplay
             if (weapon != null) weapon.enabled = true;
             
             transform.position = Vector3.zero;
+            transform.rotation = Quaternion.Euler(0f, 0f, 90f);
             if (movement != null) {
                 var rb = movement.GetComponent<Rigidbody2D>();
                 if (rb != null) {
+                    rb.position = Vector2.zero;
+                    rb.rotation = 90f;
                     rb.linearVelocity = Vector2.zero;
                     rb.angularVelocity = 0f;
                 }

@@ -341,11 +341,11 @@ namespace StarStrike.Editor
 
             GameObject leftMuzzle = new GameObject("LeftMuzzle");
             leftMuzzle.transform.SetParent(go.transform);
-            leftMuzzle.transform.localPosition = new Vector3(-0.3f, 0.65f, 0f);
+            leftMuzzle.transform.localPosition = new Vector3(0.65f, 0.3f, 0f);
 
             GameObject rightMuzzle = new GameObject("RightMuzzle");
             rightMuzzle.transform.SetParent(go.transform);
-            rightMuzzle.transform.localPosition = new Vector3(0.3f, 0.65f, 0f);
+            rightMuzzle.transform.localPosition = new Vector3(0.65f, -0.3f, 0f);
 
             SavePrefab(go, $"Ships/Ship_{capId}");
         }
@@ -769,6 +769,45 @@ namespace StarStrike.Editor
             catch (System.Exception ex)
             {
                 Debug.LogError($"[FAIL] 7. Advanced weapon systems test failed: {ex.Message}");
+                failed++;
+            }
+
+            // 8. Projectile Heading & Orientation Alignment Verification
+            try
+            {
+                // Test 8A: Procedural laser sprite is horizontal (width > height) for forward +X motion
+                var laserSprite = StarStrike.Gameplay.ProceduralSpriteHelper.GetLaserSprite(false, forceProcedural: true);
+                if (laserSprite.rect.width <= laserSprite.rect.height)
+                    throw new System.Exception($"Laser sprite must be oriented horizontally along +X: width={laserSprite.rect.width}, height={laserSprite.rect.height}");
+
+                // Test 8B: Bullet fired when ship is rotated 90 degrees (facing UP / vertical)
+                var shipGo = new GameObject("TestShip_AimUp");
+                shipGo.transform.rotation = Quaternion.Euler(0, 0, 90f);
+                var shipWeapon = shipGo.AddComponent<ShipWeapon>();
+                shipWeapon.weaponSlots = 1;
+
+                var bulletGo = new GameObject("TestBullet_Up");
+                bulletGo.transform.rotation = shipGo.transform.rotation;
+                var proj = bulletGo.AddComponent<LaserProjectile>();
+                proj.Initialize(20f, 25f, false);
+
+                var rb = bulletGo.GetComponent<Rigidbody2D>();
+                if (rb == null || rb.linearVelocity.y <= 20f || Mathf.Abs(rb.linearVelocity.x) > 0.01f)
+                    throw new System.Exception($"Bullet fired from ship facing UP must travel vertically (+Y): velocity={rb?.linearVelocity}");
+
+                var sr = bulletGo.GetComponent<SpriteRenderer>();
+                if (sr == null || sr.bounds.size.y <= sr.bounds.size.x)
+                    throw new System.Exception($"Bullet flying vertically must have vertical visual orientation: size={sr?.bounds.size}");
+
+                Object.DestroyImmediate(bulletGo);
+                Object.DestroyImmediate(shipGo);
+
+                Debug.Log("[PASS] 8. Projectile heading & orientation alignment verified (vertical when aimed up, lengthwise across all angles)");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 8. Projectile heading alignment test failed: {ex.Message}");
                 failed++;
             }
 

@@ -86,5 +86,45 @@ namespace StarStrike.Tests.EditMode
             Object.DestroyImmediate(friendlyPlayer);
             Object.DestroyImmediate(laserGo);
         }
+
+        [Test]
+        public void ProjectileOrientation_WhenAimedVertically_IsVerticalAlongFlightPath()
+        {
+            GameObject laserUp = new GameObject("LaserUp");
+            laserUp.transform.rotation = Quaternion.Euler(0, 0, 90f);
+            var laser = laserUp.AddComponent<LaserProjectile>();
+            laser.Initialize(20f, 25f, enemy: false);
+
+            var rb = laserUp.GetComponent<Rigidbody2D>();
+            Assert.IsNotNull(rb);
+            Assert.Greater(rb.linearVelocity.y, 20f, "Bullet aimed vertically must move along +Y");
+            Assert.AreEqual(0f, rb.linearVelocity.x, 0.01f);
+
+            var sr = laserUp.GetComponent<SpriteRenderer>();
+            Assert.IsNotNull(sr);
+            Assert.Greater(sr.bounds.size.y, sr.bounds.size.x, "Bullet flying vertically must be visually oriented vertically");
+
+            Object.DestroyImmediate(laserUp);
+        }
+
+        [Test]
+        public void ProjectileOrientation_WhenAimedHorizontally_IsHorizontalAlongFlightPath()
+        {
+            GameObject laserRight = new GameObject("LaserRight");
+            laserRight.transform.rotation = Quaternion.Euler(0, 0, 0f);
+            var laser = laserRight.AddComponent<LaserProjectile>();
+            laser.Initialize(20f, 25f, enemy: false);
+
+            var rb = laserRight.GetComponent<Rigidbody2D>();
+            Assert.IsNotNull(rb);
+            Assert.Greater(rb.linearVelocity.x, 20f, "Bullet aimed horizontally must move along +X");
+            Assert.AreEqual(0f, rb.linearVelocity.y, 0.01f);
+
+            var sr = laserRight.GetComponent<SpriteRenderer>();
+            Assert.IsNotNull(sr);
+            Assert.Greater(sr.bounds.size.x, sr.bounds.size.y, "Bullet flying horizontally must be visually oriented horizontally");
+
+            Object.DestroyImmediate(laserRight);
+        }
     }
 }
