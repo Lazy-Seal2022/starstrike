@@ -287,6 +287,7 @@ namespace StarStrike.Gameplay
 
         private void OnDisable()
         {
+            IsStunned = false;
             if (sniperAimLine != null) sniperAimLine.enabled = false;
             ReleaseShieldedAllies();
         }
@@ -299,6 +300,16 @@ namespace StarStrike.Gameplay
 
         private void Update()
         {
+            if (IsStunned)
+            {
+                if (movement != null)
+                {
+                    movement.IsThrusting = false;
+                    movement.IsBraking = true;
+                }
+                return;
+            }
+
             if (playerTarget == null)
             {
                 GameObject p = GameObject.FindGameObjectWithTag("Player");
@@ -665,17 +676,43 @@ namespace StarStrike.Gameplay
         }
         #endregion
 
+        public bool IsStunned { get; private set; }
+
         public void ApplyEMPStun(float duration)
         {
+            if (!gameObject.activeInHierarchy || !enabled) return;
             StartCoroutine(EMPStunRoutine(duration));
         }
 
         private System.Collections.IEnumerator EMPStunRoutine(float duration)
         {
-            if (movement != null) { movement.IsThrusting = false; }
+            IsStunned = true;
+            if (movement != null)
+            {
+                movement.IsThrusting = false;
+                movement.IsBraking = true;
+            }
             if (weapon != null) { weapon.enabled = false; }
-            yield return new WaitForSeconds(duration);
+            if (sniperAimLine != null) { sniperAimLine.enabled = false; }
+            sniperChargeTimer = 0f;
+
+            Color origColor = spriteRenderer != null ? spriteRenderer.color : Color.white;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                if (spriteRenderer != null)
+                {
+                    // Electric blue flicker while EMP stunned
+                    float flicker = (Mathf.Sin(elapsed * 24f) + 1f) * 0.5f;
+                    spriteRenderer.color = Color.Lerp(new Color(0.2f, 0.8f, 1f, 1f), Color.white, flicker * 0.5f);
+                }
+                yield return null;
+            }
+
+            IsStunned = false;
             if (weapon != null) { weapon.enabled = true; }
+            if (spriteRenderer != null) { spriteRenderer.color = origColor; }
         }
 
         public void Die()

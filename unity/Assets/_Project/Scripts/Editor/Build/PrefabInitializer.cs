@@ -643,8 +643,10 @@ namespace StarStrike.Editor
             }
 
             // 5. ShipSkillController Verification (Shockwave & Reactive Barrier)
+            string savedSkillBeforeTest = StarStrike.Platform.Storage.StorageService.GetSelectedSkill();
             try
             {
+                StarStrike.Platform.Storage.StorageService.SaveSelectedSkill("forward_shockwave");
                 var ship = new GameObject("TestShip_Skill");
                 var rb = ship.AddComponent<Rigidbody2D>();
                 var health = ship.AddComponent<ShipHealth>();
@@ -673,6 +675,10 @@ namespace StarStrike.Editor
             {
                 Debug.LogError($"[FAIL] 5. Skill controller test failed: {ex.Message}");
                 failed++;
+            }
+            finally
+            {
+                StarStrike.Platform.Storage.StorageService.SaveSelectedSkill(savedSkillBeforeTest);
             }
 
             // 6. Polymorphic Interfaces Verification (IWeapon, IEnergyConsumer, IPowerUpEffect, IPoolable, IShipInputProvider, IProjectile)

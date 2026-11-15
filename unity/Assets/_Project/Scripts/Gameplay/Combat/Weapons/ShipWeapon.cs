@@ -79,6 +79,7 @@ namespace StarStrike.Gameplay
 
         public bool TryFire(IEnergyConsumer energySource = null)
         {
+            if (!enabled || !gameObject.activeInHierarchy) return false;
             float minRate = combatConfig != null ? combatConfig.minFireRate : 0.10f;
             float effectiveFireRate = Mathf.Max(minRate, fireRate);
             if (Time.time - lastFiredTime < effectiveFireRate) return false;

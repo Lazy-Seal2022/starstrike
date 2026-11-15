@@ -30,6 +30,16 @@ namespace StarStrike.Gameplay
         {
             if (ownerShip == null) return;
 
+            // 1. Expanding Visual Shockwave Ring & Player Flash
+            EMPShockwaveVisual.Spawn(origin, empRadius, 0.45f);
+
+            var playerSr = ownerShip.GetComponent<SpriteRenderer>();
+            if (playerSr != null && FXService.Instance != null)
+            {
+                FXService.Instance.FlashSprite(playerSr, Color.cyan, 0.25f);
+            }
+
+            // 2. Physics AOE overlap
             Physics2D.SyncTransforms();
             Collider2D[] hits = Physics2D.OverlapCircleAll(origin, empRadius);
             for (int i = 0; i < hits.Length; i++)
@@ -50,21 +60,36 @@ namespace StarStrike.Gameplay
                     {
                         ai.ApplyEMPStun(stunDuration);
                     }
+
+                    var sr = col.GetComponent<SpriteRenderer>();
+                    if (sr != null && FXService.Instance != null)
+                    {
+                        FXService.Instance.FlashSprite(sr, Color.cyan, 0.35f);
+                    }
+
+                    GameEvents.TriggerDamageDealt(col.transform.position, empDamage, false);
                 }
                 else if (col.GetComponent<Asteroid>() != null)
                 {
                     col.GetComponent<Asteroid>().TakeDamage(empDamage * 0.5f);
+                    var sr = col.GetComponent<SpriteRenderer>();
+                    if (sr != null && FXService.Instance != null)
+                    {
+                        FXService.Instance.FlashSprite(sr, Color.cyan, 0.2f);
+                    }
                 }
             }
 
+            // 3. Audio & Camera Feedback
             if (FXService.Instance != null)
             {
-                FXService.Instance.CameraShake(0.22f, 0.35f);
+                FXService.Instance.CameraShake(0.25f, 0.4f);
             }
 
             if (AudioService.Instance != null)
             {
                 AudioService.Instance.PlaySound("explosion", 0.9f);
+                AudioService.Instance.PlaySound("laser", 0.6f);
             }
         }
 

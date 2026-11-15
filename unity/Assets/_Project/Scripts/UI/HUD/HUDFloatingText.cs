@@ -156,7 +156,12 @@ namespace StarStrike.UI
             }
             else if (evt.Slot == SkillSlotType.Active1)
             {
-                SpawnWorldNotice(evt.CastOrigin, "SHOCKWAVE!", new Color(0.38f, 0.85f, 1f), 16f, false);
+                string skillLabel = "SKILL!";
+                if (evt.Definition != null && !string.IsNullOrEmpty(evt.Definition.displayName))
+                {
+                    skillLabel = evt.Definition.displayName.ToUpper() + "!";
+                }
+                SpawnWorldNotice(evt.CastOrigin, skillLabel, new Color(0.38f, 0.85f, 1f), 16f, false);
             }
         }
 
