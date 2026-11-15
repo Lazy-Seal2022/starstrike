@@ -48,12 +48,12 @@ namespace StarStrike.Editor
             // 7b. Audio Config
             var audioConfig = ScriptableObject.CreateInstance<AudioConfig>();
             audioConfig.ambientMusic = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/Music/ambient_music.ogg");
-            audioConfig.laser = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/laser.ogg");
-            audioConfig.enemyLaser = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/enemy_laser.ogg");
-            audioConfig.gem = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/gem.ogg");
-            audioConfig.explosion = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/explosion.ogg");
-            audioConfig.upgrade = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/upgrade.ogg");
-            audioConfig.click = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/click.ogg");
+            audioConfig.laser = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/Combat/laser.ogg");
+            audioConfig.enemyLaser = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/Combat/enemy_laser.ogg");
+            audioConfig.explosion = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/Combat/explosion.ogg");
+            audioConfig.gem = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/World/gem.ogg");
+            audioConfig.click = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/UI/click.ogg");
+            audioConfig.upgrade = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/SFX/UI/upgrade.ogg");
             audioConfig = CreateOrUpdateAsset(audioConfig, $"{dataPath}/AudioConfig.asset");
 
             // 8. Enemy Drone Definition
