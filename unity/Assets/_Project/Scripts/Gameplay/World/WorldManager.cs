@@ -224,14 +224,7 @@ namespace StarStrike.Gameplay
                 }
             }
 
-            // 5. Clean up minimap dots
-            var minimap = FindAnyObjectByType<StarStrike.UI.MinimapController>();
-            if (minimap != null)
-            {
-                minimap.ClearAll();
-            }
-
-            // 6. Spawn fresh field
+            // 5. Spawn fresh field
             SpawnAsteroidField();
             if (GameManager.Instance == null || GameManager.Instance.CurrentMode == GameMode.PvE)
             {

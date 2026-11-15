@@ -42,6 +42,7 @@ namespace StarStrike.UI
 
         private void OnEnable()
         {
+            GameEvents.OnGameStarted += ClearAll;
             MinimapTrackable.OnTrackableEnabled += RegisterTrackable;
             MinimapTrackable.OnTrackableDisabled += UnregisterTrackable;
 
@@ -58,6 +59,7 @@ namespace StarStrike.UI
 
         private void OnDisable()
         {
+            GameEvents.OnGameStarted -= ClearAll;
             MinimapTrackable.OnTrackableEnabled -= RegisterTrackable;
             MinimapTrackable.OnTrackableDisabled -= UnregisterTrackable;
         }
