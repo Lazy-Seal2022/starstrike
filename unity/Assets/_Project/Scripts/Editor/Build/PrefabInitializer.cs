@@ -21,15 +21,6 @@ namespace StarStrike.Editor
             EnsureFolder("Assets/_Project/Prefabs", "UI");
             EnsureFolder("Assets/_Project/Prefabs", "Network");
 
-            EnsureFolder("Assets/_Project", "Resources");
-            EnsureFolder("Assets/_Project/Resources", "Prefabs");
-            EnsureFolder("Assets/_Project/Resources/Prefabs", "Projectiles");
-            EnsureFolder("Assets/_Project/Resources/Prefabs", "Environment");
-            EnsureFolder("Assets/_Project/Resources/Prefabs", "Enemies");
-            EnsureFolder("Assets/_Project/Resources/Prefabs", "Ships");
-            EnsureFolder("Assets/_Project/Resources/Prefabs", "UI");
-            EnsureFolder("Assets/_Project/Resources/Prefabs", "Network");
-
             // 1. Projectiles
             CreatePlayerLaserPrefab();
             CreateEnemyLaserPrefab();
@@ -62,7 +53,7 @@ namespace StarStrike.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            Debug.Log("StarStrike Prefabs successfully generated in Assets/_Project/Prefabs and Assets/_Project/Resources/Prefabs!");
+            Debug.Log("StarStrike Prefabs successfully generated in Assets/_Project/Prefabs!");
         }
 
         private static Sprite LoadArtSprite(string relativePath)
@@ -466,14 +457,8 @@ namespace StarStrike.Editor
 
         private static void SavePrefab(GameObject go, string subPath)
         {
-            string path1 = $"Assets/_Project/Prefabs/{subPath}.prefab";
-            string path2 = $"Assets/_Project/Resources/Prefabs/{subPath}.prefab";
-
-            PrefabUtility.SaveAsPrefabAsset(go, path1);
-            
-            AssetDatabase.DeleteAsset(path2);
-            AssetDatabase.CopyAsset(path1, path2);
-
+            string path = $"Assets/_Project/Prefabs/{subPath}.prefab";
+            PrefabUtility.SaveAsPrefabAsset(go, path);
             Object.DestroyImmediate(go);
         }
 

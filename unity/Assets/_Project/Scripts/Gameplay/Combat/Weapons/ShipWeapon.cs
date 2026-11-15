@@ -50,6 +50,11 @@ namespace StarStrike.Gameplay
                 isPlayer = true;
             }
 
+            if (laserPrefab == null && combatConfig != null)
+            {
+                laserPrefab = isPlayer ? combatConfig.playerLaserPrefab : combatConfig.enemyLaserPrefab;
+            }
+
             if (laserPrefab == null)
             {
                 string prefabPath = isPlayer ? "Prefabs/Projectiles/PlayerLaser" : "Prefabs/Projectiles/EnemyLaser";

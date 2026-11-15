@@ -34,12 +34,20 @@ namespace StarStrike.Gameplay
             var trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();
             trackable.Type = StarStrike.Gameplay.TrackableType.Asteroid;
 
+            SetupStats();
+
+            if (config != null)
+            {
+                if (gemCrystalPrefab == null) gemCrystalPrefab = config.gemCrystalPrefab;
+                if (powerUpPrefab == null) powerUpPrefab = config.powerUpPrefab;
+                if (mediumChildPrefab == null) mediumChildPrefab = config.mediumPrefab;
+                if (smallChildPrefab == null) smallChildPrefab = config.smallPrefab;
+            }
+
             if (gemCrystalPrefab == null) gemCrystalPrefab = Resources.Load<GameObject>("Prefabs/Environment/GemCrystal");
             if (powerUpPrefab == null) powerUpPrefab = Resources.Load<GameObject>("Prefabs/Environment/PowerUpItem");
             if (mediumChildPrefab == null) mediumChildPrefab = Resources.Load<GameObject>("Prefabs/Environment/Asteroid_Medium");
             if (smallChildPrefab == null) smallChildPrefab = Resources.Load<GameObject>("Prefabs/Environment/Asteroid_Small");
-
-            SetupStats();
         }
 
         public void SetupStats()

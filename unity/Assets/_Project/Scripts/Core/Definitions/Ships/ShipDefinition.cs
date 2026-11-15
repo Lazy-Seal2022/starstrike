@@ -18,6 +18,9 @@ namespace StarStrike.Core
 
         [Header("Weapon Settings")]
         public int weaponSlots = 1;
+
+        [Header("Prefab Reference")]
+        public GameObject prefab;
         
         [Header("Presentation")]
         public Sprite sprite;

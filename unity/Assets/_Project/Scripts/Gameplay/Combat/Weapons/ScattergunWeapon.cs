@@ -44,6 +44,11 @@ namespace StarStrike.Gameplay
                 isPlayer = true;
             }
 
+            if (pelletPrefab == null && combatConfig != null)
+            {
+                pelletPrefab = combatConfig.playerLaserPrefab;
+            }
+
             if (pelletPrefab == null)
             {
                 pelletPrefab = Resources.Load<GameObject>("Prefabs/Projectiles/PlayerLaser");

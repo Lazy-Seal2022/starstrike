@@ -137,8 +137,8 @@ namespace StarStrike.Tests.EditMode
         [Test]
         public void CanvasHUDPrefab_LoadsFromResources_HasAllSubControllersPreWired()
         {
-            var prefab = Resources.Load<GameObject>("Prefabs/UI/CanvasHUD");
-            Assert.IsNotNull(prefab, "CanvasHUD.prefab must exist in Resources/Prefabs/UI/CanvasHUD");
+            var prefab = TestAssetHelper.LoadPrefab("UI/CanvasHUD");
+            Assert.IsNotNull(prefab, "CanvasHUD.prefab must exist in Prefabs/UI/CanvasHUD");
 
             var hud = prefab.GetComponent<CanvasHUD>();
             Assert.IsNotNull(hud, "CanvasHUD component must be on prefab");

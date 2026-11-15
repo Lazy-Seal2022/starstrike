@@ -149,10 +149,37 @@ namespace StarStrike.Editor
             gameConfig.audioConfig = audioConfig;
             gameConfig.upgradeDefinition = upgradeDef;
             gameConfig.defaultShip = scout;
-            CreateOrUpdateAsset(gameConfig, $"{dataPath}/GameConfig.asset");
+            gameConfig = CreateOrUpdateAsset(gameConfig, $"{dataPath}/GameConfig.asset");
 
             // 11. Generate Prefabs
             PrefabInitializer.GeneratePrefabs();
+
+            // 12. Wire Prefab References into Pure Configurations
+            combatConfig.playerLaserPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Projectiles/PlayerLaser.prefab");
+            combatConfig.enemyLaserPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Projectiles/EnemyLaser.prefab");
+            EditorUtility.SetDirty(combatConfig);
+
+            asteroidConfig.largePrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Environment/Asteroid_Large.prefab");
+            asteroidConfig.mediumPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Environment/Asteroid_Medium.prefab");
+            asteroidConfig.smallPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Environment/Asteroid_Small.prefab");
+            asteroidConfig.gemCrystalPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Environment/GemCrystal.prefab");
+            asteroidConfig.powerUpPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Environment/PowerUpItem.prefab");
+            EditorUtility.SetDirty(asteroidConfig);
+
+            gameConfig.enemyDronePrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Enemies/EnemyDrone.prefab");
+            gameConfig.bossPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Enemies/BossDreadnought.prefab");
+            EditorUtility.SetDirty(gameConfig);
+
+            scout.prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Ships/Ship_Scout.prefab");
+            fighter.prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Ships/Ship_Fighter.prefab");
+            miner.prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Ships/Ship_Miner.prefab");
+            interceptor.prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Ships/Ship_Interceptor.prefab");
+            juggernaut.prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Ships/Ship_Juggernaut.prefab");
+            EditorUtility.SetDirty(scout);
+            EditorUtility.SetDirty(fighter);
+            EditorUtility.SetDirty(miner);
+            EditorUtility.SetDirty(interceptor);
+            EditorUtility.SetDirty(juggernaut);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();

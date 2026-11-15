@@ -10,6 +10,10 @@ namespace StarStrike.Core
         public float worldHeight = 140f;
         public int asteroidCount = 50;
         public int initialDroneCount = 6;
+
+        [Header("Entity Prefabs")]
+        public GameObject enemyDronePrefab;
+        public GameObject bossPrefab;
         
         [Header("Legacy / Physics")]
         public float baseFriction = 0.985f;

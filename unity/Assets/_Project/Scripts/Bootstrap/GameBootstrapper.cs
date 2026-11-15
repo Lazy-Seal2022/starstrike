@@ -21,7 +21,31 @@ namespace StarStrike.Bootstrap
                 Object.DontDestroyOnLoad(poolGO);
             }
 
-            // 1. Create GameManager
+            // 1. Ensure AudioService exists
+            if (StarStrike.Gameplay.Audio.AudioService.Instance == null)
+            {
+                var audioGO = new GameObject("[AudioService]");
+                audioGO.AddComponent<StarStrike.Gameplay.Audio.AudioService>();
+                Object.DontDestroyOnLoad(audioGO);
+            }
+
+            // 2. Ensure FXService exists
+            if (StarStrike.Gameplay.FX.FXService.Instance == null)
+            {
+                var fxGO = new GameObject("[FXService]");
+                fxGO.AddComponent<StarStrike.Gameplay.FX.FXService>();
+                Object.DontDestroyOnLoad(fxGO);
+            }
+
+            // 3. Ensure AchievementManager exists
+            if (Object.FindAnyObjectByType<AchievementManager>() == null)
+            {
+                var achGO = new GameObject("[AchievementManager]");
+                achGO.AddComponent<AchievementManager>();
+                Object.DontDestroyOnLoad(achGO);
+            }
+
+            // 4. Create GameManager
             if (GameManager.Instance == null)
             {
                 var gm = new GameObject("GameManager");

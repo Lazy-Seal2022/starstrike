@@ -10,16 +10,16 @@ namespace StarStrike.Tests.EditMode
         [Test]
         public void ProjectilePrefabs_PlayerAndEnemyLasers_ExistWithExpectedComponents()
         {
-            var playerLaser = Resources.Load<GameObject>("Prefabs/Projectiles/PlayerLaser");
-            Assert.IsNotNull(playerLaser, "PlayerLaser prefab must exist in Resources/Prefabs/Projectiles");
+            var playerLaser = TestAssetHelper.LoadPrefab("Projectiles/PlayerLaser");
+            Assert.IsNotNull(playerLaser, "PlayerLaser prefab must exist in Prefabs/Projectiles");
             Assert.AreEqual("Laser", playerLaser.tag);
             Assert.IsNotNull(playerLaser.GetComponent<LaserProjectile>());
             Assert.IsNotNull(playerLaser.GetComponent<Rigidbody2D>());
             Assert.IsTrue(playerLaser.GetComponent<CircleCollider2D>().isTrigger);
             Assert.IsNotNull(playerLaser.GetComponent<TrailRenderer>());
 
-            var enemyLaser = Resources.Load<GameObject>("Prefabs/Projectiles/EnemyLaser");
-            Assert.IsNotNull(enemyLaser, "EnemyLaser prefab must exist in Resources/Prefabs/Projectiles");
+            var enemyLaser = TestAssetHelper.LoadPrefab("Projectiles/EnemyLaser");
+            Assert.IsNotNull(enemyLaser, "EnemyLaser prefab must exist in Prefabs/Projectiles");
             Assert.AreEqual("EnemyLaser", enemyLaser.tag);
             var proj = enemyLaser.GetComponent<LaserProjectile>();
             Assert.IsNotNull(proj);
@@ -29,9 +29,9 @@ namespace StarStrike.Tests.EditMode
         [Test]
         public void AsteroidPrefabs_AllThreeTiers_ExistWithExpectedComponents()
         {
-            var large = Resources.Load<GameObject>("Prefabs/Environment/Asteroid_Large");
-            var medium = Resources.Load<GameObject>("Prefabs/Environment/Asteroid_Medium");
-            var small = Resources.Load<GameObject>("Prefabs/Environment/Asteroid_Small");
+            var large = TestAssetHelper.LoadPrefab("Environment/Asteroid_Large");
+            var medium = TestAssetHelper.LoadPrefab("Environment/Asteroid_Medium");
+            var small = TestAssetHelper.LoadPrefab("Environment/Asteroid_Small");
 
             Assert.IsNotNull(large, "Asteroid_Large prefab must exist");
             Assert.IsNotNull(medium, "Asteroid_Medium prefab must exist");
@@ -49,13 +49,13 @@ namespace StarStrike.Tests.EditMode
         [Test]
         public void LootPrefabs_GemAndPowerUp_ExistWithTriggers()
         {
-            var gem = Resources.Load<GameObject>("Prefabs/Environment/GemCrystal");
+            var gem = TestAssetHelper.LoadPrefab("Environment/GemCrystal");
             Assert.IsNotNull(gem, "GemCrystal prefab must exist");
             Assert.AreEqual("Gem", gem.tag);
             Assert.IsNotNull(gem.GetComponent<GemCrystal>());
             Assert.IsTrue(gem.GetComponent<CircleCollider2D>().isTrigger);
 
-            var powerUp = Resources.Load<GameObject>("Prefabs/Environment/PowerUpItem");
+            var powerUp = TestAssetHelper.LoadPrefab("Environment/PowerUpItem");
             Assert.IsNotNull(powerUp, "PowerUpItem prefab must exist");
             Assert.AreEqual("PowerUp", powerUp.tag);
             Assert.IsNotNull(powerUp.GetComponent<PowerUpItem>());
@@ -65,14 +65,14 @@ namespace StarStrike.Tests.EditMode
         [Test]
         public void EnemyPrefabs_DroneAndBoss_ExistWithAIAndCombatComponents()
         {
-            var drone = Resources.Load<GameObject>("Prefabs/Enemies/EnemyDrone");
+            var drone = TestAssetHelper.LoadPrefab("Enemies/EnemyDrone");
             Assert.IsNotNull(drone, "EnemyDrone prefab must exist");
             Assert.AreEqual("Enemy", drone.tag);
             Assert.IsNotNull(drone.GetComponent<EnemyAI>());
             Assert.IsNotNull(drone.GetComponent<ShipHealth>());
             Assert.IsNotNull(drone.GetComponent<ShipWeapon>());
 
-            var boss = Resources.Load<GameObject>("Prefabs/Enemies/BossDreadnought");
+            var boss = TestAssetHelper.LoadPrefab("Enemies/BossDreadnought");
             Assert.IsNotNull(boss, "BossDreadnought prefab must exist");
             Assert.AreEqual("Boss", boss.tag);
             Assert.IsNotNull(boss.GetComponent<BossBrain>());
@@ -86,8 +86,8 @@ namespace StarStrike.Tests.EditMode
 
             foreach (var shipName in ships)
             {
-                var shipPrefab = Resources.Load<GameObject>($"Prefabs/Ships/{shipName}");
-                Assert.IsNotNull(shipPrefab, $"{shipName} prefab must exist in Resources/Prefabs/Ships");
+                var shipPrefab = TestAssetHelper.LoadPrefab($"Ships/{shipName}");
+                Assert.IsNotNull(shipPrefab, $"{shipName} prefab must exist in Prefabs/Ships");
                 Assert.AreEqual("Player", shipPrefab.tag);
                 Assert.IsNotNull(shipPrefab.GetComponent<ShipMovement>(), $"{shipName} missing ShipMovement");
                 Assert.IsNotNull(shipPrefab.GetComponent<ShipHealth>(), $"{shipName} missing ShipHealth");

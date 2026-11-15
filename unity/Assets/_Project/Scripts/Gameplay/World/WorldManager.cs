@@ -76,6 +76,12 @@ namespace StarStrike.Gameplay
                 bossConfig = ScriptableObject.CreateInstance<BossConfig>();
             }
 
+            if (asteroidLargePrefab == null && config?.asteroidConfig != null) asteroidLargePrefab = config.asteroidConfig.largePrefab;
+            if (asteroidMediumPrefab == null && config?.asteroidConfig != null) asteroidMediumPrefab = config.asteroidConfig.mediumPrefab;
+            if (asteroidSmallPrefab == null && config?.asteroidConfig != null) asteroidSmallPrefab = config.asteroidConfig.smallPrefab;
+            if (enemyDronePrefab == null && config != null) enemyDronePrefab = config.enemyDronePrefab;
+            if (bossPrefab == null && config != null) bossPrefab = config.bossPrefab;
+
             if (asteroidLargePrefab == null) asteroidLargePrefab = Resources.Load<GameObject>("Prefabs/Environment/Asteroid_Large");
             if (asteroidMediumPrefab == null) asteroidMediumPrefab = Resources.Load<GameObject>("Prefabs/Environment/Asteroid_Medium");
             if (asteroidSmallPrefab == null) asteroidSmallPrefab = Resources.Load<GameObject>("Prefabs/Environment/Asteroid_Small");

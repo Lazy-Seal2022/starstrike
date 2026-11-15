@@ -111,7 +111,7 @@ namespace StarStrike.Tests.EditMode
         [Test]
         public void NetworkPlayerShip_ComponentSetup_HasRequiredPhysicsAndRenderer()
         {
-            var prefab = Resources.Load<GameObject>("Prefabs/Network/NetworkPlayerShip");
+            var prefab = TestAssetHelper.LoadPrefab("Network/NetworkPlayerShip");
             if (prefab != null)
             {
                 var rb = prefab.GetComponent<Rigidbody2D>();
@@ -142,7 +142,7 @@ namespace StarStrike.Tests.EditMode
         [Test]
         public void NetworkLaserProjectile_ComponentSetup_HasTriggerAndContinuousPhysics()
         {
-            var prefab = Resources.Load<GameObject>("Prefabs/Network/NetworkLaserProjectile");
+            var prefab = TestAssetHelper.LoadPrefab("Network/NetworkLaserProjectile");
             if (prefab != null)
             {
                 var rb = prefab.GetComponent<Rigidbody2D>();

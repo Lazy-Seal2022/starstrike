@@ -8,6 +8,8 @@ namespace StarStrike.Core
         [Header("Laser Projectiles")]
         public Sprite playerLaserSprite;
         public Sprite enemyLaserSprite;
+        public GameObject playerLaserPrefab;
+        public GameObject enemyLaserPrefab;
         public float defaultPulseDamage = 18f;
         public float defaultPulseSpeed = 22f;
         public float projectileLifetime = 3f;
