@@ -97,8 +97,9 @@ namespace StarStrike.Gameplay
             if (health != null) health.OnDied += HandleDeath;
 
             // Add Minimap Trackable
-            var trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();
-            trackable.Type = StarStrike.Gameplay.TrackableType.Player;
+            var trackable = GetComponent<StarStrike.Gameplay.MinimapTrackable>();
+            if (trackable == null) trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();
+            trackable.SetType(StarStrike.Gameplay.TrackableType.Player);
         }
 
         public void ResetForNewRun()

@@ -40,8 +40,9 @@ namespace StarStrike.Gameplay
             }
             sr.sortingOrder = 3;
             
-            var trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();
-            trackable.Type = TrackableType.Gem;
+            var trackable = GetComponent<StarStrike.Gameplay.MinimapTrackable>();
+            if (trackable == null) trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();
+            trackable.SetType(TrackableType.Gem);
         }
 
         private void OnEnable()

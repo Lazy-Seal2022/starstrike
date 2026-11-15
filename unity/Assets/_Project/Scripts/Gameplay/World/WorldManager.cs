@@ -171,14 +171,71 @@ namespace StarStrike.Gameplay
             gameTimer = 0f;
             bossSpawned = false;
 
+            // 1. Clean up ALL existing asteroids
             var existingAsteroids = FindObjectsByType<StarStrike.Gameplay.Asteroid>(FindObjectsSortMode.None);
-            if (existingAsteroids.Length < 15)
+            foreach (var a in existingAsteroids)
             {
-                foreach (var a in existingAsteroids)
+                if (a != null && a.gameObject != null)
                 {
-                    Destroy(a.gameObject);
+                    if (PoolManager.Instance != null) PoolManager.Instance.Despawn(a.gameObject);
+                    else Destroy(a.gameObject);
                 }
-                SpawnAsteroidField();
+            }
+
+            // 2. Clean up ALL existing gems
+            var existingGems = FindObjectsByType<StarStrike.Gameplay.GemCrystal>(FindObjectsSortMode.None);
+            foreach (var g in existingGems)
+            {
+                if (g != null && g.gameObject != null)
+                {
+                    if (PoolManager.Instance != null) PoolManager.Instance.Despawn(g.gameObject);
+                    else Destroy(g.gameObject);
+                }
+            }
+
+            // 3. Clean up ALL existing powerups
+            var existingPowerups = FindObjectsByType<StarStrike.Gameplay.PowerUpItem>(FindObjectsSortMode.None);
+            foreach (var p in existingPowerups)
+            {
+                if (p != null && p.gameObject != null)
+                {
+                    if (PoolManager.Instance != null) PoolManager.Instance.Despawn(p.gameObject);
+                    else Destroy(p.gameObject);
+                }
+            }
+
+            // 4. Clean up ALL existing enemies & bosses
+            var existingEnemies = FindObjectsByType<StarStrike.Gameplay.EnemyAI>(FindObjectsSortMode.None);
+            foreach (var e in existingEnemies)
+            {
+                if (e != null && e.gameObject != null)
+                {
+                    if (PoolManager.Instance != null) PoolManager.Instance.Despawn(e.gameObject);
+                    else Destroy(e.gameObject);
+                }
+            }
+            var existingBosses = FindObjectsByType<StarStrike.Gameplay.BossBrain>(FindObjectsSortMode.None);
+            foreach (var b in existingBosses)
+            {
+                if (b != null && b.gameObject != null)
+                {
+                    if (PoolManager.Instance != null) PoolManager.Instance.Despawn(b.gameObject);
+                    else Destroy(b.gameObject);
+                }
+            }
+
+            // 5. Clean up minimap dots
+            var minimap = FindAnyObjectByType<StarStrike.UI.MinimapController>();
+            if (minimap != null)
+            {
+                minimap.ClearAll();
+            }
+
+            // 6. Spawn fresh field
+            SpawnAsteroidField();
+            if (GameManager.Instance == null || GameManager.Instance.CurrentMode == GameMode.PvE)
+            {
+                SpawnEnemyDrones();
             }
         }
 

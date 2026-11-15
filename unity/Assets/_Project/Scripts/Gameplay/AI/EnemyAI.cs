@@ -50,8 +50,9 @@ namespace StarStrike.Gameplay
             }
             sr.sortingOrder = 4;
 
-            var trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();
-            trackable.Type = StarStrike.Gameplay.TrackableType.Enemy;
+            var trackable = GetComponent<StarStrike.Gameplay.MinimapTrackable>();
+            if (trackable == null) trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();
+            trackable.SetType(StarStrike.Gameplay.TrackableType.Enemy);
 
             health.OnDied += Die;
         }

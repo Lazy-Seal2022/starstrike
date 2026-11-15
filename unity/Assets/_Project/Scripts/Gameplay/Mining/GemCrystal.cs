@@ -43,9 +43,13 @@ namespace StarStrike.Gameplay
             }
             sr.sortingOrder = 3;
 
-            var trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();
-            trackable.Type = StarStrike.Gameplay.TrackableType.Gem;
+            var trackable = GetComponent<StarStrike.Gameplay.MinimapTrackable>();
+            if (trackable == null) trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();
+            trackable.SetType(StarStrike.Gameplay.TrackableType.Gem);
         }
+
+        private float spawnTime;
+        public float lifetime = 35f;
 
         private void OnEnable()
         {
@@ -60,6 +64,7 @@ namespace StarStrike.Gameplay
 
         public void OnSpawned()
         {
+            spawnTime = Time.time;
             GameObject p = GameObject.FindGameObjectWithTag("Player");
             if (p != null) playerTarget = p.transform;
         }
@@ -75,6 +80,12 @@ namespace StarStrike.Gameplay
 
         private void Update()
         {
+            if (Time.time - spawnTime > lifetime)
+            {
+                if (PoolManager.Instance != null) PoolManager.Instance.Despawn(gameObject);
+                else gameObject.SetActive(false);
+                return;
+            }
             if (playerTarget == null)
             {
                 GameObject p = GameObject.FindGameObjectWithTag("Player");

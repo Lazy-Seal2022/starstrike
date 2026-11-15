@@ -61,8 +61,9 @@ namespace StarStrike.Gameplay
 
             health.OnDied += Die;
 
-            var trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();
-            trackable.Type = TrackableType.Enemy; // Boss can use Enemy dot or a new Boss dot
+            var trackable = GetComponent<StarStrike.Gameplay.MinimapTrackable>();
+            if (trackable == null) trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();
+            trackable.SetType(TrackableType.Enemy);
         }
 
         private void OnEnable()

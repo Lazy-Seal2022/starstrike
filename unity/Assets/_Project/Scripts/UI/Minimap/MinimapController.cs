@@ -142,20 +142,37 @@ namespace StarStrike.UI
             }
         }
 
+        public void ClearAll()
+        {
+            foreach (var kvp in trackableDots)
+            {
+                if (kvp.Value != null)
+                {
+                    kvp.Value.gameObject.SetActive(false);
+                    dotPool.Enqueue(kvp.Value);
+                }
+            }
+            trackableDots.Clear();
+            trackables.Clear();
+        }
+
         public void UnregisterTrackable(MinimapTrackable trackable)
         {
+            if (trackable == null) return;
+
             if (trackables.Contains(trackable))
             {
                 trackables.Remove(trackable);
-                if (trackableDots.TryGetValue(trackable, out RectTransform dotRt))
+            }
+
+            if (trackableDots.TryGetValue(trackable, out RectTransform dotRt))
+            {
+                if (dotRt != null)
                 {
-                    if (dotRt != null)
-                    {
-                        dotRt.gameObject.SetActive(false);
-                        dotPool.Enqueue(dotRt);
-                    }
-                    trackableDots.Remove(trackable);
+                    dotRt.gameObject.SetActive(false);
+                    dotPool.Enqueue(dotRt);
                 }
+                trackableDots.Remove(trackable);
             }
         }
 
@@ -171,9 +188,23 @@ namespace StarStrike.UI
 
             Vector2 playerPos = new Vector2(playerTransform.position.x, playerTransform.position.y);
 
-            foreach (var trackable in trackables)
+            for (int i = trackables.Count - 1; i >= 0; i--)
             {
-                if (trackable == null) continue;
+                var trackable = trackables[i];
+                if (trackable == null || !trackable.gameObject.activeInHierarchy)
+                {
+                    trackables.RemoveAt(i);
+                    if (trackable != null && trackableDots.TryGetValue(trackable, out RectTransform deadDot))
+                    {
+                        if (deadDot != null)
+                        {
+                            deadDot.gameObject.SetActive(false);
+                            dotPool.Enqueue(deadDot);
+                        }
+                        trackableDots.Remove(trackable);
+                    }
+                    continue;
+                }
 
                 if (!trackableDots.ContainsKey(trackable))
                 {
