@@ -61,6 +61,14 @@ namespace StarStrike.Gameplay
             hitEntityIds.Clear();
             spawnTime = Time.time;
 
+            if (rb == null)
+            {
+                rb = GetComponent<Rigidbody2D>();
+                if (rb == null) rb = gameObject.AddComponent<Rigidbody2D>();
+                rb.gravityScale = 0f;
+                rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            }
+
             if (rb != null)
             {
                 rb.linearVelocity = transform.right * speed;

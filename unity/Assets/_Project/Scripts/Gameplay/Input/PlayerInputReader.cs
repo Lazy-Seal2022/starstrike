@@ -89,7 +89,14 @@ namespace StarStrike.Gameplay
             }
             if (weapon == null) weapon = GetComponent<ShipWeapon>();
             if (health == null) health = GetComponent<ShipHealth>();
-            if (skillController == null) skillController = GetComponent<ShipSkillController>();
+            if (skillController == null)
+            {
+                skillController = GetComponent<ShipSkillController>();
+                if (skillController == null && (CompareTag("Player") || gameObject.name == "Player"))
+                {
+                    skillController = gameObject.AddComponent<ShipSkillController>();
+                }
+            }
         }
 
         private void SetupInputActions()
@@ -162,7 +169,7 @@ namespace StarStrike.Gameplay
 
         private void Update()
         {
-            if (movement == null || weapon == null || health == null)
+            if (movement == null || weapon == null || health == null || skillController == null)
             {
                 ResolveComponents();
             }

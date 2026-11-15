@@ -12,6 +12,7 @@ namespace StarStrike.Gameplay
         {
             public SkillSlotType slotType;
             public SkillDefinition definition;
+            [System.NonSerialized]
             public ISkillBehavior behaviorInstance;
             public float currentCooldown;
             public bool IsReady => currentCooldown <= 0f;
@@ -87,6 +88,7 @@ namespace StarStrike.Gameplay
             {
                 var slot = slots[i];
                 if (slot == null) continue;
+                EnsureBehaviorInstance(slot);
 
                 if (slot.currentCooldown > 0f)
                 {
@@ -104,6 +106,7 @@ namespace StarStrike.Gameplay
         public bool TryCastActiveSkill(SkillSlotType slotType = SkillSlotType.Active1)
         {
             if (health == null) health = GetComponent<ShipHealth>();
+            if (slots.Count == 0) InitializeDefaultSlots();
             RuntimeSkillSlot slot = GetSlot(slotType);
             if (slot == null || slot.definition == null || slot.behaviorInstance == null)
             {
@@ -143,12 +146,30 @@ namespace StarStrike.Gameplay
             return true;
         }
 
+        public void EnsureBehaviorInstance(RuntimeSkillSlot slot)
+        {
+            if (slot == null || slot.behaviorInstance != null) return;
+
+            if (slot.slotType == SkillSlotType.Active1)
+            {
+                slot.behaviorInstance = new ForwardShockwaveBehavior();
+                slot.behaviorInstance.Initialize(gameObject, slot.definition ?? defaultActiveSkill);
+            }
+            else if (slot.slotType == SkillSlotType.Passive1)
+            {
+                slot.behaviorInstance = new ReactiveBarrierPassiveBehavior();
+                slot.behaviorInstance.Initialize(gameObject, slot.definition ?? defaultPassiveSkill);
+            }
+        }
+
         public RuntimeSkillSlot GetSlot(SkillSlotType slotType)
         {
+            if (slots.Count == 0) InitializeDefaultSlots();
             for (int i = 0; i < slots.Count; i++)
             {
                 if (slots[i] != null && slots[i].slotType == slotType)
                 {
+                    EnsureBehaviorInstance(slots[i]);
                     return slots[i];
                 }
             }
