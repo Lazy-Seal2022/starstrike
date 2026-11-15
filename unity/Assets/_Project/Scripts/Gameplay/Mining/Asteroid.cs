@@ -80,11 +80,18 @@ namespace StarStrike.Gameplay
 
         private void OnEnable()
         {
+            var col = GetComponent<Collider2D>();
+            if (col != null) col.enabled = true;
+            if (rb != null) rb.simulated = true;
+
             if (!hasCustomInitialVelocity)
             {
                 // Gentle initial spin & drift
-                rb.angularVelocity = Random.Range(-40f, 40f);
-                rb.linearVelocity = Random.insideUnitCircle * Random.Range(0.5f, 2.0f);
+                if (rb != null)
+                {
+                    rb.angularVelocity = Random.Range(-40f, 40f);
+                    rb.linearVelocity = Random.insideUnitCircle * Random.Range(0.5f, 2.0f);
+                }
             }
         }
 
@@ -105,6 +112,10 @@ namespace StarStrike.Gameplay
 
         private void SplitAndDestroy()
         {
+            var col = GetComponent<Collider2D>();
+            if (col != null) col.enabled = false;
+            if (rb != null) rb.simulated = false;
+
             GameEvents.TriggerAsteroidDestroyed(transform.position, tier.ToString());
 
             // 1. Drop Crystals

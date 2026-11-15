@@ -65,16 +65,49 @@ namespace StarStrike.Bootstrap
                 Object.DontDestroyOnLoad(smGO);
             }
 
-            // 6. Ensure EventSystem exists
-            if (Object.FindAnyObjectByType<EventSystem>() == null)
+            // 6. Ensure EventSystem exists and persists
+            var existingEventSystem = Object.FindAnyObjectByType<EventSystem>();
+            if (existingEventSystem == null)
             {
                 var eventSystemGO = new GameObject("EventSystem");
                 eventSystemGO.AddComponent<EventSystem>();
                 eventSystemGO.AddComponent<InputSystemUIInputModule>();
                 Object.DontDestroyOnLoad(eventSystemGO);
             }
+            else if (existingEventSystem.transform.parent == null)
+            {
+                Object.DontDestroyOnLoad(existingEventSystem.gameObject);
+            }
 
             string activeScene = SceneManager.GetActiveScene().name;
+            OnSceneLoaded(activeScene);
+
+            SceneManager.sceneLoaded -= HandleSceneLoaded;
+            SceneManager.sceneLoaded += HandleSceneLoaded;
+
+            Debug.Log($"GameBootstrapper: Core systems initialized for scene '{activeScene}'.");
+        }
+
+        private static void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            OnSceneLoaded(scene.name);
+        }
+
+        public static void OnSceneLoaded(string activeScene)
+        {
+            // Ensure EventSystem exists on scene transition
+            var es = Object.FindAnyObjectByType<EventSystem>();
+            if (es == null)
+            {
+                var eventSystemGO = new GameObject("EventSystem");
+                eventSystemGO.AddComponent<EventSystem>();
+                eventSystemGO.AddComponent<InputSystemUIInputModule>();
+                Object.DontDestroyOnLoad(eventSystemGO);
+            }
+            else if (es.transform.parent == null)
+            {
+                Object.DontDestroyOnLoad(es.gameObject);
+            }
 
             // 7. Scene-specific UI Setup
             if (activeScene == GameManager.SceneMainMenu)
@@ -86,8 +119,6 @@ namespace StarStrike.Bootstrap
                 // In GameplayScene or legacy GameScene: setup gameplay systems & HUD
                 SetupGameplaySceneUI();
             }
-
-            Debug.Log($"GameBootstrapper: Core systems initialized for scene '{activeScene}'.");
         }
 
         private static Canvas EnsureCanvas()

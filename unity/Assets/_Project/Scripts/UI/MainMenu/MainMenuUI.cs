@@ -73,6 +73,10 @@ namespace StarStrike.UI
 
         private void Start()
         {
+            if (ScreenManager.Instance != null)
+            {
+                ScreenManager.Instance.RegisterScreen(this);
+            }
             // Initial state check
             if (GameManager.Instance != null)
             {

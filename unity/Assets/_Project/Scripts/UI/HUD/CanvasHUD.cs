@@ -208,6 +208,10 @@ namespace StarStrike.UI
 
         private void Start()
         {
+            if (ScreenManager.Instance != null)
+            {
+                ScreenManager.Instance.RegisterScreen(this);
+            }
             SyncPlayerInitialState();
             UpdateAllHUDVisuals();
             bool isPlaying = GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Playing;
