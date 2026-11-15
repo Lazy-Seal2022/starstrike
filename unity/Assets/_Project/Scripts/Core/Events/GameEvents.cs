@@ -47,5 +47,14 @@ namespace StarStrike.Core
 
         public static event Action<string, int> OnWeaponSwapped;
         public static void TriggerWeaponSwapped(string weaponName, int weaponIndex) => OnWeaponSwapped?.Invoke(weaponName, weaponIndex);
+
+        // Wave & Spawning Events
+        public static event Action<int, string, float> OnWaveStarted; // waveNumber, waveName, duration
+        public static event Action<int, int> OnWaveCompleted;         // waveNumber, rewardGems
+        public static event Action<float> OnWaveTimeUpdated;          // remainingSeconds
+
+        public static void TriggerWaveStarted(int waveNumber, string waveName, float duration) => OnWaveStarted?.Invoke(waveNumber, waveName, duration);
+        public static void TriggerWaveCompleted(int waveNumber, int rewardGems) => OnWaveCompleted?.Invoke(waveNumber, rewardGems);
+        public static void TriggerWaveTimeUpdated(float remainingSeconds) => OnWaveTimeUpdated?.Invoke(remainingSeconds);
     }
 }

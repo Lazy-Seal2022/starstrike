@@ -103,6 +103,8 @@ namespace StarStrike.UI
             GameEvents.OnGemCollected += HandleGemCollected;
             GameEvents.OnPlayerEvolved += HandlePlayerEvolved;
             GameEvents.OnGameStarted += HandleGameStarted;
+            GameEvents.OnWaveStarted += HandleWaveStarted;
+            GameEvents.OnWaveCompleted += HandleWaveCompleted;
             NetworkLobbyUI.OnLobbyVisibilityChanged += HandleLobbyVisibilityChanged;
         }
 
@@ -113,7 +115,25 @@ namespace StarStrike.UI
             GameEvents.OnGemCollected -= HandleGemCollected;
             GameEvents.OnPlayerEvolved -= HandlePlayerEvolved;
             GameEvents.OnGameStarted -= HandleGameStarted;
+            GameEvents.OnWaveStarted -= HandleWaveStarted;
+            GameEvents.OnWaveCompleted -= HandleWaveCompleted;
             NetworkLobbyUI.OnLobbyVisibilityChanged -= HandleLobbyVisibilityChanged;
+        }
+
+        private void HandleWaveStarted(int waveNumber, string waveName, float duration)
+        {
+            if (floatingTextController != null)
+            {
+                floatingTextController.SpawnFloatingNotice($"WAVE {waveNumber}: {waveName.ToUpper()}", new Color(0.38f, 0.85f, 1f));
+            }
+        }
+
+        private void HandleWaveCompleted(int waveNumber, int rewardGems)
+        {
+            if (floatingTextController != null)
+            {
+                floatingTextController.SpawnFloatingNotice($"WAVE {waveNumber} CLEARED! +{rewardGems} GEMS", new Color(0.3f, 0.95f, 0.5f));
+            }
         }
 
         private void HandleLobbyVisibilityChanged(bool isLobbyVisible)

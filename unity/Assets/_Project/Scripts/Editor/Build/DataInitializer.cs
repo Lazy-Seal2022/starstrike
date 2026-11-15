@@ -193,6 +193,60 @@ namespace StarStrike.Editor
             EditorUtility.SetDirty(interceptor);
             EditorUtility.SetDirty(juggernaut);
 
+            // 10. Data-Driven Waves Configuration
+            string wavesDir = $"{dataPath}/Waves";
+            if (!AssetDatabase.IsValidFolder(wavesDir))
+            {
+                AssetDatabase.CreateFolder(dataPath, "Waves");
+            }
+
+            var dronePrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Enemies/EnemyDrone.prefab");
+            var bossDreadnoughtPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Enemies/BossDreadnought.prefab");
+
+            var wave1 = ScriptableObject.CreateInstance<WaveDefinition>();
+            wave1.waveNumber = 1;
+            wave1.waveName = "Sector Recon";
+            wave1.durationSeconds = 30f;
+            wave1.targetAsteroidCount = 35;
+            wave1.clearGemReward = 15;
+            wave1.enemySpawns = new[]
+            {
+                new SpawnEntry { enemyId = "EnemyDrone", prefab = dronePrefab, spawnInterval = 4.5f, maxConcurrent = 5, totalToSpawn = -1 }
+            };
+            wave1 = CreateOrUpdateAsset(wave1, $"{wavesDir}/Wave_1.asset");
+
+            var wave2 = ScriptableObject.CreateInstance<WaveDefinition>();
+            wave2.waveNumber = 2;
+            wave2.waveName = "Asteroid Incursion";
+            wave2.durationSeconds = 45f;
+            wave2.targetAsteroidCount = 50;
+            wave2.clearGemReward = 30;
+            wave2.enemySpawns = new[]
+            {
+                new SpawnEntry { enemyId = "EnemyDrone", prefab = dronePrefab, spawnInterval = 3.0f, maxConcurrent = 8, totalToSpawn = -1 }
+            };
+            wave2 = CreateOrUpdateAsset(wave2, $"{wavesDir}/Wave_2.asset");
+
+            var wave3 = ScriptableObject.CreateInstance<WaveDefinition>();
+            wave3.waveNumber = 3;
+            wave3.waveName = "Dreadnought Assault";
+            wave3.durationSeconds = 60f;
+            wave3.targetAsteroidCount = 40;
+            wave3.bossPrefab = bossDreadnoughtPrefab;
+            wave3.clearGemReward = 100;
+            wave3.enemySpawns = new[]
+            {
+                new SpawnEntry { enemyId = "EnemyDrone", prefab = dronePrefab, spawnInterval = 5.0f, maxConcurrent = 4, totalToSpawn = -1 }
+            };
+            wave3 = CreateOrUpdateAsset(wave3, $"{wavesDir}/Wave_3.asset");
+
+            var waveConfig = ScriptableObject.CreateInstance<WaveConfig>();
+            waveConfig.waves = new[] { wave1, wave2, wave3 };
+            waveConfig.intermissionSeconds = 4f;
+            waveConfig.loopWaves = true;
+            waveConfig.difficultyMultiplierPerLoop = 1.25f;
+            waveConfig = CreateOrUpdateAsset(waveConfig, $"{dataPath}/WaveConfig.asset");
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 

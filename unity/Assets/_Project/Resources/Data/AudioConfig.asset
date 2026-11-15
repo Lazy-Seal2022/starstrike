@@ -19,3 +19,8 @@ MonoBehaviour:
   explosion: {fileID: 8300000, guid: 90ee6c508d768ad43895d74bb4733e0f, type: 3}
   upgrade: {fileID: 8300000, guid: 55e8a3e85c7051045a6cf3b17fd04cab, type: 3}
   click: {fileID: 8300000, guid: 5f90a5ee33ec3c94d9d848000e2b09a0, type: 3}
+  masterMixer: {fileID: 0}
+  masterGroup: {fileID: 0}
+  musicGroup: {fileID: 0}
+  sfxGroup: {fileID: 0}
+  uiGroup: {fileID: 0}

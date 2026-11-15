@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: WaveConfig
+  m_EditorClassIdentifier: StarStrike.Core:StarStrike.Core:WaveConfig
+  waves:
+  - {fileID: 11400000, guid: fea9effcdd48042459e08be1943e3fe1, type: 2}
+  - {fileID: 11400000, guid: f1b74e7a1d00c6f4bb4c58c1f06fc5e0, type: 2}
+  - {fileID: 11400000, guid: f669524d253e10f4482b0b0bae3b6166, type: 2}
+  intermissionSeconds: 4
+  loopWaves: 1
+  difficultyMultiplierPerLoop: 1.25

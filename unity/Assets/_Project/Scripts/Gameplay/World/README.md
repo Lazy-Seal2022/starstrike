@@ -20,6 +20,8 @@ Orthographic camera tracking, parallax starfields, and runtime sprite synthesis.
 - `Spawn(string tag, Vector3 position, Quaternion rotation, Func<GameObject> factory) -> GameObject` [PoolManager.cs]
 - `NotifyDeactivated(GameObject obj, string tag) -> void` [PoolManager.cs]
 - `class PooledObjectTracker` [PooledObjectTracker.cs]
+- `class WaveManager` [WaveManager.cs]
+- `StartWave(int index) -> void` [WaveManager.cs]
 - `class ProceduralSpriteHelper` [ProceduralSpriteHelper.cs]
 - `GetShipSprite(string type) -> Sprite` [ProceduralSpriteHelper.cs]
 - `GetLaserSprite(bool isEnemy = false) -> Sprite` [ProceduralSpriteHelper.cs]

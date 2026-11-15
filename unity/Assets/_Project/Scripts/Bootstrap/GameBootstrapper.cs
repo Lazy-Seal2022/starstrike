@@ -45,6 +45,14 @@ namespace StarStrike.Bootstrap
                 Object.DontDestroyOnLoad(achGO);
             }
 
+            // 3b. Ensure WaveManager exists
+            if (Object.FindAnyObjectByType<WaveManager>() == null)
+            {
+                var waveGO = new GameObject("[WaveManager]");
+                waveGO.AddComponent<WaveManager>();
+                Object.DontDestroyOnLoad(waveGO);
+            }
+
             // 4. Create GameManager
             if (GameManager.Instance == null)
             {

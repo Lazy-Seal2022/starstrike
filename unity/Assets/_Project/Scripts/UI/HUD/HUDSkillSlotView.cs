@@ -16,8 +16,10 @@ namespace StarStrike.UI
         public Image iconImage;
         public Image cooldownOverlay;
         public Text cooldownText;
+        public TMPro.TMP_Text cooldownTmpText;
         public Image borderImage;
         public Text keybindLabel;
+        public TMPro.TMP_Text keybindTmpLabel;
         public Button triggerButton;
 
         [Header("Colors")]
@@ -56,6 +58,7 @@ namespace StarStrike.UI
         {
             if (cooldownOverlay != null) cooldownOverlay.fillAmount = 0f;
             if (cooldownText != null) cooldownText.text = "";
+            if (cooldownTmpText != null) cooldownTmpText.text = "";
             if (borderImage != null) borderImage.color = normalBorderColor;
         }
 
@@ -76,17 +79,11 @@ namespace StarStrike.UI
                 cooldownOverlay.fillAmount = evt.TotalSeconds > 0f ? evt.RemainingSeconds / evt.TotalSeconds : 0f;
             }
 
-            if (cooldownText != null)
-            {
-                if (evt.RemainingSeconds > 0.05f)
-                {
-                    cooldownText.text = evt.RemainingSeconds >= 1f ? evt.RemainingSeconds.ToString("F1") + "s" : evt.RemainingSeconds.ToString("F1");
-                }
-                else
-                {
-                    cooldownText.text = "";
-                }
-            }
+            string cdStr = (evt.RemainingSeconds > 0.05f)
+                ? (evt.RemainingSeconds >= 1f ? evt.RemainingSeconds.ToString("F1") + "s" : evt.RemainingSeconds.ToString("F1"))
+                : "";
+            if (cooldownText != null) cooldownText.text = cdStr;
+            if (cooldownTmpText != null) cooldownTmpText.text = cdStr;
         }
 
         private void HandleSkillBlocked(SkillBlockedEvent evt)

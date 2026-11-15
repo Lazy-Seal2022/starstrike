@@ -10,6 +10,8 @@ Pure C# data models, enumerations, stat value containers, and ScriptableObject s
 - **Asteroids/**: `AsteroidConfig.cs`
 - **Loot/**: `LootConfig.cs`
 - **Game/**: `GameConfig.cs`, `GameMode.cs`, `RunSummary.cs`, `UIThemeConfig.cs`
+- **Audio/**: `AudioConfig.cs`
+- **Waves/**: `WaveDefinition.cs`, `WaveConfig.cs`, `SpawnEntry.cs`
 
 ## Invariants
 - All classes remain data-pure with zero dependencies on scene GameObjects or MonoBehaviours.
