@@ -31,6 +31,14 @@ namespace StarStrike.UI
                 return;
             }
             Instance = this;
+
+            RectTransform selfRt = GetComponent<RectTransform>();
+            if (selfRt == null) selfRt = gameObject.AddComponent<RectTransform>();
+            selfRt.anchorMin = Vector2.zero;
+            selfRt.anchorMax = Vector2.one;
+            selfRt.offsetMin = Vector2.zero;
+            selfRt.offsetMax = Vector2.zero;
+
             BuildUI();
         }
 
@@ -168,14 +176,14 @@ namespace StarStrike.UI
             bgImg.raycastTarget = true;
 
             // Title
-            CreateText(menuContainer.transform, "TitleText", "STARSTRIKE", 64, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.8f), new Vector2(0.5f, 0.8f), new Vector2(-300, -50), new Vector2(300, 50), defaultFont);
+            CreateText(menuContainer.transform, "TitleText", "STARSTRIKE", 60, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.82f), new Vector2(0.5f, 0.82f), new Vector2(-350, -45), new Vector2(350, 45), defaultFont);
 
             // Gems
-            GameObject gemsObj = CreateText(menuContainer.transform, "GemsText", "Meta-Gems: 0", 24, FontStyle.Bold, Color.cyan, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.7f), new Vector2(0.5f, 0.7f), new Vector2(-200, -30), new Vector2(200, 30), defaultFont);
+            GameObject gemsObj = CreateText(menuContainer.transform, "GemsText", "Meta-Gems: 0", 22, FontStyle.Bold, Color.cyan, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.72f), new Vector2(0.5f, 0.72f), new Vector2(-200, -25), new Vector2(200, 25), defaultFont);
             gemsText = gemsObj.GetComponent<TMP_Text>();
 
             // Mode 1: PvE Survival Button
-            GameObject pveBtnObj = CreateButton(menuContainer.transform, "PvEStartButton", "PvE SURVIVAL", new Vector2(0.5f, 0.18f), new Vector2(0.5f, 0.18f), new Vector2(-155, 0), new Vector2(290, 64), new Color(0.15f, 0.70f, 0.35f), defaultFont, 22);
+            GameObject pveBtnObj = CreateButton(menuContainer.transform, "PvEStartButton", "PvE SURVIVAL", new Vector2(0.5f, 0.22f), new Vector2(0.5f, 0.22f), new Vector2(-160, 0), new Vector2(280, 58), new Color(0.15f, 0.70f, 0.35f), defaultFont, 20);
             pveBtnObj.GetComponent<Button>().onClick.AddListener(() => {
                 SetMenuVisible(false);
                 if (GameManager.Instance != null)
@@ -185,7 +193,7 @@ namespace StarStrike.UI
             });
 
             // Mode 2: Multiplayer PvP Button
-            GameObject pvpBtnObj = CreateButton(menuContainer.transform, "PvPStartButton", "MULTIPLAYER PvP", new Vector2(0.5f, 0.18f), new Vector2(0.5f, 0.18f), new Vector2(155, 0), new Vector2(290, 64), new Color(0.90f, 0.35f, 0.15f), defaultFont, 22);
+            GameObject pvpBtnObj = CreateButton(menuContainer.transform, "PvPStartButton", "MULTIPLAYER PvP", new Vector2(0.5f, 0.22f), new Vector2(0.5f, 0.22f), new Vector2(160, 0), new Vector2(280, 58), new Color(0.90f, 0.35f, 0.15f), defaultFont, 20);
             pvpBtnObj.GetComponent<Button>().onClick.AddListener(() => {
                 SetMenuVisible(false);
                 if (GameManager.Instance != null)
@@ -203,7 +211,7 @@ namespace StarStrike.UI
             });
 
             // Start Key Hint
-            CreateText(menuContainer.transform, "StartHintText", "[ ENTER / SPACE: Launch PvE  |  Or Click Multiplayer PvP ]", 15, FontStyle.Normal, new Color(0.85f, 0.9f, 1f, 0.9f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.09f), new Vector2(0.5f, 0.09f), new Vector2(-300, -15), new Vector2(300, 15), defaultFont);
+            CreateText(menuContainer.transform, "StartHintText", "[ ENTER / SPACE: Launch PvE  |  Or Click Multiplayer PvP ]", 15, FontStyle.Normal, new Color(0.85f, 0.9f, 1f, 0.85f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.11f), new Vector2(0.5f, 0.11f), new Vector2(-350, -15), new Vector2(350, 15), defaultFont);
 
             // Settings Button (Top Right)
             GameObject settingsBtnObj = CreateButton(menuContainer.transform, "SettingsButton", "SETTINGS [O]", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-120f, -40f), new Vector2(180f, 44f), new Color(0.12f, 0.22f, 0.35f), defaultFont, 16);
@@ -219,15 +227,15 @@ namespace StarStrike.UI
             });
 
             // Ship Hangar
-            GameObject shipHeader = CreateText(menuContainer.transform, "ShipHeader", "SELECT HANGAR SHIP", 20, FontStyle.Normal, Color.yellow, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.55f), new Vector2(0.5f, 0.55f), new Vector2(-200, -25), new Vector2(200, 25), defaultFont);
+            GameObject shipHeader = CreateText(menuContainer.transform, "ShipHeader", "SELECT HANGAR SHIP", 18, FontStyle.Bold, Color.yellow, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.60f), new Vector2(0.5f, 0.60f), new Vector2(-250, -20), new Vector2(250, 20), defaultFont);
 
             GameObject shipListObj = new GameObject("ShipListContainer", typeof(RectTransform));
             shipListObj.transform.SetParent(menuContainer.transform, false);
             RectTransform slRt = shipListObj.GetComponent<RectTransform>();
-            slRt.anchorMin = new Vector2(0.5f, 0.35f);
-            slRt.anchorMax = new Vector2(0.5f, 0.35f);
+            slRt.anchorMin = new Vector2(0.5f, 0.44f);
+            slRt.anchorMax = new Vector2(0.5f, 0.44f);
             slRt.anchoredPosition = Vector2.zero;
-            slRt.sizeDelta = new Vector2(600, 100);
+            slRt.sizeDelta = new Vector2(650, 90);
             shipListContainer = shipListObj.transform;
             
             // We'll populate ships in RefreshData

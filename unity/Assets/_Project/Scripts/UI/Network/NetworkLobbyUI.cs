@@ -39,6 +39,13 @@ namespace StarStrike.UI
             }
             Instance = this;
 
+            RectTransform selfRt = GetComponent<RectTransform>();
+            if (selfRt == null) selfRt = gameObject.AddComponent<RectTransform>();
+            selfRt.anchorMin = Vector2.zero;
+            selfRt.anchorMax = Vector2.one;
+            selfRt.offsetMin = Vector2.zero;
+            selfRt.offsetMax = Vector2.zero;
+
             BuildUI();
             SetVisible(false);
         }

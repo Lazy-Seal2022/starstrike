@@ -171,6 +171,14 @@ namespace StarStrike.Gameplay
                 objectToTag[obj] = tag;
                 pool.Active.Add(obj);
 
+                var rb = obj.GetComponent<Rigidbody2D>();
+                if (rb != null)
+                {
+                    rb.position = position;
+                    rb.rotation = rotation.eulerAngles.z;
+                    rb.linearVelocity = Vector2.zero;
+                    rb.angularVelocity = 0f;
+                }
                 obj.transform.position = position;
                 obj.transform.rotation = rotation;
                 obj.SetActive(true);

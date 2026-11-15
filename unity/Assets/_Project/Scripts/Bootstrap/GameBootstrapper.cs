@@ -144,24 +144,39 @@ namespace StarStrike.Bootstrap
             // MainMenuUI
             if (MainMenuUI.Instance == null && Object.FindAnyObjectByType<MainMenuUI>() == null)
             {
-                var menuGO = new GameObject("MainMenuUI");
+                var menuGO = new GameObject("MainMenuUI", typeof(RectTransform));
                 menuGO.transform.SetParent(canvas.transform, false);
+                var rt = menuGO.GetComponent<RectTransform>();
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
                 menuGO.AddComponent<MainMenuUI>();
             }
 
             // SettingsUI (Overlay)
             if (SettingsUI.Instance == null && Object.FindAnyObjectByType<SettingsUI>() == null)
             {
-                var settingsGO = new GameObject("SettingsUI");
+                var settingsGO = new GameObject("SettingsUI", typeof(RectTransform));
                 settingsGO.transform.SetParent(canvas.transform, false);
+                var rt = settingsGO.GetComponent<RectTransform>();
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
                 settingsGO.AddComponent<SettingsUI>();
             }
 
             // NetworkLobbyUI (Overlay)
             if (NetworkLobbyUI.Instance == null && Object.FindAnyObjectByType<NetworkLobbyUI>() == null)
             {
-                var lobbyGO = new GameObject("NetworkLobbyUI");
+                var lobbyGO = new GameObject("NetworkLobbyUI", typeof(RectTransform));
                 lobbyGO.transform.SetParent(canvas.transform, false);
+                var rt = lobbyGO.GetComponent<RectTransform>();
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
                 lobbyGO.AddComponent<NetworkLobbyUI>();
             }
         }
@@ -181,24 +196,39 @@ namespace StarStrike.Bootstrap
             // CanvasHUD (Combat HUD)
             if (CanvasHUD.Instance == null && Object.FindAnyObjectByType<CanvasHUD>() == null)
             {
-                var hudGO = new GameObject("CanvasHUD");
+                var hudGO = new GameObject("CanvasHUD", typeof(RectTransform));
                 hudGO.transform.SetParent(canvas.transform, false);
+                var rt = hudGO.GetComponent<RectTransform>();
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
                 hudGO.AddComponent<CanvasHUD>();
             }
 
             // SettingsUI (Pause Menu)
             if (SettingsUI.Instance == null && Object.FindAnyObjectByType<SettingsUI>() == null)
             {
-                var settingsGO = new GameObject("SettingsUI");
+                var settingsGO = new GameObject("SettingsUI", typeof(RectTransform));
                 settingsGO.transform.SetParent(canvas.transform, false);
+                var rt = settingsGO.GetComponent<RectTransform>();
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
                 settingsGO.AddComponent<SettingsUI>();
             }
 
             // NetworkScoreboardUI
             if (NetworkScoreboardUI.Instance == null && Object.FindAnyObjectByType<NetworkScoreboardUI>() == null)
             {
-                var scoreboardGO = new GameObject("NetworkScoreboardUI");
+                var scoreboardGO = new GameObject("NetworkScoreboardUI", typeof(RectTransform));
                 scoreboardGO.transform.SetParent(canvas.transform, false);
+                var rt = scoreboardGO.GetComponent<RectTransform>();
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
                 scoreboardGO.AddComponent<NetworkScoreboardUI>();
             }
         }

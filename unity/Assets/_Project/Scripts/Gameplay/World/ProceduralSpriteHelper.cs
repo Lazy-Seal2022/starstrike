@@ -35,7 +35,7 @@ namespace StarStrike.Gameplay
         {
             if (type == "fighter") return GenerateShip(new Color(0.96f, 0.25f, 0.37f), 64, 2);
             if (type == "miner") return GenerateShip(new Color(0.96f, 0.62f, 0.04f), 64, 3);
-            if (type == "drone") return GenerateShip(new Color(0.9f, 0.15f, 0.15f), 48, 4);
+            if (type == "drone") return GenerateShip(new Color(0.9f, 0.15f, 0.15f), 64, 4);
             if (type == "interceptor") return GenerateShip(new Color(0.45f, 0.35f, 0.98f), 64, 5);
             if (type == "juggernaut") return GenerateShip(new Color(0.95f, 0.45f, 0.15f), 64, 6);
             if (type == "boss") return GenerateShip(new Color(0.95f, 0.12f, 0.22f), 96, 7);

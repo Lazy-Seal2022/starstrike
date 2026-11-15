@@ -30,6 +30,8 @@ namespace StarStrike.Gameplay
 
         private void Awake()
         {
+            EnsureInitialized();
+
             if (StarStrike.Gameplay.Audio.AudioService.Instance == null)
             {
                 new GameObject("AudioService").AddComponent<StarStrike.Gameplay.Audio.AudioService>();
@@ -56,7 +58,7 @@ namespace StarStrike.Gameplay
             }
         }
 
-        private void Start()
+        public void EnsureInitialized()
         {
             if (config == null)
             {
@@ -88,18 +90,17 @@ namespace StarStrike.Gameplay
             if (enemyDronePrefab == null) enemyDronePrefab = Resources.Load<GameObject>("Prefabs/Enemies/EnemyDrone");
             if (bossPrefab == null) bossPrefab = Resources.Load<GameObject>("Prefabs/Enemies/BossDreadnought");
 
-            if (config != null)
-            {
-                float w = (config.worldWidth > 0 && config.worldWidth <= 500f) ? config.worldWidth : worldWidth;
-                float h = (config.worldHeight > 0 && config.worldHeight <= 500f) ? config.worldHeight : worldHeight;
-                halfW = w * 0.5f;
-                halfH = h * 0.5f;
-            }
-            else
-            {
-                halfW = worldWidth * 0.5f;
-                halfH = worldHeight * 0.5f;
-            }
+            float w = (config != null && config.worldWidth > 0 && config.worldWidth <= 500f) ? config.worldWidth : (worldWidth > 0 ? worldWidth : 140f);
+            float h = (config != null && config.worldHeight > 0 && config.worldHeight <= 500f) ? config.worldHeight : (worldHeight > 0 ? worldHeight : 140f);
+            worldWidth = w;
+            worldHeight = h;
+            halfW = w * 0.5f;
+            halfH = h * 0.5f;
+        }
+
+        private void Start()
+        {
+            EnsureInitialized();
 
             if (playerTransform == null)
             {
@@ -168,6 +169,7 @@ namespace StarStrike.Gameplay
 
         public void ResetWorld()
         {
+            EnsureInitialized();
             gameTimer = 0f;
             bossSpawned = false;
 
@@ -300,6 +302,10 @@ namespace StarStrike.Gameplay
 
         private void SpawnAsteroidField()
         {
+            EnsureInitialized();
+            if (halfW < 20f) halfW = 70f;
+            if (halfH < 20f) halfH = 70f;
+
             int count = config != null ? config.asteroidCount : initialAsteroidCount;
             if (count <= 0) count = 50;
             
@@ -308,7 +314,7 @@ namespace StarStrike.Gameplay
             for (int i = 0; i < immediateCount; i++)
             {
                 float angle = (i / (float)immediateCount) * Mathf.PI * 2f + Random.Range(-0.25f, 0.25f);
-                float dist = Random.Range(6.5f, 13.5f);
+                float dist = Random.Range(7.5f, 14.5f);
                 Vector2 pos = new Vector2(Mathf.Cos(angle) * dist, Mathf.Sin(angle) * dist);
                 SpawnSingleAsteroid(pos);
             }
@@ -317,7 +323,11 @@ namespace StarStrike.Gameplay
             for (int i = immediateCount; i < count; i++)
             {
                 Vector2 pos = new Vector2(Random.Range(-halfW * 0.9f, halfW * 0.9f), Random.Range(-halfH * 0.9f, halfH * 0.9f));
-                if (pos.magnitude < 6f) pos = pos.normalized * 8f;
+                if (pos.sqrMagnitude < 36f)
+                {
+                    float angle = Random.Range(0f, Mathf.PI * 2f);
+                    pos = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * Random.Range(8f, 18f);
+                }
                 SpawnSingleAsteroid(pos);
             }
         }
@@ -390,13 +400,21 @@ namespace StarStrike.Gameplay
 
         private void SpawnEnemyDrones()
         {
+            EnsureInitialized();
+            if (halfW < 20f) halfW = 70f;
+            if (halfH < 20f) halfH = 70f;
+
             int count = config != null ? 12 : initialDroneCount;
             if (count <= 0) count = 6;
             
             for (int i = 0; i < count; i++)
             {
                 Vector2 pos = new Vector2(Random.Range(-halfW * 0.8f, halfW * 0.8f), Random.Range(-halfH * 0.8f, halfH * 0.8f));
-                if (pos.magnitude < 15f) pos = pos.normalized * 18f;
+                if (pos.sqrMagnitude < 225f)
+                {
+                    float angle = Random.Range(0f, Mathf.PI * 2f);
+                    pos = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * Random.Range(18f, 32f);
+                }
 
                 if (PoolManager.Instance != null) {
                     PoolManager.Instance.Spawn("EnemyDrone", pos, Quaternion.identity, () => {

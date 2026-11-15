@@ -38,6 +38,11 @@ namespace StarStrike.Gameplay
             col.radius = 0.7f;
             col.isTrigger = false;
 
+            if (definition == null)
+            {
+                definition = Resources.Load<EnemyDefinition>("Data/Enemy_Drone");
+            }
+
             SpriteRenderer sr = GetComponent<SpriteRenderer>();
             if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
             if (definition != null && definition.sprite != null)
