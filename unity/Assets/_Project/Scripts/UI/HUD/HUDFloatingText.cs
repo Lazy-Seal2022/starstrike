@@ -38,6 +38,7 @@ namespace StarStrike.UI
 
         private readonly Stack<PooledText> pool = new Stack<PooledText>();
         private Canvas subCanvas;
+        private GameObject textContainer;
 
         private void Awake()
         {
@@ -77,13 +78,24 @@ namespace StarStrike.UI
         {
             if (subCanvas == null)
             {
-                subCanvas = GetComponent<Canvas>();
-                if (subCanvas == null)
+                if (textContainer == null)
                 {
-                    subCanvas = gameObject.AddComponent<Canvas>();
+                    textContainer = new GameObject("FloatingTextContainer", typeof(RectTransform));
+                    textContainer.transform.SetParent(transform, false);
+                    var containerRt = textContainer.GetComponent<RectTransform>();
+                    containerRt.anchorMin = Vector2.zero;
+                    containerRt.anchorMax = Vector2.one;
+                    containerRt.offsetMin = Vector2.zero;
+                    containerRt.offsetMax = Vector2.zero;
                 }
 
-                Canvas parentCanvas = transform.parent != null ? transform.parent.GetComponentInParent<Canvas>() : null;
+                subCanvas = textContainer.GetComponent<Canvas>();
+                if (subCanvas == null)
+                {
+                    subCanvas = textContainer.AddComponent<Canvas>();
+                }
+
+                Canvas parentCanvas = GetComponentInParent<Canvas>();
                 if (parentCanvas != null && parentCanvas != subCanvas)
                 {
                     subCanvas.overrideSorting = true;
@@ -91,8 +103,8 @@ namespace StarStrike.UI
                     subCanvas.sortingOrder = parentCanvas.sortingOrder + 25;
                 }
 
-                var cg = GetComponent<CanvasGroup>();
-                if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
+                var cg = textContainer.GetComponent<CanvasGroup>();
+                if (cg == null) cg = textContainer.AddComponent<CanvasGroup>();
                 cg.blocksRaycasts = false;
                 cg.interactable = false;
             }
@@ -112,8 +124,9 @@ namespace StarStrike.UI
                 }
             }
 
+            Transform parentTransform = textContainer != null ? textContainer.transform : transform;
             GameObject textObj = new GameObject("PooledNotice", typeof(RectTransform));
-            textObj.transform.SetParent(transform, false);
+            textObj.transform.SetParent(parentTransform, false);
 
             var rt = textObj.GetComponent<RectTransform>();
             var tmp = UIHelper.CreateTextMeshPro(textObj.transform, "Text", "", 16, FontStyles.Normal, Color.white, TextAlignmentOptions.Center, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);

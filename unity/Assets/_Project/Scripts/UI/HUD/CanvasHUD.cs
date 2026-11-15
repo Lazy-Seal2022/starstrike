@@ -149,6 +149,7 @@ namespace StarStrike.UI
             foreach (Transform child in transform)
             {
                 if (child.name == "MainMenuContainer" ||
+                    child.name == "FloatingTextContainer" ||
                     child.name == "NetworkLobbyContainer" ||
                     child.name == "NetworkScoreboardContainer" ||
                     child.name == "NetworkVictoryModal" ||

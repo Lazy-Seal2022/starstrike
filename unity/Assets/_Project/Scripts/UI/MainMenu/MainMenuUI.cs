@@ -133,7 +133,7 @@ namespace StarStrike.UI
             Canvas menuCanvas = menuContainer.GetComponent<Canvas>();
             if (menuCanvas == null) menuCanvas = menuContainer.AddComponent<Canvas>();
             menuCanvas.overrideSorting = true;
-            menuCanvas.sortingOrder = 50;
+            menuCanvas.sortingOrder = 105;
             if (menuContainer.GetComponent<GraphicRaycaster>() == null)
             {
                 menuContainer.AddComponent<GraphicRaycaster>();
