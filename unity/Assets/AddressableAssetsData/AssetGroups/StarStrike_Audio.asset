@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: StarStrike_Audio
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: StarStrike_Audio
+  m_GUID: 5b3e3038ceed4124db518082ff23d0ff
+  m_SerializeEntries:
+  - m_GUID: 09adf41f90780a843af1dc6b02e87d2c
+    m_Address: Audio/ambient_music
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - audio
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 55e8a3e85c7051045a6cf3b17fd04cab
+    m_Address: Audio/upgrade
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - audio
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5f90a5ee33ec3c94d9d848000e2b09a0
+    m_Address: Audio/click
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - audio
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 90ee6c508d768ad43895d74bb4733e0f
+    m_Address: Audio/explosion
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - audio
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a8868f2456367bc419001e4132436ff3
+    m_Address: Audio/laser
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - audio
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b9914d2c6c87446488fdcde4d2d3bc37
+    m_Address: Audio/gem
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - audio
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cb0ab93b4c1c2934e88b126a6f714612
+    m_Address: Audio/enemy_laser
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - audio
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 6f7ea51c9462d6a448733533bba23772, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 23b4859b4358efb438a418d48981814c, type: 2}
+    - {fileID: 11400000, guid: 9bad501f5f49bf945b38f562ba1b98ae, type: 2}

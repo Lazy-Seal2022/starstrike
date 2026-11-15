@@ -31,6 +31,14 @@ Pure interface abstractions enforcing OOP polymorphism across damage handling, s
   - `MovementInput -> Vector2`
   - `IsFiring -> bool`
   - `SkillInputTriggered(SkillSlotType slot) -> bool`
+- `interface IAssetProvider` [IAssetProvider.cs]
+  - `LoadAssetAsync<T>(string address) -> Task<T>`
+  - `LoadAssetsByLabelAsync<T>(string label) -> Task<IList<T>>`
+  - `InstantiateAsync(string address, Vector3 position, Quaternion rotation, Transform parent) -> Task<GameObject>`
+  - `LoadAsset<T>(string address) -> T`
+  - `ReleaseAsset<T>(T asset) -> void`
+  - `ReleaseInstance(GameObject instance) -> void`
+  - `IsAssetLoaded(string address) -> bool`
 
 ## Invariants
 - All interfaces remain pure contracts with zero direct dependencies on concrete implementations or scene Singletons.

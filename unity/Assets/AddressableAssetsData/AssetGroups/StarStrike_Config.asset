@@ -1,0 +1,137 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: StarStrike_Config
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: StarStrike_Config
+  m_GUID: bbfe63a44faac964c8ce521c0fe59739
+  m_SerializeEntries:
+  - m_GUID: 1b15059641c1c264f961d6c542bac41b
+    m_Address: Data/Ship_Juggernaut
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1f7b9d0ca0570064ca2506011046c62b
+    m_Address: Data/Ship_Scout
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 24bdfd17b57e0a249ab40acbbc0e2287
+    m_Address: Data/GameConfig
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 34daf776c7164494bbb5b55d181f6367
+    m_Address: Data/AsteroidConfig
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3b2fd5486fd22ba449b720210354ef67
+    m_Address: Data/BossConfig
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4174fcb51d8ff4e4985793be86c3b293
+    m_Address: Data/Ship_Fighter
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 47a4e455b0e819c4b816a46065258c61
+    m_Address: Data/UIThemeConfig
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5da745baecf0f9d40835ece5253960e6
+    m_Address: Data/CombatConfig
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7d9e90ad31b804d46ab8480796934480
+    m_Address: Data/Ship_Miner
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b46690167ae5cab4499b3c830166f4cf
+    m_Address: Data/LootConfig
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b5bdd178616ad6c488a241fb781b6b1a
+    m_Address: Data/FlightConfig
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d3604160893540c4e8cb479ebc0662c8
+    m_Address: Data/Ship_Interceptor
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d8e7e79b1d2d6ba47a907c088bf167af
+    m_Address: Data/Enemy_Drone
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: edc675e266c5f3146ad6128904689d9d
+    m_Address: Data/AudioConfig
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f1b74e7a1d00c6f4bb4c58c1f06fc5e0
+    m_Address: Data/Waves/Wave_2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f669524d253e10f4482b0b0bae3b6166
+    m_Address: Data/Waves/Wave_3
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fd3ebc96e77471c44beaa79cf019d6f7
+    m_Address: Data/WaveConfig
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fe4b7e646ab734d4fab33a2783cc82c7
+    m_Address: Data/UpgradeDefinition
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fea9effcdd48042459e08be1943e3fe1
+    m_Address: Data/Waves/Wave_1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - config
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 6f7ea51c9462d6a448733533bba23772, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: df67b302d6c212c48b3e540b4baf1e2c, type: 2}
+    - {fileID: 11400000, guid: af2949ae7e0669549b197ae8c4d7cbb5, type: 2}

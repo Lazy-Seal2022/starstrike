@@ -1,0 +1,113 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: StarStrike_Prefabs
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: StarStrike_Prefabs
+  m_GUID: 47518638ca478e84a8844f59171dffc3
+  m_SerializeEntries:
+  - m_GUID: 02107056cfbf39847b8067ba02e5d915
+    m_Address: Prefabs/Ships/Ship_Miner
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - prefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0a92f4f3bd9a86041a3fa1d71ec3343c
+    m_Address: Prefabs/Ships/Ship_Scout
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - prefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 111ec44a5a8306048abc434a7d61807f
+    m_Address: Prefabs/Environment/Asteroid_Medium
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - prefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 298eae09c110ff8409d3d36bc681fecb
+    m_Address: Prefabs/UI/CanvasHUD
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - prefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 611b425e3348f784487be078b9c4102f
+    m_Address: Prefabs/Ships/Ship_Fighter
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - prefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6604eca9f1d880b459f86b6d4939513f
+    m_Address: Prefabs/Environment/Asteroid_Small
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - prefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 795d65608693fdf44b358f22c0294531
+    m_Address: Prefabs/Environment/GemCrystal
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - prefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7da73f3bd2b80af46bc0f9a0bfb14cbb
+    m_Address: Prefabs/Projectiles/PlayerLaser
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - prefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9089f5201c0fbec4a8de36a5be4c8e68
+    m_Address: Prefabs/Environment/PowerUpItem
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - prefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9b2e3f98a25cf2f44b21cf25ee89dd2b
+    m_Address: Prefabs/Projectiles/EnemyLaser
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - prefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ad7cab55e666481498111bf8f5b7e50f
+    m_Address: Prefabs/Ships/Ship_Interceptor
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - prefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b19cedbfbd1d80f4ea079540e768a941
+    m_Address: Prefabs/Environment/Asteroid_Large
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - prefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b4f311f3eac58e14281f15036f354eb9
+    m_Address: Prefabs/Ships/Ship_Juggernaut
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - prefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b843d8c1f0b2ae541ada8606d6932b45
+    m_Address: Prefabs/Enemies/BossDreadnought
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - prefab
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eacef16706b52eb409d88fb92d8be5e4
+    m_Address: Prefabs/Enemies/EnemyDrone
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - prefab
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 6f7ea51c9462d6a448733533bba23772, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 7c7713d078eebfd4b8b5cb32b137b6d6, type: 2}
+    - {fileID: 11400000, guid: 2aaa743a6b10cd34fa824233633698c4, type: 2}

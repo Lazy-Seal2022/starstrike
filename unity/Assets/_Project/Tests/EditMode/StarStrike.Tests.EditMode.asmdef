@@ -12,7 +12,9 @@
         "StarStrike.Editor",
         "Unity.Netcode.Runtime",
         "Unity.Collections",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "Unity.Addressables",
+        "Unity.ResourceManager"
     ],
     "includePlatforms": [
         "Editor"
