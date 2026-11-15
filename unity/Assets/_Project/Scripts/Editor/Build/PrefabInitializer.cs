@@ -471,6 +471,12 @@ namespace StarStrike.Editor
             }
         }
 
+        [MenuItem("StarStrike/Setup Split Scenes")]
+        public static void RunSceneSplit()
+        {
+            SceneSplitterUtility.SetupSplitScenes();
+        }
+
         [MenuItem("StarStrike/Verify Combat & Bug Fixes")]
         public static void RunVerification()
         {

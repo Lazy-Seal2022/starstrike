@@ -6,6 +6,7 @@ namespace StarStrike.Gameplay
     /// Tracks pooled object lifecycle and notifies PoolManager on deactivation.
     /// Ensures O(1) recycling even when objects are deactivated via SetActive(false).
     /// </summary>
+    [ExecuteAlways]
     public class PooledObjectTracker : MonoBehaviour
     {
         public PoolManager poolManager;

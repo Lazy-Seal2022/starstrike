@@ -185,11 +185,15 @@ namespace StarStrike.Tests.EditMode
         {
             string[] scenes = CIBuilder.GetScenes();
             Assert.IsNotNull(scenes);
-            Assert.AreEqual(1, scenes.Length);
-            Assert.AreEqual("Assets/_Project/Scenes/GameScene.unity", scenes[0]);
+            Assert.AreEqual(2, scenes.Length, "Expected 2 split scenes: MainMenuScene and GameplayScene");
+            Assert.AreEqual("Assets/_Project/Scenes/MainMenuScene.unity", scenes[0]);
+            Assert.AreEqual("Assets/_Project/Scenes/GameplayScene.unity", scenes[1]);
 
-            var sceneAsset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEditor.SceneAsset>(scenes[0]);
-            Assert.IsNotNull(sceneAsset, "GameScene.unity must exist and be a valid SceneAsset");
+            var menuSceneAsset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEditor.SceneAsset>(scenes[0]);
+            Assert.IsNotNull(menuSceneAsset, "MainMenuScene.unity must exist and be a valid SceneAsset");
+
+            var gameplaySceneAsset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEditor.SceneAsset>(scenes[1]);
+            Assert.IsNotNull(gameplaySceneAsset, "GameplayScene.unity must exist and be a valid SceneAsset");
         }
 
         [Test]

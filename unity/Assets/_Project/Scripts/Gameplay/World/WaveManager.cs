@@ -9,6 +9,7 @@ namespace StarStrike.Gameplay
     /// Event-driven, data-driven wave manager that coordinates enemy escalation,
     /// dynamic hazard density, and boss summoning using zero-allocation object pools.
     /// </summary>
+    [ExecuteAlways]
     public class WaveManager : MonoBehaviour
     {
         public static WaveManager Instance { get; private set; }
@@ -56,18 +57,34 @@ namespace StarStrike.Gameplay
             }
         }
 
-        private void OnEnable()
+        private bool isSubscribed = false;
+
+        private void SubscribeEvents()
         {
+            if (isSubscribed) return;
             GameEvents.OnGameStarted += HandleGameStarted;
             GameEvents.OnEnemyDestroyed += HandleEnemyDestroyed;
             GameEvents.OnBossDefeated += HandleBossDefeated;
+            isSubscribed = true;
+        }
+
+        private void UnsubscribeEvents()
+        {
+            if (!isSubscribed) return;
+            GameEvents.OnGameStarted -= HandleGameStarted;
+            GameEvents.OnEnemyDestroyed -= HandleEnemyDestroyed;
+            GameEvents.OnBossDefeated -= HandleBossDefeated;
+            isSubscribed = false;
+        }
+
+        private void OnEnable()
+        {
+            SubscribeEvents();
         }
 
         private void OnDisable()
         {
-            GameEvents.OnGameStarted -= HandleGameStarted;
-            GameEvents.OnEnemyDestroyed -= HandleEnemyDestroyed;
-            GameEvents.OnBossDefeated -= HandleBossDefeated;
+            UnsubscribeEvents();
         }
 
         private void OnDestroy()
@@ -98,6 +115,7 @@ namespace StarStrike.Gameplay
 
         public void StartWave(int index)
         {
+            SubscribeEvents();
             if (waveConfig == null || waveConfig.waves == null || waveConfig.waves.Length == 0) return;
 
             currentWaveIndex = Mathf.Clamp(index, 0, waveConfig.waves.Length - 1);
@@ -272,9 +290,10 @@ namespace StarStrike.Gameplay
             intermissionTimer = waveConfig != null ? waveConfig.intermissionSeconds : 4f;
 
             // Grant gem rewards
-            if (wave.clearGemReward > 0 && PlayerProgression.Instance != null)
+            var playerProg = PlayerProgression.Instance != null ? PlayerProgression.Instance : FindAnyObjectByType<PlayerProgression>();
+            if (wave.clearGemReward > 0 && playerProg != null)
             {
-                PlayerProgression.Instance.AddGems(wave.clearGemReward);
+                playerProg.AddGems(wave.clearGemReward);
             }
 
             GameEvents.TriggerWaveCompleted(wave.waveNumber, wave.clearGemReward);

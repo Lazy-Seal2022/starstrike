@@ -10,9 +10,14 @@ using StarStrike.Network;
 
 namespace StarStrike.UI
 {
-    public class NetworkScoreboardUI : MonoBehaviour
+    public class NetworkScoreboardUI : MonoBehaviour, IScreenController
     {
         public static NetworkScoreboardUI Instance { get; private set; }
+
+        public string ScreenId => "Scoreboard";
+        public bool IsVisible => scoreboardContainer != null && scoreboardContainer.activeSelf;
+        public void Show() => SetVisible(true);
+        public void Hide() => SetVisible(false);
 
         private GameObject scoreboardContainer;
         private Transform rowsParent;
@@ -45,6 +50,10 @@ namespace StarStrike.UI
 
         private void OnEnable()
         {
+            if (ScreenManager.Instance != null)
+            {
+                ScreenManager.Instance.RegisterScreen(this);
+            }
             NetworkMatchManager.OnKillFeed += HandleKillFeed;
             NetworkMatchManager.OnMatchOver += HandleMatchOver;
             NetworkMatchManager.OnScoreboardUpdated += RefreshLeaderboard;
@@ -52,6 +61,10 @@ namespace StarStrike.UI
 
         private void OnDisable()
         {
+            if (ScreenManager.Instance != null)
+            {
+                ScreenManager.Instance.UnregisterScreen(this);
+            }
             NetworkMatchManager.OnKillFeed -= HandleKillFeed;
             NetworkMatchManager.OnMatchOver -= HandleMatchOver;
             NetworkMatchManager.OnScoreboardUpdated -= RefreshLeaderboard;

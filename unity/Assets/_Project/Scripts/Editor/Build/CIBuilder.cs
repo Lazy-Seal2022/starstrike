@@ -8,7 +8,11 @@ namespace StarStrike.Editor
     {
         public static string[] GetScenes()
         {
-            return new string[] { "Assets/_Project/Scenes/GameScene.unity" };
+            return new string[]
+            {
+                "Assets/_Project/Scenes/MainMenuScene.unity",
+                "Assets/_Project/Scenes/GameplayScene.unity"
+            };
         }
 
         [MenuItem("Build/Windows")]

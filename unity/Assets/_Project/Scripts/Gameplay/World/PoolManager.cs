@@ -128,6 +128,26 @@ namespace StarStrike.Gameplay
                 }
             }
 
+            // Fallback for EditMode or immediate SetActive(false) without lifecycle callbacks
+            if (obj == null && pool.Active.Count > 0)
+            {
+                GameObject inactiveCandidate = null;
+                foreach (var activeObj in pool.Active)
+                {
+                    if (activeObj != null && !activeObj.activeSelf)
+                    {
+                        inactiveCandidate = activeObj;
+                        break;
+                    }
+                }
+
+                if (inactiveCandidate != null)
+                {
+                    pool.Active.Remove(inactiveCandidate);
+                    obj = inactiveCandidate;
+                }
+            }
+
             if (obj == null)
             {
                 if (factory != null)

@@ -12,10 +12,14 @@ using StarStrike.Platform.Storage;
 
 namespace StarStrike.UI
 {
-    public class NetworkLobbyUI : MonoBehaviour
+    public class NetworkLobbyUI : MonoBehaviour, IScreenController
     {
         public static NetworkLobbyUI Instance { get; private set; }
         public static event Action<bool> OnLobbyVisibilityChanged;
+
+        public string ScreenId => "NetworkLobby";
+        public void Show() => SetVisible(true);
+        public void Hide() => SetVisible(false);
 
         private GameObject lobbyContainer;
         private TMP_InputField nameInput;
@@ -37,6 +41,27 @@ namespace StarStrike.UI
 
             BuildUI();
             SetVisible(false);
+        }
+
+        private void OnEnable()
+        {
+            if (ScreenManager.Instance != null)
+            {
+                ScreenManager.Instance.RegisterScreen(this);
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (ScreenManager.Instance != null)
+            {
+                ScreenManager.Instance.UnregisterScreen(this);
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
         }
 
         public void EnsureUIBuilt()

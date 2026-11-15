@@ -8,15 +8,20 @@ using StarStrike.Platform.Storage;
 
 namespace StarStrike.UI
 {
-    public class MainMenuUI : MonoBehaviour
+    public class MainMenuUI : MonoBehaviour, IScreenController
     {
         public static MainMenuUI Instance { get; private set; }
+
+        public string ScreenId => "MainMenu";
 
         private GameObject menuContainer;
         private TMP_Text gemsText;
         private Transform shipListContainer;
 
         public bool IsVisible => menuContainer != null && menuContainer.activeSelf;
+
+        public void Show() => SetMenuVisible(true);
+        public void Hide() => SetMenuVisible(false);
 
         private void Awake()
         {
@@ -31,12 +36,20 @@ namespace StarStrike.UI
 
         private void OnEnable()
         {
+            if (ScreenManager.Instance != null)
+            {
+                ScreenManager.Instance.RegisterScreen(this);
+            }
             GameEvents.OnGameStarted += HandleGameStarted;
             NetworkLobbyUI.OnLobbyVisibilityChanged += HandleLobbyVisibilityChanged;
         }
 
         private void OnDisable()
         {
+            if (ScreenManager.Instance != null)
+            {
+                ScreenManager.Instance.UnregisterScreen(this);
+            }
             GameEvents.OnGameStarted -= HandleGameStarted;
             NetworkLobbyUI.OnLobbyVisibilityChanged -= HandleLobbyVisibilityChanged;
         }
@@ -109,8 +122,7 @@ namespace StarStrike.UI
                         SetMenuVisible(false);
                         if (GameManager.Instance != null)
                         {
-                            GameManager.Instance.SetGameMode(GameMode.PvE);
-                            GameManager.Instance.StartGame();
+                            GameManager.Instance.LoadGameplay(GameMode.PvE);
                         }
                     }
                 }
@@ -164,8 +176,7 @@ namespace StarStrike.UI
                 SetMenuVisible(false);
                 if (GameManager.Instance != null)
                 {
-                    GameManager.Instance.SetGameMode(GameMode.PvE);
-                    GameManager.Instance.StartGame();
+                    GameManager.Instance.LoadGameplay(GameMode.PvE);
                 }
             });
 
@@ -177,7 +188,11 @@ namespace StarStrike.UI
                 {
                     GameManager.Instance.SetGameMode(GameMode.PvP);
                 }
-                if (NetworkLobbyUI.Instance != null)
+                if (ScreenManager.Instance != null && ScreenManager.Instance.PushModal("NetworkLobby"))
+                {
+                    // modal pushed
+                }
+                else if (NetworkLobbyUI.Instance != null)
                 {
                     NetworkLobbyUI.Instance.SetVisible(true);
                 }
@@ -189,7 +204,11 @@ namespace StarStrike.UI
             // Settings Button (Top Right)
             GameObject settingsBtnObj = CreateButton(menuContainer.transform, "SettingsButton", "SETTINGS [O]", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-120f, -40f), new Vector2(180f, 44f), new Color(0.12f, 0.22f, 0.35f), defaultFont, 16);
             settingsBtnObj.GetComponent<Button>().onClick.AddListener(() => {
-                if (StarStrike.UI.SettingsUI.Instance != null)
+                if (ScreenManager.Instance != null && ScreenManager.Instance.PushModal("Settings"))
+                {
+                    // modal pushed
+                }
+                else if (StarStrike.UI.SettingsUI.Instance != null)
                 {
                     StarStrike.UI.SettingsUI.Instance.Open();
                 }

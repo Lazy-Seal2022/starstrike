@@ -6,8 +6,12 @@ using StarStrike.Platform.Storage;
 
 namespace StarStrike.UI
 {
-    public class HUDEndGameModal : MonoBehaviour
+    public class HUDEndGameModal : MonoBehaviour, IScreenController
     {
+        public string ScreenId => "EndGameModal";
+        public void Show() => SetVisible(true);
+        public void Hide() => SetVisible(false);
+
         [Header("Configuration")]
         public UIThemeConfig themeConfig;
 
@@ -36,12 +40,20 @@ namespace StarStrike.UI
 
         private void OnEnable()
         {
+            if (ScreenManager.Instance != null)
+            {
+                ScreenManager.Instance.RegisterScreen(this);
+            }
             GameEvents.OnGameOver += HandleGameOver;
             GameEvents.OnVictory += HandleVictory;
         }
 
         private void OnDisable()
         {
+            if (ScreenManager.Instance != null)
+            {
+                ScreenManager.Instance.UnregisterScreen(this);
+            }
             GameEvents.OnGameOver -= HandleGameOver;
             GameEvents.OnVictory -= HandleVictory;
         }
@@ -118,7 +130,7 @@ namespace StarStrike.UI
             SetVisible(false);
             if (GameManager.Instance != null)
             {
-                GameManager.Instance.StartGame();
+                GameManager.Instance.RestartGame();
             }
         }
 
@@ -127,7 +139,7 @@ namespace StarStrike.UI
             SetVisible(false);
             if (GameManager.Instance != null)
             {
-                GameManager.Instance.ChangeState(GameState.Menu);
+                GameManager.Instance.LoadMainMenu();
             }
         }
 

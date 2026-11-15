@@ -7,7 +7,19 @@ namespace StarStrike.Gameplay
 {
     public class PlayerProgression : MonoBehaviour
     {
-        public static PlayerProgression Instance { get; private set; }
+        private static PlayerProgression _instance;
+        public static PlayerProgression Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = FindAnyObjectByType<PlayerProgression>();
+                }
+                return _instance;
+            }
+            private set => _instance = value;
+        }
 
         [Header("Configuration")]
         public ShipDefinition currentShip;

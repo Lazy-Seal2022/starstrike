@@ -10,9 +10,13 @@ using StarStrike.Platform.Storage;
 
 namespace StarStrike.UI
 {
-    public class SettingsUI : MonoBehaviour
+    public class SettingsUI : MonoBehaviour, IScreenController
     {
         public static SettingsUI Instance { get; private set; }
+
+        public string ScreenId => "Settings";
+        public void Show() => Open();
+        public void Hide() => Close();
 
         public enum SettingsTab
         {
@@ -81,6 +85,22 @@ namespace StarStrike.UI
 
             BuildUI();
             SetVisible(false);
+        }
+
+        private void OnEnable()
+        {
+            if (ScreenManager.Instance != null)
+            {
+                ScreenManager.Instance.RegisterScreen(this);
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (ScreenManager.Instance != null)
+            {
+                ScreenManager.Instance.UnregisterScreen(this);
+            }
         }
 
         private void OnDestroy()
@@ -530,6 +550,17 @@ namespace StarStrike.UI
             var resetBtn = CreateButtonExplicit(footer.transform, "BtnResetDefaults", "RESET DEFAULTS", new Vector2(0f, 0.5f), new Vector2(105f, 0f), new Vector2(210f, 44f),
                 new Color(0.35f, 0.18f, 0.18f), 14);
             resetBtn.onClick.AddListener(ResetDefaults);
+
+            var menuBtn = CreateButtonExplicit(footer.transform, "BtnQuitToMenu", "MAIN MENU", new Vector2(0.5f, 0.5f), new Vector2(0f, 0f), new Vector2(170f, 44f),
+                new Color(0.2f, 0.3f, 0.5f), 14);
+            menuBtn.onClick.AddListener(() =>
+            {
+                Close();
+                if (GameManager.Instance != null)
+                {
+                    GameManager.Instance.LoadMainMenu();
+                }
+            });
 
             var closeBtn = CreateButtonExplicit(footer.transform, "BtnClose", "SAVE & CLOSE [ESC]", new Vector2(1f, 0.5f), new Vector2(-140f, 0f), new Vector2(280f, 44f),
                 new Color(0.12f, 0.55f, 0.35f), 15);

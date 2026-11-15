@@ -10,9 +10,15 @@ using StarStrike.Gameplay;
 
 namespace StarStrike.UI
 {
-    public class CanvasHUD : MonoBehaviour
+    public class CanvasHUD : MonoBehaviour, IScreenController
     {
         public static CanvasHUD Instance { get; private set; }
+
+        public string ScreenId => "HUD";
+        public bool IsVisible { get; private set; }
+
+        public void Show() => SetHUDVisible(true);
+        public void Hide() => SetHUDVisible(false);
 
         [Header("Configuration")]
         public bool forceShowMobileControls = false;
@@ -98,6 +104,10 @@ namespace StarStrike.UI
 
         private void OnEnable()
         {
+            if (ScreenManager.Instance != null)
+            {
+                ScreenManager.Instance.RegisterScreen(this);
+            }
             GameEvents.OnShieldChanged += HandleShieldChanged;
             GameEvents.OnEnergyChanged += HandleEnergyChanged;
             GameEvents.OnGemCollected += HandleGemCollected;
@@ -110,6 +120,10 @@ namespace StarStrike.UI
 
         private void OnDisable()
         {
+            if (ScreenManager.Instance != null)
+            {
+                ScreenManager.Instance.UnregisterScreen(this);
+            }
             GameEvents.OnShieldChanged -= HandleShieldChanged;
             GameEvents.OnEnergyChanged -= HandleEnergyChanged;
             GameEvents.OnGemCollected -= HandleGemCollected;
@@ -146,6 +160,7 @@ namespace StarStrike.UI
 
         public void SetHUDVisible(bool visible)
         {
+            IsVisible = visible;
             foreach (Transform child in transform)
             {
                 if (child.name == "MainMenuContainer" ||
@@ -740,10 +755,7 @@ namespace StarStrike.UI
 
             mobileControlsRoot.SetActive(showMobile);
             
-            // 6. Main Menu
-            gameObject.AddComponent<MainMenuUI>();
-
-            // 7. Sub-Controllers
+            // Sub-Controllers
             if (playerStatus == null)
             {
                 playerStatus = gameObject.AddComponent<HUDPlayerStatus>();

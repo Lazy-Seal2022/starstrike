@@ -93,7 +93,15 @@ namespace StarStrike.Gameplay
             var controller = player.GetComponent<ShipWeaponController>();
             if (controller != null)
             {
-                int targetIndex = (int)pickupType;
+                int targetIndex = pickupType switch
+                {
+                    WeaponPickupType.Scattergun => 1,
+                    WeaponPickupType.Missiles => 2,
+                    WeaponPickupType.Beam => 3,
+                    WeaponPickupType.Pulse => 0,
+                    _ => 0
+                };
+
                 if (targetIndex >= 0 && targetIndex < controller.WeaponCount)
                 {
                     controller.SwitchWeapon(targetIndex);

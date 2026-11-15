@@ -19,6 +19,9 @@ namespace StarStrike.Gameplay
     {
         public static GameManager Instance { get; private set; }
 
+        public const string SceneMainMenu = "MainMenuScene";
+        public const string SceneGameplay = "GameplayScene";
+
         public GameState CurrentState { get; private set; } = GameState.Boot;
 
         [Header("Mode")]
@@ -66,6 +69,7 @@ namespace StarStrike.Gameplay
 
         private void OnEnable()
         {
+            SceneManager.sceneLoaded += HandleSceneLoaded;
             GameEvents.OnAsteroidDestroyed += HandleAsteroidDestroyed;
             GameEvents.OnGemCollected += HandleGemCollected;
             GameEvents.OnEnemyDestroyed += HandleEnemyDestroyed;
@@ -73,6 +77,7 @@ namespace StarStrike.Gameplay
 
         private void OnDisable()
         {
+            SceneManager.sceneLoaded -= HandleSceneLoaded;
             GameEvents.OnAsteroidDestroyed -= HandleAsteroidDestroyed;
             GameEvents.OnGemCollected -= HandleGemCollected;
             GameEvents.OnEnemyDestroyed -= HandleEnemyDestroyed;
@@ -80,7 +85,59 @@ namespace StarStrike.Gameplay
 
         private void Start()
         {
-            ChangeState(GameState.Menu);
+            string activeScene = SceneManager.GetActiveScene().name;
+            if (activeScene == SceneMainMenu)
+            {
+                ChangeState(GameState.Menu);
+            }
+            else if (activeScene == SceneGameplay || activeScene == "GameScene")
+            {
+                StartGame();
+            }
+            else
+            {
+                ChangeState(GameState.Menu);
+            }
+        }
+
+        private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            if (scene.name == SceneMainMenu)
+            {
+                ChangeState(GameState.Menu);
+            }
+            else if (scene.name == SceneGameplay || scene.name == "GameScene")
+            {
+                StartGame();
+            }
+        }
+
+        public void LoadMainMenu()
+        {
+            Time.timeScale = 1f;
+            if (SceneManager.GetActiveScene().name == SceneMainMenu)
+            {
+                ChangeState(GameState.Menu);
+            }
+            else
+            {
+                SceneManager.LoadSceneAsync(SceneMainMenu);
+            }
+        }
+
+        public void LoadGameplay(GameMode mode = GameMode.PvE)
+        {
+            Time.timeScale = 1f;
+            SetGameMode(mode);
+            string activeScene = SceneManager.GetActiveScene().name;
+            if (activeScene == SceneGameplay || activeScene == "GameScene")
+            {
+                StartGame();
+            }
+            else
+            {
+                SceneManager.LoadSceneAsync(SceneGameplay);
+            }
         }
 
         private void Update()
@@ -268,8 +325,17 @@ namespace StarStrike.Gameplay
 
         public void RestartGame()
         {
-            ChangeState(GameState.Boot);
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            Time.timeScale = 1f;
+            string activeScene = SceneManager.GetActiveScene().name;
+            if (activeScene == SceneMainMenu)
+            {
+                LoadGameplay(CurrentMode);
+            }
+            else
+            {
+                ChangeState(GameState.Boot);
+                SceneManager.LoadScene(activeScene);
+            }
         }
 
         private void OnDestroy()
