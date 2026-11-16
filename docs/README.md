@@ -19,14 +19,15 @@ docs/
 │   └── combat_and_arsenal.md                 # Weapons, Skills, Enemy AI & Combat Director
 ├── technical/
 │   └── architecture_and_layers.md            # Enterprise ASMDEF Architecture & Systems Design
-├── art_specifications/                       # Visual Design Briefs & Art Production Bible
-│   ├── README.md                             # Art Hub, High-Level Pillars & Technical Asset Specs
-│   ├── 01_art_bible_and_style_guide.md       # Aesthetic Theme, Palette Codes, PPU & Render Sorting
-│   ├── 02_player_ships_and_hangar.md         # 7 Playable Hulls, Hardpoints & Thruster Sockets
-│   ├── 03_enemy_armada_and_bosses.md         # Hostile Archetypes, Telegraphs & Dreadnought Boss
-│   ├── 04_arsenal_projectiles_and_vfx.md     # 4 Primary Weapons, 4 Skills & Combat VFX Matrix
-│   ├── 05_environment_biomes_and_hazards.md  # Asteroids, Gem Minerals & 4 Sector Biomes
-│   └── 06_ui_ux_and_hud_system.md            # HUD Wireframe, Evolution Cards, Screens & Icons
+├── art_specifications/                       # Visual Design Briefs & Sprite Design Suite
+│   ├── README.md                             # Master Art Hub & Artist Onboarding Guide
+│   ├── 00_style_guide/                       # Universal Aesthetics, Palettes, Lighting & PPU
+│   ├── 01_player_ships/                      # 1 File Per Player Hull (Scout, Fighter, Miner, etc.)
+│   ├── 02_enemies_and_bosses/                # 1 File Per Enemy Craft & Flagship Dreadnought Boss
+│   ├── 03_weapons_and_projectiles/           # 1 File Per Weapon System (Laser, Scatter, Missiles, Beam)
+│   ├── 04_tactical_skills_and_vfx/           # 1 File Per Ability FX (Shockwave, Blink, EMP, Barrier)
+│   ├── 05_environment_and_pickups/           # 1 File Per Asteroid, Gem, Power-up & Sector Biome
+│   └── 06_ui_ux_widgets/                     # 1 File Per HUD Gauge, Minimap, Cards, Screens & Icons
 └── roadmap/
     ├── gap_analysis_and_missing_features.md  # Detailed Missing Features & Technical Debt Audit
     └── future_roadmap.md                     # Milestone Roadmap (Alpha -> Beta -> V1.0 -> LiveOps)
@@ -47,14 +48,15 @@ docs/
 ### 3. Architecture & Engineering
 - [Architecture & Layers](file:///home/quan/projects/starstrike/docs/technical/architecture_and_layers.md): Technical deep-dive into Unity's Assembly Definition decoupling (`Core` -> `Platform` -> `Gameplay` -> `UI` / `Network`), ScriptableObject configurations, event-driven communication, and object pooling.
 
-### 4. Art Bible & Visual Asset Specifications
-- [Master Art Production Guide](file:///home/quan/projects/starstrike/docs/art_specifications/README.md): High-level visual pillars, technical constraints, PPU rules, and asset delivery standards.
-- [01. Art Bible & Style Guide](file:///home/quan/projects/starstrike/docs/art_specifications/01_art_bible_and_style_guide.md): Color palettes, silhouette philosophy, lighting, and naming conventions.
-- [02. Player Ships & Hangar](file:///home/quan/projects/starstrike/docs/art_specifications/02_player_ships_and_hangar.md): Specifications for all 7 player vessels across Tiers 1–3, weapon hardpoint mounts, and thrusters.
-- [03. Enemy Armada & Bosses](file:///home/quan/projects/starstrike/docs/art_specifications/03_enemy_armada_and_bosses.md): Drone swarms, kamikaze rammers, snipers, shield cruisers, and the multi-phase Dreadnought Boss.
-- [04. Arsenal, Projectiles & VFX](file:///home/quan/projects/starstrike/docs/art_specifications/04_arsenal_projectiles_and_vfx.md): 4 primary weapon systems, 4 tactical skills, and combat particle matrices.
-- [05. Environment & Biomes](file:///home/quan/projects/starstrike/docs/art_specifications/05_environment_biomes_and_hazards.md): Asteroid fracture trees, mining crystals, power-up orbs, and 4 sector biomes.
-- [06. UI/UX & HUD System](file:///home/quan/projects/starstrike/docs/art_specifications/06_ui_ux_and_hud_system.md): In-game flight telemetry HUD wireframes, branch evolution cards, and complete icon lists.
+### 4. Art Bible & Sprite Design Specifications
+- [Master Art Production Hub](file:///home/quan/projects/starstrike/docs/art_specifications/README.md): Master index and artist onboarding guide explaining the modular 1-to-1 sprite documentation.
+- [00. Style Guides](file:///home/quan/projects/starstrike/docs/art_specifications/00_style_guide/style_art_direction_and_pillars.md): Overarching game aesthetics, functional color palettes, emissive masks, and 32 PPU technical constraints.
+- [01. Player Ships](file:///home/quan/projects/starstrike/docs/art_specifications/01_player_ships/ship_delta_scout.md): 7 dedicated specification files for each playable hull (Scout, Fighter, Miner, Interceptor, Juggernaut, Carrier, Phantom).
+- [02. Hostile Armada & Bosses](file:///home/quan/projects/starstrike/docs/art_specifications/02_enemies_and_bosses/enemy_patrol_drone.md): 5 dedicated specification files for hostile drones, kamikaze rammers, snipers, shield cruisers, and the multi-phase Dreadnought Boss.
+- [03. Weapons & Projectiles](file:///home/quan/projects/starstrike/docs/art_specifications/03_weapons_and_projectiles/proj_pulse_laser.md): 4 dedicated specification files for Pulse Laser, Scattergun, Swarm Missiles, and Tachyon Beam.
+- [04. Tactical Skills & Abilities](file:///home/quan/projects/starstrike/docs/art_specifications/04_tactical_skills_and_vfx/skill_forward_shockwave.md): 4 dedicated specification files for Forward Shockwave, Blink Warp, EMP Nova, and Reactive Barrier.
+- [05. Environment & Pickups](file:///home/quan/projects/starstrike/docs/art_specifications/05_environment_and_pickups/env_asteroids_system.md): 4 dedicated specification files for Asteroids, Gem Minerals, Power-Ups, and Sector Biomes.
+- [06. UI/UX & HUD Widgets](file:///home/quan/projects/starstrike/docs/art_specifications/06_ui_ux_widgets/ui_hud_vital_arcs.md): 5 dedicated specification files for Vital Arcs, Minimap Radar, Evolution Cards, Hangar Showcase, and Master Iconography.
 
 ### 5. Roadmap & Future Evolution
 - [Missing Features & Gap Analysis](file:///home/quan/projects/starstrike/docs/roadmap/gap_analysis_and_missing_features.md): An honest, rigorous evaluation of what StarStrike currently lacks—audio dynamism, elite enemies, endless mode modifiers, full UGS online matchmaking, and UI polish.
