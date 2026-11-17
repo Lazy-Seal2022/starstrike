@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: StarStrike.Core::StarStrike.Core.EnemyDefinition
   id: drone
   enemyName: Hostile Drone
+  archetype: 0
   maxShield: 60
   shieldRegen: 0
   speed: 6
@@ -23,4 +24,9 @@ MonoBehaviour:
   fireRate: 1.1
   sightRadius: 16
   attackRadius: 10
+  tintColor: {r: 1, g: 1, b: 1, a: 1}
+  kamikazeBlastRadius: 4
+  kamikazeBlastDamage: 35
+  sniperChargeTime: 1.2
+  supportShieldRadius: 4.5
   sprite: {fileID: 21300000, guid: 327c3597fc1f8774986e0060004b9686, type: 3}

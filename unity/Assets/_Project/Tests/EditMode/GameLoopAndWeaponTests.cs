@@ -58,6 +58,53 @@ namespace StarStrike.Tests.EditMode
         }
 
         [Test]
+        public void ShipWeapon_PhysicalSockets_MapsSlotsAndWorldTransformsCorrectly()
+        {
+            var go = Track(new GameObject("TestSocketShip"));
+            var weapon = go.AddComponent<ShipWeapon>();
+
+            // Setup 3 physical sockets (e.g. Juggernaut: Center, Port, Starboard)
+            Vector2[] sockets = new Vector2[]
+            {
+                new Vector2(2.75f, 0f),
+                new Vector2(0.70f, 1.50f),
+                new Vector2(0.70f, -1.50f)
+            };
+            weapon.SetSockets(sockets);
+
+            // 1 slot: center barrel
+            weapon.weaponSlots = 1;
+            var pos1 = weapon.GetMuzzleWorldPositions();
+            Assert.AreEqual(1, pos1.Length);
+            Assert.AreEqual(2.75f, pos1[0].x, 0.001f);
+            Assert.AreEqual(0f, pos1[0].y, 0.001f);
+
+            // 2 slots: dual port & starboard barrels
+            weapon.weaponSlots = 2;
+            var pos2 = weapon.GetMuzzleWorldPositions();
+            Assert.AreEqual(2, pos2.Length);
+            Assert.AreEqual(0.70f, pos2[0].x, 0.001f);
+            Assert.AreEqual(1.50f, pos2[0].y, 0.001f);
+            Assert.AreEqual(0.70f, pos2[1].x, 0.001f);
+            Assert.AreEqual(-1.50f, pos2[1].y, 0.001f);
+
+            // 3 slots: all 3 barrels
+            weapon.weaponSlots = 3;
+            var pos3 = weapon.GetMuzzleWorldPositions();
+            Assert.AreEqual(3, pos3.Length);
+            Assert.AreEqual(2.75f, pos3[0].x, 0.001f);
+            Assert.AreEqual(0.70f, pos3[1].x, 0.001f);
+            Assert.AreEqual(0.70f, pos3[2].x, 0.001f);
+
+            // Rotation test: Rotate 90 degrees around Z (facing Up)
+            go.transform.rotation = Quaternion.Euler(0f, 0f, 90f);
+            weapon.weaponSlots = 1;
+            var posRot = weapon.GetMuzzleWorldPositions();
+            Assert.AreEqual(0f, posRot[0].x, 0.01f);
+            Assert.AreEqual(2.75f, posRot[0].y, 0.01f);
+        }
+
+        [Test]
         public void RunSummary_ScoreCalculation_IsAccurate()
         {
             int scoreVictory = RunSummary.CalculateScore(gems: 10, asteroids: 5, enemies: 4, bossKilled: true, time: 65f);

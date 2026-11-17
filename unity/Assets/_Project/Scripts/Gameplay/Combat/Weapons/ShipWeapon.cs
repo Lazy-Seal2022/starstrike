@@ -18,6 +18,13 @@ namespace StarStrike.Gameplay
         public float fireRate = 0.22f;
         public float energyCost = 6f;
 
+        [Header("Physical Sockets")]
+        [Tooltip("Custom weapon hardpoint positions in local coordinates (X = forward, Y = lateral)")]
+        public Vector2[] weaponSockets = null;
+
+        public Vector2[] WeaponSockets => weaponSockets;
+        public void SetSockets(Vector2[] sockets) => weaponSockets = sockets;
+
         public string WeaponName => "Pulse Laser";
         public float FireRate { get => fireRate; set => fireRate = value; }
         public float EnergyCost => energyCost;
@@ -75,6 +82,89 @@ namespace StarStrike.Gameplay
             return new float[] { 0f };
         }
 
+        public Vector2[] GetActiveSocketLocalPositions()
+        {
+            if (weaponSockets != null && weaponSockets.Length > 0)
+            {
+                if (weaponSockets.Length == 1)
+                {
+                    if (weaponSlots <= 1)
+                    {
+                        return new Vector2[] { weaponSockets[0] };
+                    }
+                    if (weaponSlots == 2)
+                    {
+                        return new Vector2[]
+                        {
+                            weaponSockets[0] + new Vector2(0f, 0.35f),
+                            weaponSockets[0] - new Vector2(0f, 0.35f)
+                        };
+                    }
+                    // 3 or more slots
+                    return new Vector2[]
+                    {
+                        weaponSockets[0] + new Vector2(0f, 0.35f),
+                        weaponSockets[0],
+                        weaponSockets[0] - new Vector2(0f, 0.35f)
+                    };
+                }
+                else if (weaponSockets.Length == 2)
+                {
+                    if (weaponSlots <= 1)
+                    {
+                        return new Vector2[] { (weaponSockets[0] + weaponSockets[1]) * 0.5f };
+                    }
+                    if (weaponSlots == 2)
+                    {
+                        return new Vector2[] { weaponSockets[0], weaponSockets[1] };
+                    }
+                    // 3 or more slots
+                    return new Vector2[]
+                    {
+                        weaponSockets[0],
+                        (weaponSockets[0] + weaponSockets[1]) * 0.5f,
+                        weaponSockets[1]
+                    };
+                }
+                else
+                {
+                    // 3 or more physical sockets (e.g. index 0=center, index 1=port, index 2=starboard)
+                    if (weaponSlots <= 1)
+                    {
+                        return new Vector2[] { weaponSockets[0] };
+                    }
+                    if (weaponSlots == 2)
+                    {
+                        return new Vector2[] { weaponSockets[1], weaponSockets[2] };
+                    }
+                    // 3 slots: center + port + starboard
+                    return new Vector2[] { weaponSockets[0], weaponSockets[1], weaponSockets[2] };
+                }
+            }
+
+            // Fallback: use combatConfig parameters with CalculateMuzzleOffsets
+            float spread = combatConfig != null ? combatConfig.dualWeaponSpread : 0.3f;
+            float fwd = combatConfig != null ? combatConfig.muzzleForwardOffset : 0.65f;
+            float[] offsets = CalculateMuzzleOffsets(weaponSlots, spread);
+            Vector2[] fallback = new Vector2[offsets.Length];
+            for (int i = 0; i < offsets.Length; i++)
+            {
+                fallback[i] = new Vector2(fwd, offsets[i]);
+            }
+            return fallback;
+        }
+
+        public Vector2[] GetMuzzleWorldPositions()
+        {
+            Vector2[] locals = GetActiveSocketLocalPositions();
+            Vector2[] worlds = new Vector2[locals.Length];
+            for (int i = 0; i < locals.Length; i++)
+            {
+                worlds[i] = (Vector2)transform.TransformPoint(locals[i]);
+            }
+            return worlds;
+        }
+
         public bool TryFire(ShipHealth health) => TryFire((IEnergyConsumer)health);
 
         public bool TryFire(IEnergyConsumer energySource = null)
@@ -99,13 +189,10 @@ namespace StarStrike.Gameplay
                 rb.AddForce(-transform.right * recoil, ForceMode2D.Impulse);
             }
 
-            float spread = combatConfig != null ? combatConfig.dualWeaponSpread : 0.3f;
-            float fwd = combatConfig != null ? combatConfig.muzzleForwardOffset : 0.65f;
-            float[] offsets = CalculateMuzzleOffsets(weaponSlots, spread);
+            Vector2[] muzzlePositions = GetMuzzleWorldPositions();
 
-            foreach (float offset in offsets)
+            foreach (Vector2 nose in muzzlePositions)
             {
-                Vector2 nose = (Vector2)transform.position + (Vector2)transform.right * fwd + (Vector2)transform.up * offset;
                 
                 string poolTag = isPlayer ? "PlayerLaser" : "EnemyLaser";
                 

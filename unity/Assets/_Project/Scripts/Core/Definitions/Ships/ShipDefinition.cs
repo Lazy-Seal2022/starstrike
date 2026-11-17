@@ -19,6 +19,16 @@ namespace StarStrike.Core
         [Header("Weapon Settings")]
         public int weaponSlots = 1;
 
+        [Header("Physical Sockets & Hitbox")]
+        [Tooltip("Tuned forgiving circle collider radius for bullet-hell gameplay")]
+        public float hitboxRadius = 0.55f;
+
+        [Tooltip("Physical weapon hardpoint locations in local coordinates (X = forward, Y = lateral)")]
+        public Vector2[] weaponSockets = new Vector2[0];
+
+        [Tooltip("Engine exhaust hardpoint locations in local coordinates (X = forward, Y = lateral)")]
+        public Vector2[] thrusterSockets = new Vector2[0];
+
         [Header("Prefab Reference")]
         public GameObject prefab;
         

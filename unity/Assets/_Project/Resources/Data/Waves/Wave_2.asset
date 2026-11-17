@@ -19,18 +19,8 @@ MonoBehaviour:
   enemySpawns:
   - enemyId: EnemyDrone
     prefab: {fileID: 4500293773924986577, guid: eacef16706b52eb409d88fb92d8be5e4, type: 3}
-    spawnInterval: 4
-    maxConcurrent: 5
-    totalToSpawn: -1
-  - enemyId: EnemyKamikaze
-    prefab: {fileID: 0}
-    spawnInterval: 6
-    maxConcurrent: 3
-    totalToSpawn: -1
-  - enemyId: EnemySniper
-    prefab: {fileID: 0}
-    spawnInterval: 8
-    maxConcurrent: 2
+    spawnInterval: 3
+    maxConcurrent: 8
     totalToSpawn: -1
   bossPrefab: {fileID: 0}
   clearGemReward: 30

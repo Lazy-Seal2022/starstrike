@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &582491520781988687
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2328747400320558558}
+  m_Layer: 0
+  m_Name: CenterMuzzle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2328747400320558558
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 582491520781988687}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 2.75, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2319986547616534828}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &951607253421130907
 GameObject:
   m_ObjectHideFlags: 0
@@ -38,6 +69,7 @@ Transform:
   m_Children:
   - {fileID: 3705620417519975510}
   - {fileID: 1967509272679441585}
+  - {fileID: 2328747400320558558}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!50 &977262320284654865
@@ -102,7 +134,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.6
+  m_Radius: 0.85
 --- !u!212 &1981918830893690521
 SpriteRenderer:
   serializedVersion: 2
@@ -157,7 +189,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 4, y: 4}
+  m_Size: {x: 6, y: 6}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -181,6 +213,7 @@ MonoBehaviour:
   boostMultiplier: 1.8
   boostMaxSpeedMultiplier: 1.4
   boostEnergyDrain: 25
+  autoBrakeEnabled: 1
 --- !u!114 &5242235423155937648
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -200,6 +233,7 @@ MonoBehaviour:
   currentShield: 400
   currentEnergy: 200
   isPlayer: 1
+  isInvulnerable: 0
 --- !u!114 &2435854743529455364
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -219,6 +253,10 @@ MonoBehaviour:
   weaponSlots: 3
   fireRate: 0.22
   energyCost: 6
+  weaponSockets:
+  - {x: 2.75, y: 0}
+  - {x: 0.7, y: 1.5}
+  - {x: 0.7, y: -1.5}
   isPlayer: 1
 --- !u!114 &92039921544309483
 MonoBehaviour:
@@ -274,7 +312,7 @@ Transform:
   m_GameObject: {fileID: 6574014540066490735}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.3, y: 0.65, z: 0}
+  m_LocalPosition: {x: 0.7, y: -1.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -305,7 +343,7 @@ Transform:
   m_GameObject: {fileID: 7127361703678035763}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.3, y: 0.65, z: 0}
+  m_LocalPosition: {x: 0.7, y: 1.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

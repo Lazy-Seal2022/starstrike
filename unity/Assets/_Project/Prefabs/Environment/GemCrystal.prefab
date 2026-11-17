@@ -173,3 +173,4 @@ MonoBehaviour:
   gemValue: 1
   magnetRadius: 6.5
   magnetSpeed: 14
+  lifetime: 35

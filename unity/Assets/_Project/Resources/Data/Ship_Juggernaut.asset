@@ -27,6 +27,16 @@ MonoBehaviour:
     speed: 180
     agility: 2.5
   weaponSlots: 3
+  hitboxRadius: 0.85
+  weaponSockets:
+  - {x: 2.75, y: 0}
+  - {x: 0.7, y: 1.5}
+  - {x: 0.7, y: -1.5}
+  thrusterSockets:
+  - {x: -2.75, y: 0.85}
+  - {x: -2.75, y: 0.3}
+  - {x: -2.75, y: -0.3}
+  - {x: -2.75, y: -0.85}
   prefab: {fileID: 951607253421130907, guid: b4f311f3eac58e14281f15036f354eb9, type: 3}
   sprite: {fileID: 21300000, guid: eeb58c0cc50f2c14093266c3f88cc18a, type: 3}
   color: {r: 1, g: 1, b: 1, a: 1}

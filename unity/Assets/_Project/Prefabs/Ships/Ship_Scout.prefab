@@ -38,6 +38,7 @@ Transform:
   m_Children:
   - {fileID: 8666499557836921639}
   - {fileID: 774603413446715872}
+  - {fileID: 1452411648692807276}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!50 &3987010302547666279
@@ -102,7 +103,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.6
+  m_Radius: 0.55
 --- !u!212 &6039962172510060696
 SpriteRenderer:
   serializedVersion: 2
@@ -181,6 +182,7 @@ MonoBehaviour:
   boostMultiplier: 1.8
   boostMaxSpeedMultiplier: 1.4
   boostEnergyDrain: 25
+  autoBrakeEnabled: 1
 --- !u!114 &2662640369084287944
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -200,6 +202,7 @@ MonoBehaviour:
   currentShield: 100
   currentEnergy: 80
   isPlayer: 1
+  isInvulnerable: 0
 --- !u!114 &6211185753461500862
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -219,6 +222,8 @@ MonoBehaviour:
   weaponSlots: 1
   fireRate: 0.22
   energyCost: 6
+  weaponSockets:
+  - {x: 1.55, y: 0}
   isPlayer: 1
 --- !u!114 &7857622155475176410
 MonoBehaviour:
@@ -274,7 +279,7 @@ Transform:
   m_GameObject: {fileID: 1832469844492411880}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.3, y: 0.65, z: 0}
+  m_LocalPosition: {x: 1.55, y: -0.3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -305,7 +310,38 @@ Transform:
   m_GameObject: {fileID: 5630110898295257513}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.3, y: 0.65, z: 0}
+  m_LocalPosition: {x: 1.55, y: 0.3, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 103755788254297645}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8202610939088362112
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1452411648692807276}
+  m_Layer: 0
+  m_Name: CenterMuzzle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1452411648692807276
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8202610939088362112}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1.55, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

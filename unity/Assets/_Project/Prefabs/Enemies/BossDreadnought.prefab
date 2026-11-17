@@ -179,6 +179,7 @@ MonoBehaviour:
   boostMultiplier: 1.8
   boostMaxSpeedMultiplier: 1.4
   boostEnergyDrain: 25
+  autoBrakeEnabled: 1
 --- !u!114 &6113833788004696133
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -198,6 +199,7 @@ MonoBehaviour:
   currentShield: 2500
   currentEnergy: 0
   isPlayer: 0
+  isInvulnerable: 0
 --- !u!114 &7279258389834606636
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -217,6 +219,7 @@ MonoBehaviour:
   weaponSlots: 3
   fireRate: 0.22
   energyCost: 6
+  weaponSockets: []
   isPlayer: 0
 --- !u!114 &3102381065359539496
 MonoBehaviour:

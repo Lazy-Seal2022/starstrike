@@ -18,6 +18,7 @@ MonoBehaviour:
   maxUpgradeLevel: 5
   evolvesTo:
   - {fileID: 11400000, guid: 1b15059641c1c264f961d6c542bac41b, type: 2}
+  - {fileID: 11400000, guid: e193225e89e15904e926d08b6c5b3abd, type: 2}
   baseStats:
     shieldCapacity: 220
     shieldRegen: 16
@@ -28,6 +29,13 @@ MonoBehaviour:
     speed: 210
     agility: 3.5
   weaponSlots: 2
+  hitboxRadius: 0.65
+  weaponSockets:
+  - {x: 1.25, y: 0.85}
+  - {x: 1.25, y: -0.85}
+  thrusterSockets:
+  - {x: -1.4, y: 0.4}
+  - {x: -1.4, y: -0.4}
   prefab: {fileID: 7964120723013770960, guid: 02107056cfbf39847b8067ba02e5d915, type: 3}
   sprite: {fileID: 21300000, guid: a03d391c087d3614ba0d82e2fbc04876, type: 3}
   color: {r: 1, g: 1, b: 1, a: 1}

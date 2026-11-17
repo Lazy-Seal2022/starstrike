@@ -42,6 +42,7 @@ namespace StarStrike.Editor
             CreateShipPrefab("miner", 2, 220f, 16f, 150f, 20f, 40f, 20f, 2);
             CreateShipPrefab("interceptor", 3, 180f, 15f, 140f, 30f, 35f, 28f, 2);
             CreateShipPrefab("juggernaut", 3, 400f, 25f, 200f, 25f, 75f, 18f, 3);
+            CreateShipPrefab("carrier", 3, 320f, 22f, 280f, 32f, 55f, 22f, 3);
 
             // 5. UI Prefabs
             CreateCanvasHUDPrefab();
@@ -308,8 +309,10 @@ namespace StarStrike.Editor
             rb.linearDamping = 0.5f;
             rb.angularDamping = 1.0f;
 
+            var def = AssetDatabase.LoadAssetAtPath<ShipDefinition>($"Assets/_Project/Resources/Data/Ship_{capId}.asset");
+
             var col = go.AddComponent<CircleCollider2D>();
-            col.radius = 0.6f;
+            col.radius = (def != null && def.hitboxRadius > 0.05f) ? def.hitboxRadius : 0.6f;
             col.isTrigger = false;
 
             var sr = go.AddComponent<SpriteRenderer>();
@@ -334,18 +337,45 @@ namespace StarStrike.Editor
             weapon.pulseSpeed = spd;
             weapon.weaponSlots = weaponSlots;
             weapon.combatConfig = AssetDatabase.LoadAssetAtPath<CombatConfig>("Assets/_Project/Resources/Data/CombatConfig.asset");
+            if (def != null && def.weaponSockets != null && def.weaponSockets.Length > 0)
+            {
+                weapon.SetSockets(def.weaponSockets);
+            }
 
             var prog = go.AddComponent<PlayerProgression>();
-            prog.currentShip = AssetDatabase.LoadAssetAtPath<ShipDefinition>($"Assets/_Project/Resources/Data/Ship_{capId}.asset");
+            prog.currentShip = def;
             prog.gameConfig = AssetDatabase.LoadAssetAtPath<GameConfig>("Assets/_Project/Resources/Data/GameConfig.asset");
+
+            Vector3 leftPos = new Vector3(0.65f, 0.3f, 0f);
+            Vector3 rightPos = new Vector3(0.65f, -0.3f, 0f);
+            if (def != null && def.weaponSockets != null)
+            {
+                if (def.weaponSockets.Length == 1)
+                {
+                    leftPos = new Vector3(def.weaponSockets[0].x, 0.3f, 0f);
+                    rightPos = new Vector3(def.weaponSockets[0].x, -0.3f, 0f);
+                }
+                else if (def.weaponSockets.Length >= 2)
+                {
+                    leftPos = new Vector3(def.weaponSockets[1].x, def.weaponSockets[1].y, 0f);
+                    rightPos = new Vector3(def.weaponSockets.Length > 2 ? def.weaponSockets[2].x : def.weaponSockets[1].x, def.weaponSockets.Length > 2 ? def.weaponSockets[2].y : -def.weaponSockets[1].y, 0f);
+                }
+            }
 
             GameObject leftMuzzle = new GameObject("LeftMuzzle");
             leftMuzzle.transform.SetParent(go.transform);
-            leftMuzzle.transform.localPosition = new Vector3(0.65f, 0.3f, 0f);
+            leftMuzzle.transform.localPosition = leftPos;
 
             GameObject rightMuzzle = new GameObject("RightMuzzle");
             rightMuzzle.transform.SetParent(go.transform);
-            rightMuzzle.transform.localPosition = new Vector3(0.65f, -0.3f, 0f);
+            rightMuzzle.transform.localPosition = rightPos;
+
+            if (def != null && def.weaponSockets != null && (def.weaponSockets.Length == 1 || def.weaponSockets.Length >= 3))
+            {
+                GameObject centerMuzzle = new GameObject("CenterMuzzle");
+                centerMuzzle.transform.SetParent(go.transform);
+                centerMuzzle.transform.localPosition = new Vector3(def.weaponSockets[0].x, def.weaponSockets[0].y, 0f);
+            }
 
             SavePrefab(go, $"Ships/Ship_{capId}");
         }
@@ -975,6 +1005,117 @@ namespace StarStrike.Editor
             catch (System.Exception ex)
             {
                 Debug.LogError($"[FAIL] 12. Playable hull expansion test failed: {ex.Message}");
+                failed++;
+            }
+
+            // 13. Physical Hardpoint Sockets & Tuned Hitbox Verification
+            try
+            {
+                var scoutTree = PlayerProgression.CreateDefaultShipTree();
+                var juggernautDef = scoutTree.evolvesTo[1].evolvesTo[0];
+                var carrierDef = scoutTree.evolvesTo[1].evolvesTo[1];
+
+                // Scout sockets check
+                if (scoutTree.weaponSockets == null || scoutTree.weaponSockets.Length != 1)
+                    throw new System.Exception("Scout must have exactly 1 weapon socket!");
+                if (Mathf.Abs(scoutTree.weaponSockets[0].x - 1.55f) > 0.05f)
+                    throw new System.Exception($"Scout weapon socket X expected ~1.55f, got {scoutTree.weaponSockets[0].x}");
+                if (Mathf.Abs(scoutTree.hitboxRadius - 0.55f) > 0.01f)
+                    throw new System.Exception($"Scout hitboxRadius expected 0.55f, got {scoutTree.hitboxRadius}");
+
+                // Juggernaut sockets check
+                if (juggernautDef.weaponSockets == null || juggernautDef.weaponSockets.Length != 3)
+                    throw new System.Exception("Juggernaut must have exactly 3 weapon sockets!");
+                if (Mathf.Abs(juggernautDef.weaponSockets[0].x - 2.75f) > 0.05f)
+                    throw new System.Exception($"Juggernaut center socket X expected ~2.75f, got {juggernautDef.weaponSockets[0].x}");
+                if (Mathf.Abs(juggernautDef.hitboxRadius - 0.85f) > 0.01f)
+                    throw new System.Exception($"Juggernaut hitboxRadius expected 0.85f, got {juggernautDef.hitboxRadius}");
+
+                // Carrier sockets check
+                if (carrierDef.weaponSockets == null || carrierDef.weaponSockets.Length != 3)
+                    throw new System.Exception("Carrier must have exactly 3 weapon sockets!");
+                if (Mathf.Abs(carrierDef.weaponSockets[0].x - 2.50f) > 0.05f)
+                    throw new System.Exception($"Carrier center socket X expected ~2.50f, got {carrierDef.weaponSockets[0].x}");
+                if (Mathf.Abs(carrierDef.hitboxRadius - 0.80f) > 0.01f)
+                    throw new System.Exception($"Carrier hitboxRadius expected 0.80f, got {carrierDef.hitboxRadius}");
+
+                // Live ShipWeapon Muzzle Positioning and TransformPoint test
+                var testShip = new GameObject("TestShip_Sockets");
+                var shipCol = testShip.AddComponent<CircleCollider2D>();
+                var shipHealth = testShip.AddComponent<ShipHealth>();
+                var shipWp = testShip.AddComponent<ShipWeapon>();
+                var shipProg = testShip.AddComponent<PlayerProgression>();
+                shipProg.health = shipHealth;
+                shipProg.weapon = shipWp;
+
+                // Configure as Scout
+                shipProg.currentShip = scoutTree;
+                shipProg.ApplyShipVisuals();
+
+                if (Mathf.Abs(shipCol.radius - 0.55f) > 0.01f)
+                    throw new System.Exception($"Ship collider radius should update to Scout hitbox 0.55f, got {shipCol.radius}");
+
+                var scoutMuzzles = shipWp.GetMuzzleWorldPositions();
+                if (scoutMuzzles.Length != 1)
+                    throw new System.Exception($"Scout should produce 1 muzzle pos, got {scoutMuzzles.Length}");
+                if (Vector2.Distance(scoutMuzzles[0], new Vector2(1.55f, 0f)) > 0.05f)
+                    throw new System.Exception($"Scout muzzle pos expected (1.55, 0), got {scoutMuzzles[0]}");
+
+                // Test rotation: face UP (90 degrees)
+                testShip.transform.rotation = Quaternion.Euler(0f, 0f, 90f);
+                var rotatedMuzzles = shipWp.GetMuzzleWorldPositions();
+                if (Vector2.Distance(rotatedMuzzles[0], new Vector2(0f, 1.55f)) > 0.05f)
+                    throw new System.Exception($"Rotated Scout muzzle pos expected (0, 1.55), got {rotatedMuzzles[0]}");
+
+                // Evolve to Juggernaut
+                testShip.transform.rotation = Quaternion.identity;
+                shipProg.Evolve(juggernautDef);
+
+                if (Mathf.Abs(shipCol.radius - 0.85f) > 0.01f)
+                    throw new System.Exception($"Ship collider radius should update to Juggernaut hitbox 0.85f, got {shipCol.radius}");
+
+                var juggLocals = shipWp.GetActiveSocketLocalPositions();
+                if (juggLocals.Length != 3)
+                    throw new System.Exception($"Juggernaut should produce 3 local socket positions, got {juggLocals.Length}");
+                if (Vector2.Distance(juggLocals[0], new Vector2(2.75f, 0f)) > 0.05f)
+                    throw new System.Exception($"Juggernaut center local socket expected (2.75, 0), got {juggLocals[0]}");
+
+                // Juggernaut visual scale is 1.6f, so world muzzle = local * 1.6f
+                var juggMuzzles = shipWp.GetMuzzleWorldPositions();
+                if (juggMuzzles.Length != 3)
+                    throw new System.Exception($"Juggernaut should produce 3 world muzzle positions, got {juggMuzzles.Length}");
+                if (Vector2.Distance(juggMuzzles[0], new Vector2(2.75f * 1.6f, 0f)) > 0.05f)
+                    throw new System.Exception($"Juggernaut center world muzzle pos expected (4.40, 0), got {juggMuzzles[0]}");
+                if (Vector2.Distance(juggMuzzles[1], new Vector2(0.70f * 1.6f, 1.50f * 1.6f)) > 0.05f)
+                    throw new System.Exception($"Juggernaut port world muzzle pos expected (1.12, 2.40), got {juggMuzzles[1]}");
+                if (Vector2.Distance(juggMuzzles[2], new Vector2(0.70f * 1.6f, -1.50f * 1.6f)) > 0.05f)
+                    throw new System.Exception($"Juggernaut starboard world muzzle pos expected (1.12, -2.40), got {juggMuzzles[2]}");
+
+                // Evolve to Carrier
+                shipProg.Evolve(carrierDef);
+                if (Mathf.Abs(shipCol.radius - 0.80f) > 0.01f)
+                    throw new System.Exception($"Ship collider radius should update to Carrier hitbox 0.80f, got {shipCol.radius}");
+
+                var carrierLocals = shipWp.GetActiveSocketLocalPositions();
+                if (carrierLocals.Length != 3)
+                    throw new System.Exception($"Carrier should produce 3 local socket positions, got {carrierLocals.Length}");
+                if (Vector2.Distance(carrierLocals[0], new Vector2(2.50f, 0f)) > 0.05f)
+                    throw new System.Exception($"Carrier center local socket expected (2.50, 0), got {carrierLocals[0]}");
+
+                // Carrier visual scale is 1.5f, so world muzzle = local * 1.5f
+                var carrierMuzzles = shipWp.GetMuzzleWorldPositions();
+                if (carrierMuzzles.Length != 3)
+                    throw new System.Exception($"Carrier should produce 3 world muzzle positions, got {carrierMuzzles.Length}");
+                if (Vector2.Distance(carrierMuzzles[0], new Vector2(2.50f * 1.5f, 0f)) > 0.05f)
+                    throw new System.Exception($"Carrier center world muzzle pos expected (3.75, 0), got {carrierMuzzles[0]}");
+
+                Object.DestroyImmediate(testShip);
+                Debug.Log("[PASS] 13. Physical Hardpoint Sockets & Tuned Hitbox (Scout, Juggernaut, Carrier) verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 13. Physical sockets & hitbox verification failed: {ex.Message}");
                 failed++;
             }
 

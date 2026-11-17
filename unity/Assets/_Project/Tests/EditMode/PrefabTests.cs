@@ -80,9 +80,9 @@ namespace StarStrike.Tests.EditMode
         }
 
         [Test]
-        public void ShipPrefabs_AllFiveShips_ExistWithMuzzlesAndProgression()
+        public void ShipPrefabs_AllSixShips_ExistWithMuzzlesAndProgression()
         {
-            string[] ships = { "Ship_Scout", "Ship_Fighter", "Ship_Miner", "Ship_Interceptor", "Ship_Juggernaut" };
+            string[] ships = { "Ship_Scout", "Ship_Fighter", "Ship_Miner", "Ship_Interceptor", "Ship_Juggernaut", "Ship_Carrier" };
 
             foreach (var shipName in ships)
             {

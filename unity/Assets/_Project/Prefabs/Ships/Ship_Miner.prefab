@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 5199820205879584886}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.3, y: 0.65, z: 0}
+  m_LocalPosition: {x: 1.25, y: 0.85, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -56,7 +56,7 @@ Transform:
   m_GameObject: {fileID: 7420781879982652100}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.3, y: 0.65, z: 0}
+  m_LocalPosition: {x: 1.25, y: -0.85, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -164,7 +164,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.6
+  m_Radius: 0.65
 --- !u!212 &6571319184768764276
 SpriteRenderer:
   serializedVersion: 2
@@ -243,6 +243,7 @@ MonoBehaviour:
   boostMultiplier: 1.8
   boostMaxSpeedMultiplier: 1.4
   boostEnergyDrain: 25
+  autoBrakeEnabled: 1
 --- !u!114 &5792234745300653086
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -262,6 +263,7 @@ MonoBehaviour:
   currentShield: 220
   currentEnergy: 150
   isPlayer: 1
+  isInvulnerable: 0
 --- !u!114 &112418796444731225
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -281,6 +283,9 @@ MonoBehaviour:
   weaponSlots: 2
   fireRate: 0.22
   energyCost: 6
+  weaponSockets:
+  - {x: 1.25, y: 0.85}
+  - {x: 1.25, y: -0.85}
   isPlayer: 1
 --- !u!114 &9025031467661284112
 MonoBehaviour:
