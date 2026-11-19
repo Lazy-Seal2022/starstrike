@@ -79,6 +79,12 @@ namespace StarStrike.Gameplay
             {
                 thrusterEffect = gameObject.AddComponent<StarStrike.Gameplay.FX.ShipThrusterEffect>();
             }
+
+            var procAnim = GetComponent<StarStrike.Gameplay.FX.ShipProceduralAnimator>();
+            if (procAnim == null)
+            {
+                procAnim = gameObject.AddComponent<StarStrike.Gameplay.FX.ShipProceduralAnimator>();
+            }
         }
 
         private void FixedUpdate()

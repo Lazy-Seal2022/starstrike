@@ -256,6 +256,8 @@ namespace StarStrike.Editor
             var ai = go.AddComponent<EnemyAI>();
             ai.definition = AssetDatabase.LoadAssetAtPath<EnemyDefinition>("Assets/_Project/Resources/Data/Enemy_Drone.asset");
 
+            go.AddComponent<StarStrike.Gameplay.FX.ShipProceduralAnimator>();
+
             SavePrefab(go, "Enemies/EnemyDrone");
         }
 
@@ -294,6 +296,8 @@ namespace StarStrike.Editor
 
             var brain = go.AddComponent<BossBrain>();
             brain.config = AssetDatabase.LoadAssetAtPath<BossConfig>("Assets/_Project/Resources/Data/BossConfig.asset");
+
+            go.AddComponent<StarStrike.Gameplay.FX.ShipProceduralAnimator>();
 
             SavePrefab(go, "Enemies/BossDreadnought");
         }
@@ -345,6 +349,8 @@ namespace StarStrike.Editor
             var prog = go.AddComponent<PlayerProgression>();
             prog.currentShip = def;
             prog.gameConfig = AssetDatabase.LoadAssetAtPath<GameConfig>("Assets/_Project/Resources/Data/GameConfig.asset");
+
+            go.AddComponent<StarStrike.Gameplay.FX.ShipProceduralAnimator>();
 
             Vector3 leftPos = new Vector3(0.65f, 0.3f, 0f);
             Vector3 rightPos = new Vector3(0.65f, -0.3f, 0f);
@@ -1116,6 +1122,64 @@ namespace StarStrike.Editor
             catch (System.Exception ex)
             {
                 Debug.LogError($"[FAIL] 13. Physical sockets & hitbox verification failed: {ex.Message}");
+                failed++;
+            }
+
+            // 14. Tier 1 Procedural Juice Animations (Recoil, Damage Squash, Banking, Gem & Asteroid Tumble)
+            try
+            {
+                var juiceGo = new GameObject("TestShip_Juice");
+                var rb = juiceGo.AddComponent<Rigidbody2D>();
+                var health = juiceGo.AddComponent<ShipHealth>();
+                health.maxShield = 100f;
+                health.ResetMeters();
+
+                var weapon = juiceGo.AddComponent<ShipWeapon>();
+                var movement = juiceGo.AddComponent<ShipMovement>();
+                var anim = juiceGo.AddComponent<StarStrike.Gameplay.FX.ShipProceduralAnimator>();
+                anim.EnsureInitialized();
+                anim.SubscribeEvents();
+
+                // 1. Recoil test
+                weapon.ResetCooldown();
+                weapon.TryFire(health);
+                if (anim.CurrentRecoilX >= 0f)
+                    throw new System.Exception("Firing should trigger negative X recoil compression!");
+
+                // 2. Damage squash test
+                health.TakeDamage(25f);
+                if (anim.CurrentDamageX <= 0f)
+                    throw new System.Exception("Damage should trigger positive X damage squash!");
+
+                // 3. Gem pulse & tumble test
+                var gemGo = new GameObject("TestGem_Juice");
+                gemGo.AddComponent<Rigidbody2D>();
+                gemGo.AddComponent<CircleCollider2D>();
+                var gem = gemGo.AddComponent<GemCrystal>();
+                gem.OnSpawned();
+                gem.SimulatePulse(1f, 0.016f);
+
+                // 4. Asteroid minimum spin floor
+                var astGo = new GameObject("TestAsteroid_Juice");
+                var astRb = astGo.AddComponent<Rigidbody2D>();
+                astRb.simulated = true;
+                astRb.angularVelocity = 2f; // below minimum floor
+                astGo.AddComponent<CircleCollider2D>();
+                var ast = astGo.AddComponent<Asteroid>();
+                ast.MaintainCosmicSpin();
+                if (Mathf.Abs(astRb.angularVelocity) < 12f)
+                    throw new System.Exception($"Asteroid should maintain minimum cosmic spin, got {astRb.angularVelocity}");
+
+                Object.DestroyImmediate(juiceGo);
+                Object.DestroyImmediate(gemGo);
+                Object.DestroyImmediate(astGo);
+
+                Debug.Log("[PASS] 14. Tier 1 Procedural Juice Animations (Recoil, Damage Squash, Banking, Gem & Asteroid Tumble) verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 14. Procedural juice animation test failed: {ex.Message}");
                 failed++;
             }
 

@@ -33,6 +33,8 @@ namespace StarStrike.Gameplay
 
         public bool isPlayer = false;
 
+        public event System.Action OnFired;
+
         private float lastFiredTime = -999f;
         public void ResetCooldown() => lastFiredTime = -999f;
         private Rigidbody2D rb;
@@ -234,6 +236,8 @@ namespace StarStrike.Gameplay
                 LaserProjectile proj = laserObj.GetComponent<LaserProjectile>();
                 proj.Initialize(pulseDamage, pulseSpeed, !isPlayer);
             }
+
+            OnFired?.Invoke();
 
             return true;
         }

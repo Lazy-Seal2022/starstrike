@@ -63,6 +63,7 @@ namespace StarStrike.Gameplay
 
             currentHp = maxHp;
             transform.localScale = Vector3.one * scale;
+            baseScale = transform.localScale;
 
             CircleCollider2D col = GetComponent<CircleCollider2D>();
             if (col == null) col = gameObject.AddComponent<CircleCollider2D>();
@@ -78,12 +79,18 @@ namespace StarStrike.Gameplay
         }
 
         public bool hasCustomInitialVelocity = false;
+        private Vector3 baseScale = Vector3.one;
+        private float currentHitSquash = 0f;
 
         private void OnEnable()
         {
             var col = GetComponent<Collider2D>();
             if (col != null) col.enabled = true;
             if (rb != null) rb.simulated = true;
+            if (baseScale == Vector3.one && transform.localScale != Vector3.one)
+            {
+                baseScale = transform.localScale;
+            }
 
             if (!hasCustomInitialVelocity)
             {
@@ -96,9 +103,49 @@ namespace StarStrike.Gameplay
             }
         }
 
+        private void FixedUpdate()
+        {
+            MaintainCosmicSpin();
+        }
+
+        public void MaintainCosmicSpin()
+        {
+            if (rb == null) rb = GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                // Maintain continuous cosmic spin so asteroids never freeze in place
+                if (Mathf.Abs(rb.angularVelocity) < 12f)
+                {
+                    float sign = rb.angularVelocity != 0 ? Mathf.Sign(rb.angularVelocity) : 1f;
+                    rb.angularVelocity = sign * 15f;
+                }
+            }
+        }
+
+        private void Update()
+        {
+            if (Mathf.Abs(currentHitSquash) > 0.001f)
+            {
+                currentHitSquash = Mathf.MoveTowards(currentHitSquash, 0f, 16f * Time.deltaTime);
+                float sX = 1f + currentHitSquash;
+                float sY = 1f - currentHitSquash * 0.7f;
+                transform.localScale = new Vector3(baseScale.x * sX, baseScale.y * sY, baseScale.z);
+            }
+            else if (transform.localScale != baseScale && baseScale.sqrMagnitude > 0.01f)
+            {
+                transform.localScale = baseScale;
+            }
+        }
+
         public void TakeDamage(float amount)
         {
             currentHp -= amount;
+            currentHitSquash = -0.12f;
+            if (rb == null) rb = GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                rb.AddTorque(Random.Range(-15f, 15f), ForceMode2D.Impulse);
+            }
             
             if (StarStrike.Gameplay.FX.FXService.Instance != null)
             {

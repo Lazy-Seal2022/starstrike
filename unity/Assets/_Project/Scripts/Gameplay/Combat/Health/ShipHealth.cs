@@ -24,6 +24,7 @@ namespace StarStrike.Gameplay
 
         public event Action<float, float> OnShieldChanged;
         public event Action<float, float> OnEnergyChanged;
+        public event Action<float> OnDamaged;
         public event Action OnDied;
 
         private void Awake()
@@ -77,6 +78,8 @@ namespace StarStrike.Gameplay
         {
             if (isInvulnerable) return;
             currentShield -= amount;
+            
+            OnDamaged?.Invoke(amount);
             
             if (StarStrike.Gameplay.FX.FXService.Instance != null)
             {
