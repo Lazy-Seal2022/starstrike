@@ -1151,18 +1151,9 @@ namespace StarStrike.Editor
                 if (anim.CurrentDamageX <= 0f)
                     throw new System.Exception("Damage should trigger positive X damage squash!");
 
-                // 3. Gem pulse & tumble test
-                var gemGo = new GameObject("TestGem_Juice");
-                gemGo.AddComponent<Rigidbody2D>();
-                gemGo.AddComponent<CircleCollider2D>();
-                var gem = gemGo.AddComponent<GemCrystal>();
-                gem.OnSpawned();
-                gem.SimulatePulse(1f, 0.016f);
-
                 Object.DestroyImmediate(juiceGo);
-                Object.DestroyImmediate(gemGo);
 
-                Debug.Log("[PASS] 14. Tier 1 Procedural Juice Animations (Recoil, Damage Squash, Banking, Gem Tumble) verified");
+                Debug.Log("[PASS] 14. Tier 1 Procedural Juice Animations (Weapon Recoil Kick, Damage Squash) verified");
                 passed++;
             }
             catch (System.Exception ex)

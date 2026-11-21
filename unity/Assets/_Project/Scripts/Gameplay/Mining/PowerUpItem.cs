@@ -64,15 +64,6 @@ namespace StarStrike.Gameplay
         {
             var rb = GetComponent<Rigidbody2D>();
             if (rb != null) rb.linearVelocity = Vector2.zero;
-            transform.localScale = Vector3.one;
-        }
-
-        private void Update()
-        {
-            // Procedural cosmic float & breathing pulse
-            transform.Rotate(0f, 0f, 32f * Time.deltaTime);
-            float pulse = 1f + 0.12f * Mathf.Sin(Time.time * 4f);
-            transform.localScale = Vector3.one * pulse;
         }
 
         private void OnTriggerEnter2D(Collider2D collision)

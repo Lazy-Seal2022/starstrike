@@ -50,9 +50,6 @@ namespace StarStrike.Gameplay
 
         private float spawnTime;
         public float lifetime = 35f;
-        private float spinSpeed = 45f;
-        private float pulsePhase = 0f;
-        private Vector3 baseScale = Vector3.one;
 
         private void OnEnable()
         {
@@ -68,11 +65,6 @@ namespace StarStrike.Gameplay
         public void OnSpawned()
         {
             spawnTime = Time.time;
-            spinSpeed = Random.Range(-75f, 75f);
-            if (Mathf.Abs(spinSpeed) < 25f) spinSpeed = 35f * Mathf.Sign(spinSpeed != 0 ? spinSpeed : 1f);
-            pulsePhase = Random.Range(0f, Mathf.PI * 2f);
-            if (transform.localScale.sqrMagnitude > 0.01f) baseScale = transform.localScale;
-
             GameObject p = GameObject.FindGameObjectWithTag("Player");
             if (p != null) playerTarget = p.transform;
         }
@@ -80,18 +72,10 @@ namespace StarStrike.Gameplay
         public void OnDespawned()
         {
             playerTarget = null;
-            transform.localScale = baseScale;
             if (rb != null)
             {
                 rb.linearVelocity = Vector2.zero;
             }
-        }
-
-        public void SimulatePulse(float time, float dt)
-        {
-            transform.Rotate(0f, 0f, spinSpeed * dt);
-            float pulse = 1f + 0.14f * Mathf.Sin(time * 5.5f + pulsePhase);
-            transform.localScale = baseScale * pulse;
         }
 
         private void Update()
@@ -102,9 +86,6 @@ namespace StarStrike.Gameplay
                 else gameObject.SetActive(false);
                 return;
             }
-
-            // Procedural tumble and energetic scale pulsing
-            SimulatePulse(Time.time, Time.deltaTime);
 
             if (playerTarget == null)
             {

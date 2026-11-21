@@ -28,28 +28,20 @@ namespace StarStrike.Gameplay.FX
         public float damageJitterAngle = 4.0f;
         public float damageRecoverySpeed = 16f;
 
-        [Header("Bank Lean Settings")]
-        [Tooltip("Max profile narrowing factor during sharp turns")]
-        public float maxBankLean = 0.14f;
-        public float bankSmoothing = 12f;
-
         private Vector3 baseScale = Vector3.one;
         private float currentRecoilX = 0f;
         private float currentRecoilY = 0f;
         private float currentDamageX = 0f;
         private float currentDamageY = 0f;
         private float currentJitter = 0f;
-        private float currentBankFactor = 0f;
 
         private ShipWeapon weapon;
         private ShipHealth health;
-        private ShipMovement movement;
         private Rigidbody2D rb;
 
         public Vector3 BaseScale => baseScale;
         public float CurrentRecoilX => currentRecoilX;
         public float CurrentDamageX => currentDamageX;
-        public float CurrentBankFactor => currentBankFactor;
 
         private void Awake()
         {
@@ -71,7 +63,6 @@ namespace StarStrike.Gameplay.FX
         {
             if (weapon == null) weapon = GetComponent<ShipWeapon>();
             if (health == null) health = GetComponent<ShipHealth>();
-            if (movement == null) movement = GetComponent<ShipMovement>();
             if (rb == null) rb = GetComponent<Rigidbody2D>();
             if (baseScale == Vector3.one && transform.localScale != Vector3.one)
             {
@@ -135,17 +126,9 @@ namespace StarStrike.Gameplay.FX
             currentDamageY = Mathf.MoveTowards(currentDamageY, 0f, damageRecoverySpeed * dt);
             currentJitter = Mathf.MoveTowards(currentJitter, 0f, damageRecoverySpeed * 1.8f * dt);
 
-            // 3. Smooth turn banking
-            float targetBank = 0f;
-            if (movement != null)
-            {
-                targetBank = Mathf.Clamp(movement.TurnInput, -1f, 1f) * maxBankLean;
-            }
-            currentBankFactor = Mathf.Lerp(currentBankFactor, targetBank, dt * bankSmoothing);
-
             // Calculate composite procedural deformation
             float modX = 1f + currentRecoilX + currentDamageX;
-            float modY = 1f + currentRecoilY + currentDamageY - Mathf.Abs(currentBankFactor);
+            float modY = 1f + currentRecoilY + currentDamageY;
 
             // Apply procedural scale
             transform.localScale = new Vector3(baseScale.x * modX, baseScale.y * modY, baseScale.z);
