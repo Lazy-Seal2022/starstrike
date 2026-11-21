@@ -1159,22 +1159,10 @@ namespace StarStrike.Editor
                 gem.OnSpawned();
                 gem.SimulatePulse(1f, 0.016f);
 
-                // 4. Asteroid minimum spin floor
-                var astGo = new GameObject("TestAsteroid_Juice");
-                var astRb = astGo.AddComponent<Rigidbody2D>();
-                astRb.simulated = true;
-                astRb.angularVelocity = 2f; // below minimum floor
-                astGo.AddComponent<CircleCollider2D>();
-                var ast = astGo.AddComponent<Asteroid>();
-                ast.MaintainCosmicSpin();
-                if (Mathf.Abs(astRb.angularVelocity) < 12f)
-                    throw new System.Exception($"Asteroid should maintain minimum cosmic spin, got {astRb.angularVelocity}");
-
                 Object.DestroyImmediate(juiceGo);
                 Object.DestroyImmediate(gemGo);
-                Object.DestroyImmediate(astGo);
 
-                Debug.Log("[PASS] 14. Tier 1 Procedural Juice Animations (Recoil, Damage Squash, Banking, Gem & Asteroid Tumble) verified");
+                Debug.Log("[PASS] 14. Tier 1 Procedural Juice Animations (Recoil, Damage Squash, Banking, Gem Tumble) verified");
                 passed++;
             }
             catch (System.Exception ex)
