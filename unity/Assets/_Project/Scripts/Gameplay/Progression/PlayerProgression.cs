@@ -475,10 +475,11 @@ namespace StarStrike.Gameplay
                 transform.localScale = Vector3.one * 1.0f;
 
             var procAnim = GetComponent<StarStrike.Gameplay.FX.ShipProceduralAnimator>();
-            if (procAnim != null)
+            if (procAnim == null)
             {
-                procAnim.SetBaseScale(transform.localScale);
+                procAnim = gameObject.AddComponent<StarStrike.Gameplay.FX.ShipProceduralAnimator>();
             }
+            procAnim.SetBaseScale(transform.localScale);
 
             if (weapon == null) weapon = GetComponent<ShipWeapon>();
             if (weapon != null && currentShip != null)

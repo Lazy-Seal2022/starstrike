@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 2662640369084287944}
   - component: {fileID: 6211185753461500862}
   - component: {fileID: 7857622155475176410}
+  - component: {fileID: 7187764469688656693}
   m_Layer: 0
   m_Name: Ship_Scout
   m_TagString: Player
@@ -254,6 +255,28 @@ MonoBehaviour:
   weapon: {fileID: 0}
   shipRenderer: {fileID: 0}
   triggerGameOverOnDeath: 0
+--- !u!114 &7187764469688656693
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 223025568944328213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029a180ffca683f45bc595e143f37201, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: StarStrike.Gameplay::StarStrike.Gameplay.FX.ShipProceduralAnimator
+  recoilKickX: -0.28
+  recoilExpansionY: 0.16
+  recoilRecoverySpeed: 14
+  damageSquashX: 0.25
+  damageSquashY: -0.22
+  damageJitterAngle: 9
+  damageRecoverySpeed: 10
+  enableHitFlash: 1
+  damageFlashColor: {r: 1, g: 0.28, b: 0.28, a: 1}
+  flashDuration: 0.12
 --- !u!1 &1832469844492411880
 GameObject:
   m_ObjectHideFlags: 0
