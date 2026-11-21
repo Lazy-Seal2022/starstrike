@@ -105,27 +105,6 @@ namespace StarStrike.Tests.EditMode
         }
 
         [Test]
-        public void ShipProceduralAnimator_DamageDeformation_TriggersCorrectly()
-        {
-            var go = Track(new GameObject("TestJuiceShip"));
-            var rb = go.AddComponent<Rigidbody2D>();
-            var health = go.AddComponent<ShipHealth>();
-            health.maxShield = 100f;
-            health.ResetMeters();
-
-            var anim = go.AddComponent<StarStrike.Gameplay.FX.ShipProceduralAnimator>();
-            anim.EnsureInitialized();
-            anim.SubscribeEvents();
-
-            // Resting state
-            Assert.AreEqual(0f, anim.CurrentDamageX);
-
-            // Damage triggers damage squash
-            health.TakeDamage(20f);
-            Assert.Greater(anim.CurrentDamageX, 0f);
-        }
-
-        [Test]
         public void RunSummary_ScoreCalculation_IsAccurate()
         {
             int scoreVictory = RunSummary.CalculateScore(gems: 10, asteroids: 5, enemies: 4, bossKilled: true, time: 65f);

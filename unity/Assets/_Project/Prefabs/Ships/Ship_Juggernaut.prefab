@@ -47,7 +47,6 @@ GameObject:
   - component: {fileID: 5242235423155937648}
   - component: {fileID: 2435854743529455364}
   - component: {fileID: 92039921544309483}
-  - component: {fileID: 631225178777884832}
   m_Layer: 0
   m_Name: Ship_Juggernaut
   m_TagString: Player
@@ -288,22 +287,6 @@ MonoBehaviour:
   weapon: {fileID: 0}
   shipRenderer: {fileID: 0}
   triggerGameOverOnDeath: 0
---- !u!114 &631225178777884832
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 951607253421130907}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029a180ffca683f45bc595e143f37201, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: StarStrike.Gameplay::StarStrike.Gameplay.FX.ShipProceduralAnimator
-  damageSquashX: 0.25
-  damageSquashY: -0.22
-  damageJitterAngle: 9
-  damageRecoverySpeed: 10
 --- !u!1 &6574014540066490735
 GameObject:
   m_ObjectHideFlags: 0
