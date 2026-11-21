@@ -1134,26 +1134,18 @@ namespace StarStrike.Editor
                 health.maxShield = 100f;
                 health.ResetMeters();
 
-                var weapon = juiceGo.AddComponent<ShipWeapon>();
-                var movement = juiceGo.AddComponent<ShipMovement>();
                 var anim = juiceGo.AddComponent<StarStrike.Gameplay.FX.ShipProceduralAnimator>();
                 anim.EnsureInitialized();
                 anim.SubscribeEvents();
 
-                // 1. Recoil test
-                weapon.ResetCooldown();
-                weapon.TryFire(health);
-                if (anim.CurrentRecoilX >= 0f)
-                    throw new System.Exception("Firing should trigger negative X recoil compression!");
-
-                // 2. Damage squash test
+                // Damage squash test
                 health.TakeDamage(25f);
                 if (anim.CurrentDamageX <= 0f)
                     throw new System.Exception("Damage should trigger positive X damage squash!");
 
                 Object.DestroyImmediate(juiceGo);
 
-                Debug.Log("[PASS] 14. Tier 1 Procedural Juice Animations (Weapon Recoil Kick, Damage Squash) verified");
+                Debug.Log("[PASS] 14. Procedural Damage Squash & Shudder verified");
                 passed++;
             }
             catch (System.Exception ex)

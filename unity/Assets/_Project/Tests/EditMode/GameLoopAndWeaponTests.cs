@@ -105,7 +105,7 @@ namespace StarStrike.Tests.EditMode
         }
 
         [Test]
-        public void ShipProceduralAnimator_RecoilAndDamageDeformation_TriggersCorrectly()
+        public void ShipProceduralAnimator_DamageDeformation_TriggersCorrectly()
         {
             var go = Track(new GameObject("TestJuiceShip"));
             var rb = go.AddComponent<Rigidbody2D>();
@@ -113,19 +113,12 @@ namespace StarStrike.Tests.EditMode
             health.maxShield = 100f;
             health.ResetMeters();
 
-            var weapon = go.AddComponent<ShipWeapon>();
             var anim = go.AddComponent<StarStrike.Gameplay.FX.ShipProceduralAnimator>();
             anim.EnsureInitialized();
             anim.SubscribeEvents();
 
             // Resting state
-            Assert.AreEqual(0f, anim.CurrentRecoilX);
             Assert.AreEqual(0f, anim.CurrentDamageX);
-
-            // Fire triggers recoil compression
-            weapon.ResetCooldown();
-            weapon.TryFire(health);
-            Assert.Less(anim.CurrentRecoilX, 0f);
 
             // Damage triggers damage squash
             health.TakeDamage(20f);

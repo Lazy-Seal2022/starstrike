@@ -83,11 +83,6 @@ namespace StarStrike.Gameplay
             
             if (StarStrike.Gameplay.FX.FXService.Instance != null)
             {
-                var procAnim = GetComponent<StarStrike.Gameplay.FX.ShipProceduralAnimator>();
-                if (procAnim == null)
-                {
-                    StarStrike.Gameplay.FX.FXService.Instance.FlashSprite(GetComponent<SpriteRenderer>(), new Color(1f, 0.35f, 0.35f, 1f), 0.1f);
-                }
                 if (isPlayer)
                 {
                     float ratio = maxShield > 0f ? amount / maxShield : 0.2f;

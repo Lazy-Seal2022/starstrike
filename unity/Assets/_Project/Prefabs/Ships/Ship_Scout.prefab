@@ -267,16 +267,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 029a180ffca683f45bc595e143f37201, type: 3}
   m_Name: 
   m_EditorClassIdentifier: StarStrike.Gameplay::StarStrike.Gameplay.FX.ShipProceduralAnimator
-  recoilKickX: -0.28
-  recoilExpansionY: 0.16
-  recoilRecoverySpeed: 14
   damageSquashX: 0.25
   damageSquashY: -0.22
   damageJitterAngle: 9
   damageRecoverySpeed: 10
-  enableHitFlash: 1
-  damageFlashColor: {r: 1, g: 0.28, b: 0.28, a: 1}
-  flashDuration: 0.12
 --- !u!1 &1832469844492411880
 GameObject:
   m_ObjectHideFlags: 0
