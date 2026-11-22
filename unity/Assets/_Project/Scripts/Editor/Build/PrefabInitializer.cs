@@ -1269,10 +1269,10 @@ namespace StarStrike.Editor
                 var shieldPoly = shieldCol as PolygonCollider2D;
                 if (shieldPoly == null)
                     throw new System.Exception("Shield collider must be a PolygonCollider2D when hull is PolygonCollider2D!");
-                if (shieldPoly.pathCount != hullPoly.pathCount)
-                    throw new System.Exception($"Shield pathCount ({shieldPoly.pathCount}) must match hull pathCount ({hullPoly.pathCount})!");
-                if (shieldPoly.GetPath(0).Length != scoutHullPtsCount)
-                    throw new System.Exception($"Shield vertex count ({shieldPoly.GetPath(0).Length}) must match hull vertex count ({scoutHullPtsCount})!");
+                if (shieldPoly.pathCount <= 0)
+                    throw new System.Exception("Shield pathCount must be > 0!");
+                if (shieldPoly.GetPath(0).Length < 24)
+                    throw new System.Exception($"Shield collider must be a smooth round envelope with >=24 vertices, got {shieldPoly.GetPath(0).Length}!");
 
                 // Check that shield polygon bounds enclose the hull bounds
                 Bounds shieldBounds = shieldPoly.bounds;
@@ -1325,11 +1325,14 @@ namespace StarStrike.Editor
 
                 if (hullPoly.GetPath(0).Length == scoutHullPtsCount)
                     throw new System.Exception("Hull collider points should have updated to Fighter outline!");
-                if (shieldPoly.GetPath(0).Length != hullPoly.GetPath(0).Length)
-                    throw new System.Exception("Shield collider points must match updated Fighter hull points!");
+                if (shieldPoly.GetPath(0).Length < 24)
+                    throw new System.Exception("Shield collider points must form a smooth round envelope with >=24 vertices!");
+                Bounds fighterShieldBounds = shieldPoly.bounds;
+                if (fighterShieldBounds.extents.x <= hullPoly.bounds.extents.x || fighterShieldBounds.extents.y <= hullPoly.bounds.extents.y)
+                    throw new System.Exception("Updated shield bounds must enclose fighter hull bounds!");
 
                 Object.DestroyImmediate(testShip);
-                Debug.Log("[PASS] 16. Dual-Hitbox System (Hull Exact Polygon + Shield Offset Polygon & State Toggling) verified");
+                Debug.Log("[PASS] 16. Dual-Hitbox System (Hull Exact Polygon + Shield Round Envelope & State Toggling) verified");
                 passed++;
             }
             catch (System.Exception ex)

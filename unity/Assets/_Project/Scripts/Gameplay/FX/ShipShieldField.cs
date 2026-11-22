@@ -3,13 +3,20 @@ using StarStrike.Core;
 
 namespace StarStrike.Gameplay.FX
 {
+    public enum ShieldHitboxShape
+    {
+        Round,          // Smooth round protective bubble (snug ellipse enclosing the ship, not too fat)
+        Circle,         // Uniform circular bubble enclosing the ship
+        HullOutline     // Exact hull polygon offset
+    }
+
     /// <summary>
     /// Persistent dynamic shield field component for ships (Battlevoid: Harbinger style).
     /// Manages:
-    /// 1. Outer shield trigger envelope (exact hull outline + radial offset).
+    /// 1. Outer shield trigger envelope (smooth round protective bubble enclosing the ship snugly).
     /// 2. Invisible when idle (clean ship, no obtrusive permanent rings or lines).
-    /// 3. On shield hit: momentary flash of the exact hull outline barrier + localized
-    ///    impact ripple at the hit point on the shield surface (no circles!).
+    /// 3. On shield hit: momentary flash of the round shield bubble + localized
+    ///    impact ripple at the hit point on the shield surface.
     /// 4. When shields deplete: shield trigger collider turns off, incoming fire penetrates
     ///    directly to the tighter physical hull polygon.
     /// 5. When shields regenerate: trigger collider automatically re-arms.
@@ -28,8 +35,10 @@ namespace StarStrike.Gameplay.FX
         public float domeFadeSpeed = 5.5f;
 
         [Header("Shield Hitbox Tuning")]
-        [Tooltip("Radial offset extending outward from the hull outline")]
-        public float shieldHitboxOffset = 0.35f;
+        public ShieldHitboxShape shieldShape = ShieldHitboxShape.Round;
+
+        [Tooltip("Radial offset extending outward from the hull outline (snug, not too fat)")]
+        public float shieldHitboxOffset = 0.20f;
 
         [Header("Visual Contour")]
         public bool showShieldContour = true;
@@ -184,8 +193,58 @@ namespace StarStrike.Gameplay.FX
             if (domeObject == null) EnsureInitialized();
             if (domeObject == null) return;
 
-            PolygonCollider2D hullPoly = GetComponent<PolygonCollider2D>();
+            var hullPoly = GetComponent<PolygonCollider2D>();
+
+            // 1. Determine ship center and extents in local space
+            Vector2 center = Vector2.zero;
+            float extX = 1.0f;
+            float extY = 1.0f;
+
             if (hullPoly != null && hullPoly.pathCount > 0)
+            {
+                Vector2[] pts = hullPoly.GetPath(0);
+                if (pts.Length > 0)
+                {
+                    float minX = pts[0].x, maxX = pts[0].x;
+                    float minY = pts[0].y, maxY = pts[0].y;
+                    for (int i = 1; i < pts.Length; i++)
+                    {
+                        if (pts[i].x < minX) minX = pts[i].x;
+                        if (pts[i].x > maxX) maxX = pts[i].x;
+                        if (pts[i].y < minY) minY = pts[i].y;
+                        if (pts[i].y > maxY) maxY = pts[i].y;
+                    }
+                    center = new Vector2((minX + maxX) * 0.5f, (minY + maxY) * 0.5f);
+                    extX = (maxX - minX) * 0.5f;
+                    extY = (maxY - minY) * 0.5f;
+                }
+            }
+            else
+            {
+                var circle = GetComponent<CircleCollider2D>();
+                if (circle != null)
+                {
+                    center = circle.offset;
+                    extX = circle.radius;
+                    extY = circle.radius;
+                }
+                else
+                {
+                    var sr = GetComponent<SpriteRenderer>();
+                    if (sr != null && sr.sprite != null)
+                    {
+                        Bounds b = sr.sprite.bounds;
+                        center = b.center;
+                        extX = b.extents.x;
+                        extY = b.extents.y;
+                    }
+                }
+            }
+
+            extX = Mathf.Max(0.2f, extX);
+            extY = Mathf.Max(0.2f, extY);
+
+            if (shieldShape == ShieldHitboxShape.HullOutline && hullPoly != null && hullPoly.pathCount > 0)
             {
                 PolygonCollider2D shieldPoly = domeObject.GetComponent<PolygonCollider2D>();
                 if (shieldPoly == null)
@@ -211,7 +270,6 @@ namespace StarStrike.Gameplay.FX
                 }
                 shieldCollider = shieldPoly;
 
-                // Configure shield contour line matching exact polygon points
                 if (showShieldContour && shieldPoly.pathCount > 0)
                 {
                     EnsureShieldLine();
@@ -224,40 +282,60 @@ namespace StarStrike.Gameplay.FX
                             shieldLine.SetPosition(i, new Vector3(pts[i].x, pts[i].y, 0f));
                         }
                         shieldLine.loop = true;
-                        shieldLine.enabled = false; // Invisible when idle
+                        shieldLine.enabled = false;
                     }
                 }
             }
             else
             {
-                CircleCollider2D hullCircle = GetComponent<CircleCollider2D>();
-                float r = hullCircle != null ? hullCircle.radius + offset : shieldRadius;
+                // Round shield bubble (snug ellipse or circle, covered on the ship but not too fat!)
+                float rx, ry;
+                if (shieldShape == ShieldHitboxShape.Circle)
+                {
+                    float r = Mathf.Max(extX, extY) + offset;
+                    rx = r;
+                    ry = r;
+                }
+                else // ShieldHitboxShape.Round (default)
+                {
+                    rx = extX + offset;
+                    ry = extY + offset;
+                }
 
-                CircleCollider2D shieldCircle = domeObject.GetComponent<CircleCollider2D>();
-                if (shieldCircle == null)
+                shieldRadius = Mathf.Max(rx, ry);
+
+                int segments = 32;
+                Vector2[] roundPts = new Vector2[segments];
+                for (int i = 0; i < segments; i++)
+                {
+                    float angle = (i / (float)segments) * Mathf.PI * 2f;
+                    roundPts[i] = center + new Vector2(Mathf.Cos(angle) * rx, Mathf.Sin(angle) * ry);
+                }
+
+                PolygonCollider2D shieldPoly = domeObject.GetComponent<PolygonCollider2D>();
+                if (shieldPoly == null)
                 {
                     var oldCol = domeObject.GetComponent<Collider2D>();
                     if (oldCol != null) DestroyImmediate(oldCol);
-                    shieldCircle = domeObject.AddComponent<CircleCollider2D>();
+                    shieldPoly = domeObject.AddComponent<PolygonCollider2D>();
                 }
-                shieldCircle.isTrigger = true;
-                shieldCircle.radius = r;
-                shieldCollider = shieldCircle;
+                shieldPoly.isTrigger = true;
+                shieldPoly.pathCount = 1;
+                shieldPoly.SetPath(0, roundPts);
+                shieldCollider = shieldPoly;
 
                 if (showShieldContour)
                 {
                     EnsureShieldLine();
                     if (shieldLine != null)
                     {
-                        int segments = 32;
                         shieldLine.positionCount = segments;
                         for (int i = 0; i < segments; i++)
                         {
-                            float rad = (i / (float)segments) * Mathf.PI * 2f;
-                            shieldLine.SetPosition(i, new Vector3(Mathf.Cos(rad) * r, Mathf.Sin(rad) * r, 0f));
+                            shieldLine.SetPosition(i, new Vector3(roundPts[i].x, roundPts[i].y, 0f));
                         }
                         shieldLine.loop = true;
-                        shieldLine.enabled = false;
+                        shieldLine.enabled = false; // Invisible when idle
                     }
                 }
             }
@@ -340,6 +418,17 @@ namespace StarStrike.Gameplay.FX
             if (dir == Vector2.zero) dir = Vector2.up;
 
             Vector2 surfacePoint = shipPos + dir * shieldRadius;
+            if (shieldCollider is PolygonCollider2D polyCol && polyCol.pathCount > 0)
+            {
+                Vector2 localDir = transform.InverseTransformDirection(dir);
+                float localAngle = Mathf.Atan2(localDir.y, localDir.x);
+                Bounds sBounds = shieldCollider.bounds;
+                float rx = sBounds.extents.x / Mathf.Max(0.001f, transform.lossyScale.x);
+                float ry = sBounds.extents.y / Mathf.Max(0.001f, transform.lossyScale.y);
+                Vector2 localSurface = new Vector2(Mathf.Cos(localAngle) * rx, Mathf.Sin(localAngle) * ry);
+                surfacePoint = transform.TransformPoint(localSurface);
+            }
+
             float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
             Quaternion rippleRotation = Quaternion.Euler(0f, 0f, angle - 90f);
 

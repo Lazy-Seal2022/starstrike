@@ -285,6 +285,6 @@ MonoBehaviour:
   shieldRadius: 1
   autoDetectRadius: 1
   domeFadeSpeed: 5.5
-  shieldHitboxOffset: 0.35
+  shieldHitboxOffset: 0.2
   showShieldContour: 1
   contourLineWidth: 0.045
