@@ -195,6 +195,19 @@ namespace StarStrike.Gameplay.FX
 
             if (PoolManager.Instance != null)
             {
+                float scale = size == "Large" ? 2.6f : (size == "Medium" ? 1.7f : 1.0f);
+                float dur = size == "Large" ? 0.45f : (size == "Medium" ? 0.35f : 0.28f);
+
+                var animObj = PoolManager.Instance.Spawn("AnimatedExplosionFX", pos, Quaternion.identity, () => {
+                    return AnimatedSpriteExplosion.CreatePrefab();
+                });
+                if (animObj != null)
+                {
+                    var anim = animObj.GetComponent<AnimatedSpriteExplosion>();
+                    if (anim != null) anim.Initialize(scale, dur);
+                }
+
+                // Also spawn secondary particle burst for depth
                 PoolManager.Instance.Spawn("ExplosionFX", pos, Quaternion.identity, () => {
                     return CreateExplosionPrefab();
                 });

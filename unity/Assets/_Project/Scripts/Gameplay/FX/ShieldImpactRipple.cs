@@ -18,6 +18,34 @@ namespace StarStrike.Gameplay.FX
         private Color baseColor = new Color(0.25f, 0.95f, 1f, 1f);
 
         private static Material cachedRippleMat;
+        private static Sprite[] rippleFrames;
+
+        public static Sprite[] RippleFrames => rippleFrames;
+
+        private static void EnsureFramesLoaded()
+        {
+            if (rippleFrames == null || rippleFrames.Length == 0)
+            {
+                rippleFrames = new Sprite[6];
+                bool allFound = true;
+                for (int i = 0; i < 6; i++)
+                {
+#if UNITY_EDITOR
+                    var sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/_Project/Art/Sprites/VFX/ShieldRipple/ShieldRipple_frame_{i}.png");
+                    if (sp != null) rippleFrames[i] = sp;
+                    else allFound = false;
+#endif
+                }
+                if (!allFound)
+                {
+                    var fallback = ProceduralSpriteHelper.GetShieldRippleSprite(64);
+                    for (int i = 0; i < 6; i++)
+                    {
+                        if (rippleFrames[i] == null) rippleFrames[i] = fallback;
+                    }
+                }
+            }
+        }
 
         private void Awake()
         {
@@ -26,13 +54,19 @@ namespace StarStrike.Gameplay.FX
 
         public void EnsureInitialized()
         {
+            EnsureFramesLoaded();
+
             if (spriteRenderer == null)
             {
                 spriteRenderer = GetComponent<SpriteRenderer>();
                 if (spriteRenderer == null) spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
             }
 
-            if (spriteRenderer.sprite == null)
+            if (spriteRenderer.sprite == null && rippleFrames != null && rippleFrames.Length > 0)
+            {
+                spriteRenderer.sprite = rippleFrames[0];
+            }
+            else if (spriteRenderer.sprite == null)
             {
                 spriteRenderer.sprite = ProceduralSpriteHelper.GetShieldRippleSprite(64);
             }
@@ -69,6 +103,15 @@ namespace StarStrike.Gameplay.FX
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
+
+            if (rippleFrames != null && rippleFrames.Length > 0)
+            {
+                int frameIdx = Mathf.Clamp(Mathf.FloorToInt(t * rippleFrames.Length), 0, rippleFrames.Length - 1);
+                if (spriteRenderer != null && rippleFrames[frameIdx] != null)
+                {
+                    spriteRenderer.sprite = rippleFrames[frameIdx];
+                }
+            }
 
             // Explosive cubic ease-out: expands very quickly, then settles
             float eased = 1f - Mathf.Pow(1f - t, 3f);

@@ -1,0 +1,507 @@
+fileFormatVersion: 2
+guid: 35bf98a067ac6b847a6dfe8145be2070
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8753487886062801430
+    second: Explosion_strip8_0
+  - first:
+      213: 8161277302358794016
+    second: Explosion_strip8_1
+  - first:
+      213: -2176611058328817427
+    second: Explosion_strip8_2
+  - first:
+      213: -3239488844246713195
+    second: Explosion_strip8_3
+  - first:
+      213: -1002335967552790526
+    second: Explosion_strip8_4
+  - first:
+      213: 6289951627419436308
+    second: Explosion_strip8_5
+  - first:
+      213: -5072302085112136344
+    second: Explosion_strip8_6
+  - first:
+      213: 4486476674885793367
+    second: Explosion_strip8_7
+  - first:
+      213: -1863185115448841261
+    second: Explosion_strip8_8
+  - first:
+      213: 2250337817045396997
+    second: Explosion_strip8_9
+  - first:
+      213: -1212071845939332503
+    second: Explosion_strip8_10
+  - first:
+      213: -5524403146144643880
+    second: Explosion_strip8_11
+  - first:
+      213: -715188973046812835
+    second: Explosion_strip8_12
+  - first:
+      213: 2816588118592304326
+    second: Explosion_strip8_13
+  - first:
+      213: 2964873922297744508
+    second: Explosion_strip8_14
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Explosion_strip8_0
+      rect:
+        serializedVersion: 2
+        x: 35
+        y: 36
+        width: 56
+        height: 56
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 612557abad2aa7970800000000000000
+      internalID: 8753487886062801430
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Explosion_strip8_1
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 13
+        width: 101
+        height: 102
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02fdd88577ea24170800000000000000
+      internalID: 8161277302358794016
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Explosion_strip8_2
+      rect:
+        serializedVersion: 2
+        x: 255
+        y: 79
+        width: 40
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: de0bf1e46cf1bc1e0800000000000000
+      internalID: -2176611058328817427
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Explosion_strip8_3
+      rect:
+        serializedVersion: 2
+        x: 263
+        y: 4
+        width: 114
+        height: 113
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59c75d84f060b03d0800000000000000
+      internalID: -3239488844246713195
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Explosion_strip8_4
+      rect:
+        serializedVersion: 2
+        x: 323
+        y: 0
+        width: 399
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2002b648fbcf612f0800000000000000
+      internalID: -1002335967552790526
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Explosion_strip8_5
+      rect:
+        serializedVersion: 2
+        x: 654
+        y: 9
+        width: 108
+        height: 110
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 415c9b6fda56a4750800000000000000
+      internalID: 6289951627419436308
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Explosion_strip8_6
+      rect:
+        serializedVersion: 2
+        x: 728
+        y: 70
+        width: 74
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 86dfa67b0209b99b0800000000000000
+      internalID: -5072302085112136344
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Explosion_strip8_7
+      rect:
+        serializedVersion: 2
+        x: 781
+        y: 7
+        width: 111
+        height: 121
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 756b4a3f3ca234e30800000000000000
+      internalID: 4486476674885793367
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Explosion_strip8_8
+      rect:
+        serializedVersion: 2
+        x: 866
+        y: 76
+        width: 55
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3db60e25203a426e0800000000000000
+      internalID: -1863185115448841261
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Explosion_strip8_9
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 6
+        width: 113
+        height: 116
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 50e6e91625eca3f10800000000000000
+      internalID: 2250337817045396997
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Explosion_strip8_10
+      rect:
+        serializedVersion: 2
+        x: 1001
+        y: 79
+        width: 23
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 96ab884f31bdd2fe0800000000000000
+      internalID: -1212071845939332503
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Explosion_strip8_11
+      rect:
+        serializedVersion: 2
+        x: 255
+        y: 0
+        width: 41
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d48ffdab906553b0800000000000000
+      internalID: -5524403146144643880
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Explosion_strip8_12
+      rect:
+        serializedVersion: 2
+        x: 724
+        y: 0
+        width: 86
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5fa4421b632316f0800000000000000
+      internalID: -715188973046812835
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Explosion_strip8_13
+      rect:
+        serializedVersion: 2
+        x: 856
+        y: 0
+        width: 80
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c4b74f88f7861720800000000000000
+      internalID: 2816588118592304326
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Explosion_strip8_14
+      rect:
+        serializedVersion: 2
+        x: 985
+        y: 0
+        width: 39
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c7c406eaf19552920800000000000000
+      internalID: 2964873922297744508
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Explosion_strip8_0: 8753487886062801430
+      Explosion_strip8_1: 8161277302358794016
+      Explosion_strip8_10: -1212071845939332503
+      Explosion_strip8_11: -5524403146144643880
+      Explosion_strip8_12: -715188973046812835
+      Explosion_strip8_13: 2816588118592304326
+      Explosion_strip8_14: 2964873922297744508
+      Explosion_strip8_2: -2176611058328817427
+      Explosion_strip8_3: -3239488844246713195
+      Explosion_strip8_4: -1002335967552790526
+      Explosion_strip8_5: 6289951627419436308
+      Explosion_strip8_6: -5072302085112136344
+      Explosion_strip8_7: 4486476674885793367
+      Explosion_strip8_8: -1863185115448841261
+      Explosion_strip8_9: 2250337817045396997
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

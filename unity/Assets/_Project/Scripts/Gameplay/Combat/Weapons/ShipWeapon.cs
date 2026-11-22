@@ -195,7 +195,8 @@ namespace StarStrike.Gameplay
 
             foreach (Vector2 nose in muzzlePositions)
             {
-                
+                SpawnMuzzleFlash(nose, transform.rotation);
+
                 string poolTag = isPlayer ? "PlayerLaser" : "EnemyLaser";
                 
                 GameObject laserObj = null;
@@ -240,6 +241,26 @@ namespace StarStrike.Gameplay
             OnFired?.Invoke();
 
             return true;
+        }
+
+        private void SpawnMuzzleFlash(Vector2 pos, Quaternion rot)
+        {
+            if (PoolManager.Instance != null)
+            {
+                var flashObj = PoolManager.Instance.Spawn("MuzzleFlashFX", pos, rot, () => 
+                {
+                    return StarStrike.Gameplay.FX.MuzzleFlashFX.CreatePrefab();
+                });
+                if (flashObj != null)
+                {
+                    var flash = flashObj.GetComponent<StarStrike.Gameplay.FX.MuzzleFlashFX>();
+                    if (flash != null)
+                    {
+                        Color col = isPlayer ? new Color(0.3f, 0.9f, 1f, 1f) : new Color(1f, 0.3f, 0.2f, 1f);
+                        flash.Initialize(col, 0.65f, 0.08f);
+                    }
+                }
+            }
         }
     }
 }

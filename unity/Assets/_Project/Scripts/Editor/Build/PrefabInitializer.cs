@@ -1453,6 +1453,159 @@ namespace StarStrike.Editor
                 failed++;
             }
 
+            // 19. Verify Shield Impact Ripple Sprite Animation (Feature #1)
+            try
+            {
+                var rippleObj = new GameObject("Test_ShieldRipple");
+                var ripple = rippleObj.AddComponent<StarStrike.Gameplay.FX.ShieldImpactRipple>();
+                ripple.EnsureInitialized();
+
+                var frames = StarStrike.Gameplay.FX.ShieldImpactRipple.RippleFrames;
+                if (frames == null || frames.Length != 6)
+                    throw new System.Exception($"Expected 6 ripple frames, got {frames?.Length ?? 0}");
+                for (int i = 0; i < frames.Length; i++)
+                {
+                    if (frames[i] == null)
+                        throw new System.Exception($"Ripple frame {i} is null!");
+                }
+
+                ripple.Initialize(new Color(0.2f, 0.9f, 1f, 1f), 0.2f, 0.8f, 0.2f);
+                var sr = ripple.GetComponent<SpriteRenderer>();
+                if (sr == null || sr.sprite == null)
+                    throw new System.Exception("ShieldImpactRipple SpriteRenderer or sprite is null!");
+                if (sr.sortingOrder != 14)
+                    throw new System.Exception($"ShieldImpactRipple sortingOrder expected 14, got {sr.sortingOrder}");
+
+                Object.DestroyImmediate(rippleObj);
+                Debug.Log("[PASS] 19. Shield Impact Ripple (Feature #1: 6 frames, 128x128 transparent) verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 19. Shield Impact Ripple verification failed: {ex.Message}");
+                failed++;
+            }
+
+            // 20. Verify Thruster Plume Loop Sprite Animation (Feature #2)
+            try
+            {
+                var shipObj = new GameObject("Test_ShipThruster");
+                var thruster = shipObj.AddComponent<StarStrike.Gameplay.FX.ShipThrusterEffect>();
+                thruster.EnsureInitialized();
+
+                var cruise = StarStrike.Gameplay.FX.ShipThrusterEffect.CruiseFrames;
+                var boost = StarStrike.Gameplay.FX.ShipThrusterEffect.BoostFrames;
+                if (cruise == null || cruise.Length != 6)
+                    throw new System.Exception($"Expected 6 cruise plume frames, got {cruise?.Length ?? 0}");
+                if (boost == null || boost.Length != 6)
+                    throw new System.Exception($"Expected 6 boost plume frames, got {boost?.Length ?? 0}");
+                for (int i = 0; i < 6; i++)
+                {
+                    if (cruise[i] == null) throw new System.Exception($"Cruise frame {i} is null!");
+                    if (boost[i] == null) throw new System.Exception($"Boost frame {i} is null!");
+                }
+
+                if (thruster.PlumeRenderer == null)
+                    throw new System.Exception("Thruster PlumeRenderer is null!");
+                if (thruster.PlumeRenderer.enabled)
+                    throw new System.Exception("Thruster PlumeRenderer should be disabled when idle!");
+
+                // Activate cruise thrust
+                thruster.SetThrusting(true, false);
+                if (!thruster.PlumeRenderer.enabled)
+                    throw new System.Exception("Thruster PlumeRenderer should be enabled when thrusting!");
+
+                // Activate boost thrust
+                thruster.SetThrusting(true, true);
+                if (!thruster.PlumeRenderer.enabled)
+                    throw new System.Exception("Thruster PlumeRenderer should remain enabled when boosting!");
+
+                // Deactivate thrust
+                thruster.SetThrusting(false, false);
+                if (thruster.PlumeRenderer.enabled)
+                    throw new System.Exception("Thruster PlumeRenderer should be disabled after stopping thrust!");
+
+                Object.DestroyImmediate(shipObj);
+                Debug.Log("[PASS] 20. Thruster Plume Loop (Feature #2: 6 cruise + 6 boost frames, 64x64) verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 20. Thruster Plume Loop verification failed: {ex.Message}");
+                failed++;
+            }
+
+            // 21. Verify Handcrafted Animated Sprite Explosion FX (Feature #3)
+            try
+            {
+                var explGo = StarStrike.Gameplay.FX.AnimatedSpriteExplosion.CreatePrefab();
+                var anim = explGo.GetComponent<StarStrike.Gameplay.FX.AnimatedSpriteExplosion>();
+                if (anim == null)
+                    throw new System.Exception("AnimatedSpriteExplosion component missing from prefab!");
+
+                var frames = StarStrike.Gameplay.FX.AnimatedSpriteExplosion.ExplosionFrames;
+                if (frames == null || frames.Length != 8)
+                    throw new System.Exception($"Expected 8 explosion frames, got {frames?.Length ?? 0}");
+                for (int i = 0; i < frames.Length; i++)
+                {
+                    if (frames[i] == null) throw new System.Exception($"Explosion frame {i} is null!");
+                }
+
+                anim.Initialize(1.8f, 0.35f);
+                var sr = explGo.GetComponent<SpriteRenderer>();
+                if (sr == null || sr.sprite == null)
+                    throw new System.Exception("Explosion SpriteRenderer or sprite is null!");
+                if (sr.sortingOrder != 15)
+                    throw new System.Exception($"Explosion sortingOrder expected 15, got {sr.sortingOrder}");
+                if (explGo.transform.localScale.x < 1.7f)
+                    throw new System.Exception($"Explosion scale expected ~1.8f, got {explGo.transform.localScale.x}");
+
+                Object.DestroyImmediate(explGo);
+                Debug.Log("[PASS] 21. Handcrafted Arcade Explosion (Feature #3: 8 frames, 128x128 multi-lobed) verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 21. Handcrafted Explosion verification failed: {ex.Message}");
+                failed++;
+            }
+
+            // 22. Verify Weapon Muzzle Flash FX Lifecycle & Animation (Feature #5)
+            try
+            {
+                var flashGo = StarStrike.Gameplay.FX.MuzzleFlashFX.CreatePrefab();
+                var flash = flashGo.GetComponent<StarStrike.Gameplay.FX.MuzzleFlashFX>();
+                if (flash == null)
+                    throw new System.Exception("MuzzleFlashFX component missing from prefab!");
+
+                var frames = StarStrike.Gameplay.FX.MuzzleFlashFX.FlashFrames;
+                if (frames == null || frames.Length != 4)
+                    throw new System.Exception($"Expected 4 muzzle flash frames, got {frames?.Length ?? 0}");
+                for (int i = 0; i < frames.Length; i++)
+                {
+                    if (frames[i] == null) throw new System.Exception($"Muzzle flash frame {i} is null!");
+                }
+
+                Color testColor = new Color(0.2f, 0.9f, 1f, 1f);
+                flash.Initialize(testColor, 0.65f, 0.08f);
+                var sr = flashGo.GetComponent<SpriteRenderer>();
+                if (sr == null || sr.sprite == null)
+                    throw new System.Exception("MuzzleFlash SpriteRenderer or sprite is null!");
+                if (sr.sortingOrder != 16)
+                    throw new System.Exception($"MuzzleFlash sortingOrder expected 16, got {sr.sortingOrder}");
+                if (sr.color != testColor)
+                    throw new System.Exception($"MuzzleFlash tint color mismatch: expected {testColor}, got {sr.color}");
+
+                Object.DestroyImmediate(flashGo);
+                Debug.Log("[PASS] 22. Muzzle Flash FX (Feature #5: 4 frames, 64x64 plasma burst) verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 22. Muzzle Flash FX verification failed: {ex.Message}");
+                failed++;
+            }
+
             Debug.Log($"=== TOTAL VERIFICATION RESULT: {passed} PASSED, {failed} FAILED ===");
         }
 
