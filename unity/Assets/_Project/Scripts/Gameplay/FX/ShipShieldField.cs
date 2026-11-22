@@ -45,8 +45,11 @@ namespace StarStrike.Gameplay.FX
         public float contourLineWidth = 0.045f;
 
         [Header("Contact Shield Flare Tuning")]
-        [Tooltip("Half-angle in degrees of the localized contact shield arc (e.g. 35 degrees = 70 degree arc)")]
+        [Tooltip("Max half-angle cap in degrees of the contact arc (fallback limit)")]
         public float contactArcHalfAngle = 35f;
+
+        [Tooltip("Target physical arc length (in world units) of the localized contact flare")]
+        public float contactArcPhysicalLength = 1.4f;
 
         [Tooltip("Width of the contact barrier arc at the impact epicenter")]
         public float contactArcWidth = 0.08f;
@@ -219,6 +222,36 @@ namespace StarStrike.Gameplay.FX
             }
         }
 
+        private static AnimationCurve cachedContactWidthCurve;
+        private static readonly Gradient cachedArcGradient = new Gradient();
+        private static readonly GradientColorKey[] cachedColorKeys = new GradientColorKey[2];
+        private static readonly GradientAlphaKey[] cachedAlphaKeys = new GradientAlphaKey[3];
+        private static readonly Vector3[] cachedArcPositions = new Vector3[13];
+
+        private static AnimationCurve GetContactWidthCurve()
+        {
+            if (cachedContactWidthCurve == null)
+            {
+                cachedContactWidthCurve = new AnimationCurve();
+                cachedContactWidthCurve.AddKey(0f, 0f);
+                cachedContactWidthCurve.AddKey(0.5f, 1f);
+                cachedContactWidthCurve.AddKey(1f, 0f);
+            }
+            return cachedContactWidthCurve;
+        }
+
+        private void ApplyContactArcGradient(LineRenderer lr, float alpha)
+        {
+            if (lr == null) return;
+            cachedColorKeys[0] = new GradientColorKey(currentShieldColor, 0f);
+            cachedColorKeys[1] = new GradientColorKey(currentShieldColor, 1f);
+            cachedAlphaKeys[0] = new GradientAlphaKey(0f, 0f);
+            cachedAlphaKeys[1] = new GradientAlphaKey(alpha, 0.5f);
+            cachedAlphaKeys[2] = new GradientAlphaKey(0f, 1f);
+            cachedArcGradient.SetKeys(cachedColorKeys, cachedAlphaKeys);
+            lr.colorGradient = cachedArcGradient;
+        }
+
         private void ConfigureLineRenderer(LineRenderer lr)
         {
             if (lr == null) return;
@@ -226,6 +259,8 @@ namespace StarStrike.Gameplay.FX
             lr.loop = false;
             lr.startWidth = contourLineWidth;
             lr.endWidth = contourLineWidth;
+            lr.widthCurve = GetContactWidthCurve();
+            lr.widthMultiplier = contactArcWidth > 0.01f ? contactArcWidth : (contourLineWidth + 0.035f);
             lr.sortingOrder = 12; // Above hull (layer 10)
 
             if (cachedShieldMat == null)
@@ -543,13 +578,33 @@ namespace StarStrike.Gameplay.FX
             Vector2 surfacePoint = transform.TransformPoint(shieldCenter + new Vector2(lx, ly));
 
             // 2. Localized contact barrier flare: ONLY the contact area lights up!
-            // Other parts of the shield perimeter remain completely invisible.
+            // Dynamically calculate angular span from target physical arc length:
+            // delta_theta = length / tanSpeed, ensuring uniform compact contact flare on all ships
+            // regardless of whether hit is on the long flank or the narrow nose.
             EnsureShieldLine();
             if (showShieldContour && contactArcs != null && contactArcs.Length > 0)
             {
                 int arcSegments = 12; // 13 smooth points along the contact curvature
-                float halfAngle = (contactArcHalfAngle > 5f ? contactArcHalfAngle : 35f) * Mathf.Deg2Rad;
-                Vector3[] arcPositions = new Vector3[arcSegments + 1];
+                float targetPhysicalLength = contactArcPhysicalLength > 0.2f ? contactArcPhysicalLength : 1.4f;
+                float halfPhysicalLength = targetPhysicalLength * 0.5f;
+
+                // Tangential speed along the ellipse/superellipse boundary at localAngle:
+                // v(theta) = sqrt((Rx * sin(theta))^2 + (Ry * cos(theta))^2) * superellipseCorrection
+                float tanSpeed;
+                if (shieldShape == ShieldHitboxShape.Circle || shieldRadiusX <= 0.01f || shieldRadiusY <= 0.01f)
+                {
+                    tanSpeed = Mathf.Max(0.5f, shieldRadius);
+                }
+                else
+                {
+                    tanSpeed = Mathf.Sqrt(
+                        Mathf.Pow(shieldRadiusX * sinHit, 2f) +
+                        Mathf.Pow(shieldRadiusY * cosHit, 2f)
+                    ) * 1.15f;
+                }
+
+                float maxHalfAngle = (contactArcHalfAngle > 5f ? contactArcHalfAngle : 35f) * Mathf.Deg2Rad;
+                float halfAngle = Mathf.Clamp(halfPhysicalLength / Mathf.Max(0.5f, tanSpeed), 5f * Mathf.Deg2Rad, maxHalfAngle);
 
                 for (int i = 0; i <= arcSegments; i++)
                 {
@@ -573,7 +628,7 @@ namespace StarStrike.Gameplay.FX
                         ax = Mathf.Sign(ca) * Mathf.Pow(Mathf.Abs(ca), 2.0f / shieldPExp) * shieldRadiusX;
                         ay = Mathf.Sign(sa) * Mathf.Pow(Mathf.Abs(sa), 2.0f / shieldPExp) * shieldRadiusY;
                     }
-                    arcPositions[i] = shieldCenter + new Vector2(ax, ay);
+                    cachedArcPositions[i] = shieldCenter + new Vector2(ax, ay);
                 }
 
                 int slot = currentArcIndex;
@@ -583,32 +638,14 @@ namespace StarStrike.Gameplay.FX
                 if (targetLine != null)
                 {
                     targetLine.loop = false;
-                    targetLine.positionCount = arcPositions.Length;
-                    targetLine.SetPositions(arcPositions);
+                    targetLine.positionCount = arcSegments + 1;
+                    targetLine.SetPositions(cachedArcPositions);
 
-                    // Width curve: 0 at tips, peak in center
-                    AnimationCurve widthCurve = new AnimationCurve();
                     float peakWidth = contactArcWidth > 0.01f ? contactArcWidth : (contourLineWidth + 0.035f);
-                    widthCurve.AddKey(0f, 0f);
-                    widthCurve.AddKey(0.5f, peakWidth);
-                    widthCurve.AddKey(1f, 0f);
-                    targetLine.widthCurve = widthCurve;
-                    targetLine.widthMultiplier = 1f;
+                    targetLine.widthCurve = GetContactWidthCurve();
+                    targetLine.widthMultiplier = peakWidth;
 
-                    // Color gradient: feathered alpha at tips, bright in center
-                    Gradient grad = new Gradient();
-                    grad.SetKeys(
-                        new GradientColorKey[] {
-                            new GradientColorKey(currentShieldColor, 0f),
-                            new GradientColorKey(currentShieldColor, 1f)
-                        },
-                        new GradientAlphaKey[] {
-                            new GradientAlphaKey(0f, 0f),
-                            new GradientAlphaKey(0.95f, 0.5f),
-                            new GradientAlphaKey(0f, 1f)
-                        }
-                    );
-                    targetLine.colorGradient = grad;
+                    ApplyContactArcGradient(targetLine, 0.95f);
                     targetLine.enabled = true;
 
                     contactArcs[slot].alpha = 0.95f;
@@ -660,19 +697,7 @@ namespace StarStrike.Gameplay.FX
                         {
                             if (contactArcs[i].alpha > 0f)
                             {
-                                Gradient grad = new Gradient();
-                                grad.SetKeys(
-                                    new GradientColorKey[] {
-                                        new GradientColorKey(currentShieldColor, 0f),
-                                        new GradientColorKey(currentShieldColor, 1f)
-                                    },
-                                    new GradientAlphaKey[] {
-                                        new GradientAlphaKey(0f, 0f),
-                                        new GradientAlphaKey(contactArcs[i].alpha, 0.5f),
-                                        new GradientAlphaKey(0f, 1f)
-                                    }
-                                );
-                                contactArcs[i].line.colorGradient = grad;
+                                ApplyContactArcGradient(contactArcs[i].line, contactArcs[i].alpha);
                             }
                             else
                             {
