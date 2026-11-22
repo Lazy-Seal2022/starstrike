@@ -195,22 +195,34 @@ namespace StarStrike.Gameplay.FX
 
             if (PoolManager.Instance != null)
             {
-                float scale = size == "Large" ? 2.6f : (size == "Medium" ? 1.7f : 1.0f);
-                float dur = size == "Large" ? 0.45f : (size == "Medium" ? 0.35f : 0.28f);
-
-                var animObj = PoolManager.Instance.Spawn("AnimatedExplosionFX", pos, Quaternion.identity, () => {
-                    return AnimatedSpriteExplosion.CreatePrefab();
-                });
-                if (animObj != null)
-                {
-                    var anim = animObj.GetComponent<AnimatedSpriteExplosion>();
-                    if (anim != null) anim.Initialize(scale, dur);
-                }
-
-                // Also spawn secondary particle burst for depth
-                PoolManager.Instance.Spawn("ExplosionFX", pos, Quaternion.identity, () => {
+                var expObj = PoolManager.Instance.Spawn("ExplosionFX", pos, Quaternion.identity, () => {
                     return CreateExplosionPrefab();
                 });
+                if (expObj != null)
+                {
+                    var ps = expObj.GetComponent<ParticleSystem>();
+                    if (ps != null)
+                    {
+                        var main = ps.main;
+                        if (size == "Large")
+                        {
+                            main.startSpeed = new ParticleSystem.MinMaxCurve(4f, 14f);
+                            main.startSize = new ParticleSystem.MinMaxCurve(0.35f, 1.1f);
+                        }
+                        else if (size == "Medium")
+                        {
+                            main.startSpeed = new ParticleSystem.MinMaxCurve(2.5f, 9f);
+                            main.startSize = new ParticleSystem.MinMaxCurve(0.25f, 0.8f);
+                        }
+                        else
+                        {
+                            main.startSpeed = new ParticleSystem.MinMaxCurve(1.8f, 6f);
+                            main.startSize = new ParticleSystem.MinMaxCurve(0.15f, 0.5f);
+                        }
+                        ps.Clear();
+                        ps.Play();
+                    }
+                }
             }
         }
 
