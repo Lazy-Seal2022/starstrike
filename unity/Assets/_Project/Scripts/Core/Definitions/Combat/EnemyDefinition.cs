@@ -43,5 +43,6 @@ namespace StarStrike.Core
         
         [Header("Presentation")]
         public Sprite sprite;
+        public float visualScale = 1.0f;
     }
 }

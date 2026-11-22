@@ -65,6 +65,9 @@ namespace StarStrike.Gameplay
                 }
             }
 
+            var shieldField = GetComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+            if (shieldField == null) shieldField = gameObject.AddComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+
             ApplyVisuals();
 
             var trackable = GetComponent<MinimapTrackable>();
@@ -130,6 +133,7 @@ namespace StarStrike.Gameplay
                         definition.kamikazeBlastRadius = 4.5f;
                         definition.kamikazeBlastDamage = 45f;
                         definition.tintColor = new Color(0.95f, 0.2f, 0.25f);
+                        definition.visualScale = 1.15f;
                         break;
 
                     case EnemyArchetype.Sniper:
@@ -146,6 +150,7 @@ namespace StarStrike.Gameplay
                         definition.fireRate = 2.4f;
                         definition.sniperChargeTime = 1.2f;
                         definition.tintColor = new Color(0.75f, 0.3f, 1f);
+                        definition.visualScale = 1.3f;
                         break;
 
                     case EnemyArchetype.SupportShield:
@@ -163,6 +168,7 @@ namespace StarStrike.Gameplay
                         definition.fireRate = 1.6f;
                         definition.supportShieldRadius = 5.5f;
                         definition.tintColor = new Color(1f, 0.85f, 0.2f);
+                        definition.visualScale = 1.45f;
                         break;
 
                     case EnemyArchetype.Boss:
@@ -179,6 +185,7 @@ namespace StarStrike.Gameplay
                         definition.pulseSpeed = 22f;
                         definition.fireRate = 0.8f;
                         definition.tintColor = new Color(1f, 0.3f, 0.3f);
+                        definition.visualScale = 3.0f;
                         break;
 
                     default: // Drone
@@ -195,6 +202,7 @@ namespace StarStrike.Gameplay
                         definition.pulseSpeed = 18f;
                         definition.fireRate = 1.1f;
                         definition.tintColor = Color.white;
+                        definition.visualScale = 1.0f;
                         break;
                 }
             }
@@ -237,6 +245,22 @@ namespace StarStrike.Gameplay
             }
 
             spriteRenderer.sortingOrder = 4;
+
+            float scale = (definition != null && definition.visualScale > 0f) ? definition.visualScale : 1.0f;
+            transform.localScale = Vector3.one * scale;
+
+            var poly = GetComponent<PolygonCollider2D>();
+            if (poly != null && spriteRenderer.sprite != null)
+            {
+                PlayerProgression.UpdatePolygonFromSprite(poly, spriteRenderer.sprite);
+            }
+
+            var shield = GetComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+            if (shield != null)
+            {
+                shield.EnsureInitialized();
+                shield.RebuildShieldCollider();
+            }
         }
 
         private void ApplyStats()

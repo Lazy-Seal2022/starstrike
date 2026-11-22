@@ -122,6 +122,17 @@ namespace StarStrike.Gameplay
                 {
                     return def.sprite;
                 }
+
+                if (type == "drone")
+                {
+                    var enemyDef = Resources.Load<StarStrike.Core.EnemyDefinition>("Data/Enemy_Drone");
+                    if (enemyDef != null && enemyDef.sprite != null) return enemyDef.sprite;
+                }
+                else if (type == "boss")
+                {
+                    var bossDef = Resources.Load<StarStrike.Core.BossConfig>("Data/BossConfig");
+                    if (bossDef != null && bossDef.sprite != null) return bossDef.sprite;
+                }
             }
 
             if (type == "fighter")
@@ -347,7 +358,8 @@ namespace StarStrike.Gameplay
 
             tex.SetPixels(cols);
             tex.Apply();
-            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 32);
+            float ppu = (size <= 48) ? 16f : ((size <= 64) ? 21.333f : 32f);
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), ppu);
         }
 
         private static Sprite GenerateCapsule(Color color, int w, int h)
@@ -413,7 +425,8 @@ namespace StarStrike.Gameplay
 
             tex.SetPixels(cols);
             tex.Apply();
-            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 32);
+            float ppu = (size <= 48) ? 16f : ((size <= 64) ? 21.333f : 32f);
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), ppu);
         }
 
         private static Sprite GenerateDiamond(Color color, int size)
@@ -445,7 +458,8 @@ namespace StarStrike.Gameplay
 
             tex.SetPixels(cols);
             tex.Apply();
-            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 32);
+            float ppu = (size <= 48) ? 16f : ((size <= 64) ? 21.333f : 32f);
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), ppu);
         }
 
         private static Sprite cachedWhite;

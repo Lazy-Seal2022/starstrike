@@ -83,6 +83,7 @@ namespace StarStrike.Editor
             drone.fireRate = 1.1f;
             drone.sightRadius = 16f;
             drone.attackRadius = 10f;
+            drone.visualScale = 1.0f;
             drone.sprite = LoadArtSprite("Ships/Ship_Drone.png");
             drone = CreateOrUpdateAsset(drone, $"{dataPath}/Enemy_Drone.asset");
 

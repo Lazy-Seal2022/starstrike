@@ -31,3 +31,4 @@ MonoBehaviour:
   sniperChargeTime: 1.2
   supportShieldRadius: 4.5
   sprite: {fileID: 21300000, guid: 327c3597fc1f8774986e0060004b9686, type: 3}
+  visualScale: 1
