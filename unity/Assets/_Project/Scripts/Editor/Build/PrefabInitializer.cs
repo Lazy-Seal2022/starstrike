@@ -1480,42 +1480,45 @@ namespace StarStrike.Editor
                 failed++;
             }
 
-            // 20. Verify Ship Thruster Effect TrailRenderer & Modulation
+            // 20. Verify Ship Thruster Effect (Pure Particle Stream & Modulation, No Trail)
             try
             {
                 var shipObj = new GameObject("Test_ShipThruster");
                 var thruster = shipObj.AddComponent<StarStrike.Gameplay.FX.ShipThrusterEffect>();
                 thruster.EnsureInitialized();
 
-                var trail = thruster.Trail;
-                if (trail == null)
-                    throw new System.Exception("Thruster TrailRenderer is null!");
-                if (trail.emitting)
-                    throw new System.Exception("Thruster TrailRenderer should not be emitting when idle!");
-                if (trail.sortingOrder != 4)
-                    throw new System.Exception($"Thruster trail sortingOrder expected 4, got {trail.sortingOrder}");
+                var ps = thruster.ExhaustParticles;
+                if (ps == null)
+                    throw new System.Exception("Thruster ExhaustParticles is null!");
+                if (ps.isPlaying)
+                    throw new System.Exception("Thruster particle system should not be playing when idle!");
 
                 // Activate cruise thrust
                 thruster.SetThrusting(true, false);
-                if (!trail.emitting)
-                    throw new System.Exception("Thruster trail should be emitting when thrusting!");
-                if (Mathf.Abs(trail.startWidth - 0.35f) > 0.01f)
-                    throw new System.Exception($"Cruise trail startWidth expected 0.35f, got {trail.startWidth}");
+                if (!ps.isPlaying)
+                    throw new System.Exception("Thruster particles should be playing when thrusting!");
+                if (ps.main.startColor.color != thruster.normalThrustColor)
+                    throw new System.Exception($"Cruise particle color mismatch: expected {thruster.normalThrustColor}, got {ps.main.startColor.color}");
 
                 // Activate boost thrust
                 thruster.SetThrusting(true, true);
-                if (!trail.emitting)
-                    throw new System.Exception("Thruster trail should remain emitting when boosting!");
-                if (Mathf.Abs(trail.startWidth - 0.50f) > 0.01f)
-                    throw new System.Exception($"Boost trail startWidth expected 0.50f, got {trail.startWidth}");
+                if (!ps.isPlaying)
+                    throw new System.Exception("Thruster particles should remain playing when boosting!");
+                if (ps.main.startColor.color != thruster.boostThrustColor)
+                    throw new System.Exception($"Boost particle color mismatch: expected {thruster.boostThrustColor}, got {ps.main.startColor.color}");
 
                 // Deactivate thrust
                 thruster.SetThrusting(false, false);
-                if (trail.emitting)
-                    throw new System.Exception("Thruster trail should stop emitting after thrust stops!");
+                if (ps.isPlaying)
+                    throw new System.Exception("Thruster particles should stop after thrust stops!");
+
+                // Verify trail renderer has been completely removed
+                var tr = shipObj.GetComponentInChildren<TrailRenderer>();
+                if (tr != null)
+                    throw new System.Exception("TrailRenderer effect should be completely removed from thruster!");
 
                 Object.DestroyImmediate(shipObj);
-                Debug.Log("[PASS] 20. Ship Thruster Effect (TrailRenderer & Particle Modulation) verified");
+                Debug.Log("[PASS] 20. Ship Thruster Effect (Pure Particle Stream & Color Modulation, No Trail) verified");
                 passed++;
             }
             catch (System.Exception ex)

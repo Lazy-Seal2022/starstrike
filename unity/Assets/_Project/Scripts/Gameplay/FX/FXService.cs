@@ -254,7 +254,7 @@ namespace StarStrike.Gameplay.FX
             return obj;
         }
         
-        public GameObject CreateThrustFX()
+        public static GameObject CreateThrustFX()
         {
             GameObject obj = new GameObject("ThrustFX");
             ParticleSystem ps = obj.AddComponent<ParticleSystem>();
