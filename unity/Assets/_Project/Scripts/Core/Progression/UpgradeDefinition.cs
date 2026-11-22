@@ -10,6 +10,7 @@ namespace StarStrike.Core
         {
             shieldCapacity = 1.25f,
             shieldRegen = 1.3f,
+            hullCapacity = 1.0f,
             energyCapacity = 1.2f,
             energyRegen = 1.35f,
             pulseDamage = 1.25f,

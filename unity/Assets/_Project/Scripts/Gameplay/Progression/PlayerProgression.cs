@@ -154,7 +154,7 @@ namespace StarStrike.Gameplay
             scout.hitboxRadius = 0.55f;
             scout.weaponSockets = new Vector2[] { new Vector2(1.55f, 0f) };
             scout.thrusterSockets = new Vector2[] { new Vector2(-1.55f, 0f) };
-            scout.baseStats = new StatValues { shieldCapacity = 100, shieldRegen = 8, energyCapacity = 80, energyRegen = 18, pulseDamage = 18, pulseSpeed = 600, speed = 260, agility = 4.5f };
+            scout.baseStats = new StatValues { hullCapacity = 80, shieldCapacity = 100, shieldRegen = 8, energyCapacity = 80, energyRegen = 18, pulseDamage = 18, pulseSpeed = 600, speed = 260, agility = 4.5f };
 
             var fighter = ScriptableObject.CreateInstance<ShipDefinition>();
             fighter.id = "fighter";
@@ -165,7 +165,7 @@ namespace StarStrike.Gameplay
             fighter.hitboxRadius = 0.55f;
             fighter.weaponSockets = new Vector2[] { new Vector2(0.35f, 1.25f), new Vector2(0.35f, -1.25f) };
             fighter.thrusterSockets = new Vector2[] { new Vector2(-1.5f, 0.5f), new Vector2(-1.5f, -0.5f) };
-            fighter.baseStats = new StatValues { shieldCapacity = 150, shieldRegen = 12, energyCapacity = 120, energyRegen = 24, pulseDamage = 28, pulseSpeed = 680, speed = 310, agility = 5.0f };
+            fighter.baseStats = new StatValues { hullCapacity = 120, shieldCapacity = 150, shieldRegen = 12, energyCapacity = 120, energyRegen = 24, pulseDamage = 28, pulseSpeed = 680, speed = 310, agility = 5.0f };
 
             var miner = ScriptableObject.CreateInstance<ShipDefinition>();
             miner.id = "miner";
@@ -176,7 +176,7 @@ namespace StarStrike.Gameplay
             miner.hitboxRadius = 0.65f;
             miner.weaponSockets = new Vector2[] { new Vector2(1.25f, 0.85f), new Vector2(1.25f, -0.85f) };
             miner.thrusterSockets = new Vector2[] { new Vector2(-1.4f, 0.4f), new Vector2(-1.4f, -0.4f) };
-            miner.baseStats = new StatValues { shieldCapacity = 220, shieldRegen = 16, energyCapacity = 150, energyRegen = 20, pulseDamage = 40, pulseSpeed = 520, speed = 210, agility = 3.5f };
+            miner.baseStats = new StatValues { hullCapacity = 180, shieldCapacity = 220, shieldRegen = 16, energyCapacity = 150, energyRegen = 20, pulseDamage = 40, pulseSpeed = 520, speed = 210, agility = 3.5f };
 
             var interceptor = ScriptableObject.CreateInstance<ShipDefinition>();
             interceptor.id = "interceptor";
@@ -187,7 +187,7 @@ namespace StarStrike.Gameplay
             interceptor.hitboxRadius = 0.50f;
             interceptor.weaponSockets = new Vector2[] { new Vector2(0.45f, 1.15f), new Vector2(0.45f, -1.15f) };
             interceptor.thrusterSockets = new Vector2[] { new Vector2(-1.5f, 0f) };
-            interceptor.baseStats = new StatValues { shieldCapacity = 180, shieldRegen = 15, energyCapacity = 140, energyRegen = 30, pulseDamage = 35, pulseSpeed = 800, speed = 400, agility = 6.5f };
+            interceptor.baseStats = new StatValues { hullCapacity = 100, shieldCapacity = 180, shieldRegen = 15, energyCapacity = 140, energyRegen = 30, pulseDamage = 35, pulseSpeed = 800, speed = 400, agility = 6.5f };
 
             var juggernaut = ScriptableObject.CreateInstance<ShipDefinition>();
             juggernaut.id = "juggernaut";
@@ -207,7 +207,7 @@ namespace StarStrike.Gameplay
                 new Vector2(-2.75f, -0.30f),
                 new Vector2(-2.75f, -0.85f)
             };
-            juggernaut.baseStats = new StatValues { shieldCapacity = 400, shieldRegen = 25, energyCapacity = 200, energyRegen = 25, pulseDamage = 75, pulseSpeed = 480, speed = 180, agility = 2.5f };
+            juggernaut.baseStats = new StatValues { hullCapacity = 300, shieldCapacity = 400, shieldRegen = 25, energyCapacity = 200, energyRegen = 25, pulseDamage = 75, pulseSpeed = 480, speed = 180, agility = 2.5f };
 
             var phantom = ScriptableObject.CreateInstance<ShipDefinition>();
             phantom.id = "phantom";
@@ -218,7 +218,7 @@ namespace StarStrike.Gameplay
             phantom.hitboxRadius = 0.50f;
             phantom.weaponSockets = new Vector2[] { new Vector2(0.50f, 0.80f), new Vector2(0.50f, -0.80f) };
             phantom.thrusterSockets = new Vector2[] { new Vector2(-1.4f, 0f) };
-            phantom.baseStats = new StatValues { shieldCapacity = 160, shieldRegen = 16, energyCapacity = 160, energyRegen = 35, pulseDamage = 45, pulseSpeed = 850, speed = 420, agility = 7.0f };
+            phantom.baseStats = new StatValues { hullCapacity = 110, shieldCapacity = 160, shieldRegen = 16, energyCapacity = 160, energyRegen = 35, pulseDamage = 45, pulseSpeed = 850, speed = 420, agility = 7.0f };
 
             var vanguard = ScriptableObject.CreateInstance<ShipDefinition>();
             vanguard.id = "vanguard";
@@ -236,7 +236,7 @@ namespace StarStrike.Gameplay
                 new Vector2(-2.75f, 1.10f),
                 new Vector2(-2.75f, -1.10f)
             };
-            vanguard.baseStats = new StatValues { shieldCapacity = 320, shieldRegen = 22, energyCapacity = 280, energyRegen = 32, pulseDamage = 55, pulseSpeed = 580, speed = 220, agility = 3.8f };
+            vanguard.baseStats = new StatValues { hullCapacity = 240, shieldCapacity = 320, shieldRegen = 22, energyCapacity = 280, energyRegen = 32, pulseDamage = 55, pulseSpeed = 580, speed = 220, agility = 3.8f };
 
             scout.evolvesTo = new ShipDefinition[] { fighter, miner };
             fighter.evolvesTo = new ShipDefinition[] { interceptor, phantom };
@@ -414,6 +414,7 @@ namespace StarStrike.Gameplay
             {
                 health.maxShield = currentStats.shieldCapacity;
                 health.shieldRegen = currentStats.shieldRegen;
+                health.maxHull = currentStats.hullCapacity > 0 ? currentStats.hullCapacity : 80f;
                 health.maxEnergy = currentStats.energyCapacity;
                 health.energyRegen = currentStats.energyRegen;
             }

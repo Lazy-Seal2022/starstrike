@@ -20,6 +20,7 @@ MonoBehaviour:
   baseStats:
     shieldCapacity: 320
     shieldRegen: 22
+    hullCapacity: 240
     energyCapacity: 280
     energyRegen: 32
     pulseDamage: 55

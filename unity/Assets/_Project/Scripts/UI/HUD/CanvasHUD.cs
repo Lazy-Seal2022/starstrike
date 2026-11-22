@@ -36,6 +36,8 @@ namespace StarStrike.UI
         public Text gemsText;
         public Image shieldFill;
         public Text shieldValueText;
+        public Image hullFill;
+        public Text hullValueText;
         public Image energyFill;
         public Text energyValueText;
         public GameObject upgradesDrawer;
@@ -49,6 +51,8 @@ namespace StarStrike.UI
 
         private float currentShield = 100f;
         private float maxShield = 100f;
+        private float currentHull = 80f;
+        private float maxHull = 80f;
         private float currentEnergy = 80f;
         private float maxEnergy = 80f;
         private int totalGems = 0;
@@ -109,6 +113,7 @@ namespace StarStrike.UI
                 ScreenManager.Instance.RegisterScreen(this);
             }
             GameEvents.OnShieldChanged += HandleShieldChanged;
+            GameEvents.OnHullChanged += HandleHullChanged;
             GameEvents.OnEnergyChanged += HandleEnergyChanged;
             GameEvents.OnGemCollected += HandleGemCollected;
             GameEvents.OnPlayerEvolved += HandlePlayerEvolved;
@@ -125,6 +130,7 @@ namespace StarStrike.UI
                 ScreenManager.Instance.UnregisterScreen(this);
             }
             GameEvents.OnShieldChanged -= HandleShieldChanged;
+            GameEvents.OnHullChanged -= HandleHullChanged;
             GameEvents.OnEnergyChanged -= HandleEnergyChanged;
             GameEvents.OnGemCollected -= HandleGemCollected;
             GameEvents.OnPlayerEvolved -= HandlePlayerEvolved;
@@ -268,9 +274,11 @@ namespace StarStrike.UI
             if (player != null && player.currentShip != null)
             {
                 maxShield = player.currentShip.baseStats.shieldCapacity;
-                currentShield = player.health.currentShield > 0f ? player.health.currentShield : maxShield;
+                currentShield = player.health != null && player.health.currentShield > 0f ? player.health.currentShield : maxShield;
+                maxHull = player.currentShip.baseStats.hullCapacity > 0f ? player.currentShip.baseStats.hullCapacity : 80f;
+                currentHull = player.health != null && player.health.currentHull > 0f ? player.health.currentHull : maxHull;
                 maxEnergy = player.currentShip.baseStats.energyCapacity;
-                currentEnergy = player.health.currentEnergy > 0f ? player.health.currentEnergy : maxEnergy;
+                currentEnergy = player.health != null && player.health.currentEnergy > 0f ? player.health.currentEnergy : maxEnergy;
                 totalGems = player.gems;
                 UpdateShipHeader(player.currentShip.tier, player.currentShip.shipName);
             }
@@ -282,6 +290,14 @@ namespace StarStrike.UI
             maxShield = max;
             UpdateShieldVisuals();
             if (playerStatus != null) playerStatus.HandleShieldChanged(current, max);
+        }
+
+        private void HandleHullChanged(float current, float max)
+        {
+            currentHull = current;
+            maxHull = max;
+            UpdateHullVisuals();
+            if (playerStatus != null) playerStatus.HandleHullChanged(current, max);
         }
 
         private void HandleEnergyChanged(float current, float max)
@@ -315,9 +331,12 @@ namespace StarStrike.UI
                 UpdateShipHeader(player.currentShip.tier, player.currentShip.shipName);
                 currentShield = player.currentShip.baseStats.shieldCapacity;
                 maxShield = player.currentShip.baseStats.shieldCapacity;
+                currentHull = player.currentShip.baseStats.hullCapacity > 0f ? player.currentShip.baseStats.hullCapacity : 80f;
+                maxHull = currentHull;
                 currentEnergy = player.currentShip.baseStats.energyCapacity;
                 maxEnergy = player.currentShip.baseStats.energyCapacity;
                 UpdateShieldVisuals();
+                UpdateHullVisuals();
                 UpdateEnergyVisuals();
             }
             if (playerStatus != null) playerStatus.HandlePlayerEvolved(shipId);
@@ -339,6 +358,13 @@ namespace StarStrike.UI
             if (shieldValueText != null) shieldValueText.text = $"{Mathf.RoundToInt(currentShield)} / {Mathf.RoundToInt(maxShield)}";
         }
 
+        private void UpdateHullVisuals()
+        {
+            float ratio = Mathf.Clamp01(currentHull / Mathf.Max(1f, maxHull));
+            if (hullFill != null) hullFill.fillAmount = ratio;
+            if (hullValueText != null) hullValueText.text = $"{Mathf.RoundToInt(currentHull)} / {Mathf.RoundToInt(maxHull)}";
+        }
+
         private void UpdateEnergyVisuals()
         {
             float ratio = Mathf.Clamp01(currentEnergy / Mathf.Max(1f, maxEnergy));
@@ -349,6 +375,7 @@ namespace StarStrike.UI
         private void UpdateAllHUDVisuals()
         {
             UpdateShieldVisuals();
+            UpdateHullVisuals();
             UpdateEnergyVisuals();
             if (gemsText != null) gemsText.text = $"<color=#4ade80><b>{totalGems}</b></color> GEMS";
             UpdateEvolutionBanner();
@@ -592,7 +619,7 @@ namespace StarStrike.UI
             Sprite roundedSprite = ProceduralSpriteHelper.GetRoundedBoxSprite(32, 6);
 
             // 1. Top-Left Status Panel (Isolated into a sub-canvas to prevent frequent fill updates from rebuilding root canvas mesh)
-            GameObject statusCard = CreatePanel(transform, "StatusPanel", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -20f), new Vector2(360f, 195f), new Color(0.04f, 0.08f, 0.16f, 0.88f), roundedSprite);
+            GameObject statusCard = CreatePanel(transform, "StatusPanel", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -20f), new Vector2(360f, 225f), new Color(0.04f, 0.08f, 0.16f, 0.88f), roundedSprite);
             Canvas statusCanvas = statusCard.GetComponent<Canvas>();
             if (statusCanvas == null) statusCanvas = statusCard.AddComponent<Canvas>();
             Canvas rootCanvas = GetComponent<Canvas>();
@@ -604,43 +631,54 @@ namespace StarStrike.UI
             }
 
             // Ship Name
-            GameObject nameObj = CreateText(statusCard.transform, "ShipNameText", "T1 • DELTA SCOUT", 16, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(16f, -12f), new Vector2(-16f, -36f), defaultFont);
+            GameObject nameObj = CreateText(statusCard.transform, "ShipNameText", "T1 • DELTA SCOUT", 16, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(16f, -10f), new Vector2(-16f, -32f), defaultFont);
             shipNameText = nameObj.GetComponent<Text>();
 
             // Gem Count
-            GameObject gemsObj = CreateText(statusCard.transform, "GemsText", "0 GEMS", 15, FontStyle.Bold, new Color(0.3f, 0.95f, 0.5f), TextAnchor.MiddleLeft, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(16f, -40f), new Vector2(-16f, -64f), defaultFont);
+            GameObject gemsObj = CreateText(statusCard.transform, "GemsText", "0 GEMS", 15, FontStyle.Bold, new Color(0.3f, 0.95f, 0.5f), TextAnchor.MiddleLeft, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(16f, -34f), new Vector2(-16f, -54f), defaultFont);
             gemsText = gemsObj.GetComponent<Text>();
 
             // Shield Bar
-            CreateText(statusCard.transform, "ShieldLabel", "SHIELD", 11, FontStyle.Bold, new Color(0.6f, 0.75f, 0.9f), TextAnchor.MiddleLeft, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -70f), new Vector2(70f, -90f), defaultFont);
-            GameObject shieldBg = CreatePanel(statusCard.transform, "ShieldBg", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(75f, -73f), new Vector2(190f, 14f), new Color(0.08f, 0.15f, 0.25f, 1f), roundedSprite);
+            CreateText(statusCard.transform, "ShieldLabel", "SHIELD", 11, FontStyle.Bold, new Color(0.6f, 0.75f, 0.9f), TextAnchor.MiddleLeft, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -58f), new Vector2(70f, -74f), defaultFont);
+            GameObject shieldBg = CreatePanel(statusCard.transform, "ShieldBg", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(75f, -60f), new Vector2(190f, 13f), new Color(0.08f, 0.15f, 0.25f, 1f), roundedSprite);
             GameObject shieldFillObj = CreateImage(shieldBg.transform, "Fill", new Color(0.22f, 0.74f, 0.97f), roundedSprite, Image.Type.Filled);
             shieldFill = shieldFillObj.GetComponent<Image>();
             shieldFill.fillMethod = Image.FillMethod.Horizontal;
             shieldFill.fillOrigin = 0;
             shieldFill.fillAmount = 1f;
-            GameObject shieldValObj = CreateText(statusCard.transform, "ShieldVal", "100 / 100", 11, FontStyle.Normal, Color.white, TextAnchor.MiddleRight, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(270f, -70f), new Vector2(345f, -90f), defaultFont);
+            GameObject shieldValObj = CreateText(statusCard.transform, "ShieldVal", "100 / 100", 11, FontStyle.Normal, Color.white, TextAnchor.MiddleRight, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(270f, -58f), new Vector2(345f, -74f), defaultFont);
             shieldValueText = shieldValObj.GetComponent<Text>();
 
+            // Hull Bar
+            CreateText(statusCard.transform, "HullLabel", "HULL", 11, FontStyle.Bold, new Color(0.55f, 0.88f, 0.65f), TextAnchor.MiddleLeft, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -77f), new Vector2(70f, -93f), defaultFont);
+            GameObject hullBg = CreatePanel(statusCard.transform, "HullBg", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(75f, -79f), new Vector2(190f, 13f), new Color(0.06f, 0.20f, 0.12f, 1f), roundedSprite);
+            GameObject hullFillObj = CreateImage(hullBg.transform, "Fill", new Color(0.25f, 0.88f, 0.42f), roundedSprite, Image.Type.Filled);
+            hullFill = hullFillObj.GetComponent<Image>();
+            hullFill.fillMethod = Image.FillMethod.Horizontal;
+            hullFill.fillOrigin = 0;
+            hullFill.fillAmount = 1f;
+            GameObject hullValObj = CreateText(statusCard.transform, "HullVal", "80 / 80", 11, FontStyle.Normal, Color.white, TextAnchor.MiddleRight, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(270f, -77f), new Vector2(345f, -93f), defaultFont);
+            hullValueText = hullValObj.GetComponent<Text>();
+
             // Energy Bar
-            CreateText(statusCard.transform, "EnergyLabel", "ENERGY", 11, FontStyle.Bold, new Color(0.95f, 0.75f, 0.4f), TextAnchor.MiddleLeft, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -96f), new Vector2(70f, -116f), defaultFont);
-            GameObject energyBg = CreatePanel(statusCard.transform, "EnergyBg", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(75f, -99f), new Vector2(190f, 14f), new Color(0.25f, 0.15f, 0.05f, 1f), roundedSprite);
+            CreateText(statusCard.transform, "EnergyLabel", "ENERGY", 11, FontStyle.Bold, new Color(0.95f, 0.75f, 0.4f), TextAnchor.MiddleLeft, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -96f), new Vector2(70f, -112f), defaultFont);
+            GameObject energyBg = CreatePanel(statusCard.transform, "EnergyBg", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(75f, -98f), new Vector2(190f, 13f), new Color(0.25f, 0.15f, 0.05f, 1f), roundedSprite);
             GameObject energyFillObj = CreateImage(energyBg.transform, "Fill", new Color(0.96f, 0.62f, 0.04f), roundedSprite, Image.Type.Filled);
             energyFill = energyFillObj.GetComponent<Image>();
             energyFill.fillMethod = Image.FillMethod.Horizontal;
             energyFill.fillOrigin = 0;
             energyFill.fillAmount = 1f;
-            GameObject energyValObj = CreateText(statusCard.transform, "EnergyVal", "80 / 80", 11, FontStyle.Normal, Color.white, TextAnchor.MiddleRight, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(270f, -96f), new Vector2(345f, -116f), defaultFont);
+            GameObject energyValObj = CreateText(statusCard.transform, "EnergyVal", "80 / 80", 11, FontStyle.Normal, Color.white, TextAnchor.MiddleRight, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(270f, -96f), new Vector2(345f, -112f), defaultFont);
             energyValueText = energyValObj.GetComponent<Text>();
 
             // Toggle Upgrades Button
-            GameObject toggleBtnObj = CreateButton(statusCard.transform, "ToggleUpgradesBtn", "UPGRADES [U]", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -122f), new Vector2(170f, 30f), new Color(0.12f, 0.25f, 0.45f, 0.95f), roundedSprite, defaultFont);
+            GameObject toggleBtnObj = CreateButton(statusCard.transform, "ToggleUpgradesBtn", "UPGRADES [U]", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -118f), new Vector2(170f, 28f), new Color(0.12f, 0.25f, 0.45f, 0.95f), roundedSprite, defaultFont);
             toggleUpgradesButton = toggleBtnObj.GetComponent<Button>();
             toggleUpgradesButton.onClick.AddListener(ToggleUpgrades);
             toggleUpgradesButtonText = toggleBtnObj.GetComponentInChildren<Text>();
 
             // Settings Button
-            GameObject hudSettingsBtnObj = CreateButton(statusCard.transform, "HUDSettingsBtn", "SETTINGS [ESC]", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(195f, -122f), new Vector2(150f, 30f), new Color(0.12f, 0.22f, 0.35f, 0.95f), roundedSprite, defaultFont);
+            GameObject hudSettingsBtnObj = CreateButton(statusCard.transform, "HUDSettingsBtn", "SETTINGS [ESC]", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(195f, -118f), new Vector2(150f, 28f), new Color(0.12f, 0.22f, 0.35f, 0.95f), roundedSprite, defaultFont);
             Button hudSettingsBtn = hudSettingsBtnObj.GetComponent<Button>();
             hudSettingsBtn.onClick.AddListener(() => {
                 if (StarStrike.UI.SettingsUI.Instance != null)
@@ -650,7 +688,7 @@ namespace StarStrike.UI
             });
 
             // Active Skill Slot [E]
-            GameObject skillSlotObj = CreatePanel(statusCard.transform, "SkillSlot_Active1", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -158f), new Vector2(330f, 28f), new Color(0.08f, 0.16f, 0.28f, 0.95f), roundedSprite);
+            GameObject skillSlotObj = CreatePanel(statusCard.transform, "SkillSlot_Active1", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -152f), new Vector2(330f, 28f), new Color(0.08f, 0.16f, 0.28f, 0.95f), roundedSprite);
             skillSlotView = skillSlotObj.AddComponent<HUDSkillSlotView>();
             skillSlotView.borderImage = skillSlotObj.GetComponent<Image>();
             GameObject cdOverlayObj = CreateImage(skillSlotObj.transform, "CooldownOverlay", new Color(0f, 0f, 0f, 0.65f), roundedSprite, Image.Type.Filled);
@@ -765,6 +803,8 @@ namespace StarStrike.UI
                 playerStatus = gameObject.AddComponent<HUDPlayerStatus>();
                 playerStatus.shieldFill = shieldFill;
                 playerStatus.shieldText = shieldValueText;
+                playerStatus.hullFill = hullFill;
+                playerStatus.hullText = hullValueText;
                 playerStatus.energyFill = energyFill;
                 playerStatus.energyText = energyValueText;
                 playerStatus.shipNameText = shipNameText;

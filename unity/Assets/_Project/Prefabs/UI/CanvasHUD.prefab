@@ -130,6 +130,8 @@ MonoBehaviour:
   gemsText: {fileID: 0}
   shieldFill: {fileID: 0}
   shieldValueText: {fileID: 0}
+  hullFill: {fileID: 0}
+  hullValueText: {fileID: 0}
   energyFill: {fileID: 0}
   energyValueText: {fileID: 0}
   upgradesDrawer: {fileID: 0}
@@ -157,6 +159,10 @@ MonoBehaviour:
   shieldGhostFill: {fileID: 0}
   shieldText: {fileID: 0}
   shieldTmpText: {fileID: 0}
+  hullFill: {fileID: 0}
+  hullGhostFill: {fileID: 0}
+  hullText: {fileID: 0}
+  hullTmpText: {fileID: 0}
   energyFill: {fileID: 0}
   energyText: {fileID: 0}
   energyTmpText: {fileID: 0}

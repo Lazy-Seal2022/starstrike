@@ -7,6 +7,7 @@ namespace StarStrike.Core
     {
         public float shieldCapacity;
         public float shieldRegen;
+        public float hullCapacity;
         public float energyCapacity;
         public float energyRegen;
         public float pulseDamage;

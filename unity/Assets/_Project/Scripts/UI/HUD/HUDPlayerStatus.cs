@@ -16,6 +16,12 @@ namespace StarStrike.UI
         public Text shieldText;
         public TMP_Text shieldTmpText;
 
+        [Header("Hull Bar")]
+        public Image hullFill;
+        public Image hullGhostFill;
+        public Text hullText;
+        public TMP_Text hullTmpText;
+
         [Header("Energy Bar")]
         public Image energyFill;
         public Text energyText;
@@ -36,6 +42,9 @@ namespace StarStrike.UI
         private float ghostShieldRatio = 1f;
         private float lastDamageTime = -999f;
 
+        private float targetHullRatio = 1f;
+        private float currentHullRatio = 1f;
+
         private float targetEnergyRatio = 1f;
         private float currentEnergyRatio = 1f;
 
@@ -52,6 +61,7 @@ namespace StarStrike.UI
         private void OnEnable()
         {
             GameEvents.OnShieldChanged += HandleShieldChanged;
+            GameEvents.OnHullChanged += HandleHullChanged;
             GameEvents.OnEnergyChanged += HandleEnergyChanged;
             GameEvents.OnGemCollected += HandleGemCollected;
             GameEvents.OnPlayerEvolved += HandlePlayerEvolved;
@@ -60,6 +70,7 @@ namespace StarStrike.UI
         private void OnDisable()
         {
             GameEvents.OnShieldChanged -= HandleShieldChanged;
+            GameEvents.OnHullChanged -= HandleHullChanged;
             GameEvents.OnEnergyChanged -= HandleEnergyChanged;
             GameEvents.OnGemCollected -= HandleGemCollected;
             GameEvents.OnPlayerEvolved -= HandlePlayerEvolved;
@@ -71,10 +82,14 @@ namespace StarStrike.UI
 
             if (shieldFill != null) shieldFill.color = themeConfig.shieldColor;
             if (shieldGhostFill != null) shieldGhostFill.color = themeConfig.shieldGhostColor;
+            if (hullFill != null) hullFill.color = themeConfig.hullColor;
+            if (hullGhostFill != null) hullGhostFill.color = themeConfig.shieldGhostColor;
             if (energyFill != null) energyFill.color = themeConfig.energyColor;
             if (boostFill != null) boostFill.color = themeConfig.boostColor;
             if (shieldText != null) shieldText.color = themeConfig.textPrimary;
             if (shieldTmpText != null) shieldTmpText.color = themeConfig.textPrimary;
+            if (hullText != null) hullText.color = themeConfig.textPrimary;
+            if (hullTmpText != null) hullTmpText.color = themeConfig.textPrimary;
             if (energyText != null) energyText.color = themeConfig.textPrimary;
             if (energyTmpText != null) energyTmpText.color = themeConfig.textPrimary;
             if (shipNameText != null) shipNameText.color = themeConfig.primaryAccent;
@@ -108,20 +123,27 @@ namespace StarStrike.UI
                 }
             }
 
-            // 3. Smooth Energy Fill
+            // 3. Smooth Hull Fill
+            currentHullRatio = Mathf.MoveTowards(currentHullRatio, targetHullRatio, smoothSpeed * dt);
+            if (hullFill != null)
+            {
+                hullFill.fillAmount = currentHullRatio;
+            }
+
+            // 4. Smooth Energy Fill
             currentEnergyRatio = Mathf.MoveTowards(currentEnergyRatio, targetEnergyRatio, smoothSpeed * dt);
             if (energyFill != null)
             {
                 energyFill.fillAmount = currentEnergyRatio;
             }
 
-            // 4. Boost Fill
+            // 5. Boost Fill
             if (boostFill != null)
             {
                 boostFill.fillAmount = Mathf.MoveTowards(boostFill.fillAmount, targetBoostRatio, smoothSpeed * dt);
             }
 
-            // 5. Low Shield Danger Pulse
+            // 6. Low Shield Danger Pulse
             if (targetShieldRatio < 0.25f && shieldText != null && themeConfig != null)
             {
                 float pulse = Mathf.PingPong(Time.time * themeConfig.warningPulseFrequency, 1f);
@@ -150,6 +172,15 @@ namespace StarStrike.UI
             string shieldStr = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
             if (shieldText != null) shieldText.text = shieldStr;
             if (shieldTmpText != null) shieldTmpText.text = shieldStr;
+        }
+
+        public void HandleHullChanged(float current, float max)
+        {
+            targetHullRatio = max > 0 ? Mathf.Clamp01(current / max) : 0f;
+
+            string hullStr = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
+            if (hullText != null) hullText.text = hullStr;
+            if (hullTmpText != null) hullTmpText.text = hullStr;
         }
 
         public void HandleEnergyChanged(float current, float max)

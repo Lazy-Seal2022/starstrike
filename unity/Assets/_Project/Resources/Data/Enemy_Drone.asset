@@ -17,6 +17,7 @@ MonoBehaviour:
   archetype: 0
   maxShield: 60
   shieldRegen: 0
+  maxHull: 40
   speed: 6
   agility: 5
   pulseDamage: 14

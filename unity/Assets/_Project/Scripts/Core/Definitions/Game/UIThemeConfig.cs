@@ -12,6 +12,7 @@ namespace StarStrike.Core
         [Header("Player Vitals")]
         public Color shieldColor = new Color(0.25f, 0.75f, 1f, 1f);      // Cyan / Electric Blue
         public Color shieldGhostColor = new Color(1f, 0.35f, 0.25f, 0.9f); // Lagging damage ghost bar
+        public Color hullColor = new Color(0.25f, 0.88f, 0.42f, 1f);     // Emerald / Forest Green
         public Color energyColor = new Color(1f, 0.85f, 0.2f, 1f);       // Gold / Yellow
         public Color boostColor = new Color(0.1f, 1f, 0.75f, 1f);        // Bright Mint / Teal
         public Color dangerColor = new Color(1f, 0.25f, 0.25f, 1f);       // Critical Red

@@ -13,6 +13,7 @@ namespace StarStrike.Core
 
         public float shieldCapacity = 100f;
         public float shieldRegen = 8f;
+        public float hullCapacity = 80f;
         public float energyCapacity = 80f;
         public float energyRegen = 18f;
         public float pulseDamage = 18f;
@@ -31,6 +32,7 @@ namespace StarStrike.Core
                 weaponSlots = 1,
                 shieldCapacity = 100f,
                 shieldRegen = 8f,
+                hullCapacity = 80f,
                 energyCapacity = 80f,
                 energyRegen = 18f,
                 pulseDamage = 18f,
@@ -51,6 +53,7 @@ namespace StarStrike.Core
                 weaponSlots = 2,
                 shieldCapacity = 150f,
                 shieldRegen = 12f,
+                hullCapacity = 120f,
                 energyCapacity = 120f,
                 energyRegen = 24f,
                 pulseDamage = 28f,
@@ -71,6 +74,7 @@ namespace StarStrike.Core
                 weaponSlots = 2,
                 shieldCapacity = 220f,
                 shieldRegen = 16f,
+                hullCapacity = 180f,
                 energyCapacity = 150f,
                 energyRegen = 20f,
                 pulseDamage = 40f,

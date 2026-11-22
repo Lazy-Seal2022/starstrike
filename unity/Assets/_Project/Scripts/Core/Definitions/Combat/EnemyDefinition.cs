@@ -21,6 +21,7 @@ namespace StarStrike.Core
         [Header("Base Stats")]
         public float maxShield = 60f;
         public float shieldRegen = 0f;
+        public float maxHull = 40f;
         public float speed = 6f;
         public float agility = 5f;
         

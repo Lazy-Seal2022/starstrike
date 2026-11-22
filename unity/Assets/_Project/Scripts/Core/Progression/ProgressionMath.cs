@@ -21,6 +21,7 @@ namespace StarStrike.Core
             {
                 shieldCapacity = 1.15f,
                 shieldRegen = 1.15f,
+                hullCapacity = 1.0f,
                 energyCapacity = 1.15f,
                 energyRegen = 1.15f,
                 pulseDamage = 1.15f,
@@ -34,6 +35,7 @@ namespace StarStrike.Core
             {
                 shieldCapacity = CalculateStat(baseStats.shieldCapacity, mults.shieldCapacity, state.shieldCapacityLevel),
                 shieldRegen = CalculateStat(baseStats.shieldRegen, mults.shieldRegen, state.shieldRegenLevel),
+                hullCapacity = baseStats.hullCapacity > 0 ? baseStats.hullCapacity : 80f,
                 energyCapacity = CalculateStat(baseStats.energyCapacity, mults.energyCapacity, state.energyCapacityLevel),
                 energyRegen = CalculateStat(baseStats.energyRegen, mults.energyRegen, state.energyRegenLevel),
                 pulseDamage = CalculateStat(baseStats.pulseDamage, mults.pulseDamage, state.pulseDamageLevel),

@@ -119,6 +119,7 @@ namespace StarStrike.Gameplay
                         definition.id = "kamikaze";
                         definition.enemyName = "Crimson Dart";
                         definition.maxShield = 40f;
+                        definition.maxHull = 25f;
                         definition.speed = 10f;
                         definition.agility = 7f;
                         definition.sightRadius = 22f;
@@ -133,6 +134,7 @@ namespace StarStrike.Gameplay
                         definition.id = "sniper";
                         definition.enemyName = "Void Sniper";
                         definition.maxShield = 50f;
+                        definition.maxHull = 35f;
                         definition.speed = 4.5f;
                         definition.agility = 4f;
                         definition.sightRadius = 26f;
@@ -149,6 +151,7 @@ namespace StarStrike.Gameplay
                         definition.enemyName = "Aegis Frigate";
                         definition.maxShield = 120f;
                         definition.shieldRegen = 4f;
+                        definition.maxHull = 80f;
                         definition.speed = 5f;
                         definition.agility = 4.5f;
                         definition.sightRadius = 20f;
@@ -165,6 +168,7 @@ namespace StarStrike.Gameplay
                         definition.enemyName = "Dreadnought Flagship";
                         definition.maxShield = 800f;
                         definition.shieldRegen = 10f;
+                        definition.maxHull = 500f;
                         definition.speed = 3.5f;
                         definition.agility = 2.5f;
                         definition.sightRadius = 30f;
@@ -179,6 +183,7 @@ namespace StarStrike.Gameplay
                         definition.id = "drone";
                         definition.enemyName = "Hostile Drone";
                         definition.maxShield = 60f;
+                        definition.maxHull = 40f;
                         definition.shieldRegen = 0f;
                         definition.speed = 6f;
                         definition.agility = 5f;
@@ -240,6 +245,7 @@ namespace StarStrike.Gameplay
             {
                 health.maxShield = definition.maxShield;
                 health.shieldRegen = definition.shieldRegen;
+                health.maxHull = definition.maxHull > 0 ? definition.maxHull : 40f;
                 health.maxEnergy = 9999f;
                 health.energyRegen = 9999f;
                 health.ResetMeters();

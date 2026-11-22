@@ -37,12 +37,12 @@ namespace StarStrike.Editor
             CreateBossPrefab();
 
             // 4. Ships
-            CreateShipPrefab("scout", 1, 100f, 8f, 80f, 18f, 18f, 22f, 1);
-            CreateShipPrefab("fighter", 2, 150f, 12f, 120f, 24f, 28f, 24f, 2);
-            CreateShipPrefab("miner", 2, 220f, 16f, 150f, 20f, 40f, 20f, 2);
-            CreateShipPrefab("interceptor", 3, 180f, 15f, 140f, 30f, 35f, 28f, 2);
-            CreateShipPrefab("juggernaut", 3, 400f, 25f, 200f, 25f, 75f, 18f, 3);
-            CreateShipPrefab("carrier", 3, 320f, 22f, 280f, 32f, 55f, 22f, 3);
+            CreateShipPrefab("scout", 1, 80f, 100f, 8f, 80f, 18f, 18f, 22f, 1);
+            CreateShipPrefab("fighter", 2, 120f, 150f, 12f, 120f, 24f, 28f, 24f, 2);
+            CreateShipPrefab("miner", 2, 180f, 220f, 16f, 150f, 20f, 40f, 20f, 2);
+            CreateShipPrefab("interceptor", 3, 100f, 180f, 15f, 140f, 30f, 35f, 28f, 2);
+            CreateShipPrefab("juggernaut", 3, 300f, 400f, 25f, 200f, 25f, 75f, 18f, 3);
+            CreateShipPrefab("carrier", 3, 240f, 320f, 22f, 280f, 32f, 55f, 22f, 3);
 
             // 5. UI Prefabs
             CreateCanvasHUDPrefab();
@@ -243,6 +243,8 @@ namespace StarStrike.Editor
             mov.flightConfig = AssetDatabase.LoadAssetAtPath<FlightConfig>("Assets/_Project/Resources/Data/FlightConfig.asset");
 
             var health = go.AddComponent<ShipHealth>();
+            health.maxHull = 40f;
+            health.currentHull = 40f;
             health.maxShield = 60f;
             health.currentShield = 60f;
 
@@ -284,6 +286,8 @@ namespace StarStrike.Editor
             mov.flightConfig = AssetDatabase.LoadAssetAtPath<FlightConfig>("Assets/_Project/Resources/Data/FlightConfig.asset");
 
             var health = go.AddComponent<ShipHealth>();
+            health.maxHull = 1500f;
+            health.currentHull = 1500f;
             health.maxShield = 2500f;
             health.currentShield = 2500f;
 
@@ -302,7 +306,7 @@ namespace StarStrike.Editor
             SavePrefab(go, "Enemies/BossDreadnought");
         }
 
-        private static void CreateShipPrefab(string shipId, int tier, float shield, float shieldRegen, float energy, float energyRegen, float dmg, float spd, int weaponSlots)
+        private static void CreateShipPrefab(string shipId, int tier, float hull, float shield, float shieldRegen, float energy, float energyRegen, float dmg, float spd, int weaponSlots)
         {
             string capId = char.ToUpper(shipId[0]) + shipId.Substring(1);
             GameObject go = new GameObject($"Ship_{capId}");
@@ -328,10 +332,12 @@ namespace StarStrike.Editor
 
             var health = go.AddComponent<ShipHealth>();
             health.isPlayer = true;
+            health.maxHull = hull;
             health.maxShield = shield;
             health.shieldRegen = shieldRegen;
             health.maxEnergy = energy;
             health.energyRegen = energyRegen;
+            health.currentHull = hull;
             health.currentShield = shield;
             health.currentEnergy = energy;
 
@@ -1131,6 +1137,7 @@ namespace StarStrike.Editor
                 var shipObj = new GameObject("TestShip_Shield");
                 var health = shipObj.AddComponent<ShipHealth>();
                 health.maxShield = 100f;
+                health.maxHull = 80f;
                 health.ResetMeters();
 
                 var shield = shipObj.AddComponent<StarStrike.Gameplay.FX.ShipShieldField>();
@@ -1154,6 +1161,53 @@ namespace StarStrike.Editor
             catch (System.Exception ex)
             {
                 Debug.LogError($"[FAIL] 14. Shield Field verification failed: {ex.Message}");
+                failed++;
+            }
+
+            // 15. Two-Tier Durability Model (Shield Absorbs, Hull Spillover, Death on Hull=0)
+            try
+            {
+                var ship = new GameObject("TestShip_Durability");
+                var h = ship.AddComponent<ShipHealth>();
+                h.maxShield = 100f;
+                h.maxHull = 80f;
+                h.ResetMeters();
+
+                bool diedCalled = false;
+                h.OnDied += () => diedCalled = true;
+
+                // 1. Partial damage absorbed fully by shield
+                h.TakeDamage(40f);
+                if (Mathf.Abs(h.currentShield - 60f) > 0.01f || Mathf.Abs(h.currentHull - 80f) > 0.01f)
+                    throw new System.Exception($"Shield should absorb first: expected Shield=60, Hull=80, got Shield={h.currentShield}, Hull={h.currentHull}");
+
+                // 2. Shield break + leftover damage spills into hull
+                h.TakeDamage(90f); // 60 absorbed by shield, 30 hits hull
+                if (h.currentShield != 0f || Mathf.Abs(h.currentHull - 50f) > 0.01f)
+                    throw new System.Exception($"Damage spillover expected Shield=0, Hull=50, got Shield={h.currentShield}, Hull={h.currentHull}");
+                if (diedCalled)
+                    throw new System.Exception("Ship must NOT die while hull > 0!");
+
+                // 3. Shield regens passively, hull remains depleted
+                h.shieldRegen = 20f;
+                h.RegenerateMeters(1f);
+                if (Mathf.Abs(h.currentShield - 20f) > 0.01f || Mathf.Abs(h.currentHull - 50f) > 0.01f)
+                    throw new System.Exception($"Shield regen should restore shield to 20 without regenerating hull (50), got Shield={h.currentShield}, Hull={h.currentHull}");
+
+                // 4. Fatal damage depletes hull and triggers death
+                h.TakeDamage(100f); // 20 to shield, 50 to hull, 30 excess
+                if (h.currentShield != 0f || h.currentHull != 0f)
+                    throw new System.Exception($"Expected Shield=0, Hull=0, got Shield={h.currentShield}, Hull={h.currentHull}");
+                if (!diedCalled)
+                    throw new System.Exception("Ship should die when hull reaches 0!");
+
+                Object.DestroyImmediate(ship);
+                Debug.Log("[PASS] 15. Two-Tier Durability Model (Shield absorbs, Hull spillover, Death on Hull=0) verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 15. Two-Tier Durability verification failed: {ex.Message}");
                 failed++;
             }
 

@@ -16,6 +16,7 @@ MonoBehaviour:
   spawnYRatio: 0.8
   maxShield: 2500
   shieldRegen: 10
+  maxHull: 1500
   maxSpeed: 4
   acceleration: 8
   agility: 3

@@ -6,6 +6,7 @@ namespace StarStrike.Core
     public static class GameEvents
     {
         public static event Action<float, float> OnShieldChanged; // current, max
+        public static event Action<float, float> OnHullChanged;   // current, max
         public static event Action<float, float> OnEnergyChanged; // current, max
         public static event Action<float> OnPlayerDamaged;        // damageRatio (0..1)
         public static event Action<int, int> OnGemCollected;     // amount, total
@@ -14,6 +15,7 @@ namespace StarStrike.Core
         public static event Action<Vector3, float, bool> OnDamageDealt; // pos, damage, isCrit
 
         public static void TriggerShieldChanged(float current, float max) => OnShieldChanged?.Invoke(current, max);
+        public static void TriggerHullChanged(float current, float max) => OnHullChanged?.Invoke(current, max);
         public static void TriggerEnergyChanged(float current, float max) => OnEnergyChanged?.Invoke(current, max);
         public static void TriggerPlayerDamaged(float damageRatio) => OnPlayerDamaged?.Invoke(damageRatio);
         public static void TriggerGemCollected(int amount, int total) => OnGemCollected?.Invoke(amount, total);

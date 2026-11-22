@@ -13,6 +13,8 @@ namespace StarStrike.UI
         private PlayerProgression player;
         private float shieldCurrent = 100f;
         private float shieldMax = 100f;
+        private float hullCurrent = 80f;
+        private float hullMax = 80f;
         private float energyCurrent = 80f;
         private float energyMax = 80f;
         private int totalGems = 0;
@@ -36,6 +38,7 @@ namespace StarStrike.UI
         private void OnEnable()
         {
             GameEvents.OnShieldChanged += HandleShield;
+            GameEvents.OnHullChanged += HandleHull;
             GameEvents.OnEnergyChanged += HandleEnergy;
             GameEvents.OnGemCollected += HandleGem;
             GameEvents.OnPlayerEvolved += HandleEvolved;
@@ -44,6 +47,7 @@ namespace StarStrike.UI
         private void OnDisable()
         {
             GameEvents.OnShieldChanged -= HandleShield;
+            GameEvents.OnHullChanged -= HandleHull;
             GameEvents.OnEnergyChanged -= HandleEnergy;
             GameEvents.OnGemCollected -= HandleGem;
             GameEvents.OnPlayerEvolved -= HandleEvolved;
@@ -71,6 +75,8 @@ namespace StarStrike.UI
                         shipName = $"T{player.currentShip.tier} • {player.currentShip.shipName.ToUpper()}";
                         shieldMax = player.currentShip.baseStats.shieldCapacity;
                         shieldCurrent = shieldMax;
+                        hullMax = player.currentShip.baseStats.hullCapacity > 0 ? player.currentShip.baseStats.hullCapacity : 80f;
+                        hullCurrent = hullMax;
                         energyMax = player.currentShip.baseStats.energyCapacity;
                         energyCurrent = energyMax;
                     }
@@ -79,6 +85,7 @@ namespace StarStrike.UI
         }
 
         private void HandleShield(float cur, float max) { shieldCurrent = cur; shieldMax = max; }
+        private void HandleHull(float cur, float max) { hullCurrent = cur; hullMax = max; }
         private void HandleEnergy(float cur, float max) { energyCurrent = cur; energyMax = max; }
         private void HandleGem(int added, int total) { totalGems = total; }
         private void HandleEvolved(string shipId)

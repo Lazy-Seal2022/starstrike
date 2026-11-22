@@ -74,6 +74,7 @@ namespace StarStrike.Gameplay
             // Massive stats for boss from config
             health.maxShield = config.maxShield;
             health.shieldRegen = config.shieldRegen;
+            health.maxHull = config.maxHull > 0 ? config.maxHull : 1500f;
             movement.maxSpeed = config.maxSpeed;
             movement.acceleration = config.acceleration;
             movement.agility = config.agility;
@@ -121,7 +122,9 @@ namespace StarStrike.Gameplay
             float p2 = config != null ? config.phase2Threshold : 0.50f;
             float p3 = config != null ? config.phase3Threshold : 0.25f;
 
-            float hpPercent = health.currentShield / health.maxShield;
+            float totalHp = health.currentShield + health.currentHull;
+            float maxHp = health.maxShield + health.maxHull;
+            float hpPercent = maxHp > 0f ? totalHp / maxHp : 1f;
             if (hpPercent < p3) currentPhase = BossPhase.Enraged;
             else if (hpPercent < p2 && currentPhase != BossPhase.BulletHell) 
             {

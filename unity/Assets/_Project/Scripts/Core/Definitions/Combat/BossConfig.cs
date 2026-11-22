@@ -12,6 +12,7 @@ namespace StarStrike.Core
         [Header("Boss Stats")]
         public float maxShield = 2500f;
         public float shieldRegen = 10f;
+        public float maxHull = 1500f;
         public float maxSpeed = 4f;
         public float acceleration = 8f;
         public float agility = 3f;

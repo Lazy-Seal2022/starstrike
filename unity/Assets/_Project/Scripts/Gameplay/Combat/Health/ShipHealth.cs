@@ -9,20 +9,27 @@ namespace StarStrike.Gameplay
         [Header("Stats")]
         public float maxShield = 100f;
         public float shieldRegen = 8f;
+        public float maxHull = 80f;
         public float maxEnergy = 80f;
         public float energyRegen = 18f;
 
         [Header("Current State")]
         public float currentShield;
+        public float currentHull;
         public float currentEnergy;
 
         public float CurrentEnergy => currentEnergy;
         public float MaxEnergy => maxEnergy;
+        public float CurrentHull => currentHull;
+        public float MaxHull => maxHull;
+        public float CurrentShield => currentShield;
+        public float MaxShield => maxShield;
 
         public bool isPlayer = false;
         public bool isInvulnerable = false;
 
         public event Action<float, float> OnShieldChanged;
+        public event Action<float, float> OnHullChanged;
         public event Action<float, float> OnEnergyChanged;
         public event Action<float> OnDamaged;
         public event Action<Vector2, float> OnShieldImpact;
@@ -46,6 +53,7 @@ namespace StarStrike.Gameplay
         public void ResetMeters()
         {
             currentShield = maxShield;
+            currentHull = maxHull;
             currentEnergy = maxEnergy;
             NotifyChanges();
         }
@@ -85,35 +93,47 @@ namespace StarStrike.Gameplay
 
         public void TakeDamage(float amount)
         {
-            if (isInvulnerable) return;
+            if (isInvulnerable || amount <= 0f) return;
 
             float previousShield = currentShield;
-            currentShield -= amount;
+            float shieldDamage = Mathf.Min(currentShield, amount);
+            currentShield -= shieldDamage;
+            float leftoverDamage = amount - shieldDamage;
+
+            if (leftoverDamage > 0f)
+            {
+                currentHull = Mathf.Max(0f, currentHull - leftoverDamage);
+            }
             
             OnDamaged?.Invoke(amount);
 
-            if (previousShield > 0f)
+            if (previousShield > 0f && shieldDamage > 0f)
             {
                 Vector2 hitPos = pendingHitPoint != Vector2.zero ? pendingHitPoint : (Vector2)transform.position;
-                OnShieldImpact?.Invoke(hitPos, amount);
+                OnShieldImpact?.Invoke(hitPos, shieldDamage);
             }
             pendingHitPoint = Vector2.zero;
             
-            if (StarStrike.Gameplay.FX.FXService.Instance != null)
+            if (StarStrike.Gameplay.FX.FXService.Instance != null && isPlayer)
             {
-                if (isPlayer)
-                {
-                    float ratio = maxShield > 0f ? amount / maxShield : 0.2f;
-                    StarStrike.Core.GameEvents.TriggerPlayerDamaged(ratio);
-                }
+                float totalPool = maxShield + maxHull;
+                float ratio = totalPool > 0f ? amount / totalPool : 0.2f;
+                StarStrike.Core.GameEvents.TriggerPlayerDamaged(ratio);
             }
 
-            if (currentShield <= 0f)
+            if (currentHull <= 0f)
             {
-                currentShield = 0f;
+                currentHull = 0f;
                 OnDied?.Invoke();
             }
 
+            NotifyChanges();
+        }
+
+        public void RepairHull(float amount)
+        {
+            if (amount <= 0f || currentHull >= maxHull) return;
+            currentHull = Mathf.Min(maxHull, currentHull + amount);
             NotifyChanges();
         }
 
@@ -136,11 +156,13 @@ namespace StarStrike.Gameplay
         private void NotifyChanges()
         {
             OnShieldChanged?.Invoke(currentShield, maxShield);
+            OnHullChanged?.Invoke(currentHull, maxHull);
             OnEnergyChanged?.Invoke(currentEnergy, maxEnergy);
 
             if (isPlayer)
             {
                 GameEvents.TriggerShieldChanged(currentShield, maxShield);
+                GameEvents.TriggerHullChanged(currentHull, maxHull);
                 GameEvents.TriggerEnergyChanged(currentEnergy, maxEnergy);
             }
         }

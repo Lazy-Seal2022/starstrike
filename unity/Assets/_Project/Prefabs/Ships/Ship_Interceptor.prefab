@@ -228,9 +228,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: StarStrike.Gameplay::StarStrike.Gameplay.ShipHealth
   maxShield: 180
   shieldRegen: 15
+  maxHull: 100
   maxEnergy: 140
   energyRegen: 30
   currentShield: 180
+  currentHull: 100
   currentEnergy: 140
   isPlayer: 1
   isInvulnerable: 0

@@ -17,6 +17,7 @@ namespace StarStrike.Tests.EditMode
             playerGo.AddComponent<Rigidbody2D>();
             health = playerGo.AddComponent<ShipHealth>();
             health.maxShield = 100f;
+            health.maxHull = 50f;
             health.maxEnergy = 80f;
             health.ResetMeters();
 
@@ -58,6 +59,31 @@ namespace StarStrike.Tests.EditMode
             health.TakeDamage(150f);
 
             Assert.AreEqual(0f, health.currentShield);
+            Assert.AreEqual(0f, health.currentHull);
+            Assert.IsTrue(diedTriggered);
+        }
+
+        [Test]
+        public void TakeDamage_ShieldAbsorbsFirst_SpillsOverToHull()
+        {
+            bool diedTriggered = false;
+            health.OnDied += () => diedTriggered = true;
+
+            // 100 shield, 50 hull
+            health.TakeDamage(60f);
+            Assert.AreEqual(40f, health.currentShield, 0.01f);
+            Assert.AreEqual(50f, health.currentHull, 0.01f);
+            Assert.IsFalse(diedTriggered);
+
+            // 40 shield left, 70 damage -> 40 to shield, 30 to hull
+            health.TakeDamage(70f);
+            Assert.AreEqual(0f, health.currentShield);
+            Assert.AreEqual(20f, health.currentHull, 0.01f);
+            Assert.IsFalse(diedTriggered);
+
+            // Deplete remaining hull
+            health.TakeDamage(20f);
+            Assert.AreEqual(0f, health.currentHull);
             Assert.IsTrue(diedTriggered);
         }
 
