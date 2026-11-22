@@ -81,9 +81,10 @@ namespace StarStrike.Gameplay
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (collision.CompareTag("Player") || collision.gameObject.name == "Player")
+            if (collision.CompareTag("Player") || (collision.attachedRigidbody != null && collision.attachedRigidbody.CompareTag("Player")) || collision.gameObject.name == "Player")
             {
-                ApplyToPlayer(collision.gameObject);
+                GameObject playerObj = collision.attachedRigidbody != null ? collision.attachedRigidbody.gameObject : collision.gameObject;
+                ApplyToPlayer(playerObj);
                 gameObject.SetActive(false);
             }
         }

@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6871547165331192786}
   - component: {fileID: 7879743745295983393}
-  - component: {fileID: 3567458628062536625}
   - component: {fileID: 3043478879275500967}
+  - component: {fileID: 7234532825329235899}
   - component: {fileID: 5258489009917532449}
   - component: {fileID: 2144605594775877263}
   - component: {fileID: 301591442393645412}
@@ -69,42 +69,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!58 &3567458628062536625
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 36441149393879608}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Radius: 0.8
 --- !u!212 &3043478879275500967
 SpriteRenderer:
   serializedVersion: 2
@@ -164,6 +128,157 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!60 &7234532825329235899
+PolygonCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 36441149393879608}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 6, y: 6}
+    newSize: {x: 6, y: 6}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Points:
+    m_Paths:
+    - - {x: -0.859375, y: -1.140625}
+      - {x: -1, y: -1.046875}
+      - {x: -0.953125, y: -0.921875}
+      - {x: -0.765625, y: -0.921875}
+      - {x: -0.390625, y: -0.90625}
+      - {x: -0.25, y: -0.84375}
+      - {x: -0.0625, y: -0.890625}
+      - {x: 0.546875, y: -1.5}
+      - {x: 0.703125, y: -1.484375}
+      - {x: 1.265625, y: -1.5}
+      - {x: 1.328125, y: -1.5625}
+      - {x: 1.421875, y: -1.5625}
+      - {x: 1.546875, y: -1.53125}
+      - {x: 2.03125, y: -1.4375}
+      - {x: 2.328125, y: -1.375}
+      - {x: 2.546875, y: -1.3125}
+      - {x: 2.671875, y: -1.25}
+      - {x: 2.6875, y: -1.171875}
+      - {x: 2.796875, y: -1.125}
+      - {x: 2.796875, y: -0.90625}
+      - {x: 2.765625, y: -0.875}
+      - {x: 2.578125, y: -0.703125}
+      - {x: 2.4375, y: -0.6875}
+      - {x: 1.953125, y: -0.640625}
+      - {x: 1.78125, y: -0.640625}
+      - {x: 1.671875, y: -0.453125}
+      - {x: 2.28125, y: -0.390625}
+      - {x: 2.359375, y: -0.34375}
+      - {x: 2.53125, y: -0.28125}
+      - {x: 2.5625, y: -0.15625}
+      - {x: 2.765625, y: -0.140625}
+      - {x: 2.796875, y: -0.109375}
+      - {x: 2.796875, y: -0.03125}
+      - {x: 2.765625, y: 0}
+      - {x: 2.640625, y: 0}
+      - {x: 2.765625, y: 0}
+      - {x: 2.796875, y: 0.03125}
+      - {x: 2.796875, y: 0.125}
+      - {x: 2.640625, y: 0.15625}
+      - {x: 2.5, y: 0.296875}
+      - {x: 2.203125, y: 0.40625}
+      - {x: 1.6875, y: 0.453125}
+      - {x: 1.78125, y: 0.640625}
+      - {x: 1.9375, y: 0.640625}
+      - {x: 2.5625, y: 0.703125}
+      - {x: 2.671875, y: 0.765625}
+      - {x: 2.6875, y: 0.875}
+      - {x: 2.765625, y: 0.890625}
+      - {x: 2.796875, y: 0.90625}
+      - {x: 2.796875, y: 1.15625}
+      - {x: 2.6875, y: 1.234375}
+      - {x: 2.53125, y: 1.359375}
+      - {x: 2.203125, y: 1.421875}
+      - {x: 1.796875, y: 1.46875}
+      - {x: 1.5625, y: 1.546875}
+      - {x: 1.328125, y: 1.59375}
+      - {x: 1.21875, y: 1.5}
+      - {x: 0.53125, y: 1.5}
+      - {x: 0.5, y: 1.4375}
+      - {x: -0.0625, y: 0.875}
+      - {x: -0.25, y: 0.84375}
+      - {x: -0.3125, y: 0.890625}
+      - {x: -0.484375, y: 0.921875}
+      - {x: -0.671875, y: 0.921875}
+      - {x: -0.96875, y: 0.953125}
+      - {x: -0.96875, y: 1.140625}
+      - {x: -0.859375, y: 1.15625}
+      - {x: -0.78125, y: 1.234375}
+      - {x: -0.78125, y: 1.5625}
+      - {x: -0.859375, y: 1.65625}
+      - {x: -1.140625, y: 1.6875}
+      - {x: -2.265625, y: 1.6875}
+      - {x: -2.390625, y: 1.671875}
+      - {x: -2.734375, y: 1.59375}
+      - {x: -2.796875, y: 1.53125}
+      - {x: -2.796875, y: 1.265625}
+      - {x: -2.734375, y: 1.203125}
+      - {x: -2.421875, y: 1.109375}
+      - {x: -2.28125, y: 1.046875}
+      - {x: -2.390625, y: 0.96875}
+      - {x: -2.609375, y: 0.78125}
+      - {x: -2.71875, y: 0.75}
+      - {x: -2.796875, y: 0.6875}
+      - {x: -2.796875, y: 0.390625}
+      - {x: -2.625, y: 0.25}
+      - {x: -2.640625, y: -0.171875}
+      - {x: -2.625, y: -0.296875}
+      - {x: -2.71875, y: -0.34375}
+      - {x: -2.796875, y: -0.40625}
+      - {x: -2.796875, y: -0.6875}
+      - {x: -2.765625, y: -0.75}
+      - {x: -2.546875, y: -0.828125}
+      - {x: -2.4375, y: -0.890625}
+      - {x: -2.28125, y: -1.078125}
+      - {x: -2.734375, y: -1.203125}
+      - {x: -2.796875, y: -1.25}
+      - {x: -2.796875, y: -1.5625}
+      - {x: -2.65625, y: -1.640625}
+      - {x: -2.5, y: -1.65625}
+      - {x: -2.28125, y: -1.6875}
+      - {x: -1.1875, y: -1.6875}
+      - {x: -0.921875, y: -1.671875}
+      - {x: -0.78125, y: -1.625}
+      - {x: -0.78125, y: -1.21875}
+  m_UseDelaunayMesh: 1
 --- !u!114 &5258489009917532449
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -277,6 +392,7 @@ MonoBehaviour:
   shieldRadius: 1
   autoDetectRadius: 1
   domeFadeSpeed: 4.2
+  shieldHitboxOffset: 0.35
 --- !u!1 &1452049018263250459
 GameObject:
   m_ObjectHideFlags: 0

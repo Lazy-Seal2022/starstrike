@@ -67,13 +67,13 @@ namespace StarStrike.Gameplay
             if (movement == null) movement = GetComponent<ShipMovement>();
             if (weapon == null) weapon = GetComponent<ShipWeapon>();
 
-            CircleCollider2D col = GetComponent<CircleCollider2D>();
-            if (col == null) col = gameObject.AddComponent<CircleCollider2D>();
-            if (col != null && col.radius <= 0.01f)
-            {
-                col.radius = 0.5f;
-            }
+            Collider2D col = GetComponent<Collider2D>();
+            if (col == null) col = gameObject.AddComponent<PolygonCollider2D>();
             col.isTrigger = false;
+            if (col is CircleCollider2D circleCol && circleCol.radius <= 0.01f)
+            {
+                circleCol.radius = 0.5f;
+            }
 
             if (shipRenderer == null)
             {
@@ -485,10 +485,53 @@ namespace StarStrike.Gameplay
                 }
             }
 
+            PolygonCollider2D poly = GetComponent<PolygonCollider2D>();
+            if (poly != null && shipRenderer != null && shipRenderer.sprite != null)
+            {
+                UpdatePolygonFromSprite(poly, shipRenderer.sprite);
+            }
+
             CircleCollider2D col = GetComponent<CircleCollider2D>();
             if (col != null && currentShip != null && currentShip.hitboxRadius > 0.05f)
             {
                 col.radius = currentShip.hitboxRadius;
+            }
+
+            var shieldField = GetComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+            if (shieldField != null)
+            {
+                shieldField.RebuildShieldCollider();
+            }
+        }
+
+        public static void UpdatePolygonFromSprite(PolygonCollider2D poly, Sprite sprite)
+        {
+            if (poly == null || sprite == null) return;
+            int shapeCount = sprite.GetPhysicsShapeCount();
+            if (shapeCount > 0)
+            {
+                poly.pathCount = shapeCount;
+                var shapePoints = new System.Collections.Generic.List<Vector2>();
+                for (int i = 0; i < shapeCount; i++)
+                {
+                    shapePoints.Clear();
+                    sprite.GetPhysicsShape(i, shapePoints);
+                    poly.SetPath(i, shapePoints);
+                }
+            }
+            else
+            {
+                Bounds b = sprite.bounds;
+                Vector2[] fallback = new Vector2[]
+                {
+                    new Vector2(b.max.x, 0f),
+                    new Vector2(b.min.x * 0.5f, b.max.y),
+                    new Vector2(b.min.x, b.max.y * 0.7f),
+                    new Vector2(b.min.x, b.min.y * 0.7f),
+                    new Vector2(b.min.x * 0.5f, b.min.y)
+                };
+                poly.pathCount = 1;
+                poly.SetPath(0, fallback);
             }
         }
     }

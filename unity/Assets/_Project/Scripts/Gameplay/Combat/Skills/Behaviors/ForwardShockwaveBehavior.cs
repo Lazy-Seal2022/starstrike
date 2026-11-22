@@ -40,10 +40,10 @@ namespace StarStrike.Gameplay
 
             // 2. Spawn Shockwave Projectile
             float spawnOffset = 1.2f;
-            CircleCollider2D ownerCol = ownerShip.GetComponent<CircleCollider2D>();
+            Collider2D ownerCol = ownerShip.GetComponent<Collider2D>();
             if (ownerCol != null)
             {
-                spawnOffset = ownerCol.radius + 0.5f;
+                spawnOffset = Mathf.Max(ownerCol.bounds.extents.x, ownerCol.bounds.extents.y) + 0.5f;
             }
 
             Vector2 spawnPos = (Vector2)ownerShip.transform.position + castDir * spawnOffset;

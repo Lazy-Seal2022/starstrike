@@ -3,7 +3,7 @@ using StarStrike.Core;
 
 namespace StarStrike.Gameplay
 {
-    [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
+    [RequireComponent(typeof(Rigidbody2D))]
     public class ShipMovement : MonoBehaviour
     {
         [Header("Configuration")]
@@ -64,11 +64,11 @@ namespace StarStrike.Gameplay
             boostMaxSpeedMultiplier = flightConfig.boostMaxSpeedMultiplier;
             boostEnergyDrain = flightConfig.boostEnergyDrain;
 
-            CircleCollider2D col = GetComponent<CircleCollider2D>();
-            if (col == null) col = gameObject.AddComponent<CircleCollider2D>();
-            if (col != null && col.radius <= 0.01f)
+            Collider2D col = GetComponent<Collider2D>();
+            if (col == null) col = gameObject.AddComponent<PolygonCollider2D>();
+            if (col is CircleCollider2D circleCol && circleCol.radius <= 0.01f)
             {
-                col.radius = 0.6f;
+                circleCol.radius = 0.6f;
             }
         }
 

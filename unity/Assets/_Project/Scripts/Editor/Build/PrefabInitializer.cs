@@ -231,13 +231,16 @@ namespace StarStrike.Editor
             rb.linearDamping = 0.5f;
             rb.angularDamping = 1.0f;
 
-            var col = go.AddComponent<CircleCollider2D>();
-            col.radius = 0.7f;
-            col.isTrigger = false;
-
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = LoadArtSprite("Ships/Ship_Drone.png");
             sr.sortingOrder = 4;
+
+            var poly = go.AddComponent<PolygonCollider2D>();
+            poly.isTrigger = false;
+            if (sr.sprite != null)
+            {
+                PlayerProgression.UpdatePolygonFromSprite(poly, sr.sprite);
+            }
 
             var mov = go.AddComponent<ShipMovement>();
             mov.flightConfig = AssetDatabase.LoadAssetAtPath<FlightConfig>("Assets/_Project/Resources/Data/FlightConfig.asset");
@@ -274,13 +277,16 @@ namespace StarStrike.Editor
             rb.linearDamping = 0.6f;
             rb.angularDamping = 1.0f;
 
-            var col = go.AddComponent<CircleCollider2D>();
-            col.radius = 0.8f;
-            col.isTrigger = false;
-
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = LoadArtSprite("Ships/Ship_Boss.png");
             sr.sortingOrder = 4;
+
+            var poly = go.AddComponent<PolygonCollider2D>();
+            poly.isTrigger = false;
+            if (sr.sprite != null)
+            {
+                PlayerProgression.UpdatePolygonFromSprite(poly, sr.sprite);
+            }
 
             var mov = go.AddComponent<ShipMovement>();
             mov.flightConfig = AssetDatabase.LoadAssetAtPath<FlightConfig>("Assets/_Project/Resources/Data/FlightConfig.asset");
@@ -319,13 +325,16 @@ namespace StarStrike.Editor
 
             var def = AssetDatabase.LoadAssetAtPath<ShipDefinition>($"Assets/_Project/Resources/Data/Ship_{capId}.asset");
 
-            var col = go.AddComponent<CircleCollider2D>();
-            col.radius = (def != null && def.hitboxRadius > 0.05f) ? def.hitboxRadius : 0.6f;
-            col.isTrigger = false;
-
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = LoadArtSprite($"Ships/Ship_{capId}.png");
             sr.sortingOrder = 4;
+
+            var poly = go.AddComponent<PolygonCollider2D>();
+            poly.isTrigger = false;
+            if (sr.sprite != null)
+            {
+                PlayerProgression.UpdatePolygonFromSprite(poly, sr.sprite);
+            }
 
             var mov = go.AddComponent<ShipMovement>();
             mov.flightConfig = AssetDatabase.LoadAssetAtPath<FlightConfig>("Assets/_Project/Resources/Data/FlightConfig.asset");
@@ -1208,6 +1217,104 @@ namespace StarStrike.Editor
             catch (System.Exception ex)
             {
                 Debug.LogError($"[FAIL] 15. Two-Tier Durability verification failed: {ex.Message}");
+                failed++;
+            }
+
+            // 16. Dual-Hitbox System (Hull Exact Polygon + Shield Offset Polygon & State Toggling)
+            try
+            {
+                var testShip = new GameObject("TestShip_DualHitbox");
+                testShip.tag = "Player";
+                var health = testShip.AddComponent<ShipHealth>();
+                health.isPlayer = true;
+                health.maxHull = 80f;
+                health.maxShield = 100f;
+                health.ResetMeters();
+
+                var sr = testShip.AddComponent<SpriteRenderer>();
+                sr.sprite = LoadArtSprite("Ships/Ship_Scout.png");
+
+                var hullPoly = testShip.AddComponent<PolygonCollider2D>();
+                hullPoly.isTrigger = false;
+                if (sr.sprite != null)
+                {
+                    PlayerProgression.UpdatePolygonFromSprite(hullPoly, sr.sprite);
+                }
+
+                // 1. Verify Hull Collider conforms to sprite physics shape
+                if (hullPoly.pathCount <= 0 || hullPoly.GetPath(0).Length < 8)
+                    throw new System.Exception($"Hull polygon must have >8 vertices conforming to sprite outline, got {hullPoly.GetPath(0).Length}");
+
+                int scoutHullPtsCount = hullPoly.GetPath(0).Length;
+                Bounds hullBounds = hullPoly.bounds;
+
+                // 2. Add Shield Field
+                var shield = testShip.AddComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+                shield.EnsureInitialized();
+                shield.SubscribeEvents();
+
+                var shieldCol = shield.ShieldCollider;
+                if (shieldCol == null)
+                    throw new System.Exception("Shield collider must be initialized on ShieldPerimeterDome!");
+                if (!shieldCol.isTrigger)
+                    throw new System.Exception("Shield collider must be a Trigger collider!");
+                if (!shieldCol.enabled)
+                    throw new System.Exception("Shield collider must be enabled while shield > 0!");
+
+                var shieldPoly = shieldCol as PolygonCollider2D;
+                if (shieldPoly == null)
+                    throw new System.Exception("Shield collider must be a PolygonCollider2D when hull is PolygonCollider2D!");
+                if (shieldPoly.pathCount != hullPoly.pathCount)
+                    throw new System.Exception($"Shield pathCount ({shieldPoly.pathCount}) must match hull pathCount ({hullPoly.pathCount})!");
+                if (shieldPoly.GetPath(0).Length != scoutHullPtsCount)
+                    throw new System.Exception($"Shield vertex count ({shieldPoly.GetPath(0).Length}) must match hull vertex count ({scoutHullPtsCount})!");
+
+                // Check that shield polygon bounds enclose the hull bounds
+                Bounds shieldBounds = shieldPoly.bounds;
+                if (shieldBounds.extents.x <= hullBounds.extents.x || shieldBounds.extents.y <= hullBounds.extents.y)
+                    throw new System.Exception($"Shield bounds ({shieldBounds.extents}) must be larger than hull bounds ({hullBounds.extents})!");
+
+                // 3. Partial Damage: shield takes hit, stays enabled
+                health.TakeDamage(30f);
+                if (Mathf.Abs(health.currentShield - 70f) > 0.01f)
+                    throw new System.Exception($"Expected shield=70, got {health.currentShield}");
+                if (!shieldCol.enabled)
+                    throw new System.Exception("Shield collider must remain enabled while shield > 0!");
+
+                // 4. Lethal Shield Damage: shield collapses, shield trigger collider disabled
+                health.TakeDamage(80f); // 70 shield, 10 hull
+                if (health.currentShield != 0f || Mathf.Abs(health.currentHull - 70f) > 0.01f)
+                    throw new System.Exception($"Expected shield=0, hull=70, got shield={health.currentShield}, hull={health.currentHull}");
+                if (shieldCol.enabled)
+                    throw new System.Exception("Shield collider must be DISABLED when shield reaches 0!");
+                if (!hullPoly.enabled)
+                    throw new System.Exception("Hull collider must remain ENABLED when shield collapses!");
+
+                // 5. Shield Regeneration: re-enables shield trigger collider
+                health.shieldRegen = 20f;
+                health.RegenerateMeters(1f);
+                if (health.currentShield <= 0f)
+                    throw new System.Exception("Shield should have regenerated above 0!");
+                if (!shieldCol.enabled)
+                    throw new System.Exception("Shield collider must RE-ENABLE when shield regenerates above 0!");
+
+                // 6. Dynamic Evolution Point Update
+                sr.sprite = LoadArtSprite("Ships/Ship_Fighter.png");
+                PlayerProgression.UpdatePolygonFromSprite(hullPoly, sr.sprite);
+                shield.RebuildShieldCollider();
+
+                if (hullPoly.GetPath(0).Length == scoutHullPtsCount)
+                    throw new System.Exception("Hull collider points should have updated to Fighter outline!");
+                if (shieldPoly.GetPath(0).Length != hullPoly.GetPath(0).Length)
+                    throw new System.Exception("Shield collider points must match updated Fighter hull points!");
+
+                Object.DestroyImmediate(testShip);
+                Debug.Log("[PASS] 16. Dual-Hitbox System (Hull Exact Polygon + Shield Offset Polygon & State Toggling) verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 16. Dual-Hitbox System verification failed: {ex.Message}");
                 failed++;
             }
 

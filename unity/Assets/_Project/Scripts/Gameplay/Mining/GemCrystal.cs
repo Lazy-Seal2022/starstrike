@@ -105,9 +105,13 @@ namespace StarStrike.Gameplay
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (collision.CompareTag("Player"))
+            if (collision.CompareTag("Player") || (collision.attachedRigidbody != null && collision.attachedRigidbody.CompareTag("Player")))
             {
                 PlayerProgression player = collision.GetComponent<PlayerProgression>();
+                if (player == null && collision.attachedRigidbody != null)
+                {
+                    player = collision.attachedRigidbody.GetComponent<PlayerProgression>();
+                }
                 if (player != null)
                 {
                     player.AddGems(gemValue);

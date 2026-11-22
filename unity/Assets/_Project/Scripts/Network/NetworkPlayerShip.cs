@@ -9,7 +9,7 @@ using StarStrike.Gameplay.Audio;
 
 namespace StarStrike.Network
 {
-    [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D), typeof(NetworkObject))]
+    [RequireComponent(typeof(Rigidbody2D), typeof(NetworkObject))]
     public class NetworkPlayerShip : NetworkBehaviour
     {
         [Header("Prefabs")]
@@ -58,7 +58,7 @@ namespace StarStrike.Network
             NetworkVariableWritePermission.Owner);
 
         private Rigidbody2D rb;
-        private CircleCollider2D col;
+        private Collider2D col;
         private SpriteRenderer sr;
         private float lastFireTime = -999f;
         private StarStrike.Gameplay.FX.ShipThrusterEffect thrusterEffect;
@@ -78,10 +78,13 @@ namespace StarStrike.Network
                 rb.angularDamping = 1.0f;
             }
 
-            col = GetComponent<CircleCollider2D>();
+            col = GetComponent<Collider2D>();
             if (col != null)
             {
-                col.radius = 0.6f;
+                if (col is CircleCollider2D circleCol)
+                {
+                    circleCol.radius = 0.6f;
+                }
                 col.isTrigger = false;
             }
 
