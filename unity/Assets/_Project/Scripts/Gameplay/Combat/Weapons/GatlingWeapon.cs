@@ -65,6 +65,16 @@ namespace StarStrike.Gameplay
                 isPlayer = true;
             }
 
+            if (tracerPrefab == null && combatConfig != null && isPlayer && combatConfig.gatlingBulletPrefab != null)
+            {
+                tracerPrefab = combatConfig.gatlingBulletPrefab;
+            }
+
+            if (tracerPrefab == null)
+            {
+                tracerPrefab = Resources.Load<GameObject>("Prefabs/Projectiles/PlayerGatlingBullet");
+            }
+
             if (tracerPrefab == null && combatConfig != null)
             {
                 tracerPrefab = isPlayer ? combatConfig.playerLaserPrefab : combatConfig.enemyLaserPrefab;

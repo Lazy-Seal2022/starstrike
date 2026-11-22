@@ -19,6 +19,9 @@ MonoBehaviour:
   gatlingBulletSprite: {fileID: 21300000, guid: 06036ddb822d463f968c6935debded63, type: 3}
   scattergunPelletSprite: {fileID: 21300000, guid: 592f2c5ecd304f2faf1426de2d373075, type: 3}
   missileSprite: {fileID: 21300000, guid: bef2ffb49ac14d2892dd89f01a07f04a, type: 3}
+  gatlingBulletPrefab: {fileID: 1000000000000001, guid: ec2d7ab8b96245358199e3c94e8bc9c8, type: 3}
+  scattergunPelletPrefab: {fileID: 1000000000000002, guid: a761ad902b5a45e794f69351413aba9d, type: 3}
+  missilePrefab: {fileID: 1000000000000003, guid: 5f67eae43c87486f9b72f54e4981e794, type: 3}
   defaultPulseDamage: 18
   defaultPulseSpeed: 22
   projectileLifetime: 3

@@ -36,6 +36,20 @@ namespace StarStrike.Gameplay
             {
                 isPlayer = true;
             }
+
+            if (missilePrefab == null)
+            {
+                var combatConfig = Resources.Load<CombatConfig>("Data/CombatConfig");
+                if (combatConfig != null && combatConfig.missilePrefab != null)
+                {
+                    missilePrefab = combatConfig.missilePrefab;
+                }
+            }
+
+            if (missilePrefab == null)
+            {
+                missilePrefab = Resources.Load<GameObject>("Prefabs/Projectiles/PlayerMissile");
+            }
         }
 
         public bool TryFire(ShipHealth health) => TryFire((IEnergyConsumer)health);

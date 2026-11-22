@@ -45,6 +45,16 @@ namespace StarStrike.Gameplay
                 isPlayer = true;
             }
 
+            if (pelletPrefab == null && combatConfig != null && isPlayer && combatConfig.scattergunPelletPrefab != null)
+            {
+                pelletPrefab = combatConfig.scattergunPelletPrefab;
+            }
+
+            if (pelletPrefab == null)
+            {
+                pelletPrefab = Resources.Load<GameObject>("Prefabs/Projectiles/PlayerScatterPellet");
+            }
+
             if (pelletPrefab == null && combatConfig != null)
             {
                 pelletPrefab = combatConfig.playerLaserPrefab;
