@@ -34,7 +34,7 @@ namespace StarStrike.Gameplay.FX
             {
                 spriteRenderer.sprite = ProceduralSpriteHelper.GetShieldRippleSprite(128);
             }
-            spriteRenderer.sortingOrder = 7; // Above shield dome (layer 5) and ship hull (layer 4)
+            spriteRenderer.sortingOrder = 14; // Above shield dome (layer 11) and ship hull (layer 10)
 
             var shader = Shader.Find("Sprites/Default");
             if (shader != null && spriteRenderer.material == null)

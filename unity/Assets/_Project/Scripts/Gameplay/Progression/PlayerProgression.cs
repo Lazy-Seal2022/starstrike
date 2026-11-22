@@ -67,13 +67,17 @@ namespace StarStrike.Gameplay
             if (movement == null) movement = GetComponent<ShipMovement>();
             if (weapon == null) weapon = GetComponent<ShipWeapon>();
 
-            Collider2D col = GetComponent<Collider2D>();
-            if (col == null) col = gameObject.AddComponent<PolygonCollider2D>();
-            col.isTrigger = false;
-            if (col is CircleCollider2D circleCol && circleCol.radius <= 0.01f)
+            PolygonCollider2D poly = GetComponent<PolygonCollider2D>();
+            if (poly == null)
             {
-                circleCol.radius = 0.5f;
+                var circleCol = GetComponent<CircleCollider2D>();
+                if (circleCol != null && Application.isPlaying)
+                {
+                    Destroy(circleCol);
+                }
+                poly = gameObject.AddComponent<PolygonCollider2D>();
             }
+            poly.isTrigger = false;
 
             if (shipRenderer == null)
             {

@@ -1274,29 +1274,44 @@ namespace StarStrike.Editor
                 if (shieldBounds.extents.x <= hullBounds.extents.x || shieldBounds.extents.y <= hullBounds.extents.y)
                     throw new System.Exception($"Shield bounds ({shieldBounds.extents}) must be larger than hull bounds ({hullBounds.extents})!");
 
+                // Check visible glowing shield contour line
+                var shieldLine = shield.ShieldLine;
+                if (shieldLine == null)
+                    throw new System.Exception("ShieldLine must be initialized on ShieldPerimeterDome!");
+                if (!shieldLine.enabled)
+                    throw new System.Exception("ShieldLine must be enabled while shield > 0!");
+                if (shieldLine.positionCount != scoutHullPtsCount)
+                    throw new System.Exception($"ShieldLine vertex count ({shieldLine.positionCount}) must match hull points ({scoutHullPtsCount})!");
+
                 // 3. Partial Damage: shield takes hit, stays enabled
                 health.TakeDamage(30f);
                 if (Mathf.Abs(health.currentShield - 70f) > 0.01f)
                     throw new System.Exception($"Expected shield=70, got {health.currentShield}");
                 if (!shieldCol.enabled)
                     throw new System.Exception("Shield collider must remain enabled while shield > 0!");
+                if (!shieldLine.enabled)
+                    throw new System.Exception("Shield line must remain enabled while shield > 0!");
 
-                // 4. Lethal Shield Damage: shield collapses, shield trigger collider disabled
+                // 4. Lethal Shield Damage: shield collapses, shield trigger collider & contour disabled
                 health.TakeDamage(80f); // 70 shield, 10 hull
                 if (health.currentShield != 0f || Mathf.Abs(health.currentHull - 70f) > 0.01f)
                     throw new System.Exception($"Expected shield=0, hull=70, got shield={health.currentShield}, hull={health.currentHull}");
                 if (shieldCol.enabled)
                     throw new System.Exception("Shield collider must be DISABLED when shield reaches 0!");
+                if (shieldLine.enabled)
+                    throw new System.Exception("Shield contour line must be DISABLED when shield reaches 0!");
                 if (!hullPoly.enabled)
                     throw new System.Exception("Hull collider must remain ENABLED when shield collapses!");
 
-                // 5. Shield Regeneration: re-enables shield trigger collider
+                // 5. Shield Regeneration: re-enables shield trigger collider & contour
                 health.shieldRegen = 20f;
                 health.RegenerateMeters(1f);
                 if (health.currentShield <= 0f)
                     throw new System.Exception("Shield should have regenerated above 0!");
                 if (!shieldCol.enabled)
                     throw new System.Exception("Shield collider must RE-ENABLE when shield regenerates above 0!");
+                if (!shieldLine.enabled)
+                    throw new System.Exception("Shield contour line must RE-ENABLE when shield regenerates above 0!");
 
                 // 6. Dynamic Evolution Point Update
                 sr.sprite = LoadArtSprite("Ships/Ship_Fighter.png");

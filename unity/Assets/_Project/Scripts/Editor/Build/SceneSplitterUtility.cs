@@ -26,7 +26,10 @@ namespace StarStrike.Editor
             // 2. Build GameplayScene from GameScene
             BuildGameplayScene();
 
-            // 3. Configure EditorBuildSettings
+            // 3. Update Player Colliders in scenes
+            UpdateScenePlayerColliders();
+
+            // 4. Configure EditorBuildSettings
             ConfigureBuildSettings();
 
             AssetDatabase.SaveAssets();
@@ -127,6 +130,54 @@ namespace StarStrike.Editor
 
             EditorBuildSettings.scenes = buildScenes;
             Debug.Log($"[PASS] Configured EditorBuildSettings with {buildScenes.Length} scenes.");
+        }
+
+        public static void UpdateScenePlayerColliders()
+        {
+            UpdateScenePlayer(LegacyGameScenePath);
+            UpdateScenePlayer(GameplayScenePath);
+        }
+
+        private static void UpdateScenePlayer(string scenePath)
+        {
+            if (!File.Exists(scenePath)) return;
+            var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            var player = GameObject.Find("Player");
+            if (player != null)
+            {
+                var circle = player.GetComponent<CircleCollider2D>();
+                if (circle != null)
+                {
+                    Object.DestroyImmediate(circle);
+                }
+                var poly = player.GetComponent<PolygonCollider2D>();
+                if (poly == null)
+                {
+                    poly = player.AddComponent<PolygonCollider2D>();
+                }
+                var sr = player.GetComponent<SpriteRenderer>();
+                if (sr == null)
+                {
+                    sr = player.AddComponent<SpriteRenderer>();
+                }
+                if (sr.sprite == null)
+                {
+                    sr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/Sprites/Ships/Ship_Scout.png");
+                }
+                if (sr.sprite != null)
+                {
+                    StarStrike.Gameplay.PlayerProgression.UpdatePolygonFromSprite(poly, sr.sprite);
+                }
+                var shield = player.GetComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+                if (shield == null)
+                {
+                    shield = player.AddComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+                }
+                shield.EnsureInitialized();
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+                Debug.Log($"[PASS] Updated Player with PolygonCollider2D in '{scenePath}'");
+            }
         }
     }
 }
