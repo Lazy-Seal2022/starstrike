@@ -1531,7 +1531,7 @@ namespace StarStrike.Editor
                 failed++;
             }
 
-            // 22. Verify Weapon Kinematic Recoil & Hardpoint Sockets
+            // 22. Verify Weapon Kinematic Recoil, Sockets & Inaccuracy Spread
             try
             {
                 var shipObj = new GameObject("Test_ShipWeaponRecoil");
@@ -1541,15 +1541,18 @@ namespace StarStrike.Editor
                 weapon.weaponSlots = 1;
                 weapon.fireRate = 0.1f;
                 weapon.energyCost = 0f;
+                weapon.inaccuracyAngle = 2.5f;
 
                 shipObj.transform.rotation = Quaternion.identity;
                 weapon.TryFire(null);
 
                 if (weapon.WeaponSlots != 1)
                     throw new System.Exception($"Expected 1 slot, got {weapon.WeaponSlots}");
+                if (weapon.inaccuracyAngle <= 0f)
+                    throw new System.Exception("Weapon inaccuracyAngle should be positive for realistic bullet spread");
 
                 Object.DestroyImmediate(shipObj);
-                Debug.Log("[PASS] 22. Weapon Kinematic Recoil & Hardpoint Sockets verified");
+                Debug.Log("[PASS] 22. Weapon Kinematic Recoil, Sockets & Inaccuracy Spread verified");
                 passed++;
             }
             catch (System.Exception ex)

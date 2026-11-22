@@ -18,6 +18,10 @@ namespace StarStrike.Gameplay
         public float fireRate = 0.22f;
         public float energyCost = 6f;
 
+        [Header("Accuracy & Spread")]
+        [Tooltip("Random angular inaccuracy / spread applied to each fired bullet (in degrees)")]
+        public float inaccuracyAngle = 2.5f;
+
         [Header("Physical Sockets")]
         [Tooltip("Custom weapon hardpoint positions in local coordinates (X = forward, Y = lateral)")]
         public Vector2[] weaponSockets = null;
@@ -48,6 +52,10 @@ namespace StarStrike.Gameplay
             {
                 if (energyCost == 12f || energyCost <= 0f) energyCost = combatConfig.defaultEnergyCost;
                 if (fireRate <= 0f) fireRate = combatConfig.defaultFireRate;
+                if (inaccuracyAngle <= 0f && combatConfig.bulletInaccuracyAngle > 0f)
+                {
+                    inaccuracyAngle = combatConfig.bulletInaccuracyAngle;
+                }
             }
 
             float minRate = combatConfig != null ? combatConfig.minFireRate : 0.10f;
@@ -195,16 +203,19 @@ namespace StarStrike.Gameplay
 
             foreach (Vector2 nose in muzzlePositions)
             {
+                float spreadOffset = inaccuracyAngle > 0f ? Random.Range(-inaccuracyAngle, inaccuracyAngle) : 0f;
+                Quaternion bulletRotation = transform.rotation * Quaternion.Euler(0f, 0f, spreadOffset);
+
                 string poolTag = isPlayer ? "PlayerLaser" : "EnemyLaser";
                 
                 GameObject laserObj = null;
                 if (PoolManager.Instance != null)
                 {
-                    laserObj = PoolManager.Instance.Spawn(poolTag, nose, transform.rotation, () => 
+                    laserObj = PoolManager.Instance.Spawn(poolTag, nose, bulletRotation, () => 
                     {
                         if (laserPrefab != null)
                         {
-                            var inst = Instantiate(laserPrefab, nose, transform.rotation);
+                            var inst = Instantiate(laserPrefab, nose, bulletRotation);
                             inst.name = poolTag;
                             return inst;
                         }
@@ -219,7 +230,7 @@ namespace StarStrike.Gameplay
                     // Fallback if no pool
                     if (laserPrefab != null)
                     {
-                        laserObj = Instantiate(laserPrefab, nose, transform.rotation);
+                        laserObj = Instantiate(laserPrefab, nose, bulletRotation);
                         laserObj.name = poolTag;
                     }
                     else
@@ -227,10 +238,13 @@ namespace StarStrike.Gameplay
                         laserObj = new GameObject(poolTag);
                         laserObj.tag = isPlayer ? "Laser" : "EnemyLaser";
                         laserObj.transform.position = nose;
-                        laserObj.transform.rotation = transform.rotation;
+                        laserObj.transform.rotation = bulletRotation;
                         laserObj.AddComponent<LaserProjectile>();
                     }
                 }
+
+                laserObj.transform.position = nose;
+                laserObj.transform.rotation = bulletRotation;
 
                 LaserProjectile proj = laserObj.GetComponent<LaserProjectile>();
                 proj.Initialize(pulseDamage, pulseSpeed, !isPlayer);

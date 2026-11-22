@@ -256,7 +256,9 @@ namespace StarStrike.Network
             {
                 lastFireTime = Time.time;
                 Vector2 muzzle = (Vector2)transform.position + (Vector2)transform.right * 0.7f;
-                FireLaserServerRpc(muzzle, transform.rotation);
+                float spreadOffset = Random.Range(-2.5f, 2.5f);
+                Quaternion bulletRot = transform.rotation * Quaternion.Euler(0f, 0f, spreadOffset);
+                FireLaserServerRpc(muzzle, bulletRot);
             }
         }
 

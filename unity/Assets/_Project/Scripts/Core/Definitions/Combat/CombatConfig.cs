@@ -22,5 +22,6 @@ namespace StarStrike.Core
         public float recoilForce = 1.5f;
         public float muzzleForwardOffset = 0.65f;
         public float dualWeaponSpread = 0.3f;
+        public float bulletInaccuracyAngle = 2.5f;
     }
 }

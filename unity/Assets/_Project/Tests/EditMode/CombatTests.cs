@@ -137,6 +137,46 @@ namespace StarStrike.Tests.EditMode
         }
 
         [Test]
+        public void Weapon_TryFire_AppliesInaccuracySpreadAngle()
+        {
+            var testObj = new GameObject("TestShip_Spread");
+            var testWp = testObj.AddComponent<ShipWeapon>();
+            testWp.inaccuracyAngle = 4.0f;
+            testWp.fireRate = 0.01f;
+            testWp.energyCost = 0f;
+
+            float minAngle = float.MaxValue;
+            float maxAngle = float.MinValue;
+
+            for (int i = 0; i < 25; i++)
+            {
+                testWp.ResetCooldown();
+                var before = new System.Collections.Generic.HashSet<LaserProjectile>(
+                    Object.FindObjectsByType<LaserProjectile>(FindObjectsInactive.Include, FindObjectsSortMode.None));
+
+                testWp.TryFire(null);
+
+                var after = Object.FindObjectsByType<LaserProjectile>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                foreach (var l in after)
+                {
+                    if (!before.Contains(l))
+                    {
+                        float angle = l.transform.eulerAngles.z;
+                        if (angle > 180f) angle -= 360f;
+                        if (angle < minAngle) minAngle = angle;
+                        if (angle > maxAngle) maxAngle = angle;
+                    }
+                }
+            }
+
+            Object.DestroyImmediate(testObj);
+
+            Assert.LessOrEqual(maxAngle, 4.05f, "Bullet angle must not exceed +inaccuracyAngle");
+            Assert.GreaterOrEqual(minAngle, -4.05f, "Bullet angle must not be less than -inaccuracyAngle");
+            Assert.Greater(maxAngle - minAngle, 0.5f, "Bullets must show angular spread across multiple shots");
+        }
+
+        [Test]
         public void RegenerateMeters_RestoresShieldAndEnergyOverTime()
         {
             health.shieldRegen = 10f;
