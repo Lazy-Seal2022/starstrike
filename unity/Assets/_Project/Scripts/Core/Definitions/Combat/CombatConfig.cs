@@ -15,6 +15,11 @@ namespace StarStrike.Core
         public float projectileLifetime = 3f;
         public float laserColliderRadius = 0.35f;
 
+        [Header("Specialized Projectile Sprites")]
+        public Sprite gatlingBulletSprite;
+        public Sprite scattergunPelletSprite;
+        public Sprite missileSprite;
+
         [Header("Weapon Systems")]
         public float defaultFireRate = 0.22f;
         public float minFireRate = 0.10f;

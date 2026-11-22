@@ -129,6 +129,12 @@ namespace StarStrike.Gameplay
                 {
                     proj.Initialize(pelletDamage, pelletSpeed, !isPlayer);
                     proj.lifetime = 0.85f; // Short-range shotgun falloff
+
+                    var sr = pelletObj.GetComponent<SpriteRenderer>();
+                    if (sr != null)
+                    {
+                        sr.sprite = ProceduralSpriteHelper.GetPelletSprite();
+                    }
                 }
             }
 

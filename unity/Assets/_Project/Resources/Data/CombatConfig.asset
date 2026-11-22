@@ -16,6 +16,9 @@ MonoBehaviour:
   enemyLaserSprite: {fileID: 21300000, guid: 26d8f0e9f208fdb47b4da0a64265f284, type: 3}
   playerLaserPrefab: {fileID: 6223290879384829574, guid: 7da73f3bd2b80af46bc0f9a0bfb14cbb, type: 3}
   enemyLaserPrefab: {fileID: 370965725377689996, guid: 9b2e3f98a25cf2f44b21cf25ee89dd2b, type: 3}
+  gatlingBulletSprite: {fileID: 21300000, guid: 06036ddb822d463f968c6935debded63, type: 3}
+  scattergunPelletSprite: {fileID: 21300000, guid: 592f2c5ecd304f2faf1426de2d373075, type: 3}
+  missileSprite: {fileID: 21300000, guid: bef2ffb49ac14d2892dd89f01a07f04a, type: 3}
   defaultPulseDamage: 18
   defaultPulseSpeed: 22
   projectileLifetime: 3

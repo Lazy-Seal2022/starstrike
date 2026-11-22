@@ -68,6 +68,14 @@ namespace StarStrike.Gameplay
 
         public static Sprite GetGatlingTracerSprite(bool forceProcedural = false)
         {
+            if (!forceProcedural)
+            {
+                var combatConfig = Resources.Load<StarStrike.Core.CombatConfig>("Data/CombatConfig");
+                if (combatConfig != null && combatConfig.gatlingBulletSprite != null)
+                {
+                    return combatConfig.gatlingBulletSprite;
+                }
+            }
             return GetCachedOrGenerate(ref cachedGatlingTracer, GenerateGatlingTracerSprite, forceProcedural);
         }
 
@@ -202,11 +210,27 @@ namespace StarStrike.Gameplay
 
         public static Sprite GetMissileSprite(bool forceProcedural = false)
         {
+            if (!forceProcedural)
+            {
+                var combatConfig = Resources.Load<StarStrike.Core.CombatConfig>("Data/CombatConfig");
+                if (combatConfig != null && combatConfig.missileSprite != null)
+                {
+                    return combatConfig.missileSprite;
+                }
+            }
             return GetCachedOrGenerate(ref cachedMissile, () => GenerateMissileSprite(), forceProcedural);
         }
 
         public static Sprite GetPelletSprite(bool forceProcedural = false)
         {
+            if (!forceProcedural)
+            {
+                var combatConfig = Resources.Load<StarStrike.Core.CombatConfig>("Data/CombatConfig");
+                if (combatConfig != null && combatConfig.scattergunPelletSprite != null)
+                {
+                    return combatConfig.scattergunPelletSprite;
+                }
+            }
             return GetCachedOrGenerate(ref cachedPellet, () => GeneratePelletSprite(), forceProcedural);
         }
 
