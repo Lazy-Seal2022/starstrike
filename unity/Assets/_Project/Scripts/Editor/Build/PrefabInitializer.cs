@@ -24,6 +24,9 @@ namespace StarStrike.Editor
             // 1. Projectiles
             CreatePlayerLaserPrefab();
             CreateEnemyLaserPrefab();
+            CreatePlayerGatlingBulletPrefab();
+            CreatePlayerScatterPelletPrefab();
+            CreatePlayerMissilePrefab();
 
             // 2. Environment & Loot
             CreateAsteroidPrefab(AsteroidTier.Large);
@@ -128,6 +131,91 @@ namespace StarStrike.Editor
             proj.combatConfig = AssetDatabase.LoadAssetAtPath<CombatConfig>("Assets/_Project/Resources/Data/CombatConfig.asset");
 
             SavePrefab(go, "Projectiles/EnemyLaser");
+        }
+
+        private static void CreatePlayerGatlingBulletPrefab()
+        {
+            GameObject go = new GameObject("PlayerGatlingBullet");
+            go.tag = "Laser";
+
+            var rb = go.AddComponent<Rigidbody2D>();
+            rb.gravityScale = 0f;
+            rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+            var col = go.AddComponent<CircleCollider2D>();
+            col.isTrigger = true;
+            col.radius = 0.15f;
+
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = LoadArtSprite("Projectiles/Bullet_Gatling.png");
+            sr.sortingOrder = 5;
+            sr.color = new Color(1f, 0.85f, 0.25f, 1f);
+
+            var proj = go.AddComponent<LaserProjectile>();
+            proj.isEnemy = false;
+            proj.damage = 7f;
+            proj.speed = 38f;
+            proj.lifetime = 3f;
+            proj.combatConfig = AssetDatabase.LoadAssetAtPath<CombatConfig>("Assets/_Project/Resources/Data/CombatConfig.asset");
+
+            SavePrefab(go, "Projectiles/PlayerGatlingBullet");
+        }
+
+        private static void CreatePlayerScatterPelletPrefab()
+        {
+            GameObject go = new GameObject("PlayerScatterPellet");
+            go.tag = "Laser";
+
+            var rb = go.AddComponent<Rigidbody2D>();
+            rb.gravityScale = 0f;
+            rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+            var col = go.AddComponent<CircleCollider2D>();
+            col.isTrigger = true;
+            col.radius = 0.18f;
+
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = LoadArtSprite("Projectiles/Pellet_Scattergun.png");
+            sr.sortingOrder = 5;
+            sr.color = new Color(1f, 0.8f, 0.2f, 1f);
+
+            var proj = go.AddComponent<LaserProjectile>();
+            proj.isEnemy = false;
+            proj.damage = 12f;
+            proj.speed = 28f;
+            proj.lifetime = 0.85f;
+            proj.combatConfig = AssetDatabase.LoadAssetAtPath<CombatConfig>("Assets/_Project/Resources/Data/CombatConfig.asset");
+
+            SavePrefab(go, "Projectiles/PlayerScatterPellet");
+        }
+
+        private static void CreatePlayerMissilePrefab()
+        {
+            GameObject go = new GameObject("PlayerMissile");
+            go.tag = "Laser";
+
+            var rb = go.AddComponent<Rigidbody2D>();
+            rb.gravityScale = 0f;
+            rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+            var col = go.AddComponent<CircleCollider2D>();
+            col.isTrigger = true;
+            col.radius = 0.4f;
+
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = LoadArtSprite("Projectiles/Missile.png");
+            sr.sortingOrder = 5;
+            sr.color = new Color(1f, 0.7f, 0.2f, 1f);
+
+            var proj = go.AddComponent<MissileProjectile>();
+            proj.isEnemy = false;
+            proj.damage = 45f;
+            proj.speed = 18f;
+            proj.turnSpeed = 300f;
+            proj.blastRadius = 2.4f;
+            proj.lifetime = 4f;
+
+            SavePrefab(go, "Projectiles/PlayerMissile");
         }
 
         private static void CreateAsteroidPrefab(AsteroidTier tier)
