@@ -365,7 +365,19 @@ namespace StarStrike.Editor
             prog.currentShip = def;
             prog.gameConfig = AssetDatabase.LoadAssetAtPath<GameConfig>("Assets/_Project/Resources/Data/GameConfig.asset");
 
-            go.AddComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+            var shieldField = go.AddComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+            if (def != null && def.shieldHitboxOffset > 0.05f)
+            {
+                shieldField.shieldHitboxOffset = def.shieldHitboxOffset;
+            }
+            else if (shipId == "juggernaut" || shipId == "carrier" || shipId == "vanguard")
+            {
+                shieldField.shieldHitboxOffset = 0.30f;
+            }
+            else
+            {
+                shieldField.shieldHitboxOffset = 0.20f;
+            }
 
             Vector3 leftPos = new Vector3(0.65f, 0.3f, 0f);
             Vector3 rightPos = new Vector3(0.65f, -0.3f, 0f);
@@ -1330,6 +1342,27 @@ namespace StarStrike.Editor
                 Bounds fighterShieldBounds = shieldPoly.bounds;
                 if (fighterShieldBounds.extents.x <= hullPoly.bounds.extents.x || fighterShieldBounds.extents.y <= hullPoly.bounds.extents.y)
                     throw new System.Exception("Updated shield bounds must enclose fighter hull bounds!");
+
+                // 7. Verify Increased Shield Size for Vanguard and Juggernaut
+                var scoutTree = PlayerProgression.CreateDefaultShipTree();
+                var juggernautDef = scoutTree.evolvesTo[1].evolvesTo[0];
+                var vanguardDef = scoutTree.evolvesTo[1].evolvesTo[1];
+
+                var prog = testShip.AddComponent<PlayerProgression>();
+                prog.health = health;
+                prog.shipRenderer = sr;
+
+                prog.Evolve(juggernautDef);
+                if (Mathf.Abs(shield.shieldHitboxOffset - 0.30f) > 0.01f)
+                    throw new System.Exception($"Juggernaut shieldHitboxOffset expected 0.30f, got {shield.shieldHitboxOffset}");
+                if (shieldPoly.bounds.extents.x <= hullPoly.bounds.extents.x || shieldPoly.bounds.extents.y <= hullPoly.bounds.extents.y)
+                    throw new System.Exception("Juggernaut shield bounds must enclose Juggernaut hull bounds!");
+
+                prog.Evolve(vanguardDef);
+                if (Mathf.Abs(shield.shieldHitboxOffset - 0.30f) > 0.01f)
+                    throw new System.Exception($"Vanguard shieldHitboxOffset expected 0.30f, got {shield.shieldHitboxOffset}");
+                if (shieldPoly.bounds.extents.x <= hullPoly.bounds.extents.x || shieldPoly.bounds.extents.y <= hullPoly.bounds.extents.y)
+                    throw new System.Exception("Vanguard shield bounds must enclose Vanguard hull bounds!");
 
                 Object.DestroyImmediate(testShip);
                 Debug.Log("[PASS] 16. Dual-Hitbox System (Hull Exact Polygon + Shield Round Envelope & State Toggling) verified");

@@ -23,6 +23,9 @@ namespace StarStrike.Core
         [Tooltip("Tuned forgiving circle collider radius for bullet-hell gameplay")]
         public float hitboxRadius = 0.55f;
 
+        [Tooltip("Outward radial offset for smooth round shield bubble")]
+        public float shieldHitboxOffset = 0.20f;
+
         [Tooltip("Physical weapon hardpoint locations in local coordinates (X = forward, Y = lateral)")]
         public Vector2[] weaponSockets = new Vector2[0];
 

@@ -159,6 +159,7 @@ namespace StarStrike.Editor
                 new Vector2(-2.75f, -0.85f)
             };
             juggernaut.sprite = LoadArtSprite("Ships/Ship_Juggernaut.png");
+            juggernaut.shieldHitboxOffset = 0.30f;
             juggernaut.baseStats = new StatValues { hullCapacity = 300, shieldCapacity = 400, shieldRegen = 25, energyCapacity = 200, energyRegen = 25, pulseDamage = 75, pulseSpeed = 480, speed = 180, agility = 2.5f };
             juggernaut = CreateOrUpdateAsset(juggernaut, $"{dataPath}/Ship_Juggernaut.asset");
 
@@ -169,6 +170,7 @@ namespace StarStrike.Editor
             carrier.maxUpgradeLevel = 6;
             carrier.weaponSlots = 3;
             carrier.hitboxRadius = 0.80f;
+            carrier.shieldHitboxOffset = 0.30f;
             carrier.weaponSockets = new Vector2[] {
                 new Vector2(2.50f, 0f),      // Central deck battery
                 new Vector2(2.75f, 1.12f),   // Port prow battery

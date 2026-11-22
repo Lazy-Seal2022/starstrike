@@ -29,6 +29,7 @@ MonoBehaviour:
     agility: 2.5
   weaponSlots: 3
   hitboxRadius: 0.85
+  shieldHitboxOffset: 0.3
   weaponSockets:
   - {x: 2.75, y: 0}
   - {x: 0.7, y: 1.5}

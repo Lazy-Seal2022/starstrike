@@ -253,6 +253,7 @@ namespace StarStrike.Gameplay
             juggernaut.maxUpgradeLevel = 6;
             juggernaut.weaponSlots = 3;
             juggernaut.hitboxRadius = 0.85f;
+            juggernaut.shieldHitboxOffset = 0.30f;
             juggernaut.weaponSockets = new Vector2[] {
                 new Vector2(2.75f, 0f),      // Central spinal cannon
                 new Vector2(0.70f, 1.50f),   // Port sponson turret
@@ -284,6 +285,7 @@ namespace StarStrike.Gameplay
             vanguard.maxUpgradeLevel = 6;
             vanguard.weaponSlots = 3;
             vanguard.hitboxRadius = 0.80f;
+            vanguard.shieldHitboxOffset = 0.30f;
             vanguard.weaponSockets = new Vector2[] {
                 new Vector2(2.50f, 0f),      // Central deck battery
                 new Vector2(2.75f, 1.12f),   // Port prow battery
@@ -572,6 +574,18 @@ namespace StarStrike.Gameplay
             var shieldField = GetComponent<StarStrike.Gameplay.FX.ShipShieldField>();
             if (shieldField != null)
             {
+                if (currentShip != null && currentShip.shieldHitboxOffset > 0.05f)
+                {
+                    shieldField.shieldHitboxOffset = currentShip.shieldHitboxOffset;
+                }
+                else if (shipId == "juggernaut" || shipId == "vanguard" || shipId == "carrier")
+                {
+                    shieldField.shieldHitboxOffset = 0.30f;
+                }
+                else
+                {
+                    shieldField.shieldHitboxOffset = 0.20f;
+                }
                 shieldField.RebuildShieldCollider();
             }
         }
