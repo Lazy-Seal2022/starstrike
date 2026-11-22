@@ -793,8 +793,8 @@ namespace StarStrike.Editor
                 var controller = go.AddComponent<ShipWeaponController>();
                 controller.InitializeWeapons();
 
-                if (controller.WeaponCount < 4)
-                    throw new System.Exception($"Expected at least 4 weapons, got {controller.WeaponCount}");
+                if (controller.WeaponCount < 5)
+                    throw new System.Exception($"Expected at least 5 weapons, got {controller.WeaponCount}");
 
                 if (controller.CurrentWeapon.WeaponName != "Pulse Laser")
                     throw new System.Exception($"Weapon 0 should be Pulse Laser, got {controller.CurrentWeapon.WeaponName}");
@@ -821,8 +821,17 @@ namespace StarStrike.Editor
                 if (!beamFired) throw new System.Exception("Beam Laser failed to fire");
                 controller.CurrentWeapon.StopFiring();
 
+                controller.SwitchWeapon(4);
+                if (controller.CurrentWeapon.WeaponName != "Gatling Gun")
+                    throw new System.Exception($"Weapon 4 should be Gatling Gun, got {controller.CurrentWeapon.WeaponName}");
+
+                bool gatlingFired = controller.CurrentWeapon.TryFire(health);
+                if (!gatlingFired) throw new System.Exception("Gatling Gun failed to fire");
+                if (controller.CurrentWeapon.InaccuracyAngle <= 0f)
+                    throw new System.Exception("Gatling Gun InaccuracyAngle must be positive");
+
                 Object.DestroyImmediate(go);
-                Debug.Log("[PASS] 7. Advanced Weapon Systems & Controller (Scattergun, Homing Missiles, Continuous Beam, Swapping) verified");
+                Debug.Log("[PASS] 7. Advanced Weapon Systems & Controller (Scattergun, Missiles, Beam, Gatling Gun, Swapping) verified");
                 passed++;
             }
             catch (System.Exception ex)

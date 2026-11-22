@@ -20,6 +20,7 @@ namespace StarStrike.Core
         float FireRate { get; set; }
         float EnergyCost { get; }
         int WeaponSlots { get; set; }
+        float InaccuracyAngle { get; }
         bool TryFire(IEnergyConsumer energySource = null);
         void StopFiring();
         void ResetCooldown();

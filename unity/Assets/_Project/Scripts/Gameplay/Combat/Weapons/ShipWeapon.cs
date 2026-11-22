@@ -33,6 +33,7 @@ namespace StarStrike.Gameplay
         public float FireRate { get => fireRate; set => fireRate = value; }
         public float EnergyCost => energyCost;
         public int WeaponSlots { get => weaponSlots; set => weaponSlots = value; }
+        public float InaccuracyAngle => inaccuracyAngle;
         public void StopFiring() { }
 
         public bool isPlayer = false;

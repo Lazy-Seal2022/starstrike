@@ -112,9 +112,9 @@ namespace StarStrike.Tests.EditMode
             var controller = playerGo.AddComponent<ShipWeaponController>();
             controller.InitializeWeapons();
 
-            Assert.GreaterOrEqual(controller.WeaponCount, 4, "Player ship must initialize with all 4 weapon types");
+            Assert.GreaterOrEqual(controller.WeaponCount, 5, "Player ship must initialize with all 5 weapon types");
 
-            // 0: Pulse Laser, 1: Scattergun, 2: Homing Missiles, 3: Beam Laser
+            // 0: Pulse Laser, 1: Scattergun, 2: Homing Missiles, 3: Beam Laser, 4: Gatling Gun
             Assert.AreEqual("Pulse Laser", controller.CurrentWeapon.WeaponName);
 
             controller.SwitchWeapon(1);
@@ -126,12 +126,39 @@ namespace StarStrike.Tests.EditMode
             controller.SwitchWeapon(3);
             Assert.AreEqual("Beam Laser", controller.CurrentWeapon.WeaponName);
 
+            controller.SwitchWeapon(4);
+            Assert.AreEqual("Gatling Gun", controller.CurrentWeapon.WeaponName);
+
             // Cycling forward and backward
             controller.NextWeapon();
             Assert.AreEqual("Pulse Laser", controller.CurrentWeapon.WeaponName);
 
             controller.PreviousWeapon();
-            Assert.AreEqual("Beam Laser", controller.CurrentWeapon.WeaponName);
+            Assert.AreEqual("Gatling Gun", controller.CurrentWeapon.WeaponName);
+        }
+
+        [Test]
+        public void GatlingWeapon_FiresPolymorphically_SpoolsUpAndBloomsSpread()
+        {
+            var gatling = playerGo.AddComponent<GatlingWeapon>();
+            gatling.energyCost = 2f;
+            gatling.baseFireRate = 0.08f;
+            gatling.maxFireRate = 0.05f;
+            gatling.baseInaccuracyAngle = 3.2f;
+            gatling.maxInaccuracyAngle = 7.5f;
+
+            IWeapon weapon = gatling;
+            IEnergyConsumer consumer = health;
+
+            Assert.AreEqual("Gatling Gun", weapon.WeaponName);
+            Assert.AreEqual(2f, weapon.EnergyCost);
+            Assert.AreEqual(3.2f, weapon.InaccuracyAngle, 0.01f, "Initial cold spread should be baseInaccuracyAngle");
+
+            bool fired = weapon.TryFire(consumer);
+            Assert.IsTrue(fired, "GatlingWeapon must fire via IWeapon");
+            Assert.Greater(gatling.SpoolProgress, 0f, "Firing must increase spool progress");
+            Assert.Greater(weapon.InaccuracyAngle, 3.2f, "Continuous firing must bloom spread angle");
+            Assert.LessOrEqual(weapon.InaccuracyAngle, 7.55f, "Spread must be clamped to maxInaccuracyAngle");
         }
 
         [Test]

@@ -344,6 +344,7 @@ namespace StarStrike.Gameplay
                     else if (kb.digit2Key.wasPressedThisFrame) weaponController.SwitchWeapon(1);
                     else if (kb.digit3Key.wasPressedThisFrame) weaponController.SwitchWeapon(2);
                     else if (kb.digit4Key.wasPressedThisFrame) weaponController.SwitchWeapon(3);
+                    else if (kb.digit5Key.wasPressedThisFrame) weaponController.SwitchWeapon(4);
                 }
 
                 if (mouse != null)

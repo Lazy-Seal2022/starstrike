@@ -35,7 +35,7 @@ namespace StarStrike.Gameplay
                 }
             }
 
-            // If player ship and only standard weapon attached, ensure all 4 arsenals are equipped
+            // If player ship and only standard weapon attached, ensure all 5 arsenals are equipped
             bool isPlayer = CompareTag("Player") || gameObject.name == "Player";
             if (isPlayer)
             {
@@ -43,6 +43,7 @@ namespace StarStrike.Gameplay
                 EnsureWeapon<ScattergunWeapon>();
                 EnsureWeapon<HomingMissileWeapon>();
                 EnsureWeapon<ContinuousBeamWeapon>();
+                EnsureWeapon<GatlingWeapon>();
             }
 
             if (currentWeaponIndex >= availableWeapons.Count)

@@ -25,6 +25,7 @@ namespace StarStrike.Gameplay
         private static Sprite cachedPowerUp;
         private static Sprite cachedMissile;
         private static Sprite cachedPellet;
+        private static Sprite cachedGatlingTracer;
         private static Sprite cachedShieldRipple;
         private static Sprite cachedShieldDome;
 
@@ -58,6 +59,16 @@ namespace StarStrike.Gameplay
         {
             if (isEnemy) return GenerateCapsule(new Color(1f, 0.25f, 0.25f), 48, 16);
             return GenerateCapsule(new Color(0.2f, 0.9f, 1f), 48, 16);
+        }
+
+        public static Sprite GenerateGatlingTracerSprite()
+        {
+            return GenerateCapsule(new Color(1f, 0.88f, 0.28f), 36, 10);
+        }
+
+        public static Sprite GetGatlingTracerSprite(bool forceProcedural = false)
+        {
+            return GetCachedOrGenerate(ref cachedGatlingTracer, GenerateGatlingTracerSprite, forceProcedural);
         }
 
         public static Sprite GenerateAsteroidSprite()

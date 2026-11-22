@@ -6,7 +6,7 @@ namespace StarStrike.Gameplay
     [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
     public class WeaponPickupItem : MonoBehaviour, IPoolable
     {
-        public enum WeaponPickupType { Scattergun, Missiles, Beam, Pulse }
+        public enum WeaponPickupType { Scattergun, Missiles, Beam, Pulse, Gatling }
 
         public WeaponPickupType pickupType = WeaponPickupType.Scattergun;
 
@@ -99,6 +99,7 @@ namespace StarStrike.Gameplay
                     WeaponPickupType.Scattergun => 1,
                     WeaponPickupType.Missiles => 2,
                     WeaponPickupType.Beam => 3,
+                    WeaponPickupType.Gatling => 4,
                     WeaponPickupType.Pulse => 0,
                     _ => 0
                 };
