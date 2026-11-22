@@ -187,6 +187,12 @@ namespace StarStrike.Gameplay.FX
             }
         }
 
+        private Vector2 shieldCenter = Vector2.zero;
+        private float shieldRadiusX = 1f;
+        private float shieldRadiusY = 1f;
+        private float shieldPExp = 2.4f;
+        private static readonly System.Collections.Generic.List<Vector2> candidatePtsBuffer = new System.Collections.Generic.List<Vector2>(128);
+
         public void RebuildShieldCollider(float offset = -1f)
         {
             if (offset < 0f) offset = shieldHitboxOffset;
@@ -195,54 +201,84 @@ namespace StarStrike.Gameplay.FX
 
             var hullPoly = GetComponent<PolygonCollider2D>();
 
-            // 1. Determine ship center and extents in local space
+            // 1. Collect all boundary points (hull outline vertices, sprite bounds, weapon/thruster sockets)
+            // to guarantee 100% enclosure of the visible ship sprite.
+            candidatePtsBuffer.Clear();
+
+            if (hullPoly != null && hullPoly.pathCount > 0)
+            {
+                for (int p = 0; p < hullPoly.pathCount; p++)
+                {
+                    Vector2[] pPts = hullPoly.GetPath(p);
+                    if (pPts != null && pPts.Length > 0)
+                    {
+                        candidatePtsBuffer.AddRange(pPts);
+                    }
+                }
+            }
+
+            var weapon = GetComponent<ShipWeapon>();
+            if (weapon != null)
+            {
+                var sockets = weapon.GetActiveSocketLocalPositions();
+                if (sockets != null) candidatePtsBuffer.AddRange(sockets);
+            }
+
+            var prog = GetComponent<StarStrike.Gameplay.PlayerProgression>();
+            if (prog != null && prog.currentShip != null)
+            {
+                if (prog.currentShip.weaponSockets != null)
+                    candidatePtsBuffer.AddRange(prog.currentShip.weaponSockets);
+                if (prog.currentShip.thrusterSockets != null)
+                    candidatePtsBuffer.AddRange(prog.currentShip.thrusterSockets);
+            }
+
+            var sr = GetComponent<SpriteRenderer>();
+            if (candidatePtsBuffer.Count == 0)
+            {
+                var circle = GetComponent<CircleCollider2D>();
+                if (circle != null && circle.radius > 0.05f)
+                {
+                    candidatePtsBuffer.Add(circle.offset + new Vector2(circle.radius, 0f));
+                    candidatePtsBuffer.Add(circle.offset + new Vector2(-circle.radius, 0f));
+                    candidatePtsBuffer.Add(circle.offset + new Vector2(0f, circle.radius));
+                    candidatePtsBuffer.Add(circle.offset + new Vector2(0f, -circle.radius));
+                }
+                else if (sr != null && sr.sprite != null)
+                {
+                    Bounds b = sr.sprite.bounds;
+                    candidatePtsBuffer.Add(new Vector2(b.min.x, b.min.y));
+                    candidatePtsBuffer.Add(new Vector2(b.min.x, b.max.y));
+                    candidatePtsBuffer.Add(new Vector2(b.max.x, b.min.y));
+                    candidatePtsBuffer.Add(new Vector2(b.max.x, b.max.y));
+                }
+            }
+
+            // 2. Determine geometric center and base extents
             Vector2 center = Vector2.zero;
             float extX = 1.0f;
             float extY = 1.0f;
 
-            if (hullPoly != null && hullPoly.pathCount > 0)
+            if (candidatePtsBuffer.Count > 0)
             {
-                Vector2[] pts = hullPoly.GetPath(0);
-                if (pts.Length > 0)
+                float minX = float.MaxValue, maxX = float.MinValue;
+                float minY = float.MaxValue, maxY = float.MinValue;
+                for (int i = 0; i < candidatePtsBuffer.Count; i++)
                 {
-                    float minX = pts[0].x, maxX = pts[0].x;
-                    float minY = pts[0].y, maxY = pts[0].y;
-                    for (int i = 1; i < pts.Length; i++)
-                    {
-                        if (pts[i].x < minX) minX = pts[i].x;
-                        if (pts[i].x > maxX) maxX = pts[i].x;
-                        if (pts[i].y < minY) minY = pts[i].y;
-                        if (pts[i].y > maxY) maxY = pts[i].y;
-                    }
-                    center = new Vector2((minX + maxX) * 0.5f, (minY + maxY) * 0.5f);
-                    extX = (maxX - minX) * 0.5f;
-                    extY = (maxY - minY) * 0.5f;
+                    Vector2 pt = candidatePtsBuffer[i];
+                    if (pt.x < minX) minX = pt.x;
+                    if (pt.x > maxX) maxX = pt.x;
+                    if (pt.y < minY) minY = pt.y;
+                    if (pt.y > maxY) maxY = pt.y;
                 }
-            }
-            else
-            {
-                var circle = GetComponent<CircleCollider2D>();
-                if (circle != null)
-                {
-                    center = circle.offset;
-                    extX = circle.radius;
-                    extY = circle.radius;
-                }
-                else
-                {
-                    var sr = GetComponent<SpriteRenderer>();
-                    if (sr != null && sr.sprite != null)
-                    {
-                        Bounds b = sr.sprite.bounds;
-                        center = b.center;
-                        extX = b.extents.x;
-                        extY = b.extents.y;
-                    }
-                }
+                center = new Vector2((minX + maxX) * 0.5f, (minY + maxY) * 0.5f);
+                extX = (maxX - minX) * 0.5f;
+                extY = (maxY - minY) * 0.5f;
             }
 
             extX = Mathf.Max(0.2f, extX);
             extY = Mathf.Max(0.2f, extY);
+            shieldCenter = center;
 
             if (shieldShape == ShieldHitboxShape.HullOutline && hullPoly != null && hullPoly.pathCount > 0)
             {
@@ -288,20 +324,38 @@ namespace StarStrike.Gameplay.FX
             }
             else
             {
-                // Round shield bubble (snug ellipse or circle, covered on the ship but not too fat!)
+                // Round shield bubble (smooth continuous envelope enclosing 100% of the sprite without being bloated)
+                float pExp = 2.4f;
+                shieldPExp = pExp;
+                float maxNormDist = 1.0f;
+                float maxRadDist = 0.5f;
+
+                for (int i = 0; i < candidatePtsBuffer.Count; i++)
+                {
+                    float dx = candidatePtsBuffer[i].x - center.x;
+                    float dy = candidatePtsBuffer[i].y - center.y;
+                    float normD = Mathf.Pow(Mathf.Pow(Mathf.Abs(dx) / extX, pExp) + Mathf.Pow(Mathf.Abs(dy) / extY, pExp), 1.0f / pExp);
+                    if (normD > maxNormDist) maxNormDist = normD;
+
+                    float rad = Mathf.Sqrt(dx * dx + dy * dy);
+                    if (rad > maxRadDist) maxRadDist = rad;
+                }
+
                 float rx, ry;
                 if (shieldShape == ShieldHitboxShape.Circle)
                 {
-                    float r = Mathf.Max(extX, extY) + offset;
+                    float r = maxRadDist + offset;
                     rx = r;
                     ry = r;
                 }
                 else // ShieldHitboxShape.Round (default)
                 {
-                    rx = extX + offset;
-                    ry = extY + offset;
+                    rx = extX * maxNormDist + offset;
+                    ry = extY * maxNormDist + offset;
                 }
 
+                shieldRadiusX = rx;
+                shieldRadiusY = ry;
                 shieldRadius = Mathf.Max(rx, ry);
 
                 int segments = 32;
@@ -309,7 +363,22 @@ namespace StarStrike.Gameplay.FX
                 for (int i = 0; i < segments; i++)
                 {
                     float angle = (i / (float)segments) * Mathf.PI * 2f;
-                    roundPts[i] = center + new Vector2(Mathf.Cos(angle) * rx, Mathf.Sin(angle) * ry);
+                    float cosA = Mathf.Cos(angle);
+                    float sinA = Mathf.Sin(angle);
+
+                    float xVal, yVal;
+                    if (shieldShape == ShieldHitboxShape.Circle)
+                    {
+                        xVal = cosA * rx;
+                        yVal = sinA * ry;
+                    }
+                    else
+                    {
+                        xVal = Mathf.Sign(cosA) * Mathf.Pow(Mathf.Abs(cosA), 2.0f / pExp) * rx;
+                        yVal = Mathf.Sign(sinA) * Mathf.Pow(Mathf.Abs(sinA), 2.0f / pExp) * ry;
+                    }
+
+                    roundPts[i] = center + new Vector2(xVal, yVal);
                 }
 
                 PolygonCollider2D shieldPoly = domeObject.GetComponent<PolygonCollider2D>();
@@ -422,11 +491,28 @@ namespace StarStrike.Gameplay.FX
             {
                 Vector2 localDir = transform.InverseTransformDirection(dir);
                 float localAngle = Mathf.Atan2(localDir.y, localDir.x);
-                Bounds sBounds = shieldCollider.bounds;
-                float rx = sBounds.extents.x / Mathf.Max(0.001f, transform.lossyScale.x);
-                float ry = sBounds.extents.y / Mathf.Max(0.001f, transform.lossyScale.y);
-                Vector2 localSurface = new Vector2(Mathf.Cos(localAngle) * rx, Mathf.Sin(localAngle) * ry);
-                surfacePoint = transform.TransformPoint(localSurface);
+                float cosA = Mathf.Cos(localAngle);
+                float sinA = Mathf.Sin(localAngle);
+                float lx, ly;
+                if (shieldShape == ShieldHitboxShape.Circle)
+                {
+                    lx = cosA * shieldRadius;
+                    ly = sinA * shieldRadius;
+                }
+                else if (shieldShape == ShieldHitboxShape.HullOutline)
+                {
+                    Bounds sBounds = shieldCollider.bounds;
+                    float rx = sBounds.extents.x / Mathf.Max(0.001f, transform.lossyScale.x);
+                    float ry = sBounds.extents.y / Mathf.Max(0.001f, transform.lossyScale.y);
+                    lx = cosA * rx;
+                    ly = sinA * ry;
+                }
+                else // ShieldHitboxShape.Round (default)
+                {
+                    lx = Mathf.Sign(cosA) * Mathf.Pow(Mathf.Abs(cosA), 2.0f / shieldPExp) * shieldRadiusX;
+                    ly = Mathf.Sign(sinA) * Mathf.Pow(Mathf.Abs(sinA), 2.0f / shieldPExp) * shieldRadiusY;
+                }
+                surfacePoint = transform.TransformPoint(shieldCenter + new Vector2(lx, ly));
             }
 
             float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;

@@ -261,7 +261,8 @@ namespace StarStrike.Editor
             var ai = go.AddComponent<EnemyAI>();
             ai.definition = AssetDatabase.LoadAssetAtPath<EnemyDefinition>("Assets/_Project/Resources/Data/Enemy_Drone.asset");
 
-            go.AddComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+            var shieldField = go.AddComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+            shieldField.EnsureInitialized();
 
             SavePrefab(go, "Enemies/EnemyDrone");
         }
@@ -307,7 +308,8 @@ namespace StarStrike.Editor
             var brain = go.AddComponent<BossBrain>();
             brain.config = AssetDatabase.LoadAssetAtPath<BossConfig>("Assets/_Project/Resources/Data/BossConfig.asset");
 
-            go.AddComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+            var shieldField = go.AddComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+            shieldField.EnsureInitialized();
 
             SavePrefab(go, "Enemies/BossDreadnought");
         }
@@ -378,6 +380,7 @@ namespace StarStrike.Editor
             {
                 shieldField.shieldHitboxOffset = 0.20f;
             }
+            shieldField.EnsureInitialized();
 
             Vector3 leftPos = new Vector3(0.65f, 0.3f, 0f);
             Vector3 rightPos = new Vector3(0.65f, -0.3f, 0f);
@@ -1357,12 +1360,26 @@ namespace StarStrike.Editor
                     throw new System.Exception($"Juggernaut shieldHitboxOffset expected 0.30f, got {shield.shieldHitboxOffset}");
                 if (shieldPoly.bounds.extents.x <= hullPoly.bounds.extents.x || shieldPoly.bounds.extents.y <= hullPoly.bounds.extents.y)
                     throw new System.Exception("Juggernaut shield bounds must enclose Juggernaut hull bounds!");
+                Vector2[] juggHull = hullPoly.GetPath(0);
+                Vector2[] juggShield = shieldPoly.GetPath(0);
+                for (int i = 0; i < juggHull.Length; i++)
+                {
+                    if (!IsPointInsidePolygon(juggHull[i], juggShield))
+                        throw new System.Exception($"Juggernaut hull point {juggHull[i]} is outside shield polygon!");
+                }
 
                 prog.Evolve(vanguardDef);
                 if (Mathf.Abs(shield.shieldHitboxOffset - 0.30f) > 0.01f)
                     throw new System.Exception($"Vanguard shieldHitboxOffset expected 0.30f, got {shield.shieldHitboxOffset}");
                 if (shieldPoly.bounds.extents.x <= hullPoly.bounds.extents.x || shieldPoly.bounds.extents.y <= hullPoly.bounds.extents.y)
                     throw new System.Exception("Vanguard shield bounds must enclose Vanguard hull bounds!");
+                Vector2[] vanHull = hullPoly.GetPath(0);
+                Vector2[] vanShield = shieldPoly.GetPath(0);
+                for (int i = 0; i < vanHull.Length; i++)
+                {
+                    if (!IsPointInsidePolygon(vanHull[i], vanShield))
+                        throw new System.Exception($"Vanguard hull point {vanHull[i]} is outside shield polygon!");
+                }
 
                 Object.DestroyImmediate(testShip);
                 Debug.Log("[PASS] 16. Dual-Hitbox System (Hull Exact Polygon + Shield Round Envelope & State Toggling) verified");
@@ -1375,6 +1392,21 @@ namespace StarStrike.Editor
             }
 
             Debug.Log($"=== TOTAL VERIFICATION RESULT: {passed} PASSED, {failed} FAILED ===");
+        }
+
+        private static bool IsPointInsidePolygon(Vector2 pt, Vector2[] poly)
+        {
+            if (poly == null || poly.Length < 3) return false;
+            bool inside = false;
+            for (int i = 0, j = poly.Length - 1; i < poly.Length; j = i++)
+            {
+                if (((poly[i].y > pt.y) != (poly[j].y > pt.y)) &&
+                    (pt.x < (poly[j].x - poly[i].x) * (pt.y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x))
+                {
+                    inside = !inside;
+                }
+            }
+            return inside;
         }
     }
 }
