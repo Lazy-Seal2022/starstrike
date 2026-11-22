@@ -181,11 +181,25 @@ namespace StarStrike.Editor
             carrier.baseStats = new StatValues { hullCapacity = 240, shieldCapacity = 320, shieldRegen = 22, energyCapacity = 280, energyRegen = 32, pulseDamage = 55, pulseSpeed = 580, speed = 220, agility = 3.8f };
             carrier = CreateOrUpdateAsset(carrier, $"{dataPath}/Ship_Carrier.asset");
 
+            var phantom = ScriptableObject.CreateInstance<ShipDefinition>();
+            phantom.id = "phantom";
+            phantom.shipName = "Shadow Phantom";
+            phantom.tier = 3;
+            phantom.maxUpgradeLevel = 6;
+            phantom.weaponSlots = 2;
+            phantom.hitboxRadius = 0.50f;
+            phantom.weaponSockets = new Vector2[] { new Vector2(0.50f, 0.80f), new Vector2(0.50f, -0.80f) };
+            phantom.thrusterSockets = new Vector2[] { new Vector2(-1.4f, 0f) };
+            phantom.sprite = LoadArtSprite("Ships/Ship_Interceptor.png");
+            phantom.baseStats = new StatValues { hullCapacity = 110, shieldCapacity = 160, shieldRegen = 16, energyCapacity = 160, energyRegen = 35, pulseDamage = 45, pulseSpeed = 850, speed = 420, agility = 7.0f };
+            phantom = CreateOrUpdateAsset(phantom, $"{dataPath}/Ship_Phantom.asset");
+
             scout.evolvesTo = new ShipDefinition[] { fighter, miner };
-            fighter.evolvesTo = new ShipDefinition[] { interceptor };
+            fighter.evolvesTo = new ShipDefinition[] { interceptor, phantom };
             miner.evolvesTo = new ShipDefinition[] { juggernaut, carrier };
             interceptor.evolvesTo = new ShipDefinition[0];
             juggernaut.evolvesTo = new ShipDefinition[0];
+            phantom.evolvesTo = new ShipDefinition[0];
             carrier.evolvesTo = new ShipDefinition[0];
 
             EditorUtility.SetDirty(scout);
@@ -193,6 +207,7 @@ namespace StarStrike.Editor
             EditorUtility.SetDirty(miner);
             EditorUtility.SetDirty(interceptor);
             EditorUtility.SetDirty(juggernaut);
+            EditorUtility.SetDirty(phantom);
             EditorUtility.SetDirty(carrier);
 
             // 10. Master Game Config

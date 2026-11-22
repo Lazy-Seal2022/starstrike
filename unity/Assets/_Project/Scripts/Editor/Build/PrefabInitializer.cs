@@ -680,6 +680,11 @@ namespace StarStrike.Editor
                 weapon.fireRate = 0.10f; // decayed from powerups
                 prog.ResetForNewRun();
 
+                if (prog.currentShip == null || prog.currentShip.sprite == null)
+                    throw new System.Exception("Player currentShip or currentShip.sprite is NULL!");
+                if (prog.shipRenderer == null || prog.shipRenderer.sprite == null)
+                    throw new System.Exception("Player shipRenderer.sprite is NULL!");
+
                 if (Mathf.Abs(weapon.fireRate - 0.22f) > 0.001f)
                     throw new System.Exception($"ResetForNewRun did not restore fireRate to 0.22f, got {weapon.fireRate}");
 

@@ -445,8 +445,10 @@ MonoBehaviour:
   bossShieldColor: {r: 1, g: 0.22, b: 0.35, a: 0.95}
   shieldRadius: 1
   autoDetectRadius: 1
-  domeFadeSpeed: 4.2
+  domeFadeSpeed: 5.5
   shieldHitboxOffset: 0.35
+  showShieldContour: 1
+  contourLineWidth: 0.045
 --- !u!1 &6574014540066490735
 GameObject:
   m_ObjectHideFlags: 0

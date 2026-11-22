@@ -43,25 +43,61 @@ namespace StarStrike.Gameplay
             Initialize();
         }
 
+        public static ShipDefinition GetShipDefinitionById(string id)
+        {
+            if (string.IsNullOrEmpty(id)) id = "scout";
+            id = id.ToLowerInvariant();
+
+            string assetName = "Ship_Scout";
+            switch (id)
+            {
+                case "scout": assetName = "Ship_Scout"; break;
+                case "fighter": assetName = "Ship_Fighter"; break;
+                case "miner": assetName = "Ship_Miner"; break;
+                case "interceptor": assetName = "Ship_Interceptor"; break;
+                case "juggernaut": assetName = "Ship_Juggernaut"; break;
+                case "carrier":
+                case "vanguard": assetName = "Ship_Carrier"; break;
+                case "phantom": assetName = "Ship_Phantom"; break;
+                default:
+                    string cap = char.ToUpper(id[0]) + id.Substring(1);
+                    assetName = $"Ship_{cap}";
+                    break;
+            }
+
+            var def = Resources.Load<ShipDefinition>($"Data/{assetName}");
+            if (def == null && assetName == "Ship_Phantom")
+            {
+                def = Resources.Load<ShipDefinition>("Data/Ship_Interceptor");
+            }
+            if (def == null)
+            {
+                def = Resources.Load<ShipDefinition>("Data/Ship_Scout");
+            }
+            return def;
+        }
+
         public void Initialize()
         {
             Instance = this;
+            if (baseShip == null)
+            {
+                baseShip = Resources.Load<ShipDefinition>("Data/Ship_Scout");
+                if (baseShip == null)
+                {
+                    baseShip = CreateDefaultShipTree();
+                }
+            }
+
             if (currentShip == null)
             {
                 string chosenShipId = StorageService.GetLastShipEvolved();
-                if (!string.IsNullOrEmpty(chosenShipId))
-                {
-                    string capId = char.ToUpper(chosenShipId[0]) + chosenShipId.Substring(1);
-                    currentShip = Resources.Load<ShipDefinition>($"Data/Ship_{capId}");
-                }
-                if (currentShip == null)
-                {
-                    currentShip = Resources.Load<ShipDefinition>("Data/Ship_Scout");
-                }
+                if (string.IsNullOrEmpty(chosenShipId)) chosenShipId = "scout";
+                currentShip = GetShipDefinitionById(chosenShipId) ?? baseShip;
             }
-            if (currentShip == null || currentShip.evolvesTo == null || currentShip.evolvesTo.Length == 0)
+            if (currentShip == null)
             {
-                currentShip = CreateDefaultShipTree();
+                currentShip = baseShip;
             }
 
             if (gameConfig == null)
@@ -96,7 +132,6 @@ namespace StarStrike.Gameplay
             }
             shipRenderer.sortingOrder = 10;
 
-            baseShip = currentShip;
             ApplyShipVisuals();
         }
 
@@ -124,10 +159,18 @@ namespace StarStrike.Gameplay
             string selectedShipId = StarStrike.Platform.Storage.StorageService.GetLastShipEvolved();
             if (string.IsNullOrEmpty(selectedShipId)) selectedShipId = "scout";
 
-            ShipDefinition selectedDef = FindShipById(baseShip, selectedShipId);
+            ShipDefinition selectedDef = GetShipDefinitionById(selectedShipId);
+            if (selectedDef == null)
+            {
+                selectedDef = FindShipById(baseShip, selectedShipId);
+            }
             if (selectedDef != null)
             {
                 currentShip = selectedDef;
+            }
+            else if (currentShip == null)
+            {
+                currentShip = baseShip;
             }
             
             ApplyCurrentStats();
@@ -259,6 +302,14 @@ namespace StarStrike.Gameplay
             juggernaut.evolvesTo = new ShipDefinition[0];
             phantom.evolvesTo = new ShipDefinition[0];
             vanguard.evolvesTo = new ShipDefinition[0];
+
+            scout.sprite = Resources.Load<ShipDefinition>("Data/Ship_Scout")?.sprite;
+            fighter.sprite = Resources.Load<ShipDefinition>("Data/Ship_Fighter")?.sprite;
+            miner.sprite = Resources.Load<ShipDefinition>("Data/Ship_Miner")?.sprite;
+            interceptor.sprite = Resources.Load<ShipDefinition>("Data/Ship_Interceptor")?.sprite;
+            juggernaut.sprite = Resources.Load<ShipDefinition>("Data/Ship_Juggernaut")?.sprite;
+            vanguard.sprite = Resources.Load<ShipDefinition>("Data/Ship_Carrier")?.sprite;
+            phantom.sprite = interceptor.sprite;
 
             return scout;
         }
@@ -465,13 +516,20 @@ namespace StarStrike.Gameplay
             }
             shipRenderer.sortingOrder = 10;
             string shipId = currentShip != null && !string.IsNullOrEmpty(currentShip.id) ? currentShip.id : "scout";
-            if (currentShip != null && currentShip.sprite != null)
+            Sprite targetSprite = currentShip != null ? currentShip.sprite : null;
+            if (targetSprite == null)
             {
-                shipRenderer.sprite = currentShip.sprite;
+                var def = GetShipDefinitionById(shipId);
+                if (def != null) targetSprite = def.sprite;
             }
-            else if (shipRenderer.sprite == null)
+            if (targetSprite == null)
             {
-                shipRenderer.sprite = ProceduralSpriteHelper.GetShipSprite(shipId);
+                targetSprite = ProceduralSpriteHelper.GetShipSprite(shipId);
+            }
+
+            if (targetSprite != null)
+            {
+                shipRenderer.sprite = targetSprite;
             }
 
             if (shipId == "fighter")

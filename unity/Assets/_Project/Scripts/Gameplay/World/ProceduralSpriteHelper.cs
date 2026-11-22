@@ -92,6 +92,38 @@ namespace StarStrike.Gameplay
 
         public static Sprite GetShipSprite(string type, bool forceProcedural = false)
         {
+            if (!forceProcedural)
+            {
+                string assetName = "Ship_Scout";
+                switch (type != null ? type.ToLowerInvariant() : "scout")
+                {
+                    case "scout": assetName = "Ship_Scout"; break;
+                    case "fighter": assetName = "Ship_Fighter"; break;
+                    case "miner": assetName = "Ship_Miner"; break;
+                    case "interceptor": assetName = "Ship_Interceptor"; break;
+                    case "juggernaut": assetName = "Ship_Juggernaut"; break;
+                    case "vanguard":
+                    case "carrier": assetName = "Ship_Carrier"; break;
+                    case "phantom": assetName = "Ship_Phantom"; break;
+                    default:
+                        if (!string.IsNullOrEmpty(type))
+                        {
+                            string cap = char.ToUpper(type[0]) + type.Substring(1);
+                            assetName = $"Ship_{cap}";
+                        }
+                        break;
+                }
+                var def = Resources.Load<StarStrike.Core.ShipDefinition>($"Data/{assetName}");
+                if (def == null && assetName == "Ship_Phantom")
+                {
+                    def = Resources.Load<StarStrike.Core.ShipDefinition>("Data/Ship_Interceptor");
+                }
+                if (def != null && def.sprite != null)
+                {
+                    return def.sprite;
+                }
+            }
+
             if (type == "fighter")
                 return GetCachedOrGenerate(ref cachedFighter, () => GenerateShipSprite("fighter"), forceProcedural);
             if (type == "miner")
