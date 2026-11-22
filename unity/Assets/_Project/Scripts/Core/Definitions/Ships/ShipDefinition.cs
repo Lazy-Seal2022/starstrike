@@ -37,6 +37,9 @@ namespace StarStrike.Core
         
         [Header("Presentation")]
         public Sprite sprite;
+        public Texture2D emissiveTexture;
+        public Color emissiveColor = new Color(0.25f, 0.9f, 1f, 1f);
+        public float emissiveIntensity = 1.8f;
         public Color color = Color.white;
         public float scale = 1.0f;
     }

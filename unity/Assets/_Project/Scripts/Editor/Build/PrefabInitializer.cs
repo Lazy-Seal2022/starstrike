@@ -1391,6 +1391,68 @@ namespace StarStrike.Editor
                 failed++;
             }
 
+            // 17. Verify Enemy Attack Telegraphs (Feature #4)
+            try
+            {
+                var bossObj = new GameObject("TestBoss_Telegraph");
+                var brain = bossObj.AddComponent<BossBrain>();
+                brain.EnsureTelegraphInitialized();
+
+                var tLine = brain.TelegraphLine;
+                if (tLine == null)
+                    throw new System.Exception("BossBrain must initialize TelegraphLine!");
+                if (!tLine.useWorldSpace)
+                    throw new System.Exception("TelegraphLine must use world space for accurate targeting rays!");
+                if (tLine.positionCount != 2)
+                    throw new System.Exception($"TelegraphLine must have 2 positions (origin, target), got {tLine.positionCount}!");
+                if (tLine.enabled)
+                    throw new System.Exception("TelegraphLine must be disabled when idle!");
+
+                Object.DestroyImmediate(bossObj);
+                Debug.Log("[PASS] 17. Enemy Attack Telegraphs (Boss & Combat Warnings) verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 17. Enemy Attack Telegraphs verification failed: {ex.Message}");
+                failed++;
+            }
+
+            // 18. Verify Emissive Shader Glow Setup (Feature #6)
+            try
+            {
+                var emShader = Shader.Find("StarStrike/Sprite-Emissive");
+                if (emShader == null)
+                    throw new System.Exception("StarStrike/Sprite-Emissive shader must be compiled and findable!");
+
+                var testShip = new GameObject("TestShip_Emissive");
+                var prog = testShip.AddComponent<PlayerProgression>();
+                var def = ScriptableObject.CreateInstance<ShipDefinition>();
+                def.id = "scout";
+                def.emissiveTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_Project/Art/Sprites/Ships_Imported/Ship_Scout_HD_emissive.png");
+                def.emissiveIntensity = 2.0f;
+                prog.currentShip = def;
+                prog.ApplyShipVisuals();
+
+                var sr = testShip.GetComponent<SpriteRenderer>();
+                if (sr == null || sr.sharedMaterial == null)
+                    throw new System.Exception("SpriteRenderer with material must exist!");
+                if (sr.sharedMaterial.shader != emShader)
+                    throw new System.Exception($"Expected shader StarStrike/Sprite-Emissive, got {sr.sharedMaterial.shader.name}!");
+                if (sr.sharedMaterial.GetTexture("_EmissiveTex") != def.emissiveTexture)
+                    throw new System.Exception("Emissive texture must be assigned to _EmissiveTex property!");
+
+                Object.DestroyImmediate(testShip);
+                Object.DestroyImmediate(def);
+                Debug.Log("[PASS] 18. Emissive Shader Glow & Bloom Setup verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 18. Emissive Shader Glow verification failed: {ex.Message}");
+                failed++;
+            }
+
             Debug.Log($"=== TOTAL VERIFICATION RESULT: {passed} PASSED, {failed} FAILED ===");
         }
 

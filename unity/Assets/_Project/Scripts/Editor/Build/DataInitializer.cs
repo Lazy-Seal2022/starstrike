@@ -98,6 +98,7 @@ namespace StarStrike.Editor
             scout.weaponSockets = new Vector2[] { new Vector2(1.55f, 0f) };
             scout.thrusterSockets = new Vector2[] { new Vector2(-1.55f, 0f) };
             scout.sprite = LoadArtSprite("Ships/Ship_Scout.png");
+            scout.emissiveTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_Project/Art/Sprites/Ships_Imported/Ship_Scout_HD_emissive.png");
             scout.baseStats = new StatValues { hullCapacity = 80, shieldCapacity = 100, shieldRegen = 8, energyCapacity = 80, energyRegen = 18, pulseDamage = 18, pulseSpeed = 600, speed = 260, agility = 4.5f };
             scout = CreateOrUpdateAsset(scout, $"{dataPath}/Ship_Scout.asset");
 
@@ -159,6 +160,7 @@ namespace StarStrike.Editor
                 new Vector2(-2.75f, -0.85f)
             };
             juggernaut.sprite = LoadArtSprite("Ships/Ship_Juggernaut.png");
+            juggernaut.emissiveTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_Project/Art/Sprites/Ships_Imported/Ship_Juggernaut_HD_emissive.png");
             juggernaut.shieldHitboxOffset = 0.30f;
             juggernaut.baseStats = new StatValues { hullCapacity = 300, shieldCapacity = 400, shieldRegen = 25, energyCapacity = 200, energyRegen = 25, pulseDamage = 75, pulseSpeed = 480, speed = 180, agility = 2.5f };
             juggernaut = CreateOrUpdateAsset(juggernaut, $"{dataPath}/Ship_Juggernaut.asset");
@@ -181,6 +183,7 @@ namespace StarStrike.Editor
                 new Vector2(-2.75f, -1.10f)
             };
             carrier.sprite = LoadArtSprite("Ships/Ship_Carrier.png");
+            carrier.emissiveTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_Project/Art/Sprites/Ships_Imported/Ship_Carrier_HD_emissive.png");
             carrier.baseStats = new StatValues { hullCapacity = 240, shieldCapacity = 320, shieldRegen = 22, energyCapacity = 280, energyRegen = 32, pulseDamage = 55, pulseSpeed = 580, speed = 220, agility = 3.8f };
             carrier = CreateOrUpdateAsset(carrier, $"{dataPath}/Ship_Carrier.asset");
 

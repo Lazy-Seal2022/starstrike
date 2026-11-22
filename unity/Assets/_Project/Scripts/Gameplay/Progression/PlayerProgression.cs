@@ -37,6 +37,8 @@ namespace StarStrike.Gameplay
         public SpriteRenderer shipRenderer;
 
         private ShipDefinition baseShip;
+        private Material emissiveMaterial;
+        private Material defaultSpriteMaterial;
 
         private void Awake()
         {
@@ -534,6 +536,41 @@ namespace StarStrike.Gameplay
                 shipRenderer.sprite = targetSprite;
             }
 
+            // Emissive glow setup (Feature #6): Apply emissive shader if ship definition has emissive texture
+            Texture2D emissiveTex = currentShip != null ? currentShip.emissiveTexture : null;
+            if (emissiveTex == null)
+            {
+                var def = GetShipDefinitionById(shipId);
+                if (def != null) emissiveTex = def.emissiveTexture;
+            }
+
+            if (emissiveTex != null && shipRenderer != null)
+            {
+                var shader = Shader.Find("StarStrike/Sprite-Emissive");
+                if (shader != null)
+                {
+                    if (emissiveMaterial == null || emissiveMaterial.shader != shader)
+                    {
+                        emissiveMaterial = new Material(shader);
+                    }
+                    emissiveMaterial.SetTexture("_EmissiveTex", emissiveTex);
+                    Color emCol = currentShip != null && currentShip.emissiveColor.a > 0.01f ? currentShip.emissiveColor : new Color(0.25f, 0.9f, 1f, 1f);
+                    float emInt = currentShip != null && currentShip.emissiveIntensity > 0.01f ? currentShip.emissiveIntensity : 1.8f;
+                    emissiveMaterial.SetColor("_EmissiveColor", emCol);
+                    emissiveMaterial.SetFloat("_EmissiveIntensity", emInt);
+                    shipRenderer.sharedMaterial = emissiveMaterial;
+                }
+            }
+            else if (shipRenderer != null)
+            {
+                var defaultShader = Shader.Find("Sprites/Default");
+                if (defaultShader != null)
+                {
+                    if (defaultSpriteMaterial == null) defaultSpriteMaterial = new Material(defaultShader);
+                    shipRenderer.sharedMaterial = defaultSpriteMaterial;
+                }
+            }
+
             if (shipId == "fighter")
                 transform.localScale = Vector3.one * 1.25f;
             else if (shipId == "miner")
@@ -587,6 +624,17 @@ namespace StarStrike.Gameplay
                     shieldField.shieldHitboxOffset = 0.20f;
                 }
                 shieldField.RebuildShieldCollider();
+            }
+        }
+
+        private void Update()
+        {
+            // Feature #6: Emissive idle breathing glow
+            if (emissiveMaterial != null && shipRenderer != null && shipRenderer.sharedMaterial == emissiveMaterial)
+            {
+                float baseInt = currentShip != null && currentShip.emissiveIntensity > 0.01f ? currentShip.emissiveIntensity : 1.8f;
+                float breathe = 1f + 0.20f * Mathf.Sin(Time.time * 2.8f);
+                emissiveMaterial.SetFloat("_EmissiveIntensity", baseInt * breathe);
             }
         }
 

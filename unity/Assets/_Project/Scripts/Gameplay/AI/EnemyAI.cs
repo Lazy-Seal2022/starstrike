@@ -446,6 +446,15 @@ namespace StarStrike.Gameplay
                 movement.maxSpeed = definition != null ? definition.speed * 1.5f : 12f;
                 movement.acceleration = definition != null ? definition.speed * 3.5f : 30f;
 
+                // Feature #4: Flashing danger strobe telegraphing imminent suicide blast
+                if (spriteRenderer != null)
+                {
+                    float strobeSpeed = Mathf.Lerp(12f, 32f, 1f - Mathf.Clamp01(dist / sightRadius));
+                    float strobe = Mathf.PingPong(Time.time * strobeSpeed, 1f);
+                    Color baseTint = definition != null ? definition.tintColor : new Color(0.95f, 0.2f, 0.25f);
+                    spriteRenderer.color = Color.Lerp(baseTint, Color.white, strobe > 0.5f ? 0.85f : 0f);
+                }
+
                 if (dist <= 1.2f)
                 {
                     DetonateKamikaze();
@@ -454,6 +463,7 @@ namespace StarStrike.Gameplay
             else
             {
                 currentState = AIState.Patrol;
+                if (spriteRenderer != null && definition != null) spriteRenderer.color = definition.tintColor;
                 RunPatrol();
             }
         }

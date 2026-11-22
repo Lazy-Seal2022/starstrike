@@ -27,6 +27,13 @@ namespace StarStrike.Gameplay
         
         private float phaseTimer = 0f;
         private float bulletHellAngle = 0f;
+        private float bulletHellWindupTimer = 0f;
+        private const float BULLET_HELL_WINDUP = 0.8f;
+
+        private LineRenderer telegraphLine;
+        private static Material cachedTelegraphMat;
+
+        public LineRenderer TelegraphLine => telegraphLine;
 
         private void Awake()
         {
@@ -38,6 +45,8 @@ namespace StarStrike.Gameplay
             weapon = GetComponent<ShipWeapon>();
             
             tag = "Enemy"; // Or "Boss"
+
+            EnsureTelegraphInitialized();
 
             Collider2D col = GetComponent<Collider2D>();
             if (col == null) col = gameObject.AddComponent<PolygonCollider2D>();
@@ -94,6 +103,45 @@ namespace StarStrike.Gameplay
 
             currentPhase = BossPhase.Approaching;
             phaseTimer = 0f;
+            bulletHellWindupTimer = 0f;
+            if (telegraphLine != null) telegraphLine.enabled = false;
+        }
+
+        private void OnDisable()
+        {
+            if (telegraphLine != null) telegraphLine.enabled = false;
+        }
+
+        public void EnsureTelegraphInitialized()
+        {
+            if (telegraphLine == null)
+            {
+                Transform child = transform.Find("TelegraphRay");
+                GameObject rayObj = child != null ? child.gameObject : null;
+                if (rayObj == null)
+                {
+                    rayObj = new GameObject("TelegraphRay");
+                    rayObj.transform.SetParent(transform, false);
+                    rayObj.transform.localPosition = Vector3.zero;
+                    rayObj.transform.localRotation = Quaternion.identity;
+                }
+                telegraphLine = rayObj.GetComponent<LineRenderer>();
+                if (telegraphLine == null) telegraphLine = rayObj.AddComponent<LineRenderer>();
+
+                telegraphLine.useWorldSpace = true;
+                telegraphLine.positionCount = 2;
+                telegraphLine.startWidth = 0.08f;
+                telegraphLine.endWidth = 0.04f;
+                telegraphLine.sortingOrder = 7;
+
+                if (cachedTelegraphMat == null)
+                {
+                    var shader = Shader.Find("Sprites/Default");
+                    if (shader != null) cachedTelegraphMat = new Material(shader);
+                }
+                if (cachedTelegraphMat != null) telegraphLine.sharedMaterial = cachedTelegraphMat;
+                telegraphLine.enabled = false;
+            }
         }
 
         private void Start()
@@ -140,12 +188,16 @@ namespace StarStrike.Gameplay
             {
                 phaseTimer = 0f;
                 currentPhase = currentPhase == BossPhase.BulletHell ? BossPhase.SweepingLasers : BossPhase.BulletHell;
+                bulletHellWindupTimer = 0f;
+                if (telegraphLine != null) telegraphLine.enabled = false;
             }
             
             if (currentPhase == BossPhase.Approaching && dist < attackRadius)
             {
                 currentPhase = BossPhase.SweepingLasers;
                 phaseTimer = 0f;
+                bulletHellWindupTimer = 0f;
+                if (telegraphLine != null) telegraphLine.enabled = false;
             }
 
             switch (currentPhase)
@@ -167,6 +219,7 @@ namespace StarStrike.Gameplay
 
         private void RunApproach(Vector2 toPlayer)
         {
+            if (telegraphLine != null) telegraphLine.enabled = false;
             movement.AimDirection = toPlayer.normalized;
             movement.IsThrusting = true;
         }
@@ -181,7 +234,31 @@ namespace StarStrike.Gameplay
             movement.AimDirection = aimDir;
 
             Vector2 forward = transform.right;
-            if (Vector2.Dot(forward, aimDir) > 0.95f)
+            float alignment = Vector2.Dot(forward, aimDir);
+
+            // Enemy Telegraph (Feature #4): Project warning targeting laser along sweep path
+            if (telegraphLine != null)
+            {
+                telegraphLine.enabled = true;
+                Vector3 origin = transform.position;
+                Vector3 target = origin + (Vector3)(forward * attackRadius * 1.25f);
+                telegraphLine.SetPosition(0, origin);
+                telegraphLine.SetPosition(1, target);
+
+                bool isFiringReady = alignment > 0.95f;
+                float pulse = Mathf.PingPong(Time.time * 8f, 1f);
+                float width = isFiringReady ? 0.22f : Mathf.Lerp(0.05f, 0.12f, pulse);
+                telegraphLine.startWidth = width;
+                telegraphLine.endWidth = width * 0.4f;
+
+                Color warningColor = isFiringReady
+                    ? new Color(1f, 0.95f, 0.3f, 0.95f)
+                    : new Color(1f, 0.25f, 0.15f, Mathf.Lerp(0.4f, 0.85f, pulse));
+                telegraphLine.startColor = warningColor;
+                telegraphLine.endColor = new Color(warningColor.r, warningColor.g, warningColor.b, 0.05f);
+            }
+
+            if (alignment > 0.95f)
             {
                 weapon.fireRate = 0.4f;
                 weapon.TryFire(health);
@@ -192,6 +269,33 @@ namespace StarStrike.Gameplay
         {
             movement.IsThrusting = false; // Stay put
             
+            // Feature #4: Windup charge-up telegraph giving player reaction time
+            if (bulletHellWindupTimer < BULLET_HELL_WINDUP)
+            {
+                bulletHellWindupTimer += Time.deltaTime;
+                float progress = bulletHellWindupTimer / BULLET_HELL_WINDUP;
+
+                if (telegraphLine != null)
+                {
+                    telegraphLine.enabled = true;
+                    bulletHellAngle += Time.deltaTime * 180f; // Fast warning sweep
+                    Vector3 forward = new Vector3(Mathf.Cos(bulletHellAngle * Mathf.Deg2Rad), Mathf.Sin(bulletHellAngle * Mathf.Deg2Rad), 0f);
+                    Vector3 origin = transform.position;
+                    telegraphLine.SetPosition(0, origin - forward * 7f);
+                    telegraphLine.SetPosition(1, origin + forward * 7f);
+
+                    float w = Mathf.Lerp(0.04f, 0.20f, progress);
+                    telegraphLine.startWidth = w;
+                    telegraphLine.endWidth = w;
+                    Color c = Color.Lerp(new Color(1f, 0.5f, 0.1f, 0.4f), new Color(1f, 0.15f, 0.15f, 0.95f), progress);
+                    telegraphLine.startColor = c;
+                    telegraphLine.endColor = c;
+                }
+                return;
+            }
+
+            if (telegraphLine != null) telegraphLine.enabled = false;
+
             bulletHellAngle += Time.deltaTime * 60f;
             movement.AimDirection = new Vector2(Mathf.Cos(bulletHellAngle * Mathf.Deg2Rad), Mathf.Sin(bulletHellAngle * Mathf.Deg2Rad));
             
@@ -207,6 +311,24 @@ namespace StarStrike.Gameplay
             movement.IsThrusting = toPlayer.magnitude > attackRadius * 0.5f;
             movement.AimDirection = toPlayer.normalized;
 
+            // Feature #4: Intense crimson lock-on telegraph ray
+            if (telegraphLine != null)
+            {
+                telegraphLine.enabled = true;
+                Vector3 origin = transform.position;
+                Vector3 target = origin + (Vector3)(transform.right * attackRadius);
+                telegraphLine.SetPosition(0, origin);
+                telegraphLine.SetPosition(1, target);
+
+                float pulse = Mathf.PingPong(Time.time * 14f, 1f);
+                float w = Mathf.Lerp(0.08f, 0.25f, pulse);
+                telegraphLine.startWidth = w;
+                telegraphLine.endWidth = 0.05f;
+                Color col = new Color(1f, 0.1f, 0.15f, Mathf.Lerp(0.6f, 1f, pulse));
+                telegraphLine.startColor = col;
+                telegraphLine.endColor = new Color(1f, 0.1f, 0.15f, 0.05f);
+            }
+
             weapon.fireRate = 0.2f;
             weapon.weaponSlots = 3;
             Vector2 forward = transform.right;
@@ -218,6 +340,8 @@ namespace StarStrike.Gameplay
 
         private void Die()
         {
+            if (telegraphLine != null) telegraphLine.enabled = false;
+
             // Drop a ton of gems
             for (int i = 0; i < 30; i++)
             {
