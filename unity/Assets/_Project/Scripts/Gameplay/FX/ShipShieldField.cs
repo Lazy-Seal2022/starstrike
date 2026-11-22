@@ -44,6 +44,23 @@ namespace StarStrike.Gameplay.FX
         public bool showShieldContour = true;
         public float contourLineWidth = 0.045f;
 
+        [Header("Contact Shield Flare Tuning")]
+        [Tooltip("Half-angle in degrees of the localized contact shield arc (e.g. 35 degrees = 70 degree arc)")]
+        public float contactArcHalfAngle = 35f;
+
+        [Tooltip("Width of the contact barrier arc at the impact epicenter")]
+        public float contactArcWidth = 0.08f;
+
+        private struct ContactArcSlot
+        {
+            public LineRenderer line;
+            public float alpha;
+        }
+
+        private const int MAX_CONTACT_ARCS = 4;
+        private ContactArcSlot[] contactArcs;
+        private int currentArcIndex = 0;
+
         private ShipHealth health;
         private GameObject domeObject;
         private Collider2D shieldCollider;
@@ -74,6 +91,14 @@ namespace StarStrike.Gameplay.FX
         private void OnDisable()
         {
             UnsubscribeEvents();
+            if (contactArcs != null)
+            {
+                for (int i = 0; i < contactArcs.Length; i++)
+                {
+                    contactArcs[i].alpha = 0f;
+                    if (contactArcs[i].line != null) contactArcs[i].line.enabled = false;
+                }
+            }
             if (shieldLine != null)
             {
                 shieldLine.enabled = false;
@@ -163,28 +188,62 @@ namespace StarStrike.Gameplay.FX
                 {
                     shieldLine = domeObject.AddComponent<LineRenderer>();
                 }
-                shieldLine.useWorldSpace = false;
-                shieldLine.startWidth = contourLineWidth;
-                shieldLine.endWidth = contourLineWidth;
-                shieldLine.sortingOrder = 12; // Above hull (layer 10)
-
-                if (cachedShieldMat == null)
-                {
-                    var shader = Shader.Find("Sprites/Default");
-                    if (shader != null)
-                    {
-                        cachedShieldMat = new Material(shader);
-                    }
-                }
-                if (cachedShieldMat != null)
-                {
-                    shieldLine.sharedMaterial = cachedShieldMat;
-                }
-
-                shieldLine.startColor = currentShieldColor;
-                shieldLine.endColor = currentShieldColor;
-                shieldLine.enabled = false; // Invisible when idle (Battlevoid: Harbinger style)
+                ConfigureLineRenderer(shieldLine);
             }
+
+            if (contactArcs == null || contactArcs.Length < MAX_CONTACT_ARCS)
+            {
+                contactArcs = new ContactArcSlot[MAX_CONTACT_ARCS];
+                contactArcs[0].line = shieldLine;
+                contactArcs[0].alpha = 0f;
+
+                for (int i = 1; i < MAX_CONTACT_ARCS; i++)
+                {
+                    string arcName = $"ContactArc_{i}";
+                    Transform child = domeObject.transform.Find(arcName);
+                    GameObject arcObj = child != null ? child.gameObject : null;
+                    if (arcObj == null)
+                    {
+                        arcObj = new GameObject(arcName);
+                        arcObj.transform.SetParent(domeObject.transform, false);
+                        arcObj.transform.localPosition = Vector3.zero;
+                        arcObj.transform.localRotation = Quaternion.identity;
+                        arcObj.transform.localScale = Vector3.one;
+                    }
+                    LineRenderer lr = arcObj.GetComponent<LineRenderer>();
+                    if (lr == null) lr = arcObj.AddComponent<LineRenderer>();
+                    ConfigureLineRenderer(lr);
+                    contactArcs[i].line = lr;
+                    contactArcs[i].alpha = 0f;
+                }
+            }
+        }
+
+        private void ConfigureLineRenderer(LineRenderer lr)
+        {
+            if (lr == null) return;
+            lr.useWorldSpace = false;
+            lr.loop = false;
+            lr.startWidth = contourLineWidth;
+            lr.endWidth = contourLineWidth;
+            lr.sortingOrder = 12; // Above hull (layer 10)
+
+            if (cachedShieldMat == null)
+            {
+                var shader = Shader.Find("Sprites/Default");
+                if (shader != null)
+                {
+                    cachedShieldMat = new Material(shader);
+                }
+            }
+            if (cachedShieldMat != null)
+            {
+                lr.sharedMaterial = cachedShieldMat;
+            }
+
+            lr.startColor = currentShieldColor;
+            lr.endColor = currentShieldColor;
+            lr.enabled = false; // Invisible when idle (Battlevoid: Harbinger style)
         }
 
         private Vector2 shieldCenter = Vector2.zero;
@@ -309,17 +368,6 @@ namespace StarStrike.Gameplay.FX
                 if (showShieldContour && shieldPoly.pathCount > 0)
                 {
                     EnsureShieldLine();
-                    Vector2[] pts = shieldPoly.GetPath(0);
-                    if (shieldLine != null && pts != null && pts.Length > 0)
-                    {
-                        shieldLine.positionCount = pts.Length;
-                        for (int i = 0; i < pts.Length; i++)
-                        {
-                            shieldLine.SetPosition(i, new Vector3(pts[i].x, pts[i].y, 0f));
-                        }
-                        shieldLine.loop = true;
-                        shieldLine.enabled = false;
-                    }
                 }
             }
             else
@@ -396,16 +444,6 @@ namespace StarStrike.Gameplay.FX
                 if (showShieldContour)
                 {
                     EnsureShieldLine();
-                    if (shieldLine != null)
-                    {
-                        shieldLine.positionCount = segments;
-                        for (int i = 0; i < segments; i++)
-                        {
-                            shieldLine.SetPosition(i, new Vector3(roundPts[i].x, roundPts[i].y, 0f));
-                        }
-                        shieldLine.loop = true;
-                        shieldLine.enabled = false; // Invisible when idle
-                    }
                 }
             }
 
@@ -449,6 +487,14 @@ namespace StarStrike.Gameplay.FX
             if (!hasShield)
             {
                 currentDomeAlpha = 0f;
+                if (contactArcs != null)
+                {
+                    for (int i = 0; i < contactArcs.Length; i++)
+                    {
+                        contactArcs[i].alpha = 0f;
+                        if (contactArcs[i].line != null) contactArcs[i].line.enabled = false;
+                    }
+                }
                 if (shieldLine != null)
                 {
                     shieldLine.enabled = false;
@@ -468,52 +514,108 @@ namespace StarStrike.Gameplay.FX
                 return;
             }
 
-            // 1. Flash the exact shield silhouette contour line (NO circular dome!)
-            currentDomeAlpha = 0.90f;
-            if (shieldLine != null && showShieldContour)
-            {
-                shieldLine.enabled = true;
-                Color lineColor = new Color(currentShieldColor.r, currentShieldColor.g, currentShieldColor.b, currentDomeAlpha);
-                shieldLine.startColor = lineColor;
-                shieldLine.endColor = lineColor;
-                float width = contourLineWidth + 0.025f;
-                shieldLine.startWidth = width;
-                shieldLine.endWidth = width;
-            }
-
-            // 2. Calculate impact position on the shield envelope boundary
+            // 1. Calculate impact position and angle on the shield envelope boundary
             Vector2 shipPos = transform.position;
             Vector2 dir = (hitPoint - shipPos).normalized;
-            if (dir == Vector2.zero) dir = Vector2.up;
+            if (dir == Vector2.zero) dir = transform.right;
 
-            Vector2 surfacePoint = shipPos + dir * shieldRadius;
-            if (shieldCollider is PolygonCollider2D polyCol && polyCol.pathCount > 0)
+            Vector2 localDir = transform.InverseTransformDirection(dir);
+            float localAngle = Mathf.Atan2(localDir.y, localDir.x);
+
+            float cosHit = Mathf.Cos(localAngle);
+            float sinHit = Mathf.Sin(localAngle);
+            float lx, ly;
+            if (shieldShape == ShieldHitboxShape.Circle)
             {
-                Vector2 localDir = transform.InverseTransformDirection(dir);
-                float localAngle = Mathf.Atan2(localDir.y, localDir.x);
-                float cosA = Mathf.Cos(localAngle);
-                float sinA = Mathf.Sin(localAngle);
-                float lx, ly;
-                if (shieldShape == ShieldHitboxShape.Circle)
-                {
-                    lx = cosA * shieldRadius;
-                    ly = sinA * shieldRadius;
-                }
-                else if (shieldShape == ShieldHitboxShape.HullOutline)
-                {
-                    Bounds sBounds = shieldCollider.bounds;
-                    float rx = sBounds.extents.x / Mathf.Max(0.001f, transform.lossyScale.x);
-                    float ry = sBounds.extents.y / Mathf.Max(0.001f, transform.lossyScale.y);
-                    lx = cosA * rx;
-                    ly = sinA * ry;
-                }
-                else // ShieldHitboxShape.Round (default)
-                {
-                    lx = Mathf.Sign(cosA) * Mathf.Pow(Mathf.Abs(cosA), 2.0f / shieldPExp) * shieldRadiusX;
-                    ly = Mathf.Sign(sinA) * Mathf.Pow(Mathf.Abs(sinA), 2.0f / shieldPExp) * shieldRadiusY;
-                }
-                surfacePoint = transform.TransformPoint(shieldCenter + new Vector2(lx, ly));
+                lx = cosHit * shieldRadius;
+                ly = sinHit * shieldRadius;
             }
+            else if (shieldShape == ShieldHitboxShape.HullOutline)
+            {
+                lx = cosHit * shieldRadius;
+                ly = sinHit * shieldRadius;
+            }
+            else // ShieldHitboxShape.Round (default)
+            {
+                lx = Mathf.Sign(cosHit) * Mathf.Pow(Mathf.Abs(cosHit), 2.0f / shieldPExp) * shieldRadiusX;
+                ly = Mathf.Sign(sinHit) * Mathf.Pow(Mathf.Abs(sinHit), 2.0f / shieldPExp) * shieldRadiusY;
+            }
+            Vector2 surfacePoint = transform.TransformPoint(shieldCenter + new Vector2(lx, ly));
+
+            // 2. Localized contact barrier flare: ONLY the contact area lights up!
+            // Other parts of the shield perimeter remain completely invisible.
+            EnsureShieldLine();
+            if (showShieldContour && contactArcs != null && contactArcs.Length > 0)
+            {
+                int arcSegments = 12; // 13 smooth points along the contact curvature
+                float halfAngle = (contactArcHalfAngle > 5f ? contactArcHalfAngle : 35f) * Mathf.Deg2Rad;
+                Vector3[] arcPositions = new Vector3[arcSegments + 1];
+
+                for (int i = 0; i <= arcSegments; i++)
+                {
+                    float frac = i / (float)arcSegments;
+                    float a = localAngle + Mathf.Lerp(-halfAngle, halfAngle, frac);
+                    float ca = Mathf.Cos(a);
+                    float sa = Mathf.Sin(a);
+                    float ax, ay;
+                    if (shieldShape == ShieldHitboxShape.Circle)
+                    {
+                        ax = ca * shieldRadius;
+                        ay = sa * shieldRadius;
+                    }
+                    else if (shieldShape == ShieldHitboxShape.HullOutline)
+                    {
+                        ax = ca * shieldRadius;
+                        ay = sa * shieldRadius;
+                    }
+                    else
+                    {
+                        ax = Mathf.Sign(ca) * Mathf.Pow(Mathf.Abs(ca), 2.0f / shieldPExp) * shieldRadiusX;
+                        ay = Mathf.Sign(sa) * Mathf.Pow(Mathf.Abs(sa), 2.0f / shieldPExp) * shieldRadiusY;
+                    }
+                    arcPositions[i] = shieldCenter + new Vector2(ax, ay);
+                }
+
+                int slot = currentArcIndex;
+                currentArcIndex = (currentArcIndex + 1) % MAX_CONTACT_ARCS;
+
+                LineRenderer targetLine = contactArcs[slot].line != null ? contactArcs[slot].line : shieldLine;
+                if (targetLine != null)
+                {
+                    targetLine.loop = false;
+                    targetLine.positionCount = arcPositions.Length;
+                    targetLine.SetPositions(arcPositions);
+
+                    // Width curve: 0 at tips, peak in center
+                    AnimationCurve widthCurve = new AnimationCurve();
+                    float peakWidth = contactArcWidth > 0.01f ? contactArcWidth : (contourLineWidth + 0.035f);
+                    widthCurve.AddKey(0f, 0f);
+                    widthCurve.AddKey(0.5f, peakWidth);
+                    widthCurve.AddKey(1f, 0f);
+                    targetLine.widthCurve = widthCurve;
+                    targetLine.widthMultiplier = 1f;
+
+                    // Color gradient: feathered alpha at tips, bright in center
+                    Gradient grad = new Gradient();
+                    grad.SetKeys(
+                        new GradientColorKey[] {
+                            new GradientColorKey(currentShieldColor, 0f),
+                            new GradientColorKey(currentShieldColor, 1f)
+                        },
+                        new GradientAlphaKey[] {
+                            new GradientAlphaKey(0f, 0f),
+                            new GradientAlphaKey(0.95f, 0.5f),
+                            new GradientAlphaKey(0f, 1f)
+                        }
+                    );
+                    targetLine.colorGradient = grad;
+                    targetLine.enabled = true;
+
+                    contactArcs[slot].alpha = 0.95f;
+                }
+            }
+
+            currentDomeAlpha = 0.95f;
 
             float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
             Quaternion rippleRotation = Quaternion.Euler(0f, 0f, angle - 90f);
@@ -532,7 +634,7 @@ namespace StarStrike.Gameplay.FX
                     var ripple = rippleObj.GetComponent<ShieldImpactRipple>();
                     if (ripple != null)
                     {
-                        ripple.Initialize(currentShieldColor, 0.15f, 0.45f, 0.16f);
+                        ripple.Initialize(currentShieldColor, 0.15f, 0.50f, 0.18f);
                     }
                 }
             }
@@ -544,24 +646,50 @@ namespace StarStrike.Gameplay.FX
         private void Update()
         {
             // Battlevoid: Harbinger style: Shield is invisible when idle.
-            // On hit, the exact silhouette flashes and quickly fades back to 0.
-            if (currentDomeAlpha > 0f)
+            // On hit, the shield only flares locally at the contact area and quickly fades out.
+            // Other parts of the shield perimeter remain completely invisible.
+            if (contactArcs != null)
+            {
+                float maxAlpha = 0f;
+                for (int i = 0; i < contactArcs.Length; i++)
+                {
+                    if (contactArcs[i].alpha > 0f)
+                    {
+                        contactArcs[i].alpha = Mathf.MoveTowards(contactArcs[i].alpha, 0f, domeFadeSpeed * Time.deltaTime);
+                        if (contactArcs[i].line != null)
+                        {
+                            if (contactArcs[i].alpha > 0f)
+                            {
+                                Gradient grad = new Gradient();
+                                grad.SetKeys(
+                                    new GradientColorKey[] {
+                                        new GradientColorKey(currentShieldColor, 0f),
+                                        new GradientColorKey(currentShieldColor, 1f)
+                                    },
+                                    new GradientAlphaKey[] {
+                                        new GradientAlphaKey(0f, 0f),
+                                        new GradientAlphaKey(contactArcs[i].alpha, 0.5f),
+                                        new GradientAlphaKey(0f, 1f)
+                                    }
+                                );
+                                contactArcs[i].line.colorGradient = grad;
+                            }
+                            else
+                            {
+                                contactArcs[i].line.enabled = false;
+                            }
+                        }
+                    }
+                    if (contactArcs[i].alpha > maxAlpha) maxAlpha = contactArcs[i].alpha;
+                }
+                currentDomeAlpha = maxAlpha;
+            }
+            else if (currentDomeAlpha > 0f)
             {
                 currentDomeAlpha = Mathf.MoveTowards(currentDomeAlpha, 0f, domeFadeSpeed * Time.deltaTime);
-
-                if (shieldLine != null && showShieldContour)
+                if (currentDomeAlpha <= 0f && shieldLine != null)
                 {
-                    Color lineColor = new Color(currentShieldColor.r, currentShieldColor.g, currentShieldColor.b, currentDomeAlpha);
-                    shieldLine.startColor = lineColor;
-                    shieldLine.endColor = lineColor;
-                    float width = contourLineWidth + currentDomeAlpha * 0.025f;
-                    shieldLine.startWidth = width;
-                    shieldLine.endWidth = width;
-                }
-
-                if (currentDomeAlpha <= 0f)
-                {
-                    if (shieldLine != null) shieldLine.enabled = false;
+                    shieldLine.enabled = false;
                 }
             }
         }
