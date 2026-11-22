@@ -341,13 +341,6 @@ namespace StarStrike.Gameplay.FX
                     shieldLine.enabled = false;
                 }
             }
-            else
-            {
-                if (shieldLine != null && showShieldContour)
-                {
-                    shieldLine.enabled = true;
-                }
-            }
         }
 
         public void TriggerShieldHit(Vector2 hitPoint, float damage = 20f)
@@ -363,8 +356,19 @@ namespace StarStrike.Gameplay.FX
                 return;
             }
 
-            // 1. Flare the perimeter energy dome & contour
-            currentDomeAlpha = 0.92f;
+            // 1. Flare the perimeter energy dome & contour on impact (Battlevoid: Harbinger reactive flash)
+            currentDomeAlpha = 0.90f;
+            if (domeRenderer != null)
+            {
+                domeRenderer.color = new Color(currentShieldColor.r, currentShieldColor.g, currentShieldColor.b, currentDomeAlpha * 0.75f);
+            }
+            if (shieldLine != null && showShieldContour)
+            {
+                shieldLine.enabled = true;
+                Color lineColor = new Color(currentShieldColor.r, currentShieldColor.g, currentShieldColor.b, currentDomeAlpha);
+                shieldLine.startColor = lineColor;
+                shieldLine.endColor = lineColor;
+            }
 
             // 2. Calculate impact position on the shield envelope boundary
             Vector2 shipPos = transform.position;
@@ -403,46 +407,31 @@ namespace StarStrike.Gameplay.FX
 
         private void Update()
         {
-            bool hasShield = health == null || health.currentShield > 0.01f;
-
-            if (hasShield)
+            // Battlevoid: Harbinger style: Shield is invisible when idle.
+            // On impact, it flares brightly at the boundary and quickly fades back to 0.
+            if (currentDomeAlpha > 0f)
             {
-                // Smooth sine-wave breathing oscillation for the glowing shield contour
-                float breathe = 0.42f + 0.18f * Mathf.Sin(Time.time * 3.2f);
-                float lineAlpha = Mathf.Max(breathe, currentDomeAlpha);
-                Color activeColor = new Color(currentShieldColor.r, currentShieldColor.g, currentShieldColor.b, lineAlpha);
+                currentDomeAlpha = Mathf.MoveTowards(currentDomeAlpha, 0f, domeFadeSpeed * Time.deltaTime);
+
+                if (domeRenderer != null)
+                {
+                    domeRenderer.color = new Color(currentShieldColor.r, currentShieldColor.g, currentShieldColor.b, currentDomeAlpha * 0.75f);
+                }
 
                 if (shieldLine != null && showShieldContour)
                 {
-                    shieldLine.enabled = true;
-                    shieldLine.startColor = activeColor;
-                    shieldLine.endColor = activeColor;
-                    float width = contourLineWidth + currentDomeAlpha * 0.04f;
+                    Color lineColor = new Color(currentShieldColor.r, currentShieldColor.g, currentShieldColor.b, currentDomeAlpha);
+                    shieldLine.startColor = lineColor;
+                    shieldLine.endColor = lineColor;
+                    float width = contourLineWidth + currentDomeAlpha * 0.03f;
                     shieldLine.startWidth = width;
                     shieldLine.endWidth = width;
                 }
 
-                // Dome flare fade-out + gentle ambient shield glow
-                if (currentDomeAlpha > 0f)
+                if (currentDomeAlpha <= 0f)
                 {
-                    currentDomeAlpha = Mathf.MoveTowards(currentDomeAlpha, 0f, domeFadeSpeed * Time.deltaTime);
-                }
-
-                if (domeRenderer != null)
-                {
-                    float domeAlpha = Mathf.Clamp01(0.08f + currentDomeAlpha * 0.75f);
-                    domeRenderer.color = new Color(currentShieldColor.r, currentShieldColor.g, currentShieldColor.b, domeAlpha);
-                }
-            }
-            else
-            {
-                if (shieldLine != null && shieldLine.enabled)
-                {
-                    shieldLine.enabled = false;
-                }
-                if (domeRenderer != null && domeRenderer.color.a > 0f)
-                {
-                    domeRenderer.color = Color.clear;
+                    if (domeRenderer != null) domeRenderer.color = Color.clear;
+                    if (shieldLine != null) shieldLine.enabled = false;
                 }
             }
         }

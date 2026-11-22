@@ -112,6 +112,15 @@ namespace StarStrike.Gameplay
                 Vector2 hitPos = pendingHitPoint != Vector2.zero ? pendingHitPoint : (Vector2)transform.position;
                 OnShieldImpact?.Invoke(hitPos, shieldDamage);
             }
+            else if (leftoverDamage > 0f)
+            {
+                // Direct Hull Hit (Battlevoid: Harbinger style - armor impact flash)
+                var sr = GetComponent<SpriteRenderer>();
+                if (sr != null && StarStrike.Gameplay.FX.FXService.Instance != null)
+                {
+                    StarStrike.Gameplay.FX.FXService.Instance.FlashSprite(sr, new Color(1f, 0.35f, 0.35f, 1f));
+                }
+            }
             pendingHitPoint = Vector2.zero;
             
             if (StarStrike.Gameplay.FX.FXService.Instance != null && isPlayer)
