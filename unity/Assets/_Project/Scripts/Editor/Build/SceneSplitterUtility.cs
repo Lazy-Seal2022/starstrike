@@ -32,6 +32,9 @@ namespace StarStrike.Editor
             // 4. Configure EditorBuildSettings
             ConfigureBuildSettings();
 
+            // 5. Leave MainMenuScene open as default active scene in editor
+            EditorSceneManager.OpenScene(MainMenuScenePath, OpenSceneMode.Single);
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
@@ -142,7 +145,15 @@ namespace StarStrike.Editor
         {
             if (!File.Exists(scenePath)) return;
             var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
-            var player = GameObject.Find("Player");
+            GameObject player = null;
+            foreach (var root in scene.GetRootGameObjects())
+            {
+                if (root.CompareTag("Player") || root.name == "Player")
+                {
+                    player = root;
+                    break;
+                }
+            }
             if (player != null)
             {
                 var circle = player.GetComponent<CircleCollider2D>();

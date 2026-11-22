@@ -92,6 +92,13 @@ namespace StarStrike.Gameplay
             }
             else if (activeScene == SceneGameplay || activeScene == "GameScene")
             {
+                // If launching directly in the editor from GameplayScene without visiting MainMenu,
+                // automatically load MainMenuScene so the player can select ship and game mode!
+                if (CurrentState == GameState.Boot)
+                {
+                    SceneManager.LoadScene(SceneMainMenu);
+                    return;
+                }
                 StartGame();
             }
             else

@@ -4,16 +4,15 @@ using StarStrike.Core;
 namespace StarStrike.Gameplay.FX
 {
     /// <summary>
-    /// Persistent dynamic shield field component for ships.
+    /// Persistent dynamic shield field component for ships (Battlevoid: Harbinger style).
     /// Manages:
-    /// 1. The perimeter energy dome barrier surrounding the ship with idle breathing glow.
-    /// 2. Glowing Shield Contour Line (LineRenderer) tracing the exact offset envelope in-game.
-    /// 3. Dual-Hitbox System: Outer shield trigger envelope (hull outline + radial offset)
-    ///    that captures incoming projectiles, flares the shield dome, and spawns impact ripples.
-    /// 4. Automatically toggles the shield trigger collider and visual barrier off when shields
-    ///    deplete (allowing projectiles to penetrate and only strike the tighter physical hull
-    ///    collider), and re-enables it when shields regenerate.
-    /// 5. Scene-view Gizmos drawing the hull and shield polygons.
+    /// 1. Outer shield trigger envelope (exact hull outline + radial offset).
+    /// 2. Invisible when idle (clean ship, no obtrusive permanent rings or lines).
+    /// 3. On shield hit: momentary flash of the exact hull outline barrier + localized
+    ///    impact ripple at the hit point on the shield surface (no circles!).
+    /// 4. When shields deplete: shield trigger collider turns off, incoming fire penetrates
+    ///    directly to the tighter physical hull polygon.
+    /// 5. When shields regenerate: trigger collider automatically re-arms.
     /// </summary>
     [DisallowMultipleComponent]
     public class ShipShieldField : MonoBehaviour
@@ -26,7 +25,7 @@ namespace StarStrike.Gameplay.FX
         [Tooltip("Effective radius of the shield energy envelope")]
         public float shieldRadius = 1.0f;
         public bool autoDetectRadius = true;
-        public float domeFadeSpeed = 4.2f;
+        public float domeFadeSpeed = 5.5f;
 
         [Header("Shield Hitbox Tuning")]
         [Tooltip("Radial offset extending outward from the hull outline")]
@@ -37,12 +36,13 @@ namespace StarStrike.Gameplay.FX
         public float contourLineWidth = 0.045f;
 
         private ShipHealth health;
-        private SpriteRenderer domeRenderer;
         private GameObject domeObject;
         private Collider2D shieldCollider;
         private LineRenderer shieldLine;
         private Color currentShieldColor;
         private float currentDomeAlpha = 0f;
+
+        private static Material cachedShieldMat;
 
         public float ShieldRadius => shieldRadius;
         public Color ShieldColor => currentShieldColor;
@@ -65,10 +65,6 @@ namespace StarStrike.Gameplay.FX
         private void OnDisable()
         {
             UnsubscribeEvents();
-            if (domeRenderer != null)
-            {
-                domeRenderer.color = Color.clear;
-            }
             if (shieldLine != null)
             {
                 shieldLine.enabled = false;
@@ -136,48 +132,12 @@ namespace StarStrike.Gameplay.FX
             domeObject.transform.localScale = Vector3.one;
             domeObject.tag = gameObject.tag;
 
-            // Visual dome renderer is on child DomeVisual under domeObject
-            if (domeRenderer == null)
+            // Clean up any legacy circular DomeVisual if present
+            Transform legacyDome = domeObject.transform.Find("DomeVisual");
+            if (legacyDome != null)
             {
-                Transform visualTrans = domeObject.transform.Find("DomeVisual");
-                GameObject visualObj = null;
-                if (visualTrans != null)
-                {
-                    visualObj = visualTrans.gameObject;
-                    domeRenderer = visualObj.GetComponent<SpriteRenderer>();
-                }
-                else
-                {
-                    var oldSr = domeObject.GetComponent<SpriteRenderer>();
-                    if (oldSr != null)
-                    {
-                        DestroyImmediate(oldSr);
-                    }
-                    visualObj = new GameObject("DomeVisual");
-                    visualObj.transform.SetParent(domeObject.transform, false);
-                    visualObj.transform.localPosition = Vector3.zero;
-                    visualObj.transform.localRotation = Quaternion.identity;
-                    domeRenderer = visualObj.AddComponent<SpriteRenderer>();
-                }
-            }
-
-            if (domeRenderer != null)
-            {
-                if (domeRenderer.sprite == null)
-                {
-                    domeRenderer.sprite = ProceduralSpriteHelper.GetShieldDomeSprite(128);
-                }
-                domeRenderer.sortingOrder = 11; // Layer 11: above ship hull (layer 10)
-                domeRenderer.color = Color.clear;
-
-                var shader = Shader.Find("Sprites/Default");
-                if (shader != null && domeRenderer.sharedMaterial == null)
-                {
-                    domeRenderer.sharedMaterial = new Material(shader);
-                }
-
-                float domeDiameter = shieldRadius * 2.1f;
-                domeRenderer.transform.localScale = new Vector3(domeDiameter, domeDiameter, 1f);
+                if (Application.isPlaying) Destroy(legacyDome.gameObject);
+                else DestroyImmediate(legacyDome.gameObject);
             }
 
             EnsureShieldLine();
@@ -197,15 +157,24 @@ namespace StarStrike.Gameplay.FX
                 shieldLine.useWorldSpace = false;
                 shieldLine.startWidth = contourLineWidth;
                 shieldLine.endWidth = contourLineWidth;
-                shieldLine.sortingOrder = 12; // Layer 12: above dome (11) and hull (10)
+                shieldLine.sortingOrder = 12; // Above hull (layer 10)
 
-                var shader = Shader.Find("Sprites/Default");
-                if (shader != null && shieldLine.sharedMaterial == null)
+                if (cachedShieldMat == null)
                 {
-                    shieldLine.sharedMaterial = new Material(shader);
+                    var shader = Shader.Find("Sprites/Default");
+                    if (shader != null)
+                    {
+                        cachedShieldMat = new Material(shader);
+                    }
                 }
+                if (cachedShieldMat != null)
+                {
+                    shieldLine.sharedMaterial = cachedShieldMat;
+                }
+
                 shieldLine.startColor = currentShieldColor;
                 shieldLine.endColor = currentShieldColor;
+                shieldLine.enabled = false; // Invisible when idle (Battlevoid: Harbinger style)
             }
         }
 
@@ -242,7 +211,7 @@ namespace StarStrike.Gameplay.FX
                 }
                 shieldCollider = shieldPoly;
 
-                // Configure glowing shield contour line
+                // Configure shield contour line matching exact polygon points
                 if (showShieldContour && shieldPoly.pathCount > 0)
                 {
                     EnsureShieldLine();
@@ -255,6 +224,7 @@ namespace StarStrike.Gameplay.FX
                             shieldLine.SetPosition(i, new Vector3(pts[i].x, pts[i].y, 0f));
                         }
                         shieldLine.loop = true;
+                        shieldLine.enabled = false; // Invisible when idle
                     }
                 }
             }
@@ -274,13 +244,12 @@ namespace StarStrike.Gameplay.FX
                 shieldCircle.radius = r;
                 shieldCollider = shieldCircle;
 
-                // Circular contour line fallback
                 if (showShieldContour)
                 {
                     EnsureShieldLine();
                     if (shieldLine != null)
                     {
-                        int segments = 36;
+                        int segments = 32;
                         shieldLine.positionCount = segments;
                         for (int i = 0; i < segments; i++)
                         {
@@ -288,6 +257,7 @@ namespace StarStrike.Gameplay.FX
                             shieldLine.SetPosition(i, new Vector3(Mathf.Cos(rad) * r, Mathf.Sin(rad) * r, 0f));
                         }
                         shieldLine.loop = true;
+                        shieldLine.enabled = false;
                     }
                 }
             }
@@ -332,10 +302,6 @@ namespace StarStrike.Gameplay.FX
             if (!hasShield)
             {
                 currentDomeAlpha = 0f;
-                if (domeRenderer != null)
-                {
-                    domeRenderer.color = Color.clear;
-                }
                 if (shieldLine != null)
                 {
                     shieldLine.enabled = false;
@@ -352,22 +318,20 @@ namespace StarStrike.Gameplay.FX
         {
             if (health != null && health.currentShield <= 0f)
             {
-                // Shield is depleted; damage penetrates straight to hull, no shield ripple
                 return;
             }
 
-            // 1. Flare the perimeter energy dome & contour on impact (Battlevoid: Harbinger reactive flash)
+            // 1. Flash the exact shield silhouette contour line (NO circular dome!)
             currentDomeAlpha = 0.90f;
-            if (domeRenderer != null)
-            {
-                domeRenderer.color = new Color(currentShieldColor.r, currentShieldColor.g, currentShieldColor.b, currentDomeAlpha * 0.75f);
-            }
             if (shieldLine != null && showShieldContour)
             {
                 shieldLine.enabled = true;
                 Color lineColor = new Color(currentShieldColor.r, currentShieldColor.g, currentShieldColor.b, currentDomeAlpha);
                 shieldLine.startColor = lineColor;
                 shieldLine.endColor = lineColor;
+                float width = contourLineWidth + 0.025f;
+                shieldLine.startWidth = width;
+                shieldLine.endWidth = width;
             }
 
             // 2. Calculate impact position on the shield envelope boundary
@@ -379,10 +343,7 @@ namespace StarStrike.Gameplay.FX
             float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
             Quaternion rippleRotation = Quaternion.Euler(0f, 0f, angle - 90f);
 
-            // 3. Spawn localized hexagonal impact ripple from PoolManager
-            float startR = shieldRadius * 0.35f;
-            float endR = shieldRadius * 1.15f;
-
+            // 3. Spawn localized kinetic impact ripple at the contact point (tight, crisp spark/ripple)
             if (PoolManager.Instance != null)
             {
                 GameObject rippleObj = PoolManager.Instance.Spawn("ShieldImpactRipple", surfacePoint, rippleRotation, () => {
@@ -396,7 +357,7 @@ namespace StarStrike.Gameplay.FX
                     var ripple = rippleObj.GetComponent<ShieldImpactRipple>();
                     if (ripple != null)
                     {
-                        ripple.Initialize(currentShieldColor, startR, endR, 0.22f);
+                        ripple.Initialize(currentShieldColor, 0.15f, 0.45f, 0.16f);
                     }
                 }
             }
@@ -408,29 +369,23 @@ namespace StarStrike.Gameplay.FX
         private void Update()
         {
             // Battlevoid: Harbinger style: Shield is invisible when idle.
-            // On impact, it flares brightly at the boundary and quickly fades back to 0.
+            // On hit, the exact silhouette flashes and quickly fades back to 0.
             if (currentDomeAlpha > 0f)
             {
                 currentDomeAlpha = Mathf.MoveTowards(currentDomeAlpha, 0f, domeFadeSpeed * Time.deltaTime);
-
-                if (domeRenderer != null)
-                {
-                    domeRenderer.color = new Color(currentShieldColor.r, currentShieldColor.g, currentShieldColor.b, currentDomeAlpha * 0.75f);
-                }
 
                 if (shieldLine != null && showShieldContour)
                 {
                     Color lineColor = new Color(currentShieldColor.r, currentShieldColor.g, currentShieldColor.b, currentDomeAlpha);
                     shieldLine.startColor = lineColor;
                     shieldLine.endColor = lineColor;
-                    float width = contourLineWidth + currentDomeAlpha * 0.03f;
+                    float width = contourLineWidth + currentDomeAlpha * 0.025f;
                     shieldLine.startWidth = width;
                     shieldLine.endWidth = width;
                 }
 
                 if (currentDomeAlpha <= 0f)
                 {
-                    if (domeRenderer != null) domeRenderer.color = Color.clear;
                     if (shieldLine != null) shieldLine.enabled = false;
                 }
             }
@@ -439,11 +394,6 @@ namespace StarStrike.Gameplay.FX
         public void SetShieldRadius(float radius)
         {
             shieldRadius = radius;
-            if (domeRenderer != null)
-            {
-                float domeDiameter = shieldRadius * 2.1f;
-                domeRenderer.transform.localScale = new Vector3(domeDiameter, domeDiameter, 1f);
-            }
             RebuildShieldCollider(shieldHitboxOffset);
         }
 

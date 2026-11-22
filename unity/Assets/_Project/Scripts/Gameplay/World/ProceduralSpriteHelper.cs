@@ -520,7 +520,7 @@ namespace StarStrike.Gameplay
             return cachedRoundedBox;
         }
 
-        public static Sprite GetShieldRippleSprite(int size = 128, bool forceProcedural = false)
+        public static Sprite GetShieldRippleSprite(int size = 64, bool forceProcedural = false)
         {
             return GetCachedOrGenerate(ref cachedShieldRipple, () => GenerateShieldRippleInternal(size), forceProcedural);
         }

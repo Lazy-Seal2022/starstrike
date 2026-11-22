@@ -1,6 +1,7 @@
 using UnityEngine;
 using StarStrike.Core;
 using StarStrike.Gameplay.Audio;
+using StarStrike.Platform.Storage;
 using System.Collections;
 
 namespace StarStrike.Gameplay
@@ -47,7 +48,16 @@ namespace StarStrike.Gameplay
             Instance = this;
             if (currentShip == null)
             {
-                currentShip = Resources.Load<ShipDefinition>("Data/Ship_Scout");
+                string chosenShipId = StorageService.GetLastShipEvolved();
+                if (!string.IsNullOrEmpty(chosenShipId))
+                {
+                    string capId = char.ToUpper(chosenShipId[0]) + chosenShipId.Substring(1);
+                    currentShip = Resources.Load<ShipDefinition>($"Data/Ship_{capId}");
+                }
+                if (currentShip == null)
+                {
+                    currentShip = Resources.Load<ShipDefinition>("Data/Ship_Scout");
+                }
             }
             if (currentShip == null || currentShip.evolvesTo == null || currentShip.evolvesTo.Length == 0)
             {
@@ -508,6 +518,8 @@ namespace StarStrike.Gameplay
             }
         }
 
+        private static readonly System.Collections.Generic.List<Vector2> shapePointsBuffer = new System.Collections.Generic.List<Vector2>(64);
+
         public static void UpdatePolygonFromSprite(PolygonCollider2D poly, Sprite sprite)
         {
             if (poly == null || sprite == null) return;
@@ -515,12 +527,11 @@ namespace StarStrike.Gameplay
             if (shapeCount > 0)
             {
                 poly.pathCount = shapeCount;
-                var shapePoints = new System.Collections.Generic.List<Vector2>();
                 for (int i = 0; i < shapeCount; i++)
                 {
-                    shapePoints.Clear();
-                    sprite.GetPhysicsShape(i, shapePoints);
-                    poly.SetPath(i, shapePoints);
+                    shapePointsBuffer.Clear();
+                    sprite.GetPhysicsShape(i, shapePointsBuffer);
+                    poly.SetPath(i, shapePointsBuffer);
                 }
             }
             else

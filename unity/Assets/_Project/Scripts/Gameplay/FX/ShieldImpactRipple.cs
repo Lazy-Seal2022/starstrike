@@ -17,6 +17,8 @@ namespace StarStrike.Gameplay.FX
         private float endScale = 1.25f;
         private Color baseColor = new Color(0.25f, 0.95f, 1f, 1f);
 
+        private static Material cachedRippleMat;
+
         private void Awake()
         {
             EnsureInitialized();
@@ -32,18 +34,22 @@ namespace StarStrike.Gameplay.FX
 
             if (spriteRenderer.sprite == null)
             {
-                spriteRenderer.sprite = ProceduralSpriteHelper.GetShieldRippleSprite(128);
+                spriteRenderer.sprite = ProceduralSpriteHelper.GetShieldRippleSprite(64);
             }
-            spriteRenderer.sortingOrder = 14; // Above shield dome (layer 11) and ship hull (layer 10)
+            spriteRenderer.sortingOrder = 14; // Above hull (layer 10)
 
-            var shader = Shader.Find("Sprites/Default");
-            if (shader != null && spriteRenderer.material == null)
+            if (cachedRippleMat == null)
             {
-                spriteRenderer.material = new Material(shader);
+                var shader = Shader.Find("Sprites/Default");
+                if (shader != null) cachedRippleMat = new Material(shader);
+            }
+            if (cachedRippleMat != null)
+            {
+                spriteRenderer.sharedMaterial = cachedRippleMat;
             }
         }
 
-        public void Initialize(Color color, float startRadius = 0.4f, float endRadius = 1.25f, float animDuration = 0.22f)
+        public void Initialize(Color color, float startRadius = 0.15f, float endRadius = 0.45f, float animDuration = 0.16f)
         {
             EnsureInitialized();
             baseColor = color;
