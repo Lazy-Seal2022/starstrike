@@ -16,7 +16,7 @@ namespace StarStrike.Tests.EditMode
             Assert.IsNotNull(playerLaser.GetComponent<LaserProjectile>());
             Assert.IsNotNull(playerLaser.GetComponent<Rigidbody2D>());
             Assert.IsTrue(playerLaser.GetComponent<CircleCollider2D>().isTrigger);
-            Assert.IsNotNull(playerLaser.GetComponent<TrailRenderer>());
+            Assert.IsNull(playerLaser.GetComponent<TrailRenderer>(), "Laser projectile must not have TrailRenderer ribbon");
 
             var enemyLaser = TestAssetHelper.LoadPrefab("Projectiles/EnemyLaser");
             Assert.IsNotNull(enemyLaser, "EnemyLaser prefab must exist in Prefabs/Projectiles");

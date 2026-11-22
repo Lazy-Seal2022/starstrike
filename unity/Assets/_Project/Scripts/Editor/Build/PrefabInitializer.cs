@@ -99,15 +99,6 @@ namespace StarStrike.Editor
             proj.lifetime = 3f;
             proj.combatConfig = AssetDatabase.LoadAssetAtPath<CombatConfig>("Assets/_Project/Resources/Data/CombatConfig.asset");
 
-            var tr = go.AddComponent<TrailRenderer>();
-            tr.time = 0.15f;
-            tr.startWidth = 0.12f;
-            tr.endWidth = 0f;
-            var shader = Shader.Find("Sprites/Default");
-            if (shader != null) tr.material = new Material(shader);
-            tr.startColor = new Color(0.2f, 0.9f, 1f, 0.8f);
-            tr.endColor = new Color(0.1f, 0.5f, 1f, 0f);
-
             SavePrefab(go, "Projectiles/PlayerLaser");
         }
 
@@ -135,15 +126,6 @@ namespace StarStrike.Editor
             proj.speed = 20f;
             proj.lifetime = 3f;
             proj.combatConfig = AssetDatabase.LoadAssetAtPath<CombatConfig>("Assets/_Project/Resources/Data/CombatConfig.asset");
-
-            var tr = go.AddComponent<TrailRenderer>();
-            tr.time = 0.15f;
-            tr.startWidth = 0.12f;
-            tr.endWidth = 0f;
-            var shader = Shader.Find("Sprites/Default");
-            if (shader != null) tr.material = new Material(shader);
-            tr.startColor = new Color(1f, 0.3f, 0.2f, 0.8f);
-            tr.endColor = new Color(0.8f, 0.1f, 0.1f, 0f);
 
             SavePrefab(go, "Projectiles/EnemyLaser");
         }

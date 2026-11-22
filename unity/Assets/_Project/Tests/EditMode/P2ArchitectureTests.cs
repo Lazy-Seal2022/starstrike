@@ -85,20 +85,20 @@ namespace StarStrike.Tests.EditMode
             Assert.IsTrue(thruster.IsThrusting);
             Assert.IsFalse(thruster.IsBoosting);
 
-            var trail = shipGo.GetComponentInChildren<TrailRenderer>();
-            Assert.IsNotNull(trail, "ShipThrusterEffect must create a TrailRenderer");
-            Assert.IsTrue(trail.emitting, "TrailRenderer must emit when thrusting");
-            Assert.AreEqual(0.35f, trail.startWidth, 0.01f);
+            var ps = thruster.ExhaustParticles;
+            Assert.IsNotNull(ps, "ShipThrusterEffect must create ExhaustParticles");
+            Assert.IsTrue(ps.isPlaying, "Particles must play when thrusting");
+            Assert.AreEqual(thruster.normalThrustColor, ps.main.startColor.color);
 
             // Boost thrust
             thruster.SetThrusting(true, true);
             Assert.IsTrue(thruster.IsBoosting);
-            Assert.AreEqual(0.5f, trail.startWidth, 0.01f, "Boost must widen the trail");
+            Assert.AreEqual(thruster.boostThrustColor, ps.main.startColor.color, "Boost must change particle color");
 
             // Stop thrust
             thruster.SetThrusting(false, false);
             Assert.IsFalse(thruster.IsThrusting);
-            Assert.IsFalse(trail.emitting, "TrailRenderer must stop emitting when idle");
+            Assert.IsFalse(ps.isPlaying, "Particles must stop when idle");
         }
 
         [Test]
