@@ -79,6 +79,12 @@ namespace StarStrike.Gameplay
             {
                 thrusterEffect = gameObject.AddComponent<StarStrike.Gameplay.FX.ShipThrusterEffect>();
             }
+
+            var shieldField = GetComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+            if (shieldField == null)
+            {
+                shieldField = gameObject.AddComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+            }
         }
 
         private void FixedUpdate()

@@ -256,6 +256,8 @@ namespace StarStrike.Editor
             var ai = go.AddComponent<EnemyAI>();
             ai.definition = AssetDatabase.LoadAssetAtPath<EnemyDefinition>("Assets/_Project/Resources/Data/Enemy_Drone.asset");
 
+            go.AddComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+
             SavePrefab(go, "Enemies/EnemyDrone");
         }
 
@@ -294,6 +296,8 @@ namespace StarStrike.Editor
 
             var brain = go.AddComponent<BossBrain>();
             brain.config = AssetDatabase.LoadAssetAtPath<BossConfig>("Assets/_Project/Resources/Data/BossConfig.asset");
+
+            go.AddComponent<StarStrike.Gameplay.FX.ShipShieldField>();
 
             SavePrefab(go, "Enemies/BossDreadnought");
         }
@@ -345,6 +349,8 @@ namespace StarStrike.Editor
             var prog = go.AddComponent<PlayerProgression>();
             prog.currentShip = def;
             prog.gameConfig = AssetDatabase.LoadAssetAtPath<GameConfig>("Assets/_Project/Resources/Data/GameConfig.asset");
+
+            go.AddComponent<StarStrike.Gameplay.FX.ShipShieldField>();
 
             Vector3 leftPos = new Vector3(0.65f, 0.3f, 0f);
             Vector3 rightPos = new Vector3(0.65f, -0.3f, 0f);
@@ -1116,6 +1122,38 @@ namespace StarStrike.Editor
             catch (System.Exception ex)
             {
                 Debug.LogError($"[FAIL] 13. Physical sockets & hitbox verification failed: {ex.Message}");
+                failed++;
+            }
+
+            // 14. Ship Shield Field & Impact Ripple Verification
+            try
+            {
+                var shipObj = new GameObject("TestShip_Shield");
+                var health = shipObj.AddComponent<ShipHealth>();
+                health.maxShield = 100f;
+                health.ResetMeters();
+
+                var shield = shipObj.AddComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+                shield.EnsureInitialized();
+                shield.SubscribeEvents();
+
+                // Initial state
+                if (shield.CurrentDomeAlpha != 0f)
+                    throw new System.Exception("Shield dome alpha should be 0 initially!");
+
+                // Take damage to shield (impact at Vector2(0.5, 0.5))
+                health.TakeDamage(25f, new Vector2(0.5f, 0.5f));
+                if (shield.CurrentDomeAlpha <= 0f)
+                    throw new System.Exception("Shield impact should flare perimeter dome!");
+
+                Object.DestroyImmediate(shipObj);
+
+                Debug.Log("[PASS] 14. Ship Shield Field & Impact Ripple verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 14. Shield Field verification failed: {ex.Message}");
                 failed++;
             }
 

@@ -216,7 +216,7 @@ namespace StarStrike.Gameplay
                         float dist = Vector2.Distance(transform.position, victim.transform.position);
                         float falloff = Mathf.Clamp01(1f - (dist / blastRadius) * 0.4f);
                         float finalDmg = damage * falloff;
-                        damageable.TakeDamage(finalDmg);
+                        damageable.TakeDamage(finalDmg, transform.position);
                         GameEvents.TriggerDamageDealt(victim.transform.position, finalDmg, isCrit: Random.value < 0.25f);
                     }
                 }

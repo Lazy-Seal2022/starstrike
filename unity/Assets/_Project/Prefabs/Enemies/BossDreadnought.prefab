@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 6113833788004696133}
   - component: {fileID: 7279258389834606636}
   - component: {fileID: 3102381065359539496}
+  - component: {fileID: 4088246954686309301}
   m_Layer: 0
   m_Name: BossDreadnought
   m_TagString: Boss
@@ -238,3 +239,21 @@ MonoBehaviour:
   sightRadius: 40
   attackRadius: 15
   triggerVictoryOnDefeat: 0
+--- !u!114 &4088246954686309301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7529469353253515448}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04a039b5b4a43d54ebb21f4f5b421ff1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: StarStrike.Gameplay::StarStrike.Gameplay.FX.ShipShieldField
+  playerShieldColor: {r: 0.2, g: 0.9, b: 1, a: 0.95}
+  enemyShieldColor: {r: 1, g: 0.65, b: 0.18, a: 0.95}
+  bossShieldColor: {r: 1, g: 0.22, b: 0.35, a: 0.95}
+  shieldRadius: 1
+  autoDetectRadius: 1
+  domeFadeSpeed: 4.2

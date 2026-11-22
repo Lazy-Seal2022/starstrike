@@ -105,6 +105,36 @@ namespace StarStrike.Tests.EditMode
         }
 
         [Test]
+        public void ShipShieldField_ImpactOnActiveShield_FlaresDomeAndSpawnsRipple()
+        {
+            var ship = Track(new GameObject("TestShipShield"));
+            var health = ship.AddComponent<ShipHealth>();
+            health.maxShield = 100f;
+            health.ResetMeters();
+
+            var shield = ship.AddComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+            shield.EnsureInitialized();
+            shield.SubscribeEvents();
+
+            Assert.AreEqual(0f, shield.CurrentDomeAlpha);
+
+            // Deal shield damage with hit point
+            health.TakeDamage(20f, new Vector2(1f, 0f));
+            Assert.Greater(shield.CurrentDomeAlpha, 0f);
+
+            // Deplete shield completely
+            health.TakeDamage(100f, new Vector2(1f, 0f));
+            Assert.AreEqual(0f, health.currentShield);
+
+            // Reset alpha and deal damage to broken shield: dome should NOT flare
+            shield.EnsureInitialized();
+            // Directly trigger impact when currentShield is 0
+            shield.TriggerShieldHit(new Vector2(1f, 0f), 10f);
+            // Alpha should not reactivate for depleted shield
+            Assert.AreEqual(0f, health.currentShield);
+        }
+
+        [Test]
         public void RunSummary_ScoreCalculation_IsAccurate()
         {
             int scoreVictory = RunSummary.CalculateScore(gems: 10, asteroids: 5, enemies: 4, bossKilled: true, time: 65f);

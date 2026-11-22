@@ -25,6 +25,8 @@ namespace StarStrike.Gameplay
         private static Sprite cachedPowerUp;
         private static Sprite cachedMissile;
         private static Sprite cachedPellet;
+        private static Sprite cachedShieldRipple;
+        private static Sprite cachedShieldDome;
 
         private static Sprite GetCachedOrGenerate(ref Sprite cache, System.Func<Sprite> generator, bool forceNew = false)
         {
@@ -516,6 +518,101 @@ namespace StarStrike.Gameplay
                 cachedRoundedBox = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100, 0, SpriteMeshType.FullRect, new Vector4(cornerRadius, cornerRadius, cornerRadius, cornerRadius));
             }
             return cachedRoundedBox;
+        }
+
+        public static Sprite GetShieldRippleSprite(int size = 128, bool forceProcedural = false)
+        {
+            return GetCachedOrGenerate(ref cachedShieldRipple, () => GenerateShieldRippleInternal(size), forceProcedural);
+        }
+
+        private static Sprite GenerateShieldRippleInternal(int size)
+        {
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Bilinear;
+            Color[] cols = new Color[size * size];
+            Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
+            float radius = size * 0.48f;
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = x - center.x;
+                    float dy = y - center.y;
+                    float dist = Mathf.Sqrt(dx * dx + dy * dy);
+                    if (dist > radius)
+                    {
+                        cols[y * size + x] = Color.clear;
+                        continue;
+                    }
+
+                    float normDist = dist / radius;
+                    float angle = Mathf.Atan2(dy, dx);
+
+                    // Concentric energy shockwave rings
+                    float rings = Mathf.Sin(normDist * Mathf.PI * 4f);
+                    rings = Mathf.Pow(Mathf.Clamp01(rings * 0.5f + 0.5f), 2.5f);
+
+                    // 6-fold hexagonal facets
+                    float hex = Mathf.Clamp01(Mathf.Cos(6f * angle) * 0.5f + 0.5f);
+
+                    // Central kinetic impact core
+                    float core = Mathf.Exp(-normDist * normDist * 8f);
+
+                    // Feathered soft edge falloff
+                    float edgeFade = Mathf.Pow(1f - normDist, 2f);
+
+                    float intensity = Mathf.Clamp01((core * 1.5f + rings * 0.7f + hex * rings * 0.5f) * edgeFade);
+                    cols[y * size + x] = new Color(1f, 1f, 1f, intensity);
+                }
+            }
+            tex.SetPixels(cols);
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100);
+        }
+
+        public static Sprite GetShieldDomeSprite(int size = 128, bool forceProcedural = false)
+        {
+            return GetCachedOrGenerate(ref cachedShieldDome, () => GenerateShieldDomeInternal(size), forceProcedural);
+        }
+
+        private static Sprite GenerateShieldDomeInternal(int size)
+        {
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Bilinear;
+            Color[] cols = new Color[size * size];
+            Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
+            float radius = size * 0.48f;
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = x - center.x;
+                    float dy = y - center.y;
+                    float dist = Mathf.Sqrt(dx * dx + dy * dy);
+                    if (dist > radius)
+                    {
+                        cols[y * size + x] = Color.clear;
+                        continue;
+                    }
+
+                    float normDist = dist / radius;
+                    float angle = Mathf.Atan2(dy, dx);
+
+                    // Glowing outer perimeter rim
+                    float rim = Mathf.Exp(-Mathf.Pow((normDist - 0.92f) * 12f, 2f));
+
+                    // Subtle interior hex grid shimmer
+                    float hexField = Mathf.Cos(12f * angle) * 0.08f + 0.05f;
+
+                    float alpha = Mathf.Clamp01(rim * 0.9f + hexField * (1f - normDist));
+                    cols[y * size + x] = new Color(1f, 1f, 1f, alpha);
+                }
+            }
+            tex.SetPixels(cols);
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100);
         }
     }
 }

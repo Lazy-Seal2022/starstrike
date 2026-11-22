@@ -25,7 +25,10 @@ namespace StarStrike.Gameplay
         public event Action<float, float> OnShieldChanged;
         public event Action<float, float> OnEnergyChanged;
         public event Action<float> OnDamaged;
+        public event Action<Vector2, float> OnShieldImpact;
         public event Action OnDied;
+
+        private Vector2 pendingHitPoint = Vector2.zero;
 
         private void Awake()
         {
@@ -74,12 +77,27 @@ namespace StarStrike.Gameplay
             }
         }
 
+        public void TakeDamage(float amount, Vector2 hitPoint)
+        {
+            pendingHitPoint = hitPoint;
+            TakeDamage(amount);
+        }
+
         public void TakeDamage(float amount)
         {
             if (isInvulnerable) return;
+
+            float previousShield = currentShield;
             currentShield -= amount;
             
             OnDamaged?.Invoke(amount);
+
+            if (previousShield > 0f)
+            {
+                Vector2 hitPos = pendingHitPoint != Vector2.zero ? pendingHitPoint : (Vector2)transform.position;
+                OnShieldImpact?.Invoke(hitPos, amount);
+            }
+            pendingHitPoint = Vector2.zero;
             
             if (StarStrike.Gameplay.FX.FXService.Instance != null)
             {

@@ -96,7 +96,7 @@ namespace StarStrike.Gameplay
                     if (damageable != null)
                     {
                         float tickDamage = damagePerSecond * dt;
-                        damageable.TakeDamage(tickDamage);
+                        damageable.TakeDamage(tickDamage, hit.point);
                         GameEvents.TriggerDamageDealt(hit.point, tickDamage, isCrit: false);
                     }
                     break;
