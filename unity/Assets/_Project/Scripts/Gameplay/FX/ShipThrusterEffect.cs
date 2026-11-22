@@ -93,7 +93,12 @@ namespace StarStrike.Gameplay.FX
             // Point exhaust plume backwards (-X) relative to ship forward (+X)
             plumeObj.transform.localRotation = Quaternion.Euler(0f, 0f, 180f);
 
-            plumeRenderer = plumeObj.AddComponent<SpriteRenderer>();
+            GameObject plumeSrObj = new GameObject("PlumeRenderer");
+            plumeSrObj.transform.SetParent(plumeObj.transform, false);
+            // Offset so nozzle starts directly at localOffset (engine bell) and trails backward
+            plumeSrObj.transform.localPosition = new Vector3(-0.56f, 0f, 0f);
+
+            plumeRenderer = plumeSrObj.AddComponent<SpriteRenderer>();
             var shader = Shader.Find("Sprites/Default");
             if (shader != null) plumeRenderer.sharedMaterial = new Material(shader);
             plumeRenderer.sortingOrder = 9; // Directly beneath ship hull (10)
