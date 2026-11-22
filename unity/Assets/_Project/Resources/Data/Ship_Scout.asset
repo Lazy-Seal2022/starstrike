@@ -31,11 +31,15 @@ MonoBehaviour:
     agility: 4.5
   weaponSlots: 1
   hitboxRadius: 0.55
+  shieldHitboxOffset: 0.2
   weaponSockets:
   - {x: 1.55, y: 0}
   thrusterSockets:
   - {x: -1.55, y: 0}
   prefab: {fileID: 223025568944328213, guid: 0a92f4f3bd9a86041a3fa1d71ec3343c, type: 3}
   sprite: {fileID: 21300000, guid: 93264e0fdec00d74a922256fb6343842, type: 3}
+  emissiveTexture: {fileID: 2800000, guid: cdd6021915b7cbe4e8728bf15b470c41, type: 3}
+  emissiveColor: {r: 0.25, g: 0.9, b: 1, a: 1}
+  emissiveIntensity: 1.8
   color: {r: 1, g: 1, b: 1, a: 1}
   scale: 1

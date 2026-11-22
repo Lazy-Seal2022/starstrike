@@ -41,5 +41,8 @@ MonoBehaviour:
   - {x: -2.75, y: -0.85}
   prefab: {fileID: 951607253421130907, guid: b4f311f3eac58e14281f15036f354eb9, type: 3}
   sprite: {fileID: 21300000, guid: eeb58c0cc50f2c14093266c3f88cc18a, type: 3}
+  emissiveTexture: {fileID: 2800000, guid: a530419b8a0cbc349867e11fffd7d8c4, type: 3}
+  emissiveColor: {r: 0.25, g: 0.9, b: 1, a: 1}
+  emissiveIntensity: 1.8
   color: {r: 1, g: 1, b: 1, a: 1}
   scale: 1
