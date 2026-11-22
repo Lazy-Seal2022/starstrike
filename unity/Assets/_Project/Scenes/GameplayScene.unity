@@ -527,7 +527,8 @@ MonoBehaviour:
   weaponSlots: 1
   fireRate: 0.22
   energyCost: 12
-  weaponSockets: []
+  weaponSockets:
+  - {x: 1.55, y: 0}
   isPlayer: 1
 --- !u!114 &727201839
 MonoBehaviour:

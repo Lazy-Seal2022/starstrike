@@ -95,6 +95,15 @@ namespace StarStrike.Gameplay
 
         public Vector2[] GetActiveSocketLocalPositions()
         {
+            if (weaponSockets == null || weaponSockets.Length == 0)
+            {
+                var prog = GetComponent<PlayerProgression>();
+                if (prog != null && prog.currentShip != null && prog.currentShip.weaponSockets != null && prog.currentShip.weaponSockets.Length > 0)
+                {
+                    weaponSockets = prog.currentShip.weaponSockets;
+                }
+            }
+
             if (weaponSockets != null && weaponSockets.Length > 0)
             {
                 if (weaponSockets.Length == 1)
@@ -155,7 +164,7 @@ namespace StarStrike.Gameplay
 
             // Fallback: use combatConfig parameters with CalculateMuzzleOffsets
             float spread = combatConfig != null ? combatConfig.dualWeaponSpread : 0.3f;
-            float fwd = combatConfig != null ? combatConfig.muzzleForwardOffset : 0.65f;
+            float fwd = combatConfig != null ? combatConfig.muzzleForwardOffset : 1.55f;
             float[] offsets = CalculateMuzzleOffsets(weaponSlots, spread);
             Vector2[] fallback = new Vector2[offsets.Length];
             for (int i = 0; i < offsets.Length; i++)
@@ -175,6 +184,22 @@ namespace StarStrike.Gameplay
             }
             return worlds;
         }
+
+#if UNITY_EDITOR
+        private void OnDrawGizmosSelected()
+        {
+            Gizmos.color = Color.yellow;
+            Vector2[] muzzles = GetMuzzleWorldPositions();
+            if (muzzles != null)
+            {
+                foreach (var pos in muzzles)
+                {
+                    Gizmos.DrawWireSphere(pos, 0.12f);
+                    Gizmos.DrawRay(pos, transform.right * 0.4f);
+                }
+            }
+        }
+#endif
 
         public bool TryFire(ShipHealth health) => TryFire((IEnergyConsumer)health);
 

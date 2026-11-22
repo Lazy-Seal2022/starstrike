@@ -91,7 +91,11 @@ namespace StarStrike.Gameplay
             int totalPellets = basePellets + Mathf.Max(0, weaponSlots - 1) * 2;
             float startAngle = -spreadAngle * 0.5f;
             float step = totalPellets > 1 ? spreadAngle / (totalPellets - 1) : 0f;
-            Vector2 nose = (Vector2)transform.position + (Vector2)transform.right * 0.65f;
+            var shipWp = GetComponent<ShipWeapon>();
+            Vector2[] muzzles = shipWp != null ? shipWp.GetMuzzleWorldPositions() : null;
+            Vector2 nose = (muzzles != null && muzzles.Length > 0)
+                ? muzzles[0]
+                : (Vector2)transform.position + (Vector2)transform.right * 1.55f;
 
             for (int i = 0; i < totalPellets; i++)
             {

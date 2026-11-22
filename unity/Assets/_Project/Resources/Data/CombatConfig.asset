@@ -30,6 +30,6 @@ MonoBehaviour:
   minFireRate: 0.1
   defaultEnergyCost: 6
   recoilForce: 1.5
-  muzzleForwardOffset: 0.65
+  muzzleForwardOffset: 1.55
   dualWeaponSpread: 0.3
   bulletInaccuracyAngle: 2.5

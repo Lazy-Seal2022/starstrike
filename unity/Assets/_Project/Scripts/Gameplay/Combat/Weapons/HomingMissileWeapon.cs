@@ -72,13 +72,22 @@ namespace StarStrike.Gameplay
                 rb.AddForce(-transform.right * recoilForce, ForceMode2D.Impulse);
             }
 
-            float spread = 0.4f;
-            float fwd = 0.7f;
-            float[] offsets = ShipWeapon.CalculateMuzzleOffsets(weaponSlots, spread);
-
-            foreach (float offset in offsets)
+            var shipWp = GetComponent<ShipWeapon>();
+            Vector2[] muzzles = shipWp != null ? shipWp.GetMuzzleWorldPositions() : null;
+            if (muzzles == null || muzzles.Length == 0)
             {
-                Vector2 nose = (Vector2)transform.position + (Vector2)transform.right * fwd + (Vector2)transform.up * offset;
+                float spread = 0.4f;
+                float fwd = 1.55f;
+                float[] offsets = ShipWeapon.CalculateMuzzleOffsets(weaponSlots, spread);
+                muzzles = new Vector2[offsets.Length];
+                for (int i = 0; i < offsets.Length; i++)
+                {
+                    muzzles[i] = (Vector2)transform.TransformPoint(new Vector2(fwd, offsets[i]));
+                }
+            }
+
+            foreach (Vector2 nose in muzzles)
+            {
                 string poolTag = isPlayer ? "PlayerMissile" : "EnemyMissile";
 
                 GameObject missileObj = null;

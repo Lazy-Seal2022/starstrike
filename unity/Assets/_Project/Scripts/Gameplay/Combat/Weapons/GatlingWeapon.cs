@@ -201,7 +201,7 @@ namespace StarStrike.Gameplay
                 return shipWp.GetMuzzleWorldPositions();
             }
 
-            Vector2 nose = (Vector2)transform.position + (Vector2)transform.right * 0.7f;
+            Vector2 nose = (Vector2)transform.position + (Vector2)transform.right * 1.55f;
             return new Vector2[] { nose };
         }
     }

@@ -75,7 +75,11 @@ namespace StarStrike.Gameplay
             beamRenderer.startWidth = 0.15f * Mathf.Max(1, weaponSlots);
             beamRenderer.endWidth = 0.10f * Mathf.Max(1, weaponSlots);
 
-            Vector2 nose = (Vector2)transform.position + (Vector2)transform.right * 0.65f;
+            var shipWp = GetComponent<ShipWeapon>();
+            Vector2[] muzzles = shipWp != null ? shipWp.GetMuzzleWorldPositions() : null;
+            Vector2 nose = (muzzles != null && muzzles.Length > 0)
+                ? muzzles[0]
+                : (Vector2)transform.position + (Vector2)transform.right * 1.55f;
             Vector2 forward = transform.right;
 
             RaycastHit2D[] hits = Physics2D.RaycastAll(nose, forward, maxRange);

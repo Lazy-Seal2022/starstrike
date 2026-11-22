@@ -28,7 +28,7 @@ namespace StarStrike.Core
         public float minFireRate = 0.10f;
         public float defaultEnergyCost = 6f;
         public float recoilForce = 1.5f;
-        public float muzzleForwardOffset = 0.65f;
+        public float muzzleForwardOffset = 1.55f;
         public float dualWeaponSpread = 0.3f;
         public float bulletInaccuracyAngle = 2.5f;
     }
