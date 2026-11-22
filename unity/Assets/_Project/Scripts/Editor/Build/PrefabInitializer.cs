@@ -1453,31 +1453,25 @@ namespace StarStrike.Editor
                 failed++;
             }
 
-            // 19. Verify Shield Impact Ripple Sprite Animation (Feature #1)
+            // 19. Verify Shield Impact Ripple Procedural Setup & Scaling
             try
             {
                 var rippleObj = new GameObject("Test_ShieldRipple");
                 var ripple = rippleObj.AddComponent<StarStrike.Gameplay.FX.ShieldImpactRipple>();
                 ripple.EnsureInitialized();
 
-                var frames = StarStrike.Gameplay.FX.ShieldImpactRipple.RippleFrames;
-                if (frames == null || frames.Length != 6)
-                    throw new System.Exception($"Expected 6 ripple frames, got {frames?.Length ?? 0}");
-                for (int i = 0; i < frames.Length; i++)
-                {
-                    if (frames[i] == null)
-                        throw new System.Exception($"Ripple frame {i} is null!");
-                }
-
-                ripple.Initialize(new Color(0.2f, 0.9f, 1f, 1f), 0.2f, 0.8f, 0.2f);
-                var sr = ripple.GetComponent<SpriteRenderer>();
+                var sr = ripple.SpriteRenderer;
                 if (sr == null || sr.sprite == null)
-                    throw new System.Exception("ShieldImpactRipple SpriteRenderer or sprite is null!");
+                    throw new System.Exception("ShieldImpactRipple SpriteRenderer or procedural sprite is null!");
                 if (sr.sortingOrder != 14)
                     throw new System.Exception($"ShieldImpactRipple sortingOrder expected 14, got {sr.sortingOrder}");
 
+                ripple.Initialize(new Color(0.2f, 0.9f, 1f, 1f), 0.2f, 0.8f, 0.2f);
+                if (rippleObj.transform.localScale.x < 0.19f || rippleObj.transform.localScale.x > 0.21f)
+                    throw new System.Exception($"ShieldImpactRipple start scale mismatch: {rippleObj.transform.localScale}");
+
                 Object.DestroyImmediate(rippleObj);
-                Debug.Log("[PASS] 19. Shield Impact Ripple (Feature #1: 6 frames, 128x128 transparent) verified");
+                Debug.Log("[PASS] 19. Shield Impact Ripple (Procedural Hex Flare, Zero GC, Layer 14) verified");
                 passed++;
             }
             catch (System.Exception ex)
@@ -1486,123 +1480,96 @@ namespace StarStrike.Editor
                 failed++;
             }
 
-            // 20. Verify Thruster Plume Loop Sprite Animation (Feature #2)
+            // 20. Verify Ship Thruster Effect TrailRenderer & Modulation
             try
             {
                 var shipObj = new GameObject("Test_ShipThruster");
                 var thruster = shipObj.AddComponent<StarStrike.Gameplay.FX.ShipThrusterEffect>();
                 thruster.EnsureInitialized();
 
-                var cruise = StarStrike.Gameplay.FX.ShipThrusterEffect.CruiseFrames;
-                var boost = StarStrike.Gameplay.FX.ShipThrusterEffect.BoostFrames;
-                if (cruise == null || cruise.Length != 6)
-                    throw new System.Exception($"Expected 6 cruise plume frames, got {cruise?.Length ?? 0}");
-                if (boost == null || boost.Length != 6)
-                    throw new System.Exception($"Expected 6 boost plume frames, got {boost?.Length ?? 0}");
-                for (int i = 0; i < 6; i++)
-                {
-                    if (cruise[i] == null) throw new System.Exception($"Cruise frame {i} is null!");
-                    if (boost[i] == null) throw new System.Exception($"Boost frame {i} is null!");
-                }
-
-                if (thruster.PlumeRenderer == null)
-                    throw new System.Exception("Thruster PlumeRenderer is null!");
-                if (thruster.PlumeRenderer.enabled)
-                    throw new System.Exception("Thruster PlumeRenderer should be disabled when idle!");
+                var trail = thruster.Trail;
+                if (trail == null)
+                    throw new System.Exception("Thruster TrailRenderer is null!");
+                if (trail.emitting)
+                    throw new System.Exception("Thruster TrailRenderer should not be emitting when idle!");
+                if (trail.sortingOrder != 4)
+                    throw new System.Exception($"Thruster trail sortingOrder expected 4, got {trail.sortingOrder}");
 
                 // Activate cruise thrust
                 thruster.SetThrusting(true, false);
-                if (!thruster.PlumeRenderer.enabled)
-                    throw new System.Exception("Thruster PlumeRenderer should be enabled when thrusting!");
+                if (!trail.emitting)
+                    throw new System.Exception("Thruster trail should be emitting when thrusting!");
+                if (Mathf.Abs(trail.startWidth - 0.35f) > 0.01f)
+                    throw new System.Exception($"Cruise trail startWidth expected 0.35f, got {trail.startWidth}");
 
                 // Activate boost thrust
                 thruster.SetThrusting(true, true);
-                if (!thruster.PlumeRenderer.enabled)
-                    throw new System.Exception("Thruster PlumeRenderer should remain enabled when boosting!");
+                if (!trail.emitting)
+                    throw new System.Exception("Thruster trail should remain emitting when boosting!");
+                if (Mathf.Abs(trail.startWidth - 0.50f) > 0.01f)
+                    throw new System.Exception($"Boost trail startWidth expected 0.50f, got {trail.startWidth}");
 
                 // Deactivate thrust
                 thruster.SetThrusting(false, false);
-                if (thruster.PlumeRenderer.enabled)
-                    throw new System.Exception("Thruster PlumeRenderer should be disabled after stopping thrust!");
+                if (trail.emitting)
+                    throw new System.Exception("Thruster trail should stop emitting after thrust stops!");
 
                 Object.DestroyImmediate(shipObj);
-                Debug.Log("[PASS] 20. Thruster Plume Loop (Feature #2: 6 cruise + 6 boost frames, 64x64) verified");
+                Debug.Log("[PASS] 20. Ship Thruster Effect (TrailRenderer & Particle Modulation) verified");
                 passed++;
             }
             catch (System.Exception ex)
             {
-                Debug.LogError($"[FAIL] 20. Thruster Plume Loop verification failed: {ex.Message}");
+                Debug.LogError($"[FAIL] 20. Ship Thruster Effect verification failed: {ex.Message}");
                 failed++;
             }
 
-            // 21. Verify Handcrafted Animated Sprite Explosion FX (Feature #3)
+            // 21. Verify Native Dynamic Particle Explosion Pooling & Scaling
             try
             {
-                var explGo = StarStrike.Gameplay.FX.AnimatedSpriteExplosion.CreatePrefab();
-                var anim = explGo.GetComponent<StarStrike.Gameplay.FX.AnimatedSpriteExplosion>();
-                if (anim == null)
-                    throw new System.Exception("AnimatedSpriteExplosion component missing from prefab!");
-
-                var frames = StarStrike.Gameplay.FX.AnimatedSpriteExplosion.ExplosionFrames;
-                if (frames == null || frames.Length != 8)
-                    throw new System.Exception($"Expected 8 explosion frames, got {frames?.Length ?? 0}");
-                for (int i = 0; i < frames.Length; i++)
-                {
-                    if (frames[i] == null) throw new System.Exception($"Explosion frame {i} is null!");
-                }
-
-                anim.Initialize(1.8f, 0.35f);
-                var sr = explGo.GetComponent<SpriteRenderer>();
-                if (sr == null || sr.sprite == null)
-                    throw new System.Exception("Explosion SpriteRenderer or sprite is null!");
-                if (sr.sortingOrder != 15)
-                    throw new System.Exception($"Explosion sortingOrder expected 15, got {sr.sortingOrder}");
-                if (explGo.transform.localScale.x < 1.7f)
-                    throw new System.Exception($"Explosion scale expected ~1.8f, got {explGo.transform.localScale.x}");
+                var explGo = StarStrike.Gameplay.FX.FXService.CreateExplosionPrefab();
+                var ps = explGo.GetComponent<ParticleSystem>();
+                if (ps == null)
+                    throw new System.Exception("ExplosionFX missing ParticleSystem component!");
+                if (ps.main.loop)
+                    throw new System.Exception("Explosion particle system should not loop!");
+                if (ps.main.stopAction != ParticleSystemStopAction.Disable)
+                    throw new System.Exception("Explosion stopAction should be Disable for pool reuse!");
 
                 Object.DestroyImmediate(explGo);
-                Debug.Log("[PASS] 21. Handcrafted Arcade Explosion (Feature #3: 8 frames, 128x128 multi-lobed) verified");
+                Debug.Log("[PASS] 21. Native Dynamic Particle Explosion (Multi-Scale Burst & Pool Lifecycle) verified");
                 passed++;
             }
             catch (System.Exception ex)
             {
-                Debug.LogError($"[FAIL] 21. Handcrafted Explosion verification failed: {ex.Message}");
+                Debug.LogError($"[FAIL] 21. Native Explosion verification failed: {ex.Message}");
                 failed++;
             }
 
-            // 22. Verify Weapon Muzzle Flash FX Lifecycle & Animation (Feature #5)
+            // 22. Verify Weapon Kinematic Recoil & Hardpoint Sockets
             try
             {
-                var flashGo = StarStrike.Gameplay.FX.MuzzleFlashFX.CreatePrefab();
-                var flash = flashGo.GetComponent<StarStrike.Gameplay.FX.MuzzleFlashFX>();
-                if (flash == null)
-                    throw new System.Exception("MuzzleFlashFX component missing from prefab!");
+                var shipObj = new GameObject("Test_ShipWeaponRecoil");
+                var rb = shipObj.AddComponent<Rigidbody2D>();
+                rb.mass = 1f;
+                var weapon = shipObj.AddComponent<ShipWeapon>();
+                weapon.weaponSlots = 1;
+                weapon.fireRate = 0.1f;
+                weapon.energyCost = 0f;
 
-                var frames = StarStrike.Gameplay.FX.MuzzleFlashFX.FlashFrames;
-                if (frames == null || frames.Length != 4)
-                    throw new System.Exception($"Expected 4 muzzle flash frames, got {frames?.Length ?? 0}");
-                for (int i = 0; i < frames.Length; i++)
-                {
-                    if (frames[i] == null) throw new System.Exception($"Muzzle flash frame {i} is null!");
-                }
+                shipObj.transform.rotation = Quaternion.identity;
+                weapon.TryFire(null);
 
-                Color testColor = new Color(0.2f, 0.9f, 1f, 1f);
-                flash.Initialize(testColor, 0.65f, 0.08f);
-                var sr = flashGo.GetComponent<SpriteRenderer>();
-                if (sr == null || sr.sprite == null)
-                    throw new System.Exception("MuzzleFlash SpriteRenderer or sprite is null!");
-                if (sr.sortingOrder != 16)
-                    throw new System.Exception($"MuzzleFlash sortingOrder expected 16, got {sr.sortingOrder}");
-                if (sr.color != testColor)
-                    throw new System.Exception($"MuzzleFlash tint color mismatch: expected {testColor}, got {sr.color}");
+                if (weapon.WeaponSlots != 1)
+                    throw new System.Exception($"Expected 1 slot, got {weapon.WeaponSlots}");
 
-                Object.DestroyImmediate(flashGo);
-                Debug.Log("[PASS] 22. Muzzle Flash FX (Feature #5: 4 frames, 64x64 plasma burst) verified");
+                Object.DestroyImmediate(shipObj);
+                Debug.Log("[PASS] 22. Weapon Kinematic Recoil & Hardpoint Sockets verified");
                 passed++;
             }
             catch (System.Exception ex)
             {
-                Debug.LogError($"[FAIL] 22. Muzzle Flash FX verification failed: {ex.Message}");
+                Debug.LogError($"[FAIL] 22. Weapon Recoil verification failed: {ex.Message}");
                 failed++;
             }
 

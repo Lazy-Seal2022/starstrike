@@ -226,7 +226,7 @@ namespace StarStrike.Gameplay.FX
             }
         }
 
-        private GameObject CreateExplosionPrefab()
+        public static GameObject CreateExplosionPrefab()
         {
             GameObject obj = new GameObject("ExplosionFX");
             ParticleSystem ps = obj.AddComponent<ParticleSystem>();
