@@ -111,61 +111,65 @@ namespace StarStrike.Gameplay
                 muzzles = shipWp != null ? shipWp.GetMuzzleWorldPositions() : null;
             }
 
-            Vector2 nose = (muzzles != null && muzzles.Length > 0)
-                ? muzzles[0]
-                : (Vector2)transform.position + (Vector2)transform.right * 1.55f;
-
-            for (int i = 0; i < totalPellets; i++)
+            if (muzzles == null || muzzles.Length == 0)
             {
-                float angle = startAngle + (step * i);
-                Quaternion rot = transform.rotation * Quaternion.Euler(0, 0, angle);
+                muzzles = new Vector2[] { (Vector2)transform.position + (Vector2)transform.right * 1.55f };
+            }
 
-                GameObject pelletObj = null;
-                string poolTag = isPlayer ? "PlayerScatterPellet" : "EnemyScatterPellet";
-
-                if (PoolManager.Instance != null)
+            foreach (Vector2 nose in muzzles)
+            {
+                for (int i = 0; i < totalPellets; i++)
                 {
-                    pelletObj = PoolManager.Instance.Spawn(poolTag, nose, rot, () =>
+                    float angle = startAngle + (step * i);
+                    Quaternion rot = transform.rotation * Quaternion.Euler(0, 0, angle);
+
+                    GameObject pelletObj = null;
+                    string poolTag = isPlayer ? "PlayerScatterPellet" : "EnemyScatterPellet";
+
+                    if (PoolManager.Instance != null)
                     {
-                        if (pelletPrefab != null)
+                        pelletObj = PoolManager.Instance.Spawn(poolTag, nose, rot, () =>
                         {
-                            var inst = Instantiate(pelletPrefab, nose, rot);
-                            inst.name = poolTag;
-                            return inst;
-                        }
-                        GameObject obj = new GameObject(poolTag);
-                        obj.tag = isPlayer ? "Laser" : "EnemyLaser";
-                        obj.AddComponent<LaserProjectile>();
-                        return obj;
-                    });
-                }
-                else
-                {
-                    if (pelletPrefab != null)
-                    {
-                        pelletObj = Instantiate(pelletPrefab, nose, rot);
-                        pelletObj.name = poolTag;
+                            if (pelletPrefab != null)
+                            {
+                                var inst = Instantiate(pelletPrefab, nose, rot);
+                                inst.name = poolTag;
+                                return inst;
+                            }
+                            GameObject obj = new GameObject(poolTag);
+                            obj.tag = isPlayer ? "Laser" : "EnemyLaser";
+                            obj.AddComponent<LaserProjectile>();
+                            return obj;
+                        });
                     }
                     else
                     {
-                        pelletObj = new GameObject(poolTag);
-                        pelletObj.tag = isPlayer ? "Laser" : "EnemyLaser";
-                        pelletObj.transform.position = nose;
-                        pelletObj.transform.rotation = rot;
-                        pelletObj.AddComponent<LaserProjectile>();
+                        if (pelletPrefab != null)
+                        {
+                            pelletObj = Instantiate(pelletPrefab, nose, rot);
+                            pelletObj.name = poolTag;
+                        }
+                        else
+                        {
+                            pelletObj = new GameObject(poolTag);
+                            pelletObj.tag = isPlayer ? "Laser" : "EnemyLaser";
+                            pelletObj.transform.position = nose;
+                            pelletObj.transform.rotation = rot;
+                            pelletObj.AddComponent<LaserProjectile>();
+                        }
                     }
-                }
 
-                LaserProjectile proj = pelletObj.GetComponent<LaserProjectile>();
-                if (proj != null)
-                {
-                    proj.Initialize(pelletDamage, pelletSpeed, !isPlayer);
-                    proj.lifetime = 0.85f; // Short-range shotgun falloff
-
-                    var sr = pelletObj.GetComponent<SpriteRenderer>();
-                    if (sr != null)
+                    LaserProjectile proj = pelletObj.GetComponent<LaserProjectile>();
+                    if (proj != null)
                     {
-                        sr.sprite = ProceduralSpriteHelper.GetPelletSprite();
+                        proj.Initialize(pelletDamage, pelletSpeed, !isPlayer);
+                        proj.lifetime = 0.85f; // Short-range shotgun falloff
+
+                        var sr = pelletObj.GetComponent<SpriteRenderer>();
+                        if (sr != null)
+                        {
+                            sr.sprite = ProceduralSpriteHelper.GetPelletSprite();
+                        }
                     }
                 }
             }

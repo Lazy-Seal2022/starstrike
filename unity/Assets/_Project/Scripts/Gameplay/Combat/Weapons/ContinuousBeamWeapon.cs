@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using StarStrike.Core;
 
@@ -14,7 +15,11 @@ namespace StarStrike.Gameplay
 
         [Header("Visuals")]
         public Color beamColor = new Color(0.2f, 0.95f, 1f, 0.9f);
-        public LineRenderer beamRenderer;
+        public LineRenderer beamRenderer; // Primary line renderer (socket 0)
+
+        private readonly List<LineRenderer> activeRenderers = new List<LineRenderer>();
+        private readonly RaycastHit2D[] hitBuffer = new RaycastHit2D[16];
+        private static Material sharedBeamMaterial;
 
         public string WeaponName => "Beam Laser";
         public float FireRate { get => fireRate; set => fireRate = value; }
@@ -26,7 +31,11 @@ namespace StarStrike.Gameplay
         [Header("Physical Sockets")]
         public Vector2[] customSockets = null;
         public Vector2[] WeaponSockets => customSockets;
-        public void SetSockets(Vector2[] sockets) => customSockets = sockets;
+        public void SetSockets(Vector2[] sockets)
+        {
+            customSockets = sockets;
+            EnsureBeamRenderers(sockets != null && sockets.Length > 0 ? sockets.Length : 1);
+        }
 
         private float lastTickTime = -999f;
         private bool isFiring = false;
@@ -35,27 +44,59 @@ namespace StarStrike.Gameplay
 
         private void Awake()
         {
-            SetupBeamRenderer();
+            EnsureBeamRenderers(1);
         }
 
-        private void SetupBeamRenderer()
+        private void EnsureBeamRenderers(int requiredCount)
         {
-            if (beamRenderer == null)
+            if (requiredCount <= 0) requiredCount = 1;
+
+            if (activeRenderers.Count == 0)
             {
-                var beamGo = new GameObject("BeamEffect");
-                beamGo.transform.SetParent(transform, false);
-                beamRenderer = beamGo.AddComponent<LineRenderer>();
+                var existing = GetComponentsInChildren<LineRenderer>(true);
+                foreach (var lr in existing)
+                {
+                    if (lr != null && lr.gameObject.name.StartsWith("BeamEffect"))
+                    {
+                        if (!activeRenderers.Contains(lr)) activeRenderers.Add(lr);
+                    }
+                }
             }
 
-            beamRenderer.positionCount = 2;
-            beamRenderer.startWidth = 0.18f;
-            beamRenderer.endWidth = 0.12f;
-            beamRenderer.useWorldSpace = true;
-            beamRenderer.material = new Material(Shader.Find("Sprites/Default"));
-            beamRenderer.startColor = beamColor;
-            beamRenderer.endColor = new Color(beamColor.r, beamColor.g, beamColor.b, 0.4f);
-            beamRenderer.sortingOrder = 6;
-            beamRenderer.enabled = false;
+            if (sharedBeamMaterial == null)
+            {
+                var shader = Shader.Find("Sprites/Default");
+                if (shader != null) sharedBeamMaterial = new Material(shader);
+            }
+
+            while (activeRenderers.Count < requiredCount)
+            {
+                int index = activeRenderers.Count;
+                var beamGo = new GameObject($"BeamEffect_{index}");
+                beamGo.transform.SetParent(transform, false);
+                var lr = beamGo.AddComponent<LineRenderer>();
+                ConfigureLineRenderer(lr);
+                activeRenderers.Add(lr);
+            }
+
+            if (beamRenderer == null && activeRenderers.Count > 0)
+            {
+                beamRenderer = activeRenderers[0];
+            }
+        }
+
+        private void ConfigureLineRenderer(LineRenderer lr)
+        {
+            if (lr == null) return;
+            lr.positionCount = 2;
+            lr.startWidth = 0.18f;
+            lr.endWidth = 0.12f;
+            lr.useWorldSpace = true;
+            if (sharedBeamMaterial != null) lr.material = sharedBeamMaterial;
+            lr.startColor = beamColor;
+            lr.endColor = new Color(beamColor.r, beamColor.g, beamColor.b, 0.4f);
+            lr.sortingOrder = 6;
+            lr.enabled = false;
         }
 
         public bool TryFire(ShipHealth health) => TryFire((IEnergyConsumer)health);
@@ -64,21 +105,6 @@ namespace StarStrike.Gameplay
         {
             float dt = lastTickTime > 0f ? (Time.time - lastTickTime) : Time.deltaTime;
             dt = Mathf.Clamp(dt, 0.01f, 0.1f);
-
-            float energyNeeded = energyCostPerSecond * dt;
-            if (energySource != null && !energySource.ConsumeEnergy(energyNeeded))
-            {
-                StopFiring();
-                return false;
-            }
-
-            lastTickTime = Time.time;
-            isFiring = true;
-
-            if (beamRenderer == null) SetupBeamRenderer();
-            beamRenderer.enabled = true;
-            beamRenderer.startWidth = 0.15f * Mathf.Max(1, weaponSlots);
-            beamRenderer.endWidth = 0.10f * Mathf.Max(1, weaponSlots);
 
             Vector2[] muzzles = null;
             if (customSockets != null && customSockets.Length > 0)
@@ -95,39 +121,87 @@ namespace StarStrike.Gameplay
                 muzzles = shipWp != null ? shipWp.GetMuzzleWorldPositions() : null;
             }
 
-            Vector2 nose = (muzzles != null && muzzles.Length > 0)
-                ? muzzles[0]
-                : (Vector2)transform.position + (Vector2)transform.right * 1.55f;
-            Vector2 forward = transform.right;
-
-            RaycastHit2D[] hits = Physics2D.RaycastAll(nose, forward, maxRange);
-            Vector2 endPoint = nose + forward * maxRange;
-
-            foreach (var hit in hits)
+            if (muzzles == null || muzzles.Length == 0)
             {
-                if (hit.collider == null || hit.collider.gameObject == gameObject) continue;
+                muzzles = new Vector2[] { (Vector2)transform.position + (Vector2)transform.right * 1.55f };
+            }
 
-                bool isTarget = hit.collider.CompareTag("Enemy") || hit.collider.CompareTag("Boss") || hit.collider.CompareTag("Asteroid");
-                if (isTarget)
+            int beamCount = muzzles.Length;
+            float totalEnergyNeeded = (energyCostPerSecond * beamCount) * dt;
+            if (energySource != null && !energySource.ConsumeEnergy(totalEnergyNeeded))
+            {
+                StopFiring();
+                return false;
+            }
+
+            lastTickTime = Time.time;
+            isFiring = true;
+
+            EnsureBeamRenderers(beamCount);
+
+            Vector2 forward = transform.right;
+            float tickDamage = damagePerSecond * dt;
+
+            for (int i = 0; i < beamCount; i++)
+            {
+                Vector2 origin = muzzles[i];
+                Vector2 endPoint = origin + forward * maxRange;
+
+                int hitCount = Physics2D.RaycastNonAlloc(origin, forward, hitBuffer, maxRange);
+                float closestDist = maxRange;
+                RaycastHit2D closestHit = default;
+                bool hasTarget = false;
+
+                for (int h = 0; h < hitCount; h++)
                 {
-                    endPoint = hit.point;
+                    var hit = hitBuffer[h];
+                    if (hit.collider == null || hit.collider.gameObject == gameObject) continue;
 
-                    IDamageable damageable = hit.collider.GetComponent<IDamageable>();
-                    if (damageable == null) damageable = hit.collider.GetComponentInParent<IDamageable>();
-                    if (damageable == null && hit.collider.attachedRigidbody != null) damageable = hit.collider.attachedRigidbody.GetComponent<IDamageable>();
+                    bool isTarget = hit.collider.CompareTag("Enemy") || hit.collider.CompareTag("Boss") || hit.collider.CompareTag("Asteroid");
+                    if (isTarget && hit.distance < closestDist)
+                    {
+                        closestDist = hit.distance;
+                        closestHit = hit;
+                        hasTarget = true;
+                    }
+                }
+
+                if (hasTarget && closestHit.collider != null)
+                {
+                    endPoint = closestHit.point;
+                    IDamageable damageable = closestHit.collider.GetComponent<IDamageable>();
+                    if (damageable == null) damageable = closestHit.collider.GetComponentInParent<IDamageable>();
+                    if (damageable == null && closestHit.collider.attachedRigidbody != null)
+                    {
+                        damageable = closestHit.collider.attachedRigidbody.GetComponent<IDamageable>();
+                    }
 
                     if (damageable != null)
                     {
-                        float tickDamage = damagePerSecond * dt;
-                        damageable.TakeDamage(tickDamage, hit.point);
-                        GameEvents.TriggerDamageDealt(hit.point, tickDamage, isCrit: false);
+                        damageable.TakeDamage(tickDamage, closestHit.point);
+                        GameEvents.TriggerDamageDealt(closestHit.point, tickDamage, isCrit: false);
                     }
-                    break;
+                }
+
+                var lr = activeRenderers[i];
+                if (lr != null)
+                {
+                    lr.enabled = true;
+                    lr.startWidth = 0.16f;
+                    lr.endWidth = 0.10f;
+                    lr.SetPosition(0, origin);
+                    lr.SetPosition(1, endPoint);
                 }
             }
 
-            beamRenderer.SetPosition(0, nose);
-            beamRenderer.SetPosition(1, endPoint);
+            // Disable any extra renderers beyond active beam count
+            for (int i = beamCount; i < activeRenderers.Count; i++)
+            {
+                if (activeRenderers[i] != null)
+                {
+                    activeRenderers[i].enabled = false;
+                }
+            }
 
             return true;
         }
@@ -136,6 +210,13 @@ namespace StarStrike.Gameplay
         {
             isFiring = false;
             lastTickTime = -999f;
+            for (int i = 0; i < activeRenderers.Count; i++)
+            {
+                if (activeRenderers[i] != null)
+                {
+                    activeRenderers[i].enabled = false;
+                }
+            }
             if (beamRenderer != null)
             {
                 beamRenderer.enabled = false;
@@ -143,6 +224,11 @@ namespace StarStrike.Gameplay
         }
 
         private void OnDisable()
+        {
+            StopFiring();
+        }
+
+        private void OnDestroy()
         {
             StopFiring();
         }
