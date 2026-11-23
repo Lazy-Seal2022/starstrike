@@ -11,12 +11,20 @@ namespace StarStrike.Core
         bool ConsumeEnergy(float amount);
     }
 
+    public enum WeaponArchetype
+    {
+        Projectile,
+        Traceable,
+        Beam
+    }
+
     /// <summary>
     /// Contract for weapon systems capable of firing and managing cooldowns.
     /// </summary>
     public interface IWeapon
     {
         string WeaponName { get; }
+        WeaponArchetype Archetype { get; }
         float FireRate { get; set; }
         float EnergyCost { get; }
         int WeaponSlots { get; set; }

@@ -30,6 +30,7 @@ namespace StarStrike.Gameplay
         public void SetSockets(Vector2[] sockets) => weaponSockets = sockets;
 
         public string WeaponName => "Pulse Laser";
+        public WeaponArchetype Archetype => WeaponArchetype.Projectile;
         public float FireRate { get => fireRate; set => fireRate = value; }
         public float EnergyCost => energyCost;
         public int WeaponSlots { get => weaponSlots; set => weaponSlots = value; }

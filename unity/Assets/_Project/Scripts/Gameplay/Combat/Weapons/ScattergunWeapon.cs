@@ -22,6 +22,7 @@ namespace StarStrike.Gameplay
         public GameObject pelletPrefab;
 
         public string WeaponName => "Scattergun";
+        public WeaponArchetype Archetype => WeaponArchetype.Projectile;
         public float FireRate { get => fireRate; set => fireRate = value; }
         public float EnergyCost => energyCost;
         public int WeaponSlots { get => weaponSlots; set => weaponSlots = value; }

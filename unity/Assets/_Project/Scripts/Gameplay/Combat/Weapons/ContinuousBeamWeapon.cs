@@ -19,9 +19,17 @@ namespace StarStrike.Gameplay
 
         private readonly List<LineRenderer> activeRenderers = new List<LineRenderer>();
         private readonly RaycastHit2D[] hitBuffer = new RaycastHit2D[16];
+        private static readonly ContactFilter2D raycastFilter = new ContactFilter2D();
         private static Material sharedBeamMaterial;
 
+        static ContinuousBeamWeapon()
+        {
+            raycastFilter.useTriggers = true;
+            raycastFilter.useLayerMask = false;
+        }
+
         public string WeaponName => "Beam Laser";
+        public WeaponArchetype Archetype => WeaponArchetype.Beam;
         public float FireRate { get => fireRate; set => fireRate = value; }
         public float EnergyCost => energyCostPerSecond;
         public int WeaponSlots { get => weaponSlots; set => weaponSlots = value; }
@@ -147,7 +155,7 @@ namespace StarStrike.Gameplay
                 Vector2 origin = muzzles[i];
                 Vector2 endPoint = origin + forward * maxRange;
 
-                int hitCount = Physics2D.RaycastNonAlloc(origin, forward, hitBuffer, maxRange);
+                int hitCount = Physics2D.Raycast(origin, forward, raycastFilter, hitBuffer, maxRange);
                 float closestDist = maxRange;
                 RaycastHit2D closestHit = default;
                 bool hasTarget = false;

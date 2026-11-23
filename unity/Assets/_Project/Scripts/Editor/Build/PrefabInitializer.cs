@@ -1658,6 +1658,55 @@ namespace StarStrike.Editor
                 failed++;
             }
 
+            // 23. Verify Weapon Archetypes & Multi-Socket Beam Systems
+            try
+            {
+                // Verify archetypes mapping
+                if (ShipWeaponController.GetWeaponArchetype("pulse") != WeaponArchetype.Projectile)
+                    throw new System.Exception("Pulse must map to Projectile archetype");
+                if (ShipWeaponController.GetWeaponArchetype("scattergun") != WeaponArchetype.Projectile)
+                    throw new System.Exception("Scattergun must map to Projectile archetype");
+                if (ShipWeaponController.GetWeaponArchetype("gatling") != WeaponArchetype.Projectile)
+                    throw new System.Exception("Gatling must map to Projectile archetype");
+                if (ShipWeaponController.GetWeaponArchetype("missile") != WeaponArchetype.Traceable)
+                    throw new System.Exception("Missile must map to Traceable archetype");
+                if (ShipWeaponController.GetWeaponArchetype("beam") != WeaponArchetype.Beam)
+                    throw new System.Exception("Beam must map to Beam archetype");
+
+                // Verify archetype labels
+                if (ShipWeaponController.GetArchetypeLabel(WeaponArchetype.Projectile) != "PROJECTILE // BALLISTIC & PLASMA")
+                    throw new System.Exception("Projectile label mismatch");
+                if (ShipWeaponController.GetArchetypeLabel(WeaponArchetype.Traceable) != "TRACEABLE // GUIDED ORDNANCE")
+                    throw new System.Exception("Traceable label mismatch");
+                if (ShipWeaponController.GetArchetypeLabel(WeaponArchetype.Beam) != "BEAM // DIRECTED ENERGY")
+                    throw new System.Exception("Beam label mismatch");
+
+                // Verify multi-socket ContinuousBeamWeapon instances
+                var beamGo = new GameObject("Test_MultiSocketBeam");
+                var beamComp = beamGo.AddComponent<ContinuousBeamWeapon>();
+                beamComp.SetSockets(new Vector2[] {
+                    new Vector2(2.5f, 0f),
+                    new Vector2(0.8f, 1.4f),
+                    new Vector2(0.8f, -1.4f)
+                });
+
+                if (beamComp.Archetype != WeaponArchetype.Beam)
+                    throw new System.Exception("ContinuousBeamWeapon.Archetype should be Beam");
+
+                var lineRenderers = beamGo.GetComponentsInChildren<LineRenderer>();
+                if (lineRenderers.Length != 3)
+                    throw new System.Exception($"Beam weapon with 3 sockets must have 3 LineRenderer instances, got {lineRenderers.Length}");
+
+                Object.DestroyImmediate(beamGo);
+                Debug.Log("[PASS] 23. Weapon Archetypes (Projectile, Traceable, Beam) & Multi-Socket Beam Systems verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 23. Weapon Archetypes verification failed: {ex.Message}");
+                failed++;
+            }
+
             Debug.Log($"=== TOTAL VERIFICATION RESULT: {passed} PASSED, {failed} FAILED ===");
         }
 

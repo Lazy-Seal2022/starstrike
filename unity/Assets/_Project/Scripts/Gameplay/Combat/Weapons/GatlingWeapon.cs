@@ -35,6 +35,7 @@ namespace StarStrike.Gameplay
         public GameObject tracerPrefab;
 
         public string WeaponName => "Gatling Gun";
+        public WeaponArchetype Archetype => WeaponArchetype.Projectile;
         public float FireRate { get => CurrentFireRate; set => baseFireRate = value; }
         public float EnergyCost => energyCost;
         public int WeaponSlots { get => weaponSlots; set => weaponSlots = value; }

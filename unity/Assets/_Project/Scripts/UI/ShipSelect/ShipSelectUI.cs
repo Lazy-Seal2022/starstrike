@@ -617,7 +617,14 @@ namespace StarStrike.UI
             {
                 string weaponId = StorageService.GetEquippedWeapon(info.id);
                 string weaponName = GetWeaponName(weaponId);
-                equippedWeaponText.text = $"<color=#ff8514>[ ARSENAL CONFIG ]</color>  <color=#ffffff><b>{weaponName.ToUpper()}</b></color>";
+                WeaponArchetype arch = ShipWeaponController.GetWeaponArchetype(weaponId);
+                string archBadge = arch switch
+                {
+                    WeaponArchetype.Beam => "<color=#5dade2>[ BEAM ]</color>",
+                    WeaponArchetype.Traceable => "<color=#e67e22>[ TRACEABLE ]</color>",
+                    _ => "<color=#95a5a6>[ PROJECTILE ]</color>"
+                };
+                equippedWeaponText.text = $"<color=#ff8514>[ ARSENAL CONFIG ]</color> {archBadge} <color=#ffffff><b>{weaponName.ToUpper()}</b></color>";
             }
 
             // Action button state

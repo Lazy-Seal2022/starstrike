@@ -322,6 +322,25 @@ namespace StarStrike.Gameplay
             }
         }
 
+        public static WeaponArchetype GetWeaponArchetype(string weaponId)
+        {
+            if (string.IsNullOrEmpty(weaponId)) return WeaponArchetype.Projectile;
+            string lower = weaponId.ToLowerInvariant().Trim();
+            if (lower.Contains("beam") || lower == "3") return WeaponArchetype.Beam;
+            if (lower.Contains("missile") || lower.Contains("homing") || lower == "2") return WeaponArchetype.Traceable;
+            return WeaponArchetype.Projectile;
+        }
+
+        public static string GetArchetypeLabel(WeaponArchetype archetype)
+        {
+            switch (archetype)
+            {
+                case WeaponArchetype.Beam: return "BEAM // DIRECTED ENERGY";
+                case WeaponArchetype.Traceable: return "TRACEABLE // GUIDED ORDNANCE";
+                default: return "PROJECTILE // BALLISTIC & PLASMA";
+            }
+        }
+
         public void InitializeWeapons()
         {
             availableWeapons.Clear();

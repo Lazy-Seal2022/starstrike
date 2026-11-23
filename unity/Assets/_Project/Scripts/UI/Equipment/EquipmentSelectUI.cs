@@ -76,6 +76,7 @@ namespace StarStrike.UI
         {
             public string id;
             public string name;
+            public WeaponArchetype archetype;
             public string classType;
             public float damage;
             public float fireRate;
@@ -99,7 +100,8 @@ namespace StarStrike.UI
             new WeaponDefinitionInfo {
                 id = "pulse",
                 name = "Pulse Laser",
-                classType = "DIRECT ENERGY // STANDARD ISSUE",
+                archetype = WeaponArchetype.Projectile,
+                classType = "PROJECTILE // DIRECT PLASMA",
                 damage = 22f,
                 fireRate = 4.5f,
                 energyCost = 6f,
@@ -109,7 +111,8 @@ namespace StarStrike.UI
             new WeaponDefinitionInfo {
                 id = "scattergun",
                 name = "Scattergun",
-                classType = "HIGH BURST // SPREAD CONE",
+                archetype = WeaponArchetype.Projectile,
+                classType = "PROJECTILE // SPREAD CONE",
                 damage = 75f, // 15 * 5 pellets
                 fireRate = 2.2f,
                 energyCost = 14f,
@@ -119,7 +122,8 @@ namespace StarStrike.UI
             new WeaponDefinitionInfo {
                 id = "missile",
                 name = "Homing Missiles",
-                classType = "GUIDED ORDNANCE // SMART TRACKING",
+                archetype = WeaponArchetype.Traceable,
+                classType = "TRACEABLE // GUIDED ORDNANCE",
                 damage = 60f,
                 fireRate = 1.4f,
                 energyCost = 16f,
@@ -129,7 +133,8 @@ namespace StarStrike.UI
             new WeaponDefinitionInfo {
                 id = "beam",
                 name = "Continuous Beam",
-                classType = "PARTICLE STREAM // INFINITE PIERCE",
+                archetype = WeaponArchetype.Beam,
+                classType = "BEAM // DIRECTED ENERGY",
                 damage = 80f, // DPS
                 fireRate = 60.0f,
                 energyCost = 20f, // /s
@@ -139,7 +144,8 @@ namespace StarStrike.UI
             new WeaponDefinitionInfo {
                 id = "gatling",
                 name = "Rotary Gatling Gun",
-                classType = "KINETIC BALLISTIC // SPOOL-UP ACCELERATION",
+                archetype = WeaponArchetype.Projectile,
+                classType = "PROJECTILE // ROTARY KINETIC",
                 damage = 18f,
                 fireRate = 14.5f, // up to 20/s at max spool
                 energyCost = 2.5f,
@@ -646,14 +652,23 @@ namespace StarStrike.UI
                     bool isMountedOnActive = string.Equals(w.id, mountedOnActiveSocket, System.StringComparison.OrdinalIgnoreCase);
                     bool isInspected = string.Equals(w.id, inspectedWeaponId, System.StringComparison.OrdinalIgnoreCase);
 
-                    string label = isMountedOnActive ? $"<color=#ffe600>[{w.name.ToUpper()}]</color>\n★ MOUNTED" : $"{w.name.ToUpper()}";
+                    string archTag = w.archetype switch
+                    {
+                        WeaponArchetype.Beam => "BEAM",
+                        WeaponArchetype.Traceable => "TRACE",
+                        _ => "PROJ"
+                    };
+
+                    string label = isMountedOnActive
+                        ? $"<color=#ffe600>[{w.name.ToUpper()}]</color>\n★ MOUNTED"
+                        : $"{w.name.ToUpper()}\n<color=#7e9bc4>[{archTag}]</color>";
                     Color col;
                     if (isMountedOnActive) col = CyberVectorTheme.VoltYellow;
                     else if (isInspected) col = CyberVectorTheme.NeonCyan;
                     else col = CyberVectorTheme.DimMuted;
 
                     string capturedWId = w.id;
-                    GameObject btnObj = CreateWeaponButtonWithIcon(weaponButtonContainer, $"WpnBtn_{w.id}", label, w.id, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * btnSpacing), 0), new Vector2(82, 54), col, defaultFont, 9);
+                    GameObject btnObj = CreateWeaponButtonWithIcon(weaponButtonContainer, $"WpnBtn_{w.id}", label, w.id, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * btnSpacing), 0), new Vector2(82, 54), col, defaultFont, 8);
                     Button btn = btnObj.GetComponent<Button>();
                     btn.onClick.AddListener(() => EquipWeaponToSocket(activeSocketIndex, capturedWId));
                 }
@@ -702,7 +717,13 @@ namespace StarStrike.UI
 
             if (weaponDetailTitle != null)
             {
-                weaponDetailTitle.text = $"<color=#ffe600><b>{wDef.name.ToUpper()}</b></color>  <color=#00f2ff>[ {wDef.classType} ]</color>";
+                string archBadge = wDef.archetype switch
+                {
+                    WeaponArchetype.Beam => "<color=#5dade2>[ BEAM ]</color>",
+                    WeaponArchetype.Traceable => "<color=#e67e22>[ TRACEABLE ]</color>",
+                    _ => "<color=#95a5a6>[ PROJECTILE ]</color>"
+                };
+                weaponDetailTitle.text = $"{archBadge} <color=#ffe600><b>{wDef.name.ToUpper()}</b></color>  <color=#7e9bc4>[ {wDef.classType} ]</color>";
             }
             if (weaponDetailStats != null)
             {
