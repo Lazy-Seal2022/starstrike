@@ -545,6 +545,65 @@ namespace StarStrike.UI
             if (shipPreviewImage != null)
             {
                 shipPreviewImage.sprite = ProceduralSpriteHelper.GetShipSprite(info.id);
+
+                // Clear prior socket overlays on preview
+                for (int i = shipPreviewImage.transform.childCount - 1; i >= 0; i--)
+                {
+                    var child = shipPreviewImage.transform.GetChild(i);
+                    if (child.name.StartsWith("PreviewSocket_"))
+                    {
+                        if (Application.isPlaying) Destroy(child.gameObject);
+                        else DestroyImmediate(child.gameObject);
+                    }
+                }
+
+                // Spawn socket fixtures on top of each ship weapon socket
+                var sockets = ShipWeaponController.GetShipHardpointSockets(info.id);
+                Sprite spr = shipPreviewImage.sprite;
+                float halfW = (spr != null && spr.bounds.size.x > 0f) ? spr.bounds.size.x * 0.5f : 2f;
+                float halfH = (spr != null && spr.bounds.size.y > 0f) ? spr.bounds.size.y * 0.5f : 2f;
+
+                float boxW = 180f;
+                float boxH = 180f;
+
+                for (int i = 0; i < sockets.Length; i++)
+                {
+                    var sData = sockets[i];
+                    GameObject sockGo = new GameObject($"PreviewSocket_{sData.index}", typeof(RectTransform), typeof(Image));
+                    sockGo.transform.SetParent(shipPreviewImage.transform, false);
+
+                    RectTransform sRt = sockGo.GetComponent<RectTransform>();
+                    sRt.anchorMin = new Vector2(0.5f, 0.5f);
+                    sRt.anchorMax = new Vector2(0.5f, 0.5f);
+                    sRt.anchoredPosition = new Vector2((sData.localPosition.x / halfW) * (boxW * 0.45f), (sData.localPosition.y / halfH) * (boxH * 0.45f));
+                    sRt.sizeDelta = new Vector2(26f, 26f);
+                    sRt.localRotation = Quaternion.Euler(0f, 0f, -90f);
+
+                    Image sImg = sockGo.GetComponent<Image>();
+                    sImg.sprite = ProceduralSpriteHelper.GetWeaponSocketSprite();
+                    sImg.color = Color.white;
+                    sImg.preserveAspect = true;
+
+                    // If weapon equipped, mount weapon icon on top of the socket
+                    string eqWpn = StorageService.GetSocketWeapon(info.id, sData.index);
+                    if (!string.IsNullOrEmpty(eqWpn))
+                    {
+                        GameObject wpnGo = new GameObject("WeaponIcon", typeof(RectTransform), typeof(Image));
+                        wpnGo.transform.SetParent(sockGo.transform, false);
+
+                        RectTransform wRt = wpnGo.GetComponent<RectTransform>();
+                        wRt.anchorMin = Vector2.zero;
+                        wRt.anchorMax = Vector2.one;
+                        wRt.offsetMin = new Vector2(2f, 2f);
+                        wRt.offsetMax = new Vector2(-2f, -2f);
+                        wRt.localRotation = Quaternion.identity;
+
+                        Image wImg = wpnGo.GetComponent<Image>();
+                        wImg.sprite = ProceduralSpriteHelper.GetWeaponSprite(eqWpn);
+                        wImg.color = Color.white;
+                        wImg.preserveAspect = true;
+                    }
+                }
             }
 
             if (shipStatsText != null)

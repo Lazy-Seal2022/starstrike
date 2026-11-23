@@ -588,17 +588,32 @@ namespace StarStrike.UI
 
                     GameObject sBtnObj = CreateButton(socketButtonContainer, $"SocketBtn_{i}", "", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * btnSpacing), 0), new Vector2(btnWidth, 48), sCol, defaultFont, 10);
                     
-                    // Socket Weapon Icon on Left
-                    GameObject sIconObj = new GameObject("SocketIcon", typeof(RectTransform), typeof(Image));
-                    sIconObj.transform.SetParent(sBtnObj.transform, false);
-                    RectTransform sIconRt = sIconObj.GetComponent<RectTransform>();
-                    sIconRt.anchorMin = new Vector2(0.04f, 0.5f);
-                    sIconRt.anchorMax = new Vector2(0.04f, 0.5f);
-                    sIconRt.anchoredPosition = new Vector2(18f, 0f);
-                    sIconRt.sizeDelta = new Vector2(28f, 28f);
-                    var sIconImg = sIconObj.GetComponent<Image>();
-                    sIconImg.sprite = ProceduralSpriteHelper.GetWeaponSprite(mountedWId);
-                    sIconImg.preserveAspect = true;
+                    // Socket Fixture Base Icon on Left
+                    GameObject sBaseObj = new GameObject("SocketBaseIcon", typeof(RectTransform), typeof(Image));
+                    sBaseObj.transform.SetParent(sBtnObj.transform, false);
+                    RectTransform sBaseRt = sBaseObj.GetComponent<RectTransform>();
+                    sBaseRt.anchorMin = new Vector2(0.04f, 0.5f);
+                    sBaseRt.anchorMax = new Vector2(0.04f, 0.5f);
+                    sBaseRt.anchoredPosition = new Vector2(18f, 0f);
+                    sBaseRt.sizeDelta = new Vector2(30f, 30f);
+                    var sBaseImg = sBaseObj.GetComponent<Image>();
+                    sBaseImg.sprite = ProceduralSpriteHelper.GetWeaponSocketSprite();
+                    sBaseImg.preserveAspect = true;
+
+                    // Mounted Weapon on top of Socket Fixture
+                    if (!string.IsNullOrEmpty(mountedWId))
+                    {
+                        GameObject sIconObj = new GameObject("SocketIcon", typeof(RectTransform), typeof(Image));
+                        sIconObj.transform.SetParent(sBaseObj.transform, false);
+                        RectTransform sIconRt = sIconObj.GetComponent<RectTransform>();
+                        sIconRt.anchorMin = Vector2.zero;
+                        sIconRt.anchorMax = Vector2.one;
+                        sIconRt.offsetMin = new Vector2(2f, 2f);
+                        sIconRt.offsetMax = new Vector2(-2f, -2f);
+                        var sIconImg = sIconObj.GetComponent<Image>();
+                        sIconImg.sprite = ProceduralSpriteHelper.GetWeaponSprite(mountedWId);
+                        sIconImg.preserveAspect = true;
+                    }
 
                     // Label offset to right of icon
                     CreateText(sBtnObj.transform, "Text", sLabel, 9, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, new Vector2(0.24f, 0f), new Vector2(1f, 1f), Vector2.zero, Vector2.zero, defaultFont);

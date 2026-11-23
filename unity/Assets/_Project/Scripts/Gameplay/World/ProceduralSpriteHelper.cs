@@ -33,6 +33,7 @@ namespace StarStrike.Gameplay
         private static Sprite cachedWeaponMissile;
         private static Sprite cachedWeaponBeam;
         private static Sprite cachedWeaponGatling;
+        private static Sprite cachedWeaponSocket;
 
         private static Sprite GetCachedOrGenerate(ref Sprite cache, System.Func<Sprite> generator, bool forceNew = false)
         {
@@ -261,6 +262,79 @@ namespace StarStrike.Gameplay
             if (lower.Contains("missile") || lower.Contains("homing") || lower == "2") return GetCachedOrGenerate(ref cachedWeaponMissile, () => GenerateWeaponIcon(new Color(1f, 0.25f, 0.35f), 3), forceProcedural);
             if (lower.Contains("scatter") || lower == "1") return GetCachedOrGenerate(ref cachedWeaponScattergun, () => GenerateWeaponIcon(new Color(1f, 0.55f, 0.15f), 4), forceProcedural);
             return GetCachedOrGenerate(ref cachedWeaponPulse, () => GenerateWeaponIcon(new Color(0.1f, 0.95f, 0.65f), 0), forceProcedural);
+        }
+
+        public static Sprite GetWeaponSocketSprite(bool forceProcedural = false)
+        {
+            if (!forceProcedural)
+            {
+                var loaded = Resources.Load<Sprite>("Sprites/Weapons/Weapon_Socket");
+                if (loaded != null) return loaded;
+            }
+            return GetCachedOrGenerate(ref cachedWeaponSocket, () => GenerateWeaponSocketIcon(), forceProcedural);
+        }
+
+        private static Sprite GenerateWeaponSocketIcon()
+        {
+            int size = 64;
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Bilinear;
+            Color[] cols = new Color[size * size];
+            Color clear = new Color(0, 0, 0, 0);
+            Color darkMetal = new Color(0.08f, 0.11f, 0.16f, 1f);
+            Color midMetal = new Color(0.18f, 0.23f, 0.32f, 1f);
+            Color rimMetal = new Color(0.35f, 0.45f, 0.60f, 1f);
+            Color cyanAccent = new Color(0f, 0.94f, 1f, 1f);
+            Color yellowAccent = new Color(1f, 0.90f, 0.10f, 1f);
+
+            for (int i = 0; i < cols.Length; i++) cols[i] = clear;
+
+            float cx = size / 2f;
+            float cy = size / 2f;
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dist = Mathf.Sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
+                    int dx = Mathf.Abs((int)(x - cx));
+                    int dy = Mathf.Abs((int)(y - cy));
+
+                    // Outer chamfered base plate
+                    if (dx <= 24 && dy <= 24 && (dx + dy <= 38))
+                    {
+                        cols[y * size + x] = (dx == 24 || dy == 24 || dx + dy >= 36) ? rimMetal : midMetal;
+                    }
+
+                    // Circular collar
+                    if (dist <= 20f && dist >= 16f)
+                    {
+                        cols[y * size + x] = cyanAccent;
+                    }
+                    else if (dist < 16f && dist >= 8f)
+                    {
+                        cols[y * size + x] = darkMetal;
+                    }
+                    else if (dist < 8f && dist >= 5f)
+                    {
+                        cols[y * size + x] = yellowAccent;
+                    }
+                    else if (dist < 5f)
+                    {
+                        cols[y * size + x] = Color.white;
+                    }
+
+                    // Alignment notches
+                    if (dist <= 22f && (dx <= 1 || dy <= 1) && dist >= 14f)
+                    {
+                        cols[y * size + x] = cyanAccent;
+                    }
+                }
+            }
+
+            tex.SetPixels(cols);
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 32);
         }
 
         private static Sprite GenerateWeaponIcon(Color accent, int variant)

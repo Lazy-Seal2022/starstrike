@@ -28,6 +28,7 @@ namespace StarStrike.Gameplay
         private readonly List<IWeapon> availableWeapons = new List<IWeapon>();
         private readonly List<MountedHardpointInfo> mountedHardpoints = new List<MountedHardpointInfo>();
         private readonly List<IWeapon> activeSocketWeapons = new List<IWeapon>();
+        private string currentShipId = "scout";
 
         public IWeapon CurrentWeapon => (availableWeapons.Count > 0 && currentWeaponIndex >= 0 && currentWeaponIndex < availableWeapons.Count) 
             ? availableWeapons[currentWeaponIndex] 
@@ -121,6 +122,7 @@ namespace StarStrike.Gameplay
             if (string.IsNullOrEmpty(shipId)) shipId = StarStrike.Platform.Storage.StorageService.GetLastShipEvolved();
             if (string.IsNullOrEmpty(shipId)) shipId = "scout";
             shipId = shipId.ToLowerInvariant().Trim();
+            this.currentShipId = shipId;
 
             var socketDefs = GetShipHardpointSockets(shipId);
             mountedHardpoints.Clear();
@@ -185,26 +187,61 @@ namespace StarStrike.Gameplay
             for (int i = transform.childCount - 1; i >= 0; i--)
             {
                 var child = transform.GetChild(i);
-                if (child.name.StartsWith("SocketMount_"))
+                if (child.name.StartsWith("SocketMount_") || child.name.StartsWith("SocketBase_"))
                 {
                     if (Application.isPlaying) Destroy(child.gameObject);
                     else DestroyImmediate(child.gameObject);
                 }
             }
 
-            // Spawn visual hardpoint mounts
-            for (int i = 0; i < mountedHardpoints.Count; i++)
+            if (string.IsNullOrEmpty(currentShipId))
             {
-                var hInfo = mountedHardpoints[i];
-                var mountGo = new GameObject($"SocketMount_{hInfo.socketIndex}");
+                var prog = GetComponent<PlayerProgression>();
+                if (prog != null && prog.currentShip != null) currentShipId = prog.currentShip.id;
+                else currentShipId = "scout";
+            }
+
+            var sockets = GetShipHardpointSockets(currentShipId);
+
+            // Spawn visual socket mounts on top of each ship weapon socket
+            for (int i = 0; i < sockets.Length; i++)
+            {
+                var sDef = sockets[i];
+                var mountGo = new GameObject($"SocketMount_{sDef.index}");
                 mountGo.transform.SetParent(transform, false);
-                mountGo.transform.localPosition = new Vector3(hInfo.localPosition.x, hInfo.localPosition.y, 0f);
+                mountGo.transform.localPosition = new Vector3(sDef.localPosition.x, sDef.localPosition.y, 0f);
                 mountGo.transform.localRotation = Quaternion.Euler(0f, 0f, -90f); // Face forward along ship +X
                 mountGo.transform.localScale = new Vector3(0.38f, 0.38f, 1f);
 
-                var sr = mountGo.AddComponent<SpriteRenderer>();
-                sr.sprite = ProceduralSpriteHelper.GetWeaponSprite(hInfo.weaponId);
-                sr.sortingOrder = 3;
+                // 1. Weapon Socket Base Fixture on top of the ship hull
+                var socketSr = mountGo.AddComponent<SpriteRenderer>();
+                socketSr.sprite = ProceduralSpriteHelper.GetWeaponSocketSprite();
+                socketSr.sortingOrder = 2; // Directly on top of the ship hull
+
+                // 2. Find equipped weapon for this socket
+                string weaponId = null;
+                for (int m = 0; m < mountedHardpoints.Count; m++)
+                {
+                    if (mountedHardpoints[m].socketIndex == sDef.index)
+                    {
+                        weaponId = mountedHardpoints[m].weaponId;
+                        break;
+                    }
+                }
+
+                // If equipped, mount weapon on top of the socket
+                if (!string.IsNullOrEmpty(weaponId))
+                {
+                    var weaponGo = new GameObject($"WeaponVisual_{weaponId}");
+                    weaponGo.transform.SetParent(mountGo.transform, false);
+                    weaponGo.transform.localPosition = Vector3.zero;
+                    weaponGo.transform.localRotation = Quaternion.identity;
+                    weaponGo.transform.localScale = new Vector3(0.92f, 0.92f, 1f);
+
+                    var weaponSr = weaponGo.AddComponent<SpriteRenderer>();
+                    weaponSr.sprite = ProceduralSpriteHelper.GetWeaponSprite(weaponId);
+                    weaponSr.sortingOrder = 3; // On top of the socket
+                }
             }
         }
 
