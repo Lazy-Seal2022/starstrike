@@ -208,6 +208,42 @@ namespace StarStrike.Tests.EditMode
         }
 
         [Test]
+        public void EquipmentSelectUI_SupportsMultiHardpointSelectionAndEquipping()
+        {
+            StorageService.SaveLastShipEvolved("fighter");
+            var go = new GameObject("TestEquipmentSelectUI_Sockets");
+            try
+            {
+                var equipUI = go.AddComponent<EquipmentSelectUI>();
+                Assert.AreEqual(2, equipUI.ActiveSocketCount, "Ares Fighter must have 2 physical weapon sockets");
+
+                equipUI.SelectSocket(0);
+                Assert.AreEqual(0, equipUI.ActiveSocketIndex);
+                equipUI.EquipWeaponToSocket(0, "pulse");
+                Assert.AreEqual("pulse", StorageService.GetSocketWeapon("fighter", 0));
+
+                equipUI.SelectSocket(1);
+                Assert.AreEqual(1, equipUI.ActiveSocketIndex);
+                equipUI.EquipWeaponToSocket(1, "gatling");
+                Assert.AreEqual("gatling", StorageService.GetSocketWeapon("fighter", 1));
+
+                // Verify each socket maintains its independent loadout
+                Assert.AreEqual("pulse", StorageService.GetSocketWeapon("fighter", 0));
+                Assert.AreEqual("gatling", StorageService.GetSocketWeapon("fighter", 1));
+
+                // Test cycling
+                equipUI.SelectNextSocket();
+                Assert.AreEqual(0, equipUI.ActiveSocketIndex);
+                equipUI.SelectPreviousSocket();
+                Assert.AreEqual(1, equipUI.ActiveSocketIndex);
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
         public void CyberVectorTheme_GeneratesValidSpritesAndMeters()
         {
             Assert.IsNotNull(CyberVectorTheme.GetVectorGridSprite());

@@ -302,9 +302,11 @@ namespace StarStrike.Gameplay
                 {
                     // Button held down: advance hold timer
                     fireHeldDuration += dt;
-                    float minRepeat = (currentWeapon is ShipWeapon sw && sw.combatConfig != null) ? sw.combatConfig.minFireRate : 0.10f;
-                    float repeatInterval = currentWeapon != null ? Mathf.Max(minRepeat, currentWeapon.FireRate) : 0.22f;
-                    float requiredTime = hasAutoFired ? repeatInterval : Mathf.Max(0.18f, repeatInterval);
+                    float minRepeat = (currentWeapon is ShipWeapon sw && sw.combatConfig != null) ? sw.combatConfig.minFireRate : 0.05f;
+                    float repeatInterval = (weaponController != null && weaponController.HasMultiSocketLoadout)
+                        ? weaponController.GetFastestFireRate()
+                        : (currentWeapon != null ? Mathf.Max(minRepeat, currentWeapon.FireRate) : 0.22f);
+                    float requiredTime = hasAutoFired ? repeatInterval : Mathf.Max(0.12f, repeatInterval);
                     if (autoFireEnabled && fireHeldDuration >= requiredTime)
                     {
                         isFireTriggered = true;
@@ -316,13 +318,29 @@ namespace StarStrike.Gameplay
             {
                 fireHeldDuration = 0f;
                 hasAutoFired = false;
-                currentWeapon?.StopFiring();
+                if (weaponController != null && weaponController.HasMultiSocketLoadout)
+                {
+                    weaponController.StopFiringAllSockets();
+                }
+                else
+                {
+                    currentWeapon?.StopFiring();
+                }
             }
             wasFirePressedLastFrame = inputFire;
 
-            if (isFireTriggered && currentWeapon != null)
+            if (isFireTriggered)
             {
-                bool fired = currentWeapon.TryFire(health);
+                bool fired = false;
+                if (weaponController != null && weaponController.HasMultiSocketLoadout)
+                {
+                    fired = weaponController.TryFireSockets(health);
+                }
+                else if (currentWeapon != null)
+                {
+                    fired = currentWeapon.TryFire(health);
+                }
+
                 if (fired)
                 {
                     fireHeldDuration = 0f; // Reset repeat timer after each successful shot

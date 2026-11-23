@@ -206,5 +206,36 @@ namespace StarStrike.Tests.EditMode
             controller.EquipFromStorage("juggernaut");
             Assert.AreEqual("Beam Laser", controller.CurrentWeapon.WeaponName);
         }
+
+        [Test]
+        public void ShipWeaponController_MultiSocketLoadout_EquipsAndFiresDedicatedHardpoints()
+        {
+            StarStrike.Platform.Storage.StorageService.SaveSocketWeapon("fighter", 0, "pulse");
+            StarStrike.Platform.Storage.StorageService.SaveSocketWeapon("fighter", 1, "gatling");
+
+            var controller = playerGo.AddComponent<ShipWeaponController>();
+            controller.InitializeWeapons();
+            controller.EquipFromStorage("fighter");
+
+            Assert.IsTrue(controller.HasMultiSocketLoadout, "Controller must report active multi-socket loadout");
+            Assert.AreEqual(2, controller.MountedHardpoints.Count, "Fighter must mount exactly 2 hardpoint sockets");
+
+            Assert.AreEqual("pulse", controller.MountedHardpoints[0].weaponId);
+            Assert.AreEqual("gatling", controller.MountedHardpoints[1].weaponId);
+
+            Assert.AreEqual(new Vector2(0.35f, 1.25f), controller.MountedHardpoints[0].localPosition);
+            Assert.AreEqual(new Vector2(0.35f, -1.25f), controller.MountedHardpoints[1].localPosition);
+
+            // Primary weapon matches socket 0
+            Assert.AreEqual("Pulse Laser", controller.CurrentWeapon.WeaponName);
+
+            // Firing sockets coordinates independent weapon discharge
+            bool fired = controller.TryFireSockets(health);
+            Assert.IsTrue(fired, "Multi-socket firing must succeed via TryFireSockets");
+
+            // Fastest fire rate is governed by Gatling Gun (~0.10s cold down to 0.055s spooled)
+            float fastestRate = controller.GetFastestFireRate();
+            Assert.LessOrEqual(fastestRate, 0.12f, "Fastest fire rate must reflect the rotary autocannon");
+        }
     }
 }

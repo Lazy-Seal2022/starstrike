@@ -271,13 +271,25 @@ namespace StarStrike.Platform.Storage
         {
             if (string.IsNullOrEmpty(shipId)) shipId = GetLastShipEvolved();
             if (string.IsNullOrEmpty(shipId)) shipId = "scout";
+            shipId = shipId.ToLowerInvariant();
 
             if (Profile.shipWeaponEquipped != null)
             {
-                string prefix = shipId.ToLowerInvariant() + ":";
+                // Check socket 0 entry first
+                string socket0Prefix = $"{shipId}:s0:";
                 foreach (var entry in Profile.shipWeaponEquipped)
                 {
-                    if (entry != null && entry.StartsWith(prefix))
+                    if (entry != null && entry.StartsWith(socket0Prefix))
+                    {
+                        return entry.Substring(socket0Prefix.Length);
+                    }
+                }
+
+                // Check general ship prefix
+                string prefix = shipId + ":";
+                foreach (var entry in Profile.shipWeaponEquipped)
+                {
+                    if (entry != null && entry.StartsWith(prefix) && !entry.Contains(":s"))
                     {
                         return entry.Substring(prefix.Length);
                     }
@@ -298,9 +310,78 @@ namespace StarStrike.Platform.Storage
 
             Profile.selectedWeapon = weaponId;
             if (Profile.shipWeaponEquipped == null) Profile.shipWeaponEquipped = new List<string>();
-            Profile.shipWeaponEquipped.RemoveAll(e => e != null && e.StartsWith(shipId + ":"));
+            Profile.shipWeaponEquipped.RemoveAll(e => e != null && e.StartsWith(shipId + ":") && !e.Contains(":s"));
             Profile.shipWeaponEquipped.Add($"{shipId}:{weaponId}");
+
+            // Keep socket 0 in sync
+            string socket0Prefix = $"{shipId}:s0:";
+            Profile.shipWeaponEquipped.RemoveAll(e => e != null && e.StartsWith(socket0Prefix));
+            Profile.shipWeaponEquipped.Add($"{socket0Prefix}{weaponId}");
+
             SaveProfile();
+        }
+
+        public static string GetSocketWeapon(string shipId, int socketIndex, string defaultWeapon = "pulse")
+        {
+            if (string.IsNullOrEmpty(shipId)) shipId = GetLastShipEvolved();
+            if (string.IsNullOrEmpty(shipId)) shipId = "scout";
+            shipId = shipId.ToLowerInvariant();
+
+            if (Profile.shipWeaponEquipped != null)
+            {
+                string socketKey = $"{shipId}:s{socketIndex}:";
+                foreach (var entry in Profile.shipWeaponEquipped)
+                {
+                    if (entry != null && entry.StartsWith(socketKey))
+                    {
+                        return entry.Substring(socketKey.Length);
+                    }
+                }
+            }
+
+            // Fallback: legacy general equipped weapon for this ship
+            string legacy = GetEquippedWeapon(shipId);
+            if (!string.IsNullOrEmpty(legacy))
+            {
+                return legacy;
+            }
+
+            return defaultWeapon;
+        }
+
+        public static void SaveSocketWeapon(string shipId, int socketIndex, string weaponId)
+        {
+            if (string.IsNullOrEmpty(shipId)) shipId = GetLastShipEvolved();
+            if (string.IsNullOrEmpty(shipId)) shipId = "scout";
+            if (string.IsNullOrEmpty(weaponId)) weaponId = "pulse";
+
+            shipId = shipId.ToLowerInvariant();
+            weaponId = weaponId.ToLowerInvariant();
+
+            if (Profile.shipWeaponEquipped == null) Profile.shipWeaponEquipped = new List<string>();
+
+            string socketKey = $"{shipId}:s{socketIndex}:";
+            Profile.shipWeaponEquipped.RemoveAll(e => e != null && e.StartsWith(socketKey));
+            Profile.shipWeaponEquipped.Add($"{socketKey}{weaponId}");
+
+            if (socketIndex == 0)
+            {
+                Profile.selectedWeapon = weaponId;
+                Profile.shipWeaponEquipped.RemoveAll(e => e != null && e.StartsWith(shipId + ":") && !e.Contains(":s"));
+                Profile.shipWeaponEquipped.Add($"{shipId}:{weaponId}");
+            }
+
+            SaveProfile();
+        }
+
+        public static List<string> GetAllSocketWeapons(string shipId, int socketCount)
+        {
+            var list = new List<string>(socketCount);
+            for (int i = 0; i < socketCount; i++)
+            {
+                list.Add(GetSocketWeapon(shipId, i));
+            }
+            return list;
         }
 
         public static string GetSelectedWeapon() => GetEquippedWeapon(GetLastShipEvolved());

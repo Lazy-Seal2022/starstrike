@@ -23,6 +23,11 @@ namespace StarStrike.Gameplay
         public float InaccuracyAngle => 0f;
         public bool IsFiring => isFiring;
 
+        [Header("Physical Sockets")]
+        public Vector2[] customSockets = null;
+        public Vector2[] WeaponSockets => customSockets;
+        public void SetSockets(Vector2[] sockets) => customSockets = sockets;
+
         private float lastTickTime = -999f;
         private bool isFiring = false;
 
@@ -75,8 +80,21 @@ namespace StarStrike.Gameplay
             beamRenderer.startWidth = 0.15f * Mathf.Max(1, weaponSlots);
             beamRenderer.endWidth = 0.10f * Mathf.Max(1, weaponSlots);
 
-            var shipWp = GetComponent<ShipWeapon>();
-            Vector2[] muzzles = shipWp != null ? shipWp.GetMuzzleWorldPositions() : null;
+            Vector2[] muzzles = null;
+            if (customSockets != null && customSockets.Length > 0)
+            {
+                muzzles = new Vector2[customSockets.Length];
+                for (int i = 0; i < customSockets.Length; i++)
+                {
+                    muzzles[i] = (Vector2)transform.TransformPoint(customSockets[i]);
+                }
+            }
+            else
+            {
+                var shipWp = GetComponent<ShipWeapon>();
+                muzzles = shipWp != null ? shipWp.GetMuzzleWorldPositions() : null;
+            }
+
             Vector2 nose = (muzzles != null && muzzles.Length > 0)
                 ? muzzles[0]
                 : (Vector2)transform.position + (Vector2)transform.right * 1.55f;

@@ -40,6 +40,11 @@ namespace StarStrike.Gameplay
         public int WeaponSlots { get => weaponSlots; set => weaponSlots = value; }
         public float InaccuracyAngle => CurrentInaccuracyAngle;
 
+        [Header("Physical Sockets")]
+        public Vector2[] customSockets = null;
+        public Vector2[] WeaponSockets => customSockets;
+        public void SetSockets(Vector2[] sockets) => customSockets = sockets;
+
         public float SpoolProgress => spoolProgress;
         public float CurrentFireRate => Mathf.Lerp(baseFireRate, maxFireRate, spoolProgress);
         public float CurrentInaccuracyAngle => Mathf.Lerp(baseInaccuracyAngle, maxInaccuracyAngle, spoolProgress);
@@ -195,6 +200,16 @@ namespace StarStrike.Gameplay
 
         public Vector2[] GetMuzzleWorldPositions()
         {
+            if (customSockets != null && customSockets.Length > 0)
+            {
+                Vector2[] worlds = new Vector2[customSockets.Length];
+                for (int i = 0; i < customSockets.Length; i++)
+                {
+                    worlds[i] = (Vector2)transform.TransformPoint(customSockets[i]);
+                }
+                return worlds;
+            }
+
             var shipWp = GetComponent<ShipWeapon>();
             if (shipWp != null)
             {

@@ -22,6 +22,11 @@ namespace StarStrike.Gameplay
         public int WeaponSlots { get => weaponSlots; set => weaponSlots = value; }
         public float InaccuracyAngle => 0f;
 
+        [Header("Physical Sockets")]
+        public Vector2[] customSockets = null;
+        public Vector2[] WeaponSockets => customSockets;
+        public void SetSockets(Vector2[] sockets) => customSockets = sockets;
+
         private float lastFiredTime = -999f;
         public void ResetCooldown() => lastFiredTime = -999f;
         public void StopFiring() { }
@@ -72,8 +77,20 @@ namespace StarStrike.Gameplay
                 rb.AddForce(-transform.right * recoilForce, ForceMode2D.Impulse);
             }
 
-            var shipWp = GetComponent<ShipWeapon>();
-            Vector2[] muzzles = shipWp != null ? shipWp.GetMuzzleWorldPositions() : null;
+            Vector2[] muzzles = null;
+            if (customSockets != null && customSockets.Length > 0)
+            {
+                muzzles = new Vector2[customSockets.Length];
+                for (int i = 0; i < customSockets.Length; i++)
+                {
+                    muzzles[i] = (Vector2)transform.TransformPoint(customSockets[i]);
+                }
+            }
+            else
+            {
+                var shipWp = GetComponent<ShipWeapon>();
+                muzzles = shipWp != null ? shipWp.GetMuzzleWorldPositions() : null;
+            }
             if (muzzles == null || muzzles.Length == 0)
             {
                 float spread = 0.4f;
