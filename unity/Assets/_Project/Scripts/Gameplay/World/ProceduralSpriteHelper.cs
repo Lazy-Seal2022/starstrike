@@ -287,15 +287,16 @@ namespace StarStrike.Gameplay
             tex.filterMode = FilterMode.Bilinear;
             Color[] cols = new Color[size * size];
             Color clear = new Color(0, 0, 0, 0);
-            Color darkMetal = new Color(0.06f, 0.08f, 0.13f, 0.95f);
-            Color cyanBorder = new Color(0f, 0.94f, 1f, 1f);
+            Color darkMetal = new Color(0.07f, 0.09f, 0.13f, 0.92f);
+            Color steelBorder = new Color(0.45f, 0.57f, 0.69f, 1f); // Battlevoid tactical military steel
+            Color innerBevel = new Color(0.25f, 0.33f, 0.43f, 0.7f);
 
             for (int i = 0; i < cols.Length; i++) cols[i] = clear;
 
             float cx = size / 2f;
             float cy = size / 2f;
             float halfBox = 26f;
-            float cornerRadius = 10f;
+            float cornerRadius = 8f;
 
             for (int y = 0; y < size; y++)
             {
@@ -311,14 +312,19 @@ namespace StarStrike.Gameplay
 
                     if (outerDist <= cornerRadius)
                     {
-                        if (outerDist >= cornerRadius - 2f)
+                        if (outerDist >= cornerRadius - 1.8f)
                         {
-                            // Crisp neon cyan border
-                            cols[y * size + x] = cyanBorder;
+                            // Crisp military steel border (no neon glow)
+                            cols[y * size + x] = steelBorder;
+                        }
+                        else if (outerDist >= cornerRadius - 2.8f)
+                        {
+                            // Subtle inner bevel line
+                            cols[y * size + x] = innerBevel;
                         }
                         else
                         {
-                            // Pure simple dark fill, zero inside decorations
+                            // Pure simple dark tactical armor fill, zero inside decorations
                             cols[y * size + x] = darkMetal;
                         }
                     }
