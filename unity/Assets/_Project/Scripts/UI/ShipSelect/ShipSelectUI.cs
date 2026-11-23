@@ -29,8 +29,23 @@ namespace StarStrike.UI
 
         private int currentIndex = 0;
 
-        public int CurrentIndex => currentIndex;
-        public string CurrentShipId => Catalog[currentIndex].id;
+        public int CurrentIndex
+        {
+            get
+            {
+                EnsureInitialized();
+                return currentIndex;
+            }
+        }
+
+        public string CurrentShipId
+        {
+            get
+            {
+                EnsureInitialized();
+                return Catalog[currentIndex].id;
+            }
+        }
 
         public struct ShipInfo
         {
@@ -297,7 +312,7 @@ namespace StarStrike.UI
                 rootContainer.AddComponent<GraphicRaycaster>();
             }
 
-            // Cyber-Vector Grid Background
+            // Deep Cyber Void Background (Clean, minimal, no pixel grid)
             GameObject bgObj = new GameObject("Background", typeof(RectTransform), typeof(Image));
             bgObj.transform.SetParent(rootContainer.transform, false);
             RectTransform bgRt = bgObj.GetComponent<RectTransform>();
@@ -306,9 +321,7 @@ namespace StarStrike.UI
             bgRt.offsetMin = Vector2.zero;
             bgRt.offsetMax = Vector2.zero;
             var bgImg = bgObj.GetComponent<Image>();
-            bgImg.sprite = CyberVectorTheme.GetVectorGridSprite();
-            bgImg.type = Image.Type.Tiled;
-            bgImg.color = Color.white;
+            bgImg.color = CyberVectorTheme.VoidDeep;
 
             // Cyber Marquee Title Header
             CreateText(rootContainer.transform, "Title", "<color=#00f2ff><b>// STARFLEET HANGAR // NEON VECTOR DOCK</b></color>\n<size=42%><color=#ffe600>[ SELECT COMBAT VESSEL CHASSIS // SYS.STATUS: READY ]</color></size>", 30, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.93f), new Vector2(0.5f, 0.93f), new Vector2(-450, -30), new Vector2(450, 30), defaultFont);

@@ -30,9 +30,32 @@ namespace StarStrike.UI
         private string inspectedWeaponId = "pulse";
         private string inspectedSkillId = "forward_shockwave";
 
-        public string CurrentShipId => currentShipId;
-        public string InspectedWeaponId => inspectedWeaponId;
-        public string InspectedSkillId => inspectedSkillId;
+        public string CurrentShipId
+        {
+            get
+            {
+                EnsureInitialized();
+                return currentShipId;
+            }
+        }
+
+        public string InspectedWeaponId
+        {
+            get
+            {
+                EnsureInitialized();
+                return inspectedWeaponId;
+            }
+        }
+
+        public string InspectedSkillId
+        {
+            get
+            {
+                EnsureInitialized();
+                return inspectedSkillId;
+            }
+        }
 
         public struct WeaponDefinitionInfo
         {
@@ -262,7 +285,7 @@ namespace StarStrike.UI
                 rootContainer.AddComponent<GraphicRaycaster>();
             }
 
-            // Cyber-Vector Grid Background
+            // Deep Cyber Void Background (Clean, minimal, no pixel grid)
             GameObject bgObj = new GameObject("Background", typeof(RectTransform), typeof(Image));
             bgObj.transform.SetParent(rootContainer.transform, false);
             RectTransform bgRt = bgObj.GetComponent<RectTransform>();
@@ -271,9 +294,7 @@ namespace StarStrike.UI
             bgRt.offsetMin = Vector2.zero;
             bgRt.offsetMax = Vector2.zero;
             var bgImg = bgObj.GetComponent<Image>();
-            bgImg.sprite = CyberVectorTheme.GetVectorGridSprite();
-            bgImg.type = Image.Type.Tiled;
-            bgImg.color = Color.white;
+            bgImg.color = CyberVectorTheme.VoidDeep;
 
             // Title Header
             CreateText(rootContainer.transform, "Title", "<color=#00f2ff><b>// ARMORY LOGISTICS // TACTICAL LOADOUT MATRIX</b></color>", 28, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.94f), new Vector2(0.5f, 0.94f), new Vector2(-480, -22), new Vector2(480, 22), defaultFont);

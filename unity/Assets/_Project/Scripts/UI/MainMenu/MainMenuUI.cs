@@ -164,7 +164,7 @@ namespace StarStrike.UI
                 menuContainer.AddComponent<GraphicRaycaster>();
             }
 
-            // Cyber-Vector Grid Background
+            // Deep Cyber Void Background (Clean, minimal, no pixel grid)
             GameObject bgObj = new GameObject("Background", typeof(RectTransform), typeof(Image));
             bgObj.transform.SetParent(menuContainer.transform, false);
             RectTransform bgRt = bgObj.GetComponent<RectTransform>();
@@ -173,9 +173,7 @@ namespace StarStrike.UI
             bgRt.offsetMin = Vector2.zero;
             bgRt.offsetMax = Vector2.zero;
             var bgImg = bgObj.GetComponent<Image>();
-            bgImg.sprite = CyberVectorTheme.GetVectorGridSprite();
-            bgImg.type = Image.Type.Tiled;
-            bgImg.color = Color.white;
+            bgImg.color = CyberVectorTheme.VoidDeep;
             bgImg.raycastTarget = true;
 
             // Cyber-Vector Marquee Title

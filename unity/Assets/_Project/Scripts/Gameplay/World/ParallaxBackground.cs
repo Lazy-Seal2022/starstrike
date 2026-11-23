@@ -6,6 +6,7 @@ namespace StarStrike.Gameplay
     {
         public int layerCount = 3;
         public float parallaxFactor = 0.5f;
+        public bool disablePixelBackground = false;
 
         private Transform cameraTransform;
         private Vector3[] startPositions;
@@ -13,7 +14,10 @@ namespace StarStrike.Gameplay
 
         private void Start()
         {
-            cameraTransform = Camera.main.transform;
+            if (disablePixelBackground) return;
+
+            cameraTransform = Camera.main != null ? Camera.main.transform : null;
+            if (cameraTransform == null) return;
             
             layers = new GameObject[layerCount];
             startPositions = new Vector3[layerCount];
