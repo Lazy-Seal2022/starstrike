@@ -28,6 +28,11 @@ namespace StarStrike.Gameplay
         private static Sprite cachedGatlingTracer;
         private static Sprite cachedShieldRipple;
         private static Sprite cachedShieldDome;
+        private static Sprite cachedWeaponPulse;
+        private static Sprite cachedWeaponScattergun;
+        private static Sprite cachedWeaponMissile;
+        private static Sprite cachedWeaponBeam;
+        private static Sprite cachedWeaponGatling;
 
         private static Sprite GetCachedOrGenerate(ref Sprite cache, System.Func<Sprite> generator, bool forceNew = false)
         {
@@ -232,6 +237,101 @@ namespace StarStrike.Gameplay
                 }
             }
             return GetCachedOrGenerate(ref cachedPellet, () => GeneratePelletSprite(), forceProcedural);
+        }
+
+        public static Sprite GetWeaponSprite(string weaponId, bool forceProcedural = false)
+        {
+            if (string.IsNullOrEmpty(weaponId)) weaponId = "pulse";
+            string lower = weaponId.ToLowerInvariant().Trim();
+
+            if (!forceProcedural)
+            {
+                string resName = "Weapon_Pulse";
+                if (lower.Contains("gatling") || lower == "4") resName = "Weapon_Gatling";
+                else if (lower.Contains("beam") || lower == "3") resName = "Weapon_Beam";
+                else if (lower.Contains("missile") || lower.Contains("homing") || lower == "2") resName = "Weapon_Missile";
+                else if (lower.Contains("scatter") || lower == "1") resName = "Weapon_Scattergun";
+
+                var loaded = Resources.Load<Sprite>($"Sprites/Weapons/{resName}");
+                if (loaded != null) return loaded;
+            }
+
+            if (lower.Contains("gatling") || lower == "4") return GetCachedOrGenerate(ref cachedWeaponGatling, () => GenerateWeaponIcon(new Color(1f, 0.85f, 0.25f), 1), forceProcedural);
+            if (lower.Contains("beam") || lower == "3") return GetCachedOrGenerate(ref cachedWeaponBeam, () => GenerateWeaponIcon(new Color(0.2f, 0.95f, 1f), 2), forceProcedural);
+            if (lower.Contains("missile") || lower.Contains("homing") || lower == "2") return GetCachedOrGenerate(ref cachedWeaponMissile, () => GenerateWeaponIcon(new Color(1f, 0.25f, 0.35f), 3), forceProcedural);
+            if (lower.Contains("scatter") || lower == "1") return GetCachedOrGenerate(ref cachedWeaponScattergun, () => GenerateWeaponIcon(new Color(1f, 0.55f, 0.15f), 4), forceProcedural);
+            return GetCachedOrGenerate(ref cachedWeaponPulse, () => GenerateWeaponIcon(new Color(0.1f, 0.95f, 0.65f), 0), forceProcedural);
+        }
+
+        private static Sprite GenerateWeaponIcon(Color accent, int variant)
+        {
+            int size = 64;
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Bilinear;
+            Color[] cols = new Color[size * size];
+            Color clear = new Color(0, 0, 0, 0);
+            Color darkMetal = new Color(0.12f, 0.14f, 0.18f, 1f);
+            Color midMetal = new Color(0.22f, 0.26f, 0.32f, 1f);
+
+            for (int i = 0; i < cols.Length; i++) cols[i] = clear;
+
+            int cx = size / 2;
+            int cy = size / 2;
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    int dx = Mathf.Abs(x - cx);
+
+                    // Base mount wedge
+                    if (y >= cy - 8 && y <= cy + 22 && dx <= (22 - (y - cy + 8) * 0.3f))
+                    {
+                        cols[y * size + x] = (dx < 14 && y > cy) ? darkMetal : midMetal;
+                    }
+
+                    // Weapon specific muzzle/barrels
+                    if (variant == 0) // Pulse (Dual Barrels)
+                    {
+                        if (y >= cy - 24 && y < cy - 8 && ((dx >= 6 && dx <= 11) || (dx <= 2 && y > cy - 14)))
+                        {
+                            cols[y * size + x] = (y < cy - 18) ? accent : midMetal;
+                        }
+                    }
+                    else if (variant == 1) // Gatling (Rotary Bundle)
+                    {
+                        if (y >= cy - 26 && y < cy - 6 && dx <= 12)
+                        {
+                            cols[y * size + x] = (dx % 4 <= 1) ? accent : midMetal;
+                        }
+                    }
+                    else if (variant == 2) // Beam (Lance Core)
+                    {
+                        if (y >= cy - 28 && y < cy - 6 && dx <= (4 + (cy - 6 - y) * 0.3f))
+                        {
+                            cols[y * size + x] = (dx <= 1) ? Color.white : accent;
+                        }
+                    }
+                    else if (variant == 3) // Missile (Pod Silos)
+                    {
+                        if (y >= cy - 22 && y < cy - 6 && dx <= 16)
+                        {
+                            cols[y * size + x] = (y > cy - 14 && (dx == 4 || dx == 12)) ? accent : darkMetal;
+                        }
+                    }
+                    else // Scattergun (Flared Cowl)
+                    {
+                        if (y >= cy - 24 && y < cy - 6 && dx <= (10 + (cy - 6 - y) * 0.4f))
+                        {
+                            cols[y * size + x] = (y < cy - 16 && dx % 5 <= 2) ? accent : midMetal;
+                        }
+                    }
+                }
+            }
+
+            tex.SetPixels(cols);
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 32);
         }
 
         private static Sprite GenerateCircle(Color color, int size)

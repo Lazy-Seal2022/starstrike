@@ -44,22 +44,30 @@ namespace StarStrike.Gameplay
             var sr = GetComponent<SpriteRenderer>();
             if (sr == null) return;
 
+            string weaponId = "pulse";
             switch (pickupType)
             {
                 case WeaponPickupType.Scattergun:
-                    sr.color = new Color(1f, 0.5f, 0.1f); // Orange
+                    weaponId = "scattergun";
                     break;
                 case WeaponPickupType.Missiles:
-                    sr.color = new Color(0.9f, 0.2f, 0.2f); // Red
+                    weaponId = "missile";
                     break;
                 case WeaponPickupType.Beam:
-                    sr.color = new Color(0.2f, 0.9f, 1f); // Cyan
+                    weaponId = "beam";
+                    break;
+                case WeaponPickupType.Gatling:
+                    weaponId = "gatling";
                     break;
                 case WeaponPickupType.Pulse:
                 default:
-                    sr.color = new Color(0.2f, 1f, 0.4f); // Green
+                    weaponId = "pulse";
                     break;
             }
+
+            sr.sprite = ProceduralSpriteHelper.GetWeaponSprite(weaponId);
+            sr.color = Color.white;
+            transform.localScale = new Vector3(0.5f, 0.5f, 1f);
         }
 
         private void OnEnable()

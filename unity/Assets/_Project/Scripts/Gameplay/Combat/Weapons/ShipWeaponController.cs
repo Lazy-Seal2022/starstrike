@@ -174,6 +174,38 @@ namespace StarStrike.Gameplay
             {
                 SwitchWeapon(primaryIdx);
             }
+
+            // Update visual socket hardpoint mounts on the ship hull
+            UpdateSocketVisuals();
+        }
+
+        public void UpdateSocketVisuals()
+        {
+            // Clean up existing visual hardpoint mounts
+            for (int i = transform.childCount - 1; i >= 0; i--)
+            {
+                var child = transform.GetChild(i);
+                if (child.name.StartsWith("SocketMount_"))
+                {
+                    if (Application.isPlaying) Destroy(child.gameObject);
+                    else DestroyImmediate(child.gameObject);
+                }
+            }
+
+            // Spawn visual hardpoint mounts
+            for (int i = 0; i < mountedHardpoints.Count; i++)
+            {
+                var hInfo = mountedHardpoints[i];
+                var mountGo = new GameObject($"SocketMount_{hInfo.socketIndex}");
+                mountGo.transform.SetParent(transform, false);
+                mountGo.transform.localPosition = new Vector3(hInfo.localPosition.x, hInfo.localPosition.y, 0f);
+                mountGo.transform.localRotation = Quaternion.Euler(0f, 0f, -90f); // Face forward along ship +X
+                mountGo.transform.localScale = new Vector3(0.38f, 0.38f, 1f);
+
+                var sr = mountGo.AddComponent<SpriteRenderer>();
+                sr.sprite = ProceduralSpriteHelper.GetWeaponSprite(hInfo.weaponId);
+                sr.sortingOrder = 3;
+            }
         }
 
         private static void AssignSocketsToWeapon(IWeapon weapon, Vector2[] sockets)
