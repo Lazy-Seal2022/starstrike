@@ -580,28 +580,19 @@ namespace StarStrike.UI
                     sRt.localRotation = Quaternion.Euler(0f, 0f, -90f);
 
                     Image sImg = sockGo.GetComponent<Image>();
-                    sImg.sprite = ProceduralSpriteHelper.GetWeaponSocketSprite();
                     sImg.color = Color.white;
                     sImg.preserveAspect = true;
 
-                    // If weapon equipped, mount weapon icon on top of the socket
+                    // If weapon socket is installed, replace it with the weapon sprite.
+                    // Otherwise, display the empty weapon socket sprite.
                     string eqWpn = StorageService.GetSocketWeapon(info.id, sData.index);
                     if (!string.IsNullOrEmpty(eqWpn))
                     {
-                        GameObject wpnGo = new GameObject("WeaponIcon", typeof(RectTransform), typeof(Image));
-                        wpnGo.transform.SetParent(sockGo.transform, false);
-
-                        RectTransform wRt = wpnGo.GetComponent<RectTransform>();
-                        wRt.anchorMin = Vector2.zero;
-                        wRt.anchorMax = Vector2.one;
-                        wRt.offsetMin = new Vector2(2f, 2f);
-                        wRt.offsetMax = new Vector2(-2f, -2f);
-                        wRt.localRotation = Quaternion.identity;
-
-                        Image wImg = wpnGo.GetComponent<Image>();
-                        wImg.sprite = ProceduralSpriteHelper.GetWeaponSprite(eqWpn);
-                        wImg.color = Color.white;
-                        wImg.preserveAspect = true;
+                        sImg.sprite = ProceduralSpriteHelper.GetWeaponSprite(eqWpn);
+                    }
+                    else
+                    {
+                        sImg.sprite = ProceduralSpriteHelper.GetWeaponSocketSprite();
                     }
                 }
             }

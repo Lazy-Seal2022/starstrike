@@ -213,12 +213,7 @@ namespace StarStrike.Gameplay
                 mountGo.transform.localRotation = Quaternion.Euler(0f, 0f, -90f); // Face forward along ship +X
                 mountGo.transform.localScale = new Vector3(0.38f, 0.38f, 1f);
 
-                // 1. Weapon Socket Base Fixture on top of the ship hull
-                var socketSr = mountGo.AddComponent<SpriteRenderer>();
-                socketSr.sprite = ProceduralSpriteHelper.GetWeaponSocketSprite();
-                socketSr.sortingOrder = 2; // Directly on top of the ship hull
-
-                // 2. Find equipped weapon for this socket
+                // 1. Find equipped weapon for this socket
                 string weaponId = null;
                 for (int m = 0; m < mountedHardpoints.Count; m++)
                 {
@@ -229,18 +224,18 @@ namespace StarStrike.Gameplay
                     }
                 }
 
-                // If equipped, mount weapon on top of the socket
+                // 2. If the weapon socket is installed, replace it with the weapon sprite.
+                // Otherwise, display the empty weapon socket sprite.
+                var socketSr = mountGo.AddComponent<SpriteRenderer>();
                 if (!string.IsNullOrEmpty(weaponId))
                 {
-                    var weaponGo = new GameObject($"WeaponVisual_{weaponId}");
-                    weaponGo.transform.SetParent(mountGo.transform, false);
-                    weaponGo.transform.localPosition = Vector3.zero;
-                    weaponGo.transform.localRotation = Quaternion.identity;
-                    weaponGo.transform.localScale = new Vector3(0.92f, 0.92f, 1f);
-
-                    var weaponSr = weaponGo.AddComponent<SpriteRenderer>();
-                    weaponSr.sprite = ProceduralSpriteHelper.GetWeaponSprite(weaponId);
-                    weaponSr.sortingOrder = 3; // On top of the socket
+                    socketSr.sprite = ProceduralSpriteHelper.GetWeaponSprite(weaponId);
+                    socketSr.sortingOrder = 3;
+                }
+                else
+                {
+                    socketSr.sprite = ProceduralSpriteHelper.GetWeaponSocketSprite();
+                    socketSr.sortingOrder = 2;
                 }
             }
         }

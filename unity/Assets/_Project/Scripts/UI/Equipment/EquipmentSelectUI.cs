@@ -588,31 +588,27 @@ namespace StarStrike.UI
 
                     GameObject sBtnObj = CreateButton(socketButtonContainer, $"SocketBtn_{i}", "", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * btnSpacing), 0), new Vector2(btnWidth, 48), sCol, defaultFont, 10);
                     
-                    // Socket Fixture Base Icon on Left
+                    // Socket Icon on Left
                     GameObject sBaseObj = new GameObject("SocketBaseIcon", typeof(RectTransform), typeof(Image));
                     sBaseObj.transform.SetParent(sBtnObj.transform, false);
                     RectTransform sBaseRt = sBaseObj.GetComponent<RectTransform>();
                     sBaseRt.anchorMin = new Vector2(0.04f, 0.5f);
                     sBaseRt.anchorMax = new Vector2(0.04f, 0.5f);
                     sBaseRt.anchoredPosition = new Vector2(18f, 0f);
-                    sBaseRt.sizeDelta = new Vector2(30f, 30f);
+                    sBaseRt.sizeDelta = new Vector2(28f, 28f);
                     var sBaseImg = sBaseObj.GetComponent<Image>();
-                    sBaseImg.sprite = ProceduralSpriteHelper.GetWeaponSocketSprite();
+                    sBaseImg.color = Color.white;
                     sBaseImg.preserveAspect = true;
 
-                    // Mounted Weapon on top of Socket Fixture
+                    // If weapon socket is installed, replace it with the weapon sprite.
+                    // Otherwise, display the empty weapon socket sprite.
                     if (!string.IsNullOrEmpty(mountedWId))
                     {
-                        GameObject sIconObj = new GameObject("SocketIcon", typeof(RectTransform), typeof(Image));
-                        sIconObj.transform.SetParent(sBaseObj.transform, false);
-                        RectTransform sIconRt = sIconObj.GetComponent<RectTransform>();
-                        sIconRt.anchorMin = Vector2.zero;
-                        sIconRt.anchorMax = Vector2.one;
-                        sIconRt.offsetMin = new Vector2(2f, 2f);
-                        sIconRt.offsetMax = new Vector2(-2f, -2f);
-                        var sIconImg = sIconObj.GetComponent<Image>();
-                        sIconImg.sprite = ProceduralSpriteHelper.GetWeaponSprite(mountedWId);
-                        sIconImg.preserveAspect = true;
+                        sBaseImg.sprite = ProceduralSpriteHelper.GetWeaponSprite(mountedWId);
+                    }
+                    else
+                    {
+                        sBaseImg.sprite = ProceduralSpriteHelper.GetWeaponSocketSprite();
                     }
 
                     // Label offset to right of icon
