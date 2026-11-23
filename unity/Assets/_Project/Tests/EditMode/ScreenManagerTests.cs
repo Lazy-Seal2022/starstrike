@@ -206,5 +206,20 @@ namespace StarStrike.Tests.EditMode
                 Object.DestroyImmediate(go);
             }
         }
+
+        [Test]
+        public void CyberVectorTheme_GeneratesValidSpritesAndMeters()
+        {
+            Assert.IsNotNull(CyberVectorTheme.GetVectorGridSprite());
+            Assert.IsNotNull(CyberVectorTheme.GetChamferCardSprite());
+            Assert.IsNotNull(CyberVectorTheme.GetHoloPedestalSprite());
+            Assert.IsNotNull(CyberVectorTheme.GetButtonSprite());
+            Assert.IsNotNull(CyberVectorTheme.GetGlowBarSprite());
+
+            string meter = CyberVectorTheme.FormatStatMeter("HULL", 80f, 100f, "HP", CyberVectorTheme.LaserGreen);
+            Assert.IsTrue(meter.Contains("■"));
+            Assert.IsTrue(meter.Contains("<color="));
+            Assert.IsTrue(meter.Contains("80"));
+        }
     }
 }

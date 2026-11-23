@@ -164,7 +164,7 @@ namespace StarStrike.UI
                 menuContainer.AddComponent<GraphicRaycaster>();
             }
 
-            // Background
+            // Cyber-Vector Grid Background
             GameObject bgObj = new GameObject("Background", typeof(RectTransform), typeof(Image));
             bgObj.transform.SetParent(menuContainer.transform, false);
             RectTransform bgRt = bgObj.GetComponent<RectTransform>();
@@ -173,21 +173,23 @@ namespace StarStrike.UI
             bgRt.offsetMin = Vector2.zero;
             bgRt.offsetMax = Vector2.zero;
             var bgImg = bgObj.GetComponent<Image>();
-            bgImg.color = new Color(0.02f, 0.04f, 0.07f, 1.0f);
+            bgImg.sprite = CyberVectorTheme.GetVectorGridSprite();
+            bgImg.type = Image.Type.Tiled;
+            bgImg.color = Color.white;
             bgImg.raycastTarget = true;
 
-            // Title
-            CreateText(menuContainer.transform, "TitleText", "STARSTRIKE", 60, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.88f), new Vector2(0.5f, 0.88f), new Vector2(-350, -40), new Vector2(350, 40), defaultFont);
+            // Cyber-Vector Marquee Title
+            CreateText(menuContainer.transform, "TitleText", "<color=#00f2ff><b>STARSTRIKE</b></color>", 64, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.89f), new Vector2(0.5f, 0.89f), new Vector2(-400, -42), new Vector2(400, 42), defaultFont);
 
             // Subtitle
-            CreateText(menuContainer.transform, "SubtitleText", "DEEP SPACE SURVIVAL & WARFARE", 15, FontStyle.Normal, new Color(0.7f, 0.85f, 1f, 0.9f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.82f), new Vector2(0.5f, 0.82f), new Vector2(-250, -15), new Vector2(250, 15), defaultFont);
+            CreateText(menuContainer.transform, "SubtitleText", "<color=#ff0d6b>/// HIGH-VELOCITY VECTOR COMBAT ///</color>", 15, FontStyle.Bold, CyberVectorTheme.NeonMagenta, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.82f), new Vector2(0.5f, 0.82f), new Vector2(-280, -15), new Vector2(280, 15), defaultFont);
 
             // Gems
-            GameObject gemsObj = CreateText(menuContainer.transform, "GemsText", "Meta-Gems: 0", 20, FontStyle.Bold, Color.cyan, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.75f), new Vector2(0.5f, 0.75f), new Vector2(-200, -18), new Vector2(200, 18), defaultFont);
+            GameObject gemsObj = CreateText(menuContainer.transform, "GemsText", "META-GEMS: 0", 20, FontStyle.Bold, CyberVectorTheme.VoltYellow, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.75f), new Vector2(0.5f, 0.75f), new Vector2(-200, -18), new Vector2(200, 18), defaultFont);
             gemsText = gemsObj.GetComponent<TMP_Text>();
 
             // Settings Button (Top Right)
-            GameObject settingsBtnObj = CreateButton(menuContainer.transform, "SettingsButton", "SETTINGS [O]", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-120f, -40f), new Vector2(180f, 44f), new Color(0.12f, 0.22f, 0.35f), defaultFont, 16);
+            GameObject settingsBtnObj = CreateButton(menuContainer.transform, "SettingsButton", "SETTINGS [O]", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-120f, -40f), new Vector2(180f, 44f), CyberVectorTheme.DimMuted, defaultFont, 15);
             settingsBtnObj.GetComponent<Button>().onClick.AddListener(() => {
                 if (ScreenManager.Instance != null && ScreenManager.Instance.PushModal("Settings"))
                 {
@@ -199,43 +201,61 @@ namespace StarStrike.UI
                 }
             });
 
-            // DEPLOYMENT SUMMARY CARD (Center)
+            // DEPLOYMENT SUMMARY CARD (Center Chamfer Vector Panel)
             GameObject summaryBox = new GameObject("DeploymentSummary", typeof(RectTransform), typeof(Image));
             summaryBox.transform.SetParent(menuContainer.transform, false);
             RectTransform sbRt = summaryBox.GetComponent<RectTransform>();
             sbRt.anchorMin = new Vector2(0.5f, 0.58f);
             sbRt.anchorMax = new Vector2(0.5f, 0.58f);
             sbRt.anchoredPosition = Vector2.zero;
-            sbRt.sizeDelta = new Vector2(700, 150);
+            sbRt.sizeDelta = new Vector2(720, 155);
             var sbImg = summaryBox.GetComponent<Image>();
-            sbImg.color = new Color(0.05f, 0.08f, 0.14f, 0.90f);
+            sbImg.sprite = CyberVectorTheme.GetChamferCardSprite();
+            sbImg.type = Image.Type.Sliced;
+            sbImg.color = Color.white;
 
-            CreateText(summaryBox.transform, "CardHeader", "FLEET DEPLOYMENT READINESS", 14, FontStyle.Bold, Color.yellow, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.86f), new Vector2(0.5f, 0.86f), new Vector2(-250, -12), new Vector2(250, 12), defaultFont);
+            CreateText(summaryBox.transform, "CardHeader", "<color=#00f2ff><b>// FLEET DEPLOYMENT READINESS //</b></color> <color=#ffe600>[STATUS: ACTIVE]</color>", 14, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.87f), new Vector2(0.5f, 0.87f), new Vector2(-300, -12), new Vector2(300, 12), defaultFont);
+
+            // Holo Pedestal under ship
+            GameObject pedestalObj = new GameObject("HoloPedestal", typeof(RectTransform), typeof(Image), typeof(CyberHoloPedestal));
+            pedestalObj.transform.SetParent(summaryBox.transform, false);
+            RectTransform pdRt = pedestalObj.GetComponent<RectTransform>();
+            pdRt.anchorMin = new Vector2(0.04f, 0.12f);
+            pdRt.anchorMax = new Vector2(0.24f, 0.42f);
+            pdRt.offsetMin = Vector2.zero;
+            pdRt.offsetMax = Vector2.zero;
+            var pdImg = pedestalObj.GetComponent<Image>();
+            pdImg.sprite = CyberVectorTheme.GetHoloPedestalSprite();
+            pdImg.color = CyberVectorTheme.NeonCyan;
+            pdImg.preserveAspect = true;
 
             // Ship Icon (Left of card)
             GameObject iconObj = new GameObject("ShipPreviewIcon", typeof(RectTransform), typeof(Image));
             iconObj.transform.SetParent(summaryBox.transform, false);
             RectTransform icRt = iconObj.GetComponent<RectTransform>();
-            icRt.anchorMin = new Vector2(0.04f, 0.12f);
-            icRt.anchorMax = new Vector2(0.24f, 0.78f);
+            icRt.anchorMin = new Vector2(0.04f, 0.22f);
+            icRt.anchorMax = new Vector2(0.24f, 0.82f);
             icRt.offsetMin = Vector2.zero;
             icRt.offsetMax = Vector2.zero;
             shipPreviewIcon = iconObj.GetComponent<Image>();
             shipPreviewIcon.preserveAspect = true;
 
+            var pedestalComp = pedestalObj.GetComponent<CyberHoloPedestal>();
+            pedestalComp.SetTargetShip(icRt);
+
             // Details (Right of card)
-            GameObject shipTxtObj = CreateText(summaryBox.transform, "ShipTxt", "• Selected Vessel: DELTA SCOUT", 15, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, new Vector2(0.28f, 0.68f), new Vector2(0.28f, 0.68f), new Vector2(0, -12), new Vector2(450, 12), defaultFont);
+            GameObject shipTxtObj = CreateText(summaryBox.transform, "ShipTxt", "<color=#00f2ff>CHASSIS  //</color>  <b>DELTA SCOUT</b>", 15, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, new Vector2(0.28f, 0.68f), new Vector2(0.28f, 0.68f), new Vector2(0, -12), new Vector2(480, 12), defaultFont);
             deploymentShipText = shipTxtObj.GetComponent<TMP_Text>();
 
-            GameObject wpnTxtObj = CreateText(summaryBox.transform, "WpnTxt", "• Primary Weapon:  PULSE LASER", 15, FontStyle.Bold, new Color(1.0f, 0.65f, 0.15f), TextAnchor.MiddleLeft, new Vector2(0.28f, 0.45f), new Vector2(0.28f, 0.45f), new Vector2(0, -12), new Vector2(450, 12), defaultFont);
+            GameObject wpnTxtObj = CreateText(summaryBox.transform, "WpnTxt", "<color=#ff8514>ARSENAL  //</color>  <b>PULSE LASER</b>", 15, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, new Vector2(0.28f, 0.45f), new Vector2(0.28f, 0.45f), new Vector2(0, -12), new Vector2(480, 12), defaultFont);
             deploymentWeaponText = wpnTxtObj.GetComponent<TMP_Text>();
 
-            GameObject sklTxtObj = CreateText(summaryBox.transform, "SklTxt", "• Tactical Skill:  KINETIC SHOCKWAVE", 15, FontStyle.Bold, Color.cyan, TextAnchor.MiddleLeft, new Vector2(0.28f, 0.22f), new Vector2(0.28f, 0.22f), new Vector2(0, -12), new Vector2(450, 12), defaultFont);
+            GameObject sklTxtObj = CreateText(summaryBox.transform, "SklTxt", "<color=#00f2ff>TACTICAL //</color>  <b>KINETIC SHOCKWAVE</b>", 15, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, new Vector2(0.28f, 0.22f), new Vector2(0.28f, 0.22f), new Vector2(0, -12), new Vector2(480, 12), defaultFont);
             deploymentSkillText = sklTxtObj.GetComponent<TMP_Text>();
 
-            // MAIN NAVIGATION BUTTONS
+            // MAIN NAVIGATION BUTTONS (Cyber-Vector Sliced)
             // 1. Play PvE Survival Button (Big Primary)
-            GameObject pveBtnObj = CreateButton(menuContainer.transform, "PvEStartButton", "► LAUNCH PVE SURVIVAL [SPACE / ENTER]", new Vector2(0.5f, 0.38f), new Vector2(0.5f, 0.38f), new Vector2(0, 0), new Vector2(440, 52), new Color(0.15f, 0.70f, 0.35f), defaultFont, 18);
+            GameObject pveBtnObj = CreateButton(menuContainer.transform, "PvEStartButton", "► LAUNCH SORTIE [SPACE / ENTER]", new Vector2(0.5f, 0.38f), new Vector2(0.5f, 0.38f), new Vector2(0, 0), new Vector2(460, 52), CyberVectorTheme.LaserGreen, defaultFont, 18, true);
             pveBtnObj.GetComponent<Button>().onClick.AddListener(() => {
                 SetMenuVisible(false);
                 if (GameManager.Instance != null)
@@ -245,7 +265,7 @@ namespace StarStrike.UI
             });
 
             // 2. Hangar (Choose Ship) Button
-            GameObject hangarBtnObj = CreateButton(menuContainer.transform, "HangarButton", "HANGAR // CHOOSE SHIP [H]", new Vector2(0.5f, 0.27f), new Vector2(0.5f, 0.27f), new Vector2(-155, 0), new Vector2(290, 48), new Color(0.15f, 0.45f, 0.65f), defaultFont, 16);
+            GameObject hangarBtnObj = CreateButton(menuContainer.transform, "HangarButton", "HANGAR // VESSEL DOCK [H]", new Vector2(0.5f, 0.27f), new Vector2(0.5f, 0.27f), new Vector2(-160, 0), new Vector2(300, 48), CyberVectorTheme.NeonCyan, defaultFont, 16);
             hangarBtnObj.GetComponent<Button>().onClick.AddListener(() => {
                 if (GameManager.Instance != null)
                 {
@@ -254,7 +274,7 @@ namespace StarStrike.UI
             });
 
             // 3. Armory (Choose Equipment) Button
-            GameObject armoryBtnObj = CreateButton(menuContainer.transform, "ArmoryButton", "ARMORY // EQUIPMENT [E]", new Vector2(0.5f, 0.27f), new Vector2(0.5f, 0.27f), new Vector2(155, 0), new Vector2(290, 48), new Color(0.85f, 0.45f, 0.12f), defaultFont, 16);
+            GameObject armoryBtnObj = CreateButton(menuContainer.transform, "ArmoryButton", "ARMORY // LOADOUT [E]", new Vector2(0.5f, 0.27f), new Vector2(0.5f, 0.27f), new Vector2(160, 0), new Vector2(300, 48), CyberVectorTheme.VoltYellow, defaultFont, 16);
             armoryBtnObj.GetComponent<Button>().onClick.AddListener(() => {
                 if (GameManager.Instance != null)
                 {
@@ -263,7 +283,7 @@ namespace StarStrike.UI
             });
 
             // 4. Multiplayer PvP Button
-            GameObject pvpBtnObj = CreateButton(menuContainer.transform, "PvPStartButton", "MULTIPLAYER PvP ARENA", new Vector2(0.5f, 0.17f), new Vector2(0.5f, 0.17f), new Vector2(0, 0), new Vector2(360, 46), new Color(0.85f, 0.30f, 0.18f), defaultFont, 16);
+            GameObject pvpBtnObj = CreateButton(menuContainer.transform, "PvPStartButton", "MULTIPLAYER PvP ARENA", new Vector2(0.5f, 0.17f), new Vector2(0.5f, 0.17f), new Vector2(0, 0), new Vector2(360, 46), CyberVectorTheme.NeonMagenta, defaultFont, 16);
             pvpBtnObj.GetComponent<Button>().onClick.AddListener(() => {
                 SetMenuVisible(false);
                 if (GameManager.Instance != null)
@@ -281,14 +301,14 @@ namespace StarStrike.UI
             });
 
             // Start Key Hint
-            CreateText(menuContainer.transform, "StartHintText", "[ ENTER: Launch PvE  |  H: Ship Hangar  |  E: Armory Equipment  |  O: Settings ]", 13, FontStyle.Normal, new Color(0.85f, 0.9f, 1f, 0.85f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.07f), new Vector2(0.5f, 0.07f), new Vector2(-350, -15), new Vector2(350, 15), defaultFont);
+            CreateText(menuContainer.transform, "StartHintText", "<color=#526b94>[ ENTER: Launch Sortie  |  H: Hangar Dock  |  E: Armory Loadout  |  O: Settings ]</color>", 13, FontStyle.Normal, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.07f), new Vector2(0.5f, 0.07f), new Vector2(-400, -15), new Vector2(400, 15), defaultFont);
         }
 
         public void RefreshData()
         {
             if (gemsText != null)
             {
-                gemsText.text = $"Meta-Gems: {StorageService.Profile.totalMetaGems}";
+                gemsText.text = $"<color=#ffe600>META-GEMS: {StorageService.Profile.totalMetaGems}</color>";
             }
 
             string activeShip = StorageService.GetLastShipEvolved();
@@ -299,15 +319,15 @@ namespace StarStrike.UI
 
             if (deploymentShipText != null)
             {
-                deploymentShipText.text = $"• Selected Vessel: {activeShip.ToUpper()}";
+                deploymentShipText.text = $"<color=#00f2ff>CHASSIS  //</color>  <b>{activeShip.ToUpper()}</b>  <color=#ffe600>[ TIER // 01 ]</color>";
             }
             if (deploymentWeaponText != null)
             {
-                deploymentWeaponText.text = $"• Primary Weapon:  {GetWeaponDisplayName(activeWeapon).ToUpper()}";
+                deploymentWeaponText.text = $"<color=#ff8514>ARSENAL  //</color>  <b>{GetWeaponDisplayName(activeWeapon).ToUpper()}</b>";
             }
             if (deploymentSkillText != null)
             {
-                deploymentSkillText.text = $"• Tactical Skill:  {GetSkillDisplayName(activeSkill).ToUpper()}";
+                deploymentSkillText.text = $"<color=#00f2ff>TACTICAL //</color>  <b>{GetSkillDisplayName(activeSkill).ToUpper()}</b>";
             }
             if (shipPreviewIcon != null)
             {
@@ -346,9 +366,9 @@ namespace StarStrike.UI
             return tmp.gameObject;
         }
 
-        private GameObject CreateButton(Transform parent, string name, string label, Vector2 anchorMin, Vector2 anchorMax, Vector2 pos, Vector2 size, Color bgColor, Font font, int fontSize = 16)
+        private GameObject CreateButton(Transform parent, string name, string label, Vector2 anchorMin, Vector2 anchorMax, Vector2 pos, Vector2 size, Color bgColor, Font font, int fontSize = 16, bool isPrimary = false)
         {
-            GameObject btnObj = new GameObject(name, typeof(RectTransform), typeof(Image));
+            GameObject btnObj = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
             btnObj.transform.SetParent(parent, false);
             RectTransform rt = btnObj.GetComponent<RectTransform>();
             rt.anchorMin = anchorMin;
@@ -357,18 +377,16 @@ namespace StarStrike.UI
             rt.sizeDelta = size;
 
             Image img = btnObj.GetComponent<Image>();
-            img.color = bgColor;
+            img.sprite = CyberVectorTheme.GetButtonSprite();
+            img.type = Image.Type.Sliced;
+            img.color = Color.white;
 
-            Button btn = btnObj.AddComponent<Button>();
+            Button btn = btnObj.GetComponent<Button>();
             btn.onClick.AddListener(() =>
             {
                 StarStrike.Gameplay.Audio.AudioService.Instance?.PlayUISound("click");
             });
-            ColorBlock cb = btn.colors;
-            cb.normalColor = bgColor;
-            cb.highlightedColor = bgColor * 1.2f;
-            cb.pressedColor = bgColor * 0.8f;
-            btn.colors = cb;
+            CyberVectorTheme.ApplyVectorButtonStyle(btn, bgColor, isPrimary);
 
             CreateText(btnObj.transform, "Text", label, fontSize, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, font);
             return btnObj;
