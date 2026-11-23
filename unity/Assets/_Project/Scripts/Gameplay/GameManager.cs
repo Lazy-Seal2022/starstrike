@@ -20,6 +20,8 @@ namespace StarStrike.Gameplay
         public static GameManager Instance { get; private set; }
 
         public const string SceneMainMenu = "MainMenuScene";
+        public const string SceneShipSelect = "ShipSelectScene";
+        public const string SceneEquipmentSelect = "EquipmentSelectScene";
         public const string SceneGameplay = "GameplayScene";
 
         public GameState CurrentState { get; private set; } = GameState.Boot;
@@ -86,7 +88,7 @@ namespace StarStrike.Gameplay
         private void Start()
         {
             string activeScene = SceneManager.GetActiveScene().name;
-            if (activeScene == SceneMainMenu)
+            if (activeScene == SceneMainMenu || activeScene == SceneShipSelect || activeScene == SceneEquipmentSelect)
             {
                 ChangeState(GameState.Menu);
             }
@@ -109,7 +111,7 @@ namespace StarStrike.Gameplay
 
         private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            if (scene.name == SceneMainMenu)
+            if (scene.name == SceneMainMenu || scene.name == SceneShipSelect || scene.name == SceneEquipmentSelect)
             {
                 ChangeState(GameState.Menu);
             }
@@ -129,6 +131,32 @@ namespace StarStrike.Gameplay
             else
             {
                 SceneManager.LoadSceneAsync(SceneMainMenu);
+            }
+        }
+
+        public void LoadShipSelect()
+        {
+            Time.timeScale = 1f;
+            if (SceneManager.GetActiveScene().name == SceneShipSelect)
+            {
+                ChangeState(GameState.Menu);
+            }
+            else
+            {
+                SceneManager.LoadSceneAsync(SceneShipSelect);
+            }
+        }
+
+        public void LoadEquipmentSelect()
+        {
+            Time.timeScale = 1f;
+            if (SceneManager.GetActiveScene().name == SceneEquipmentSelect)
+            {
+                ChangeState(GameState.Menu);
+            }
+            else
+            {
+                SceneManager.LoadSceneAsync(SceneEquipmentSelect);
             }
         }
 

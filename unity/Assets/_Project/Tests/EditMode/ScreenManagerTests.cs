@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using StarStrike.Gameplay;
+using StarStrike.Platform.Storage;
 using StarStrike.UI;
 
 namespace StarStrike.Tests.EditMode
@@ -144,7 +145,66 @@ namespace StarStrike.Tests.EditMode
         public void GameManager_SceneConstants_ConfiguredCorrectly()
         {
             Assert.AreEqual("MainMenuScene", GameManager.SceneMainMenu);
+            Assert.AreEqual("ShipSelectScene", GameManager.SceneShipSelect);
+            Assert.AreEqual("EquipmentSelectScene", GameManager.SceneEquipmentSelect);
             Assert.AreEqual("GameplayScene", GameManager.SceneGameplay);
+        }
+
+        [Test]
+        public void ShipSelectUI_InitializesAndNavigatesCatalog()
+        {
+            var go = new GameObject("TestShipSelectUI");
+            try
+            {
+                var shipUI = go.AddComponent<ShipSelectUI>();
+                Assert.AreEqual("ShipSelect", shipUI.ScreenId);
+
+                int initialIndex = shipUI.CurrentIndex;
+                shipUI.NavigateShip(1);
+                Assert.AreNotEqual(initialIndex, shipUI.CurrentIndex);
+
+                shipUI.SelectShipById("scout");
+                Assert.AreEqual("scout", shipUI.CurrentShipId);
+
+                shipUI.Show();
+                Assert.IsTrue(shipUI.IsVisible);
+
+                shipUI.Hide();
+                Assert.IsFalse(shipUI.IsVisible);
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
+        public void EquipmentSelectUI_EquipsWeaponsAndSkillsPerShip()
+        {
+            var go = new GameObject("TestEquipmentSelectUI");
+            try
+            {
+                var equipUI = go.AddComponent<EquipmentSelectUI>();
+                Assert.AreEqual("EquipmentSelect", equipUI.ScreenId);
+
+                equipUI.EquipWeapon("gatling");
+                Assert.AreEqual("gatling", equipUI.InspectedWeaponId);
+                Assert.AreEqual("gatling", StorageService.GetEquippedWeapon(equipUI.CurrentShipId));
+
+                equipUI.EquipSkill("blink_teleport");
+                Assert.AreEqual("blink_teleport", equipUI.InspectedSkillId);
+                Assert.AreEqual("blink_teleport", StorageService.GetSelectedSkill());
+
+                equipUI.Show();
+                Assert.IsTrue(equipUI.IsVisible);
+
+                equipUI.Hide();
+                Assert.IsFalse(equipUI.IsVisible);
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
         }
     }
 }

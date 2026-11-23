@@ -11,6 +11,8 @@ namespace StarStrike.Editor
             return new string[]
             {
                 "Assets/_Project/Scenes/MainMenuScene.unity",
+                "Assets/_Project/Scenes/ShipSelectScene.unity",
+                "Assets/_Project/Scenes/EquipmentSelectScene.unity",
                 "Assets/_Project/Scenes/GameplayScene.unity"
             };
         }

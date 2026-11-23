@@ -262,14 +262,22 @@ namespace StarStrike.Tests.EditMode
         {
             string[] scenes = CIBuilder.GetScenes();
             Assert.IsNotNull(scenes);
-            Assert.AreEqual(2, scenes.Length, "Expected 2 split scenes: MainMenuScene and GameplayScene");
+            Assert.AreEqual(4, scenes.Length, "Expected 4 split scenes: MainMenuScene, ShipSelectScene, EquipmentSelectScene, and GameplayScene");
             Assert.AreEqual("Assets/_Project/Scenes/MainMenuScene.unity", scenes[0]);
-            Assert.AreEqual("Assets/_Project/Scenes/GameplayScene.unity", scenes[1]);
+            Assert.AreEqual("Assets/_Project/Scenes/ShipSelectScene.unity", scenes[1]);
+            Assert.AreEqual("Assets/_Project/Scenes/EquipmentSelectScene.unity", scenes[2]);
+            Assert.AreEqual("Assets/_Project/Scenes/GameplayScene.unity", scenes[3]);
 
             var menuSceneAsset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEditor.SceneAsset>(scenes[0]);
             Assert.IsNotNull(menuSceneAsset, "MainMenuScene.unity must exist and be a valid SceneAsset");
 
-            var gameplaySceneAsset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEditor.SceneAsset>(scenes[1]);
+            var shipSceneAsset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEditor.SceneAsset>(scenes[1]);
+            Assert.IsNotNull(shipSceneAsset, "ShipSelectScene.unity must exist and be a valid SceneAsset");
+
+            var equipSceneAsset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEditor.SceneAsset>(scenes[2]);
+            Assert.IsNotNull(equipSceneAsset, "EquipmentSelectScene.unity must exist and be a valid SceneAsset");
+
+            var gameplaySceneAsset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEditor.SceneAsset>(scenes[3]);
             Assert.IsNotNull(gameplaySceneAsset, "GameplayScene.unity must exist and be a valid SceneAsset");
         }
 

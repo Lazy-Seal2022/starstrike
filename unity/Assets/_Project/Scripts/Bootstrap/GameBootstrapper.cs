@@ -114,6 +114,14 @@ namespace StarStrike.Bootstrap
             {
                 SetupMainMenuSceneUI();
             }
+            else if (activeScene == GameManager.SceneShipSelect)
+            {
+                SetupShipSelectSceneUI();
+            }
+            else if (activeScene == GameManager.SceneEquipmentSelect)
+            {
+                SetupEquipmentSelectSceneUI();
+            }
             else
             {
                 // In GameplayScene or legacy GameScene: setup gameplay systems & HUD
@@ -178,6 +186,64 @@ namespace StarStrike.Bootstrap
                 rt.offsetMin = Vector2.zero;
                 rt.offsetMax = Vector2.zero;
                 lobbyGO.AddComponent<NetworkLobbyUI>();
+            }
+        }
+
+        private static void SetupShipSelectSceneUI()
+        {
+            Canvas canvas = EnsureCanvas();
+
+            if (ShipSelectUI.Instance == null && Object.FindAnyObjectByType<ShipSelectUI>() == null)
+            {
+                var shipSelectGO = new GameObject("ShipSelectUI", typeof(RectTransform));
+                shipSelectGO.transform.SetParent(canvas.transform, false);
+                var rt = shipSelectGO.GetComponent<RectTransform>();
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
+                shipSelectGO.AddComponent<ShipSelectUI>();
+            }
+
+            if (SettingsUI.Instance == null && Object.FindAnyObjectByType<SettingsUI>() == null)
+            {
+                var settingsGO = new GameObject("SettingsUI", typeof(RectTransform));
+                settingsGO.transform.SetParent(canvas.transform, false);
+                var rt = settingsGO.GetComponent<RectTransform>();
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
+                settingsGO.AddComponent<SettingsUI>();
+            }
+        }
+
+        private static void SetupEquipmentSelectSceneUI()
+        {
+            Canvas canvas = EnsureCanvas();
+
+            if (EquipmentSelectUI.Instance == null && Object.FindAnyObjectByType<EquipmentSelectUI>() == null)
+            {
+                var equipSelectGO = new GameObject("EquipmentSelectUI", typeof(RectTransform));
+                equipSelectGO.transform.SetParent(canvas.transform, false);
+                var rt = equipSelectGO.GetComponent<RectTransform>();
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
+                equipSelectGO.AddComponent<EquipmentSelectUI>();
+            }
+
+            if (SettingsUI.Instance == null && Object.FindAnyObjectByType<SettingsUI>() == null)
+            {
+                var settingsGO = new GameObject("SettingsUI", typeof(RectTransform));
+                settingsGO.transform.SetParent(canvas.transform, false);
+                var rt = settingsGO.GetComponent<RectTransform>();
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
+                settingsGO.AddComponent<SettingsUI>();
             }
         }
 

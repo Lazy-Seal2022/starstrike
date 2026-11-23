@@ -9,6 +9,12 @@ EditorBuildSettings:
     path: Assets/_Project/Scenes/MainMenuScene.unity
     guid: 660db118354b3784e842c6d1c9330448
   - enabled: 1
+    path: Assets/_Project/Scenes/ShipSelectScene.unity
+    guid: 4f98e8b12462f2b4c82e36aa2c5cfad5
+  - enabled: 1
+    path: Assets/_Project/Scenes/EquipmentSelectScene.unity
+    guid: 5085e89a1d7a40248ac37d702d148cd9
+  - enabled: 1
     path: Assets/_Project/Scenes/GameplayScene.unity
     guid: a2edefe0fcf2a5b45af18cebb5361a6a
   m_configObjects:
