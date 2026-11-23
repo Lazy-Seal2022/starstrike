@@ -269,9 +269,15 @@ namespace StarStrike.Gameplay
             if (!forceProcedural)
             {
                 var loaded = Resources.Load<Sprite>("Sprites/Weapons/Weapon_Socket");
+                if (loaded == null) loaded = Resources.Load<Sprite>("Sprites/Weapons/Weapon_Slot");
                 if (loaded != null) return loaded;
             }
             return GetCachedOrGenerate(ref cachedWeaponSocket, () => GenerateWeaponSocketIcon(), forceProcedural);
+        }
+
+        public static Sprite GetWeaponSlotSprite(bool forceProcedural = false)
+        {
+            return GetWeaponSocketSprite(forceProcedural);
         }
 
         private static Sprite GenerateWeaponSocketIcon()
@@ -281,53 +287,68 @@ namespace StarStrike.Gameplay
             tex.filterMode = FilterMode.Bilinear;
             Color[] cols = new Color[size * size];
             Color clear = new Color(0, 0, 0, 0);
-            Color darkMetal = new Color(0.08f, 0.11f, 0.16f, 1f);
-            Color midMetal = new Color(0.18f, 0.23f, 0.32f, 1f);
-            Color rimMetal = new Color(0.35f, 0.45f, 0.60f, 1f);
-            Color cyanAccent = new Color(0f, 0.94f, 1f, 1f);
-            Color yellowAccent = new Color(1f, 0.90f, 0.10f, 1f);
+            Color darkMetal = new Color(0.06f, 0.08f, 0.13f, 0.95f);
+            Color innerWell = new Color(0.04f, 0.05f, 0.09f, 1f);
+            Color cyanBorder = new Color(0f, 0.94f, 1f, 1f);
+            Color cyanSubtle = new Color(0f, 0.94f, 1f, 0.35f);
 
             for (int i = 0; i < cols.Length; i++) cols[i] = clear;
 
             float cx = size / 2f;
             float cy = size / 2f;
+            float halfBox = 26f;
+            float cornerRadius = 10f;
+            float innerHalf = 18f;
+            float innerRadius = 6f;
 
             for (int y = 0; y < size; y++)
             {
                 for (int x = 0; x < size; x++)
                 {
-                    float dist = Mathf.Sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
-                    int dx = Mathf.Abs((int)(x - cx));
-                    int dy = Mathf.Abs((int)(y - cy));
+                    float qx = Mathf.Abs(x - cx);
+                    float qy = Mathf.Abs(y - cy);
 
-                    // Outer chamfered base plate
-                    if (dx <= 24 && dy <= 24 && (dx + dy <= 38))
-                    {
-                        cols[y * size + x] = (dx == 24 || dy == 24 || dx + dy >= 36) ? rimMetal : midMetal;
-                    }
+                    // Outer rounded square distance
+                    float rx = Mathf.Max(0f, qx - (halfBox - cornerRadius));
+                    float ry = Mathf.Max(0f, qy - (halfBox - cornerRadius));
+                    float outerDist = Mathf.Sqrt(rx * rx + ry * ry);
 
-                    // Circular collar
-                    if (dist <= 20f && dist >= 16f)
+                    if (outerDist <= cornerRadius)
                     {
-                        cols[y * size + x] = cyanAccent;
-                    }
-                    else if (dist < 16f && dist >= 8f)
-                    {
-                        cols[y * size + x] = darkMetal;
-                    }
-                    else if (dist < 8f && dist >= 5f)
-                    {
-                        cols[y * size + x] = yellowAccent;
-                    }
-                    else if (dist < 5f)
-                    {
-                        cols[y * size + x] = Color.white;
-                    }
+                        if (outerDist >= cornerRadius - 2f)
+                        {
+                            // Crisp neon cyan border
+                            cols[y * size + x] = cyanBorder;
+                        }
+                        else
+                        {
+                            // Inside outer box
+                            // Inner rounded square well distance
+                            float irx = Mathf.Max(0f, qx - (innerHalf - innerRadius));
+                            float iry = Mathf.Max(0f, qy - (innerHalf - innerRadius));
+                            float innerDist = Mathf.Sqrt(irx * irx + iry * iry);
 
-                    // Alignment notches
-                    if (dist <= 22f && (dx <= 1 || dy <= 1) && dist >= 14f)
-                    {
-                        cols[y * size + x] = cyanAccent;
+                            if (innerDist <= innerRadius)
+                            {
+                                if (innerDist >= innerRadius - 1f)
+                                {
+                                    cols[y * size + x] = cyanSubtle;
+                                }
+                                else if ((qx <= 1f && qy <= 4f) || (qy <= 1f && qx <= 4f))
+                                {
+                                    // Subtle center cross reticle
+                                    cols[y * size + x] = cyanBorder;
+                                }
+                                else
+                                {
+                                    cols[y * size + x] = innerWell;
+                                }
+                            }
+                            else
+                            {
+                                cols[y * size + x] = darkMetal;
+                            }
+                        }
                     }
                 }
             }
