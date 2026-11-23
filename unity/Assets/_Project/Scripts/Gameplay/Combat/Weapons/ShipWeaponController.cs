@@ -23,6 +23,50 @@ namespace StarStrike.Gameplay
             InitializeWeapons();
         }
 
+        private void Start()
+        {
+            bool isPlayer = CompareTag("Player") || gameObject.name == "Player";
+            if (isPlayer)
+            {
+                var prog = GetComponent<PlayerProgression>();
+                string shipId = (prog != null && prog.currentShip != null) ? prog.currentShip.id : "scout";
+                EquipFromStorage(shipId);
+            }
+        }
+
+        public void EquipFromStorage(string shipId = null)
+        {
+            string weaponId = StarStrike.Platform.Storage.StorageService.GetEquippedWeapon(shipId);
+            int targetIdx = WeaponIdToIndex(weaponId);
+            if (targetIdx >= 0 && targetIdx < availableWeapons.Count)
+            {
+                SwitchWeapon(targetIdx);
+            }
+        }
+
+        public static int WeaponIdToIndex(string weaponId)
+        {
+            if (string.IsNullOrEmpty(weaponId)) return 0;
+            string lower = weaponId.ToLowerInvariant().Trim();
+            if (lower.Contains("gatling") || lower == "4") return 4;
+            if (lower.Contains("beam") || lower == "3") return 3;
+            if (lower.Contains("missile") || lower.Contains("homing") || lower == "2") return 2;
+            if (lower.Contains("scatter") || lower == "1") return 1;
+            return 0; // pulse
+        }
+
+        public static string IndexToWeaponId(int index)
+        {
+            switch (index)
+            {
+                case 1: return "scattergun";
+                case 2: return "missile";
+                case 3: return "beam";
+                case 4: return "gatling";
+                default: return "pulse";
+            }
+        }
+
         public void InitializeWeapons()
         {
             availableWeapons.Clear();
@@ -69,7 +113,14 @@ namespace StarStrike.Gameplay
         public bool SwitchWeapon(int index)
         {
             if (index < 0 || index >= availableWeapons.Count) return false;
-            if (index == currentWeaponIndex) return true;
+            if (index == currentWeaponIndex)
+            {
+                if (CurrentWeapon != null)
+                {
+                    GameEvents.TriggerWeaponSwapped(CurrentWeapon.WeaponName, currentWeaponIndex);
+                }
+                return true;
+            }
 
             CurrentWeapon?.StopFiring();
             currentWeaponIndex = index;

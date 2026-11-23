@@ -178,5 +178,33 @@ namespace StarStrike.Tests.EditMode
 
             Object.DestroyImmediate(pickupGo);
         }
+
+        [Test]
+        public void UserWeaponLoadout_EquipsAndPersistsPerShip()
+        {
+            // Save equipped weapons per ship in storage
+            StarStrike.Platform.Storage.StorageService.SaveEquippedWeapon("scout", "gatling");
+            StarStrike.Platform.Storage.StorageService.SaveEquippedWeapon("fighter", "scattergun");
+            StarStrike.Platform.Storage.StorageService.SaveEquippedWeapon("juggernaut", "beam");
+
+            Assert.AreEqual("gatling", StarStrike.Platform.Storage.StorageService.GetEquippedWeapon("scout"));
+            Assert.AreEqual("scattergun", StarStrike.Platform.Storage.StorageService.GetEquippedWeapon("fighter"));
+            Assert.AreEqual("beam", StarStrike.Platform.Storage.StorageService.GetEquippedWeapon("juggernaut"));
+
+            var controller = playerGo.AddComponent<ShipWeaponController>();
+            controller.InitializeWeapons();
+
+            // Equip for scout
+            controller.EquipFromStorage("scout");
+            Assert.AreEqual("Gatling Gun", controller.CurrentWeapon.WeaponName);
+
+            // Equip for fighter
+            controller.EquipFromStorage("fighter");
+            Assert.AreEqual("Scattergun", controller.CurrentWeapon.WeaponName);
+
+            // Equip for juggernaut
+            controller.EquipFromStorage("juggernaut");
+            Assert.AreEqual("Beam Laser", controller.CurrentWeapon.WeaponName);
+        }
     }
 }

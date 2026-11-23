@@ -145,6 +145,11 @@ namespace StarStrike.Gameplay
 
             ApplyCurrentStats();
             ApplyShipVisuals();
+            var weaponCtrl = GetComponent<ShipWeaponController>();
+            if (weaponCtrl != null)
+            {
+                weaponCtrl.EquipFromStorage(currentShip != null ? currentShip.id : "scout");
+            }
             if (health != null) health.OnDied += HandleDeath;
 
             // Add Minimap Trackable
@@ -179,6 +184,12 @@ namespace StarStrike.Gameplay
             if (health != null) health.ResetMeters();
 
             ApplyShipVisuals();
+
+            var weaponCtrl = GetComponent<ShipWeaponController>();
+            if (weaponCtrl != null)
+            {
+                weaponCtrl.EquipFromStorage(currentShip != null ? currentShip.id : "scout");
+            }
 
             transform.position = Vector3.zero;
             transform.rotation = Quaternion.Euler(0f, 0f, 90f);
@@ -451,6 +462,12 @@ namespace StarStrike.Gameplay
             ApplyCurrentStats();
             health.ResetMeters();
             ApplyShipVisuals();
+
+            var weaponCtrl = GetComponent<ShipWeaponController>();
+            if (weaponCtrl != null)
+            {
+                weaponCtrl.EquipFromStorage(currentShip != null ? currentShip.id : "scout");
+            }
 
             GameEvents.TriggerPlayerEvolved(currentShip.id);
         }

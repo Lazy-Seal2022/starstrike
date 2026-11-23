@@ -31,6 +31,8 @@ namespace StarStrike.Platform.Storage
 
         public string lastShipId = "scout";
         public string selectedSkill = "forward_shockwave";
+        public string selectedWeapon = "pulse";
+        public List<string> shipWeaponEquipped = new List<string>();
         public List<string> unlockedShips = new List<string> { "scout" };
         public List<string> achievements = new List<string>();
         
@@ -264,6 +266,45 @@ namespace StarStrike.Platform.Storage
             Profile.selectedSkill = string.IsNullOrEmpty(skillId) ? "forward_shockwave" : skillId;
             SaveProfile();
         }
+
+        public static string GetEquippedWeapon(string shipId = null)
+        {
+            if (string.IsNullOrEmpty(shipId)) shipId = GetLastShipEvolved();
+            if (string.IsNullOrEmpty(shipId)) shipId = "scout";
+
+            if (Profile.shipWeaponEquipped != null)
+            {
+                string prefix = shipId.ToLowerInvariant() + ":";
+                foreach (var entry in Profile.shipWeaponEquipped)
+                {
+                    if (entry != null && entry.StartsWith(prefix))
+                    {
+                        return entry.Substring(prefix.Length);
+                    }
+                }
+            }
+
+            return string.IsNullOrEmpty(Profile.selectedWeapon) ? "pulse" : Profile.selectedWeapon;
+        }
+
+        public static void SaveEquippedWeapon(string shipId, string weaponId)
+        {
+            if (string.IsNullOrEmpty(shipId)) shipId = GetLastShipEvolved();
+            if (string.IsNullOrEmpty(shipId)) shipId = "scout";
+            if (string.IsNullOrEmpty(weaponId)) weaponId = "pulse";
+
+            shipId = shipId.ToLowerInvariant();
+            weaponId = weaponId.ToLowerInvariant();
+
+            Profile.selectedWeapon = weaponId;
+            if (Profile.shipWeaponEquipped == null) Profile.shipWeaponEquipped = new List<string>();
+            Profile.shipWeaponEquipped.RemoveAll(e => e != null && e.StartsWith(shipId + ":"));
+            Profile.shipWeaponEquipped.Add($"{shipId}:{weaponId}");
+            SaveProfile();
+        }
+
+        public static string GetSelectedWeapon() => GetEquippedWeapon(GetLastShipEvolved());
+        public static void SaveSelectedWeapon(string weaponId) => SaveEquippedWeapon(GetLastShipEvolved(), weaponId);
         
         public static void AddMetaGems(int amount)
         {

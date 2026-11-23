@@ -50,6 +50,9 @@ namespace StarStrike.UI
 
         private float targetBoostRatio = 1f;
 
+        private string cachedShipId = "SCOUT";
+        private string cachedWeaponName = "Pulse Laser";
+
         private void Awake()
         {
             if (themeConfig == null) themeConfig = Resources.Load<UIThemeConfig>("Data/UIThemeConfig");
@@ -65,6 +68,7 @@ namespace StarStrike.UI
             GameEvents.OnEnergyChanged += HandleEnergyChanged;
             GameEvents.OnGemCollected += HandleGemCollected;
             GameEvents.OnPlayerEvolved += HandlePlayerEvolved;
+            GameEvents.OnWeaponSwapped += HandleWeaponSwapped;
         }
 
         private void OnDisable()
@@ -74,6 +78,7 @@ namespace StarStrike.UI
             GameEvents.OnEnergyChanged -= HandleEnergyChanged;
             GameEvents.OnGemCollected -= HandleGemCollected;
             GameEvents.OnPlayerEvolved -= HandlePlayerEvolved;
+            GameEvents.OnWeaponSwapped -= HandleWeaponSwapped;
         }
 
         public void ApplyThemeStyles()
@@ -201,7 +206,19 @@ namespace StarStrike.UI
 
         public void HandlePlayerEvolved(string shipId)
         {
-            string shipStr = $"• {shipId.ToUpper()} •";
+            if (!string.IsNullOrEmpty(shipId)) cachedShipId = shipId.ToUpper();
+            UpdateShipBadge();
+        }
+
+        public void HandleWeaponSwapped(string weaponName, int weaponIndex)
+        {
+            if (!string.IsNullOrEmpty(weaponName)) cachedWeaponName = weaponName;
+            UpdateShipBadge();
+        }
+
+        private void UpdateShipBadge()
+        {
+            string shipStr = $"• {cachedShipId} [{cachedWeaponName}] •";
             if (shipNameText != null) shipNameText.text = shipStr;
             if (shipNameTmpText != null) shipNameTmpText.text = shipStr;
         }
