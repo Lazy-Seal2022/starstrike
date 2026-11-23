@@ -288,9 +288,7 @@ namespace StarStrike.Gameplay
             Color[] cols = new Color[size * size];
             Color clear = new Color(0, 0, 0, 0);
             Color darkMetal = new Color(0.06f, 0.08f, 0.13f, 0.95f);
-            Color innerWell = new Color(0.04f, 0.05f, 0.09f, 1f);
             Color cyanBorder = new Color(0f, 0.94f, 1f, 1f);
-            Color cyanSubtle = new Color(0f, 0.94f, 1f, 0.35f);
 
             for (int i = 0; i < cols.Length; i++) cols[i] = clear;
 
@@ -298,8 +296,6 @@ namespace StarStrike.Gameplay
             float cy = size / 2f;
             float halfBox = 26f;
             float cornerRadius = 10f;
-            float innerHalf = 18f;
-            float innerRadius = 6f;
 
             for (int y = 0; y < size; y++)
             {
@@ -322,32 +318,8 @@ namespace StarStrike.Gameplay
                         }
                         else
                         {
-                            // Inside outer box
-                            // Inner rounded square well distance
-                            float irx = Mathf.Max(0f, qx - (innerHalf - innerRadius));
-                            float iry = Mathf.Max(0f, qy - (innerHalf - innerRadius));
-                            float innerDist = Mathf.Sqrt(irx * irx + iry * iry);
-
-                            if (innerDist <= innerRadius)
-                            {
-                                if (innerDist >= innerRadius - 1f)
-                                {
-                                    cols[y * size + x] = cyanSubtle;
-                                }
-                                else if ((qx <= 1f && qy <= 4f) || (qy <= 1f && qx <= 4f))
-                                {
-                                    // Subtle center cross reticle
-                                    cols[y * size + x] = cyanBorder;
-                                }
-                                else
-                                {
-                                    cols[y * size + x] = innerWell;
-                                }
-                            }
-                            else
-                            {
-                                cols[y * size + x] = darkMetal;
-                            }
+                            // Pure simple dark fill, zero inside decorations
+                            cols[y * size + x] = darkMetal;
                         }
                     }
                 }
