@@ -166,7 +166,8 @@ namespace StarStrike.Gameplay
         {
             bool isEnemyTarget = collision.CompareTag("Enemy") || (collision.attachedRigidbody != null && collision.attachedRigidbody.CompareTag("Enemy"));
             bool isBossTarget = collision.CompareTag("Boss") || (collision.attachedRigidbody != null && collision.attachedRigidbody.CompareTag("Boss"));
-            bool isPlayerTarget = collision.CompareTag("Player") || (collision.attachedRigidbody != null && collision.attachedRigidbody.CompareTag("Player"));
+            bool isPlayerTarget = collision.CompareTag("Player") || (collision.attachedRigidbody != null && collision.attachedRigidbody.CompareTag("Player")) ||
+                                  collision.GetComponent<StarStrike.Gameplay.Carrier.CarrierEscortDrone>() != null || (collision.attachedRigidbody != null && collision.attachedRigidbody.GetComponent<StarStrike.Gameplay.Carrier.CarrierEscortDrone>() != null);
             bool isAsteroidTarget = collision.CompareTag("Asteroid") || (collision.attachedRigidbody != null && collision.attachedRigidbody.CompareTag("Asteroid"));
 
             bool hitTarget = false;
@@ -202,7 +203,7 @@ namespace StarStrike.Gameplay
                 }
                 else
                 {
-                    validVictim = victim.CompareTag("Player") || victim.CompareTag("Asteroid");
+                    validVictim = victim.CompareTag("Player") || victim.CompareTag("Asteroid") || victim.GetComponent<StarStrike.Gameplay.Carrier.CarrierEscortDrone>() != null;
                 }
 
                 if (validVictim)

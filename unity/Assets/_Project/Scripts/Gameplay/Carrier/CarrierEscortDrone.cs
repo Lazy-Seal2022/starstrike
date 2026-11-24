@@ -8,7 +8,7 @@ namespace StarStrike.Gameplay.Carrier
     /// Autonomous carrier-deployed escort strike drone that defends the carrier or executes strike sorties.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
-    public class CarrierEscortDrone : MonoBehaviour
+    public class CarrierEscortDrone : MonoBehaviour, IDamageable
     {
         [Header("Identity & Mother Ship")]
         public CarrierHangarController carrier;
@@ -73,7 +73,7 @@ namespace StarStrike.Gameplay.Carrier
             spriteRenderer.sortingOrder = 4;
             transform.localScale = new Vector3(0.65f, 0.65f, 1f);
 
-            gameObject.tag = "Player";
+            gameObject.tag = "Untagged";
         }
 
         public void Initialize(CarrierHangarController motherCarrier, int index)
@@ -257,6 +257,11 @@ namespace StarStrike.Gameplay.Carrier
 
         public void TakeDamage(float damage)
         {
+            TakeDamage(damage, (Vector2)transform.position);
+        }
+
+        public void TakeDamage(float damage, Vector2 hitPoint)
+        {
             lastDamageTime = Time.time;
             if (currentShield > 0f)
             {
@@ -322,11 +327,15 @@ namespace StarStrike.Gameplay.Carrier
                 var proj = collision.GetComponent<IProjectile>();
                 float dmg = proj != null ? proj.Damage : 15f;
                 TakeDamage(dmg);
-                Destroy(collision.gameObject);
+                collision.gameObject.SetActive(false);
             }
             else if (collision.CompareTag("Asteroid"))
             {
                 TakeDamage(25f);
+            }
+            else if (collision.CompareTag("Enemy") || collision.CompareTag("Boss"))
+            {
+                TakeDamage(30f);
             }
         }
     }

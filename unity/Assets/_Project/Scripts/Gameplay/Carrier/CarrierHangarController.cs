@@ -64,7 +64,8 @@ namespace StarStrike.Gameplay.Carrier
                 if (Camera.main != null && Mouse.current != null)
                 {
                     Vector2 screenPos = Mouse.current.position.ReadValue();
-                    return Camera.main.ScreenToWorldPoint(screenPos);
+                    float camDist = Mathf.Abs(Camera.main.transform.position.z);
+                    return Camera.main.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, camDist));
                 }
                 return (Vector2)transform.position + (Vector2)transform.right * 10f;
             }
@@ -181,6 +182,24 @@ namespace StarStrike.Gameplay.Carrier
             if (drone == null) return;
             activeDrones.Remove(drone);
             OnDroneDestroyed?.Invoke(drone);
+        }
+
+        public void ClearSquadron()
+        {
+            for (int i = 0; i < activeDrones.Count; i++)
+            {
+                if (activeDrones[i] != null)
+                {
+                    if (Application.isPlaying) Destroy(activeDrones[i].gameObject);
+                    else DestroyImmediate(activeDrones[i].gameObject);
+                }
+            }
+            activeDrones.Clear();
+        }
+
+        private void OnDestroy()
+        {
+            ClearSquadron();
         }
 
         public Vector2 GetLaunchBayWorldPosition(int bayIndex)

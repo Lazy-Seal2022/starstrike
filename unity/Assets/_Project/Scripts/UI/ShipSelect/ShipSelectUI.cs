@@ -176,7 +176,7 @@ namespace StarStrike.UI
                 energyRegen = 25,
                 speed = 160,
                 agility = 2.6f,
-                weaponSlots = 2,
+                weaponSlots = 4,
                 description = "Command capital ship equipped with an automated drone foundry. Deploys autonomous interceptor escorts and heavy Point Defense Cannons (PDC) with independent 360° turret fire control."
             },
             new ShipInfo {
@@ -192,7 +192,7 @@ namespace StarStrike.UI
                 energyRegen = 25,
                 speed = 160,
                 agility = 2.6f,
-                weaponSlots = 2,
+                weaponSlots = 4,
                 description = "Command capital ship equipped with an automated drone foundry. Deploys autonomous interceptor escorts and heavy Point Defense Cannons (PDC) with independent 360° turret fire control."
             },
             new ShipInfo {

@@ -112,8 +112,10 @@ namespace StarStrike.Gameplay
         {
             bool isEnemyTarget = collision.CompareTag("Enemy") || (collision.attachedRigidbody != null && collision.attachedRigidbody.CompareTag("Enemy"));
             bool isBossTarget = collision.CompareTag("Boss") || (collision.attachedRigidbody != null && collision.attachedRigidbody.CompareTag("Boss"));
-            bool isPlayerTarget = collision.CompareTag("Player") || (collision.attachedRigidbody != null && collision.attachedRigidbody.CompareTag("Player"));
+            bool isPlayerTarget = collision.CompareTag("Player") || (collision.attachedRigidbody != null && collision.attachedRigidbody.CompareTag("Player")) ||
+                                  collision.GetComponent<StarStrike.Gameplay.Carrier.CarrierEscortDrone>() != null || (collision.attachedRigidbody != null && collision.attachedRigidbody.GetComponent<StarStrike.Gameplay.Carrier.CarrierEscortDrone>() != null);
             bool isAsteroidTarget = collision.CompareTag("Asteroid") || (collision.attachedRigidbody != null && collision.attachedRigidbody.CompareTag("Asteroid"));
+            bool isHostileLaser = !isEnemy && (collision.CompareTag("EnemyLaser") || (collision.attachedRigidbody != null && collision.attachedRigidbody.CompareTag("EnemyLaser")));
 
             bool hitTarget = false;
             if (isEnemy)
@@ -122,11 +124,19 @@ namespace StarStrike.Gameplay
             }
             else
             {
-                hitTarget = isEnemyTarget || isBossTarget || isAsteroidTarget;
+                hitTarget = isEnemyTarget || isBossTarget || isAsteroidTarget || isHostileLaser;
             }
 
             if (hitTarget)
             {
+                if (isHostileLaser)
+                {
+                    collision.gameObject.SetActive(false);
+                    GameEvents.TriggerDamageDealt(transform.position, damage, isCrit: false);
+                    gameObject.SetActive(false);
+                    return;
+                }
+
                 IDamageable damageable = collision.GetComponent<IDamageable>();
                 if (damageable == null)
                 {

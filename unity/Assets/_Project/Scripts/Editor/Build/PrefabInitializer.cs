@@ -2680,6 +2680,10 @@ namespace StarStrike.Editor
                 var firstDrone = hangar.ActiveDrones[0];
                 if (firstDrone == null || firstDrone.carrier != hangar)
                     throw new System.Exception("Escort drone must be valid and linked to mother carrier");
+                if (firstDrone.gameObject.CompareTag("Player"))
+                    throw new System.Exception("Escort drone must not hijack 'Player' tag, ensuring unique player mothership tracking");
+                if (!(firstDrone is IDamageable))
+                    throw new System.Exception("Escort drone must implement IDamageable interface");
                 if (firstDrone.maxHull != 60f || firstDrone.maxShield != 80f)
                     throw new System.Exception($"Escort drone defensive stats mismatch. Hull: {firstDrone.maxHull}, Shield: {firstDrone.maxShield}");
 

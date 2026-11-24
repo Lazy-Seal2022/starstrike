@@ -151,7 +151,7 @@ namespace StarStrike.Gameplay
                     {
                         if (missilePrefab != null)
                         {
-                            var inst = Instantiate(missilePrefab, nose, transform.rotation);
+                            var inst = Instantiate(missilePrefab, nose, baseRotation);
                             inst.name = poolTag;
                             return inst;
                         }
@@ -165,7 +165,7 @@ namespace StarStrike.Gameplay
                 {
                     if (missilePrefab != null)
                     {
-                        missileObj = Instantiate(missilePrefab, nose, transform.rotation);
+                        missileObj = Instantiate(missilePrefab, nose, baseRotation);
                         missileObj.name = poolTag;
                     }
                     else
@@ -173,7 +173,7 @@ namespace StarStrike.Gameplay
                         missileObj = new GameObject(poolTag);
                         missileObj.tag = isPlayer ? "Laser" : "EnemyLaser";
                         missileObj.transform.position = nose;
-                        missileObj.transform.rotation = transform.rotation;
+                        missileObj.transform.rotation = baseRotation;
                         missileObj.AddComponent<MissileProjectile>();
                     }
                 }

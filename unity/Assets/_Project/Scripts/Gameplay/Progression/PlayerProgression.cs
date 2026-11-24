@@ -676,9 +676,14 @@ namespace StarStrike.Gameplay
                 if (hangar == null) hangar = gameObject.AddComponent<StarStrike.Gameplay.Carrier.CarrierHangarController>();
                 hangar.enabled = true;
                 hangar.droneCapacity = currentShip.droneHangarCapacity > 0 ? currentShip.droneHangarCapacity : 4;
+                if (hangar.ActiveDroneCount == 0)
+                {
+                    hangar.SpawnInitialSquadron();
+                }
             }
             else if (hangar != null)
             {
+                hangar.ClearSquadron();
                 hangar.enabled = false;
             }
 

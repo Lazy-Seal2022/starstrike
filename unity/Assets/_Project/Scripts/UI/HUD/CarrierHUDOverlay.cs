@@ -37,6 +37,11 @@ namespace StarStrike.UI.HUD
                 }
             }
 
+            if (panelRoot == null)
+            {
+                BuildUI();
+            }
+
             if (panelRoot != null && !panelRoot.activeSelf)
             {
                 panelRoot.SetActive(true);
@@ -51,6 +56,10 @@ namespace StarStrike.UI.HUD
             if (player != null)
             {
                 carrier = player.GetComponent<CarrierHangarController>();
+            }
+            if (carrier == null)
+            {
+                carrier = FindAnyObjectByType<CarrierHangarController>();
             }
         }
 
