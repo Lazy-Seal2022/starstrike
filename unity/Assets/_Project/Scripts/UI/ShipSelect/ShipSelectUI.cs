@@ -569,14 +569,15 @@ namespace StarStrike.UI
                 for (int i = 0; i < sockets.Length; i++)
                 {
                     var sData = sockets[i];
-                    GameObject sockGo = new GameObject($"PreviewSocket_{sData.index}", typeof(RectTransform), typeof(Image));
+                    int capturedIdx = sData.index;
+                    GameObject sockGo = new GameObject($"PreviewSocket_{sData.index}", typeof(RectTransform), typeof(Image), typeof(Button));
                     sockGo.transform.SetParent(shipPreviewImage.transform, false);
 
                     RectTransform sRt = sockGo.GetComponent<RectTransform>();
                     sRt.anchorMin = new Vector2(0.5f, 0.5f);
                     sRt.anchorMax = new Vector2(0.5f, 0.5f);
                     sRt.anchoredPosition = new Vector2((sData.localPosition.x / halfW) * (boxW * 0.45f), (sData.localPosition.y / halfH) * (boxH * 0.45f));
-                    sRt.sizeDelta = new Vector2(26f, 26f);
+                    sRt.sizeDelta = new Vector2(28f, 28f);
                     sRt.localRotation = Quaternion.Euler(0f, 0f, -90f);
 
                     Image sImg = sockGo.GetComponent<Image>();
@@ -594,6 +595,32 @@ namespace StarStrike.UI
                     {
                         sImg.sprite = ProceduralSpriteHelper.GetWeaponSocketSprite();
                     }
+
+                    // Tactical corner-bracket reticle
+                    GameObject reticleGo = new GameObject("Reticle", typeof(RectTransform), typeof(Image));
+                    reticleGo.transform.SetParent(sockGo.transform, false);
+                    RectTransform rRt = reticleGo.GetComponent<RectTransform>();
+                    rRt.anchorMin = new Vector2(0.5f, 0.5f);
+                    rRt.anchorMax = new Vector2(0.5f, 0.5f);
+                    rRt.anchoredPosition = Vector2.zero;
+                    rRt.sizeDelta = new Vector2(36f, 36f);
+                    rRt.localRotation = Quaternion.Euler(0f, 0f, 90f);
+
+                    Image rImg = reticleGo.GetComponent<Image>();
+                    rImg.sprite = CyberVectorTheme.GetTacticalReticleSprite();
+                    rImg.color = new Color(0.35f, 0.65f, 0.95f, 0.60f);
+                    rImg.raycastTarget = false;
+
+                    // Button click navigates to EquipmentSelect focusing this socket
+                    Button sBtn = sockGo.GetComponent<Button>();
+                    CyberVectorTheme.ApplyVectorButtonStyle(sBtn, CyberVectorTheme.NeonCyan, false);
+                    sBtn.onClick.AddListener(() =>
+                    {
+                        EquipmentSelectUI.InitialSocketIndex = capturedIdx;
+                        StorageService.SaveLastShipEvolved(info.id);
+                        StarStrike.Gameplay.Audio.AudioService.Instance?.PlayUISound("click");
+                        GoToEquipment();
+                    });
                 }
             }
 

@@ -35,6 +35,7 @@ namespace StarStrike.UI
         private static Sprite cachedChamferCardSprite;
         private static Sprite cachedButtonSprite;
         private static Sprite cachedGlowBarSprite;
+        private static Sprite cachedReticleSprite;
 
         /// <summary>
         /// Returns a procedural 256x256 vector grid sprite with subtle cyan coordinates and crosshairs.
@@ -309,6 +310,46 @@ namespace StarStrike.UI
             tex.Apply();
             cachedGlowBarSprite = Sprite.Create(tex, new Rect(0, 0, width, height), new Vector2(0.5f, 0.5f), 100f);
             return cachedGlowBarSprite;
+        }
+
+        /// <summary>
+        /// Returns a procedural tactical corner bracket targeting reticle sprite.
+        /// </summary>
+        public static Sprite GetTacticalReticleSprite(int size = 64)
+        {
+            if (cachedReticleSprite != null) return cachedReticleSprite;
+
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Point;
+
+            Color clear = new Color(0, 0, 0, 0);
+            Color[] pixels = new Color[size * size];
+            for (int i = 0; i < pixels.Length; i++) pixels[i] = clear;
+
+            Color reticleCol = Color.white;
+            int bracketLen = size / 4; // 16px corner brackets
+            int thickness = 3;
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    bool topBracket = (y >= size - thickness) && (x < bracketLen || x >= size - bracketLen);
+                    bool bottomBracket = (y < thickness) && (x < bracketLen || x >= size - bracketLen);
+                    bool leftBracket = (x < thickness) && (y < bracketLen || y >= size - bracketLen);
+                    bool rightBracket = (x >= size - thickness) && (y < bracketLen || y >= size - bracketLen);
+
+                    if (topBracket || bottomBracket || leftBracket || rightBracket)
+                    {
+                        pixels[y * size + x] = reticleCol;
+                    }
+                }
+            }
+
+            tex.SetPixels(pixels);
+            tex.Apply();
+            cachedReticleSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
+            return cachedReticleSprite;
         }
 
         // ==========================================

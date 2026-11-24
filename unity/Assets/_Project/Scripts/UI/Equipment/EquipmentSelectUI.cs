@@ -12,12 +12,14 @@ namespace StarStrike.UI
     public class EquipmentSelectUI : MonoBehaviour, IScreenController
     {
         public static EquipmentSelectUI Instance { get; private set; }
+        public static int InitialSocketIndex = -1;
 
         public string ScreenId => "EquipmentSelect";
 
         private GameObject rootContainer;
         private TMP_Text gemsText;
         private TMP_Text shipHeaderBanner;
+        private Image shipPreviewImage;
         private Transform socketButtonContainer;
         private TMP_Text socketHeaderPrompt;
         private Transform weaponButtonContainer;
@@ -203,6 +205,11 @@ namespace StarStrike.UI
             currentShipId = StorageService.GetLastShipEvolved();
             if (string.IsNullOrEmpty(currentShipId)) currentShipId = "scout";
             var sockets = ShipWeaponController.GetShipHardpointSockets(currentShipId);
+            if (InitialSocketIndex >= 0)
+            {
+                activeSocketIndex = Mathf.Clamp(InitialSocketIndex, 0, Mathf.Max(0, sockets.Length - 1));
+                InitialSocketIndex = -1;
+            }
             if (activeSocketIndex >= sockets.Length) activeSocketIndex = 0;
             inspectedWeaponId = StorageService.GetSocketWeapon(currentShipId, activeSocketIndex);
             inspectedSkillId = StorageService.GetSelectedSkill();
@@ -222,6 +229,11 @@ namespace StarStrike.UI
                 currentShipId = StorageService.GetLastShipEvolved();
                 if (string.IsNullOrEmpty(currentShipId)) currentShipId = "scout";
                 var sockets = ShipWeaponController.GetShipHardpointSockets(currentShipId);
+                if (InitialSocketIndex >= 0)
+                {
+                    activeSocketIndex = Mathf.Clamp(InitialSocketIndex, 0, Mathf.Max(0, sockets.Length - 1));
+                    InitialSocketIndex = -1;
+                }
                 if (activeSocketIndex >= sockets.Length) activeSocketIndex = 0;
                 inspectedWeaponId = StorageService.GetSocketWeapon(currentShipId, activeSocketIndex);
                 inspectedSkillId = StorageService.GetSelectedSkill();
@@ -249,6 +261,11 @@ namespace StarStrike.UI
             currentShipId = StorageService.GetLastShipEvolved();
             if (string.IsNullOrEmpty(currentShipId)) currentShipId = "scout";
             var sockets = ShipWeaponController.GetShipHardpointSockets(currentShipId);
+            if (InitialSocketIndex >= 0)
+            {
+                activeSocketIndex = Mathf.Clamp(InitialSocketIndex, 0, Mathf.Max(0, sockets.Length - 1));
+                InitialSocketIndex = -1;
+            }
             if (activeSocketIndex >= sockets.Length) activeSocketIndex = 0;
             inspectedWeaponId = StorageService.GetSocketWeapon(currentShipId, activeSocketIndex);
             inspectedSkillId = StorageService.GetSelectedSkill();
@@ -340,12 +357,12 @@ namespace StarStrike.UI
             GameObject chgShipBtn = CreateButton(rootContainer.transform, "ChangeShipBtn", "VESSEL HANGAR [H]", new Vector2(0.5f, 0.87f), new Vector2(0.5f, 0.87f), new Vector2(340, 0), new Vector2(180, 36), CyberVectorTheme.NeonCyan, defaultFont, 13);
             chgShipBtn.GetComponent<Button>().onClick.AddListener(GoToHangar);
 
-            // SECTION 1: PRIMARY WEAPONS (Left Chamfer Panel)
+            // SECTION 1: PRIMARY WEAPONS & SHIP HARDPOINTS (Left Chamfer Panel)
             GameObject wpnPanel = new GameObject("WeaponPanel", typeof(RectTransform), typeof(Image));
             wpnPanel.transform.SetParent(rootContainer.transform, false);
             RectTransform wpRt = wpnPanel.GetComponent<RectTransform>();
-            wpRt.anchorMin = new Vector2(0.04f, 0.17f);
-            wpRt.anchorMax = new Vector2(0.52f, 0.82f);
+            wpRt.anchorMin = new Vector2(0.04f, 0.16f);
+            wpRt.anchorMax = new Vector2(0.48f, 0.84f);
             wpRt.offsetMin = Vector2.zero;
             wpRt.offsetMax = Vector2.zero;
             var wpImg = wpnPanel.GetComponent<Image>();
@@ -353,38 +370,106 @@ namespace StarStrike.UI
             wpImg.type = Image.Type.Sliced;
             wpImg.color = Color.white;
 
-            CreateText(wpnPanel.transform, "WpnHeader", "<color=#ff8514><b>1. PRIMARY WEAPON HARDPOINTS</b></color> <color=#00f2ff>[SELECT SOCKET TO MOUNT]</color>", 15, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, new Vector2(0.05f, 0.94f), new Vector2(0.05f, 0.94f), new Vector2(0, -15), new Vector2(460, 15), defaultFont);
+            CreateText(wpnPanel.transform, "WpnHeader", "<color=#00f2ff><b>1. VESSEL HARDPOINTS SCHEMATIC</b></color> <color=#ffe600>[CLICK TO SELECT]</color>", 15, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, new Vector2(0.05f, 0.95f), new Vector2(0.05f, 0.95f), new Vector2(0, -14), new Vector2(460, 14), defaultFont);
 
-            // Hardpoint Sockets Bar (Interactive Socket Tabs)
+            // Ship Visual Preview Box (Top subcard)
+            GameObject previewBox = new GameObject("ShipPreviewBox", typeof(RectTransform), typeof(Image));
+            previewBox.transform.SetParent(wpnPanel.transform, false);
+            RectTransform pbRt = previewBox.GetComponent<RectTransform>();
+            pbRt.anchorMin = new Vector2(0.04f, 0.36f);
+            pbRt.anchorMax = new Vector2(0.96f, 0.92f);
+            pbRt.offsetMin = Vector2.zero;
+            pbRt.offsetMax = Vector2.zero;
+            var pbImg = previewBox.GetComponent<Image>();
+            pbImg.sprite = CyberVectorTheme.GetChamferCardSprite(128, 12);
+            pbImg.type = Image.Type.Sliced;
+            pbImg.color = new Color(0.02f, 0.05f, 0.10f, 0.95f);
+
+            // Holo Pedestal under ship preview
+            GameObject pedestalObj = new GameObject("HoloPedestal", typeof(RectTransform), typeof(Image), typeof(CyberHoloPedestal));
+            pedestalObj.transform.SetParent(previewBox.transform, false);
+            RectTransform pdRt = pedestalObj.GetComponent<RectTransform>();
+            pdRt.anchorMin = new Vector2(0.05f, 0.04f);
+            pdRt.anchorMax = new Vector2(0.95f, 0.36f);
+            pdRt.offsetMin = Vector2.zero;
+            pdRt.offsetMax = Vector2.zero;
+            var pdImg = pedestalObj.GetComponent<Image>();
+            pdImg.sprite = CyberVectorTheme.GetHoloPedestalSprite();
+            pdImg.color = CyberVectorTheme.NeonCyan;
+            pdImg.preserveAspect = true;
+
+            GameObject shipImgObj = new GameObject("ShipSprite", typeof(RectTransform), typeof(Image));
+            shipImgObj.transform.SetParent(previewBox.transform, false);
+            RectTransform siRt = shipImgObj.GetComponent<RectTransform>();
+            siRt.anchorMin = new Vector2(0.10f, 0.16f);
+            siRt.anchorMax = new Vector2(0.90f, 0.88f);
+            siRt.offsetMin = Vector2.zero;
+            siRt.offsetMax = Vector2.zero;
+            shipPreviewImage = shipImgObj.GetComponent<Image>();
+            shipPreviewImage.preserveAspect = true;
+
+            var pedestalComp = pedestalObj.GetComponent<CyberHoloPedestal>();
+            pedestalComp.SetTargetShip(siRt);
+
+            // Sockets Matrix & Quick Tabs Box (Bottom subcard)
+            GameObject telemetryBox = new GameObject("SocketTelemetryBox", typeof(RectTransform), typeof(Image));
+            telemetryBox.transform.SetParent(wpnPanel.transform, false);
+            RectTransform tbRt = telemetryBox.GetComponent<RectTransform>();
+            tbRt.anchorMin = new Vector2(0.04f, 0.04f);
+            tbRt.anchorMax = new Vector2(0.96f, 0.33f);
+            tbRt.offsetMin = Vector2.zero;
+            tbRt.offsetMax = Vector2.zero;
+            var tbImg = telemetryBox.GetComponent<Image>();
+            tbImg.sprite = CyberVectorTheme.GetChamferCardSprite(128, 12);
+            tbImg.type = Image.Type.Sliced;
+            tbImg.color = new Color(0.02f, 0.05f, 0.10f, 0.95f);
+
+            CreateText(telemetryBox.transform, "TelHeader", "<color=#526b94>// HARDPOINTS MATRIX & TABS [Q/E]:</color>", 11, FontStyle.Bold, CyberVectorTheme.VoltYellow, TextAnchor.MiddleLeft, new Vector2(0.05f, 0.86f), new Vector2(0.05f, 0.86f), new Vector2(0, -10), new Vector2(400, 10), defaultFont);
+
             GameObject socketBtnContainerObj = new GameObject("SocketButtons", typeof(RectTransform));
-            socketBtnContainerObj.transform.SetParent(wpnPanel.transform, false);
+            socketBtnContainerObj.transform.SetParent(telemetryBox.transform, false);
             RectTransform sbcRt = socketBtnContainerObj.GetComponent<RectTransform>();
-            sbcRt.anchorMin = new Vector2(0.04f, 0.77f);
-            sbcRt.anchorMax = new Vector2(0.96f, 0.91f);
+            sbcRt.anchorMin = new Vector2(0.03f, 0.08f);
+            sbcRt.anchorMax = new Vector2(0.97f, 0.78f);
             sbcRt.offsetMin = Vector2.zero;
             sbcRt.offsetMax = Vector2.zero;
             socketButtonContainer = socketBtnContainerObj.transform;
 
-            // Prompt Subtitle
-            GameObject promptObj = CreateText(wpnPanel.transform, "SocketPrompt", "<color=#00f2ff>SELECT WEAPON FOR ACTIVE SOCKET [Q/E]:</color>", 12, FontStyle.Bold, CyberVectorTheme.VoltYellow, TextAnchor.MiddleLeft, new Vector2(0.05f, 0.73f), new Vector2(0.05f, 0.73f), new Vector2(0, -10), new Vector2(460, 10), defaultFont);
+            // SECTION 2: ARSENAL WEAPONS & COMBAT MODULES (Right Chamfer Panel)
+            GameObject outfittingPanel = new GameObject("OutfittingPanel", typeof(RectTransform), typeof(Image));
+            outfittingPanel.transform.SetParent(rootContainer.transform, false);
+            RectTransform opRt = outfittingPanel.GetComponent<RectTransform>();
+            opRt.anchorMin = new Vector2(0.50f, 0.16f);
+            opRt.anchorMax = new Vector2(0.96f, 0.84f);
+            opRt.offsetMin = Vector2.zero;
+            opRt.offsetMax = Vector2.zero;
+            var opImg = outfittingPanel.GetComponent<Image>();
+            opImg.sprite = CyberVectorTheme.GetChamferCardSprite();
+            opImg.type = Image.Type.Sliced;
+            opImg.color = Color.white;
+
+            CreateText(outfittingPanel.transform, "OutfittingHeader", "<color=#ff8514><b>2. WEAPON ARSENAL & MODULES</b></color>", 15, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, new Vector2(0.05f, 0.95f), new Vector2(0.05f, 0.95f), new Vector2(0, -14), new Vector2(460, 14), defaultFont);
+
+            // Active Socket Prompt Subtitle
+            GameObject promptObj = CreateText(outfittingPanel.transform, "SocketPrompt", "<color=#00f2ff>SELECT WEAPON FOR ACTIVE SOCKET [1-5]:</color>", 12, FontStyle.Bold, CyberVectorTheme.VoltYellow, TextAnchor.MiddleLeft, new Vector2(0.05f, 0.90f), new Vector2(0.05f, 0.90f), new Vector2(0, -10), new Vector2(460, 10), defaultFont);
             socketHeaderPrompt = promptObj.GetComponent<TMP_Text>();
 
             // Weapon Selection Buttons
             GameObject wpnBtnContainerObj = new GameObject("WeaponButtons", typeof(RectTransform));
-            wpnBtnContainerObj.transform.SetParent(wpnPanel.transform, false);
+            wpnBtnContainerObj.transform.SetParent(outfittingPanel.transform, false);
             RectTransform wbcRt = wpnBtnContainerObj.GetComponent<RectTransform>();
-            wbcRt.anchorMin = new Vector2(0.04f, 0.54f);
-            wbcRt.anchorMax = new Vector2(0.96f, 0.70f);
+            wbcRt.anchorMin = new Vector2(0.04f, 0.76f);
+            wbcRt.anchorMax = new Vector2(0.96f, 0.88f);
             wbcRt.offsetMin = Vector2.zero;
             wbcRt.offsetMax = Vector2.zero;
             weaponButtonContainer = wpnBtnContainerObj.transform;
 
-            // Weapon Detail Card (Inner Sliced Frame)
+            // Weapon Detail Card
             GameObject wpnDetailObj = new GameObject("WeaponDetailCard", typeof(RectTransform), typeof(Image));
-            wpnDetailObj.transform.SetParent(wpnPanel.transform, false);
+            wpnDetailObj.transform.SetParent(outfittingPanel.transform, false);
             RectTransform wdRt = wpnDetailObj.GetComponent<RectTransform>();
-            wdRt.anchorMin = new Vector2(0.04f, 0.04f);
-            wdRt.anchorMax = new Vector2(0.96f, 0.50f);
+            wdRt.anchorMin = new Vector2(0.04f, 0.49f);
+            wdRt.anchorMax = new Vector2(0.96f, 0.74f);
             wdRt.offsetMin = Vector2.zero;
             wdRt.offsetMax = Vector2.zero;
             var wdImg = wpnDetailObj.GetComponent<Image>();
@@ -392,56 +477,43 @@ namespace StarStrike.UI
             wdImg.type = Image.Type.Sliced;
             wdImg.color = new Color(0.02f, 0.05f, 0.10f, 0.95f);
 
-            GameObject wdtObj = CreateText(wpnDetailObj.transform, "WpnTitle", "PULSE LASER", 16, FontStyle.Bold, CyberVectorTheme.VoltYellow, TextAnchor.MiddleLeft, new Vector2(0.05f, 0.86f), new Vector2(0.05f, 0.86f), new Vector2(0, -15), new Vector2(400, 15), defaultFont);
+            GameObject wdtObj = CreateText(wpnDetailObj.transform, "WpnTitle", "PULSE LASER", 15, FontStyle.Bold, CyberVectorTheme.VoltYellow, TextAnchor.MiddleLeft, new Vector2(0.04f, 0.86f), new Vector2(0.04f, 0.86f), new Vector2(0, -14), new Vector2(360, 14), defaultFont);
             weaponDetailTitle = wdtObj.GetComponent<TMP_Text>();
 
-            // Weapon Icon Preview in Detail Card
             GameObject iconObj = new GameObject("WeaponIconPreview", typeof(RectTransform), typeof(Image));
             iconObj.transform.SetParent(wpnDetailObj.transform, false);
             RectTransform iconRt = iconObj.GetComponent<RectTransform>();
-            iconRt.anchorMin = new Vector2(0.82f, 0.44f);
+            iconRt.anchorMin = new Vector2(0.85f, 0.40f);
             iconRt.anchorMax = new Vector2(0.96f, 0.90f);
             iconRt.offsetMin = Vector2.zero;
             iconRt.offsetMax = Vector2.zero;
             weaponDetailIcon = iconObj.GetComponent<Image>();
             weaponDetailIcon.preserveAspect = true;
 
-            GameObject wdsObj = CreateText(wpnDetailObj.transform, "WpnStats", "STATS", 12, FontStyle.Normal, Color.white, TextAnchor.UpperLeft, new Vector2(0.05f, 0.53f), new Vector2(0.05f, 0.53f), new Vector2(0, -35), new Vector2(420, 35), defaultFont);
+            GameObject wdsObj = CreateText(wpnDetailObj.transform, "WpnStats", "STATS", 11, FontStyle.Normal, Color.white, TextAnchor.UpperLeft, new Vector2(0.04f, 0.54f), new Vector2(0.04f, 0.54f), new Vector2(0, -30), new Vector2(380, 30), defaultFont);
             weaponDetailStats = wdsObj.GetComponent<TMP_Text>();
 
-            GameObject wddObj = CreateText(wpnDetailObj.transform, "WpnDesc", "DESCRIPTION", 11, FontStyle.Italic, new Color(0.75f, 0.85f, 0.98f), TextAnchor.UpperLeft, new Vector2(0.05f, 0.18f), new Vector2(0.05f, 0.18f), new Vector2(0, -25), new Vector2(420, 25), defaultFont);
+            GameObject wddObj = CreateText(wpnDetailObj.transform, "WpnDesc", "DESCRIPTION", 10, FontStyle.Italic, new Color(0.75f, 0.85f, 0.98f), TextAnchor.UpperLeft, new Vector2(0.04f, 0.18f), new Vector2(0.04f, 0.18f), new Vector2(0, -22), new Vector2(380, 22), defaultFont);
             weaponDetailDesc = wddObj.GetComponent<TMP_Text>();
 
-            // SECTION 2: COMBAT SKILLS (Right Chamfer Panel)
-            GameObject sklPanel = new GameObject("SkillPanel", typeof(RectTransform), typeof(Image));
-            sklPanel.transform.SetParent(rootContainer.transform, false);
-            RectTransform skpRt = sklPanel.GetComponent<RectTransform>();
-            skpRt.anchorMin = new Vector2(0.55f, 0.17f);
-            skpRt.anchorMax = new Vector2(0.96f, 0.82f);
-            skpRt.offsetMin = Vector2.zero;
-            skpRt.offsetMax = Vector2.zero;
-            var skpImg = sklPanel.GetComponent<Image>();
-            skpImg.sprite = CyberVectorTheme.GetChamferCardSprite();
-            skpImg.type = Image.Type.Sliced;
-            skpImg.color = Color.white;
-
-            CreateText(sklPanel.transform, "SklHeader", "<color=#00f2ff><b>2. TACTICAL COMBAT MODULES</b></color> <color=#526b94>[TRIGGER: SPACE]</color>", 15, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, new Vector2(0.05f, 0.93f), new Vector2(0.05f, 0.93f), new Vector2(0, -15), new Vector2(420, 15), defaultFont);
+            // Tactical Combat Modules Header
+            CreateText(outfittingPanel.transform, "SklHeader", "<color=#00f2ff><b>3. TACTICAL COMBAT MODULES</b></color> <color=#526b94>[TRIGGER: SPACE]</color>", 13, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, new Vector2(0.05f, 0.44f), new Vector2(0.05f, 0.44f), new Vector2(0, -12), new Vector2(420, 12), defaultFont);
 
             GameObject sklBtnContainerObj = new GameObject("SkillButtons", typeof(RectTransform));
-            sklBtnContainerObj.transform.SetParent(sklPanel.transform, false);
+            sklBtnContainerObj.transform.SetParent(outfittingPanel.transform, false);
             RectTransform skbcRt = sklBtnContainerObj.GetComponent<RectTransform>();
-            skbcRt.anchorMin = new Vector2(0.04f, 0.52f);
-            skbcRt.anchorMax = new Vector2(0.96f, 0.85f);
+            skbcRt.anchorMin = new Vector2(0.04f, 0.29f);
+            skbcRt.anchorMax = new Vector2(0.96f, 0.41f);
             skbcRt.offsetMin = Vector2.zero;
             skbcRt.offsetMax = Vector2.zero;
             skillButtonContainer = sklBtnContainerObj.transform;
 
-            // Skill Detail Card (Inner Sliced Frame)
+            // Skill Detail Card
             GameObject sklDetailObj = new GameObject("SkillDetailCard", typeof(RectTransform), typeof(Image));
-            sklDetailObj.transform.SetParent(sklPanel.transform, false);
+            sklDetailObj.transform.SetParent(outfittingPanel.transform, false);
             RectTransform sdRt = sklDetailObj.GetComponent<RectTransform>();
-            sdRt.anchorMin = new Vector2(0.04f, 0.05f);
-            sdRt.anchorMax = new Vector2(0.96f, 0.48f);
+            sdRt.anchorMin = new Vector2(0.04f, 0.04f);
+            sdRt.anchorMax = new Vector2(0.96f, 0.26f);
             sdRt.offsetMin = Vector2.zero;
             sdRt.offsetMax = Vector2.zero;
             var sdImg = sklDetailObj.GetComponent<Image>();
@@ -449,10 +521,10 @@ namespace StarStrike.UI
             sdImg.type = Image.Type.Sliced;
             sdImg.color = new Color(0.02f, 0.05f, 0.10f, 0.95f);
 
-            GameObject sktObj = CreateText(sklDetailObj.transform, "SklTitle", "KINETIC SHOCKWAVE", 17, FontStyle.Bold, CyberVectorTheme.NeonCyan, TextAnchor.MiddleLeft, new Vector2(0.05f, 0.84f), new Vector2(0.05f, 0.84f), new Vector2(0, -15), new Vector2(400, 15), defaultFont);
+            GameObject sktObj = CreateText(sklDetailObj.transform, "SklTitle", "KINETIC SHOCKWAVE", 14, FontStyle.Bold, CyberVectorTheme.NeonCyan, TextAnchor.MiddleLeft, new Vector2(0.04f, 0.82f), new Vector2(0.04f, 0.82f), new Vector2(0, -12), new Vector2(380, 12), defaultFont);
             skillDetailTitle = sktObj.GetComponent<TMP_Text>();
 
-            GameObject skdObj = CreateText(sklDetailObj.transform, "SklDesc", "DESCRIPTION", 13, FontStyle.Normal, new Color(0.85f, 0.9f, 1f), TextAnchor.UpperLeft, new Vector2(0.05f, 0.45f), new Vector2(0.05f, 0.45f), new Vector2(0, -45), new Vector2(400, 45), defaultFont);
+            GameObject skdObj = CreateText(sklDetailObj.transform, "SklDesc", "DESCRIPTION", 11, FontStyle.Normal, new Color(0.85f, 0.9f, 1f), TextAnchor.UpperLeft, new Vector2(0.04f, 0.44f), new Vector2(0.04f, 0.44f), new Vector2(0, -32), new Vector2(380, 32), defaultFont);
             skillDetailDesc = skdObj.GetComponent<TMP_Text>();
 
             // FLOW BUTTONS (Bottom Row)
@@ -562,7 +634,98 @@ namespace StarStrike.UI
 
             Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
 
-            // Populate Socket Selection Tabs
+            // 1. Render Interactive Sockets on Ship Hull Preview
+            if (shipPreviewImage != null)
+            {
+                shipPreviewImage.sprite = ProceduralSpriteHelper.GetShipSprite(currentShipId);
+
+                // Clear previous socket overlays on preview
+                for (int i = shipPreviewImage.transform.childCount - 1; i >= 0; i--)
+                {
+                    var child = shipPreviewImage.transform.GetChild(i);
+                    if (child.name.StartsWith("ShipSocket_"))
+                    {
+                        if (Application.isPlaying) Destroy(child.gameObject);
+                        else DestroyImmediate(child.gameObject);
+                    }
+                }
+
+                Sprite spr = shipPreviewImage.sprite;
+                float halfW = (spr != null && spr.bounds.size.x > 0f) ? spr.bounds.size.x * 0.5f : 2f;
+                float halfH = (spr != null && spr.bounds.size.y > 0f) ? spr.bounds.size.y * 0.5f : 2f;
+
+                float boxW = 200f;
+                float boxH = 200f;
+
+                for (int i = 0; i < sockets.Length; i++)
+                {
+                    var sData = sockets[i];
+                    bool isSelected = (i == activeSocketIndex);
+                    int capturedIdx = i;
+
+                    GameObject sockGo = new GameObject($"ShipSocket_{sData.index}", typeof(RectTransform), typeof(Image), typeof(Button));
+                    sockGo.transform.SetParent(shipPreviewImage.transform, false);
+
+                    RectTransform sRt = sockGo.GetComponent<RectTransform>();
+                    sRt.anchorMin = new Vector2(0.5f, 0.5f);
+                    sRt.anchorMax = new Vector2(0.5f, 0.5f);
+                    sRt.anchoredPosition = new Vector2((sData.localPosition.x / halfW) * (boxW * 0.44f), (sData.localPosition.y / halfH) * (boxH * 0.44f));
+                    sRt.sizeDelta = new Vector2(34f, 34f);
+                    sRt.localRotation = Quaternion.Euler(0f, 0f, -90f);
+
+                    Image sImg = sockGo.GetComponent<Image>();
+                    sImg.color = Color.white;
+                    sImg.preserveAspect = true;
+
+                    string eqWpn = StorageService.GetSocketWeapon(currentShipId, sData.index);
+                    if (!string.IsNullOrEmpty(eqWpn))
+                    {
+                        sImg.sprite = ProceduralSpriteHelper.GetWeaponSprite(eqWpn);
+                    }
+                    else
+                    {
+                        sImg.sprite = ProceduralSpriteHelper.GetWeaponSocketSprite();
+                    }
+
+                    // Tactical Corner-Bracket Reticle Overlay
+                    GameObject reticleGo = new GameObject("Reticle", typeof(RectTransform), typeof(Image));
+                    reticleGo.transform.SetParent(sockGo.transform, false);
+                    RectTransform rRt = reticleGo.GetComponent<RectTransform>();
+                    rRt.anchorMin = new Vector2(0.5f, 0.5f);
+                    rRt.anchorMax = new Vector2(0.5f, 0.5f);
+                    rRt.anchoredPosition = Vector2.zero;
+                    rRt.sizeDelta = isSelected ? new Vector2(46f, 46f) : new Vector2(36f, 36f);
+                    rRt.localRotation = Quaternion.Euler(0f, 0f, 90f); // Keep reticle screen-aligned
+
+                    Image rImg = reticleGo.GetComponent<Image>();
+                    rImg.sprite = CyberVectorTheme.GetTacticalReticleSprite();
+                    rImg.color = isSelected ? CyberVectorTheme.VoltYellow : new Color(0.35f, 0.55f, 0.75f, 0.50f);
+                    rImg.raycastTarget = false;
+
+                    // Tactical Socket Tag (Screen-aligned badge)
+                    GameObject tagGo = new GameObject("SocketTag", typeof(RectTransform));
+                    tagGo.transform.SetParent(sockGo.transform, false);
+                    RectTransform tRt = tagGo.GetComponent<RectTransform>();
+                    tRt.anchorMin = new Vector2(0.5f, 0.5f);
+                    tRt.anchorMax = new Vector2(0.5f, 0.5f);
+                    tRt.anchoredPosition = new Vector2(0f, -28f);
+                    tRt.sizeDelta = new Vector2(100f, 18f);
+                    tRt.localRotation = Quaternion.Euler(0f, 0f, 90f);
+
+                    string badgeName = sData.name.Replace(" Hardpoint", "").Replace(" Socket", "").ToUpper();
+                    string tagText = isSelected
+                        ? $"<color=#ffe600><b>► [0{i + 1}] {badgeName}</b></color>"
+                        : $"<color=#7e9bc4>[0{i + 1}] {badgeName}</color>";
+
+                    CreateText(tagGo.transform, "TagText", tagText, 8, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, defaultFont);
+
+                    Button sBtn = sockGo.GetComponent<Button>();
+                    CyberVectorTheme.ApplyVectorButtonStyle(sBtn, isSelected ? CyberVectorTheme.VoltYellow : CyberVectorTheme.NeonCyan, isSelected);
+                    sBtn.onClick.AddListener(() => SelectSocket(capturedIdx));
+                }
+            }
+
+            // 2. Populate Socket Selection Tabs
             if (socketButtonContainer != null)
             {
                 for (int i = socketButtonContainer.childCount - 1; i >= 0; i--)
@@ -573,8 +736,8 @@ namespace StarStrike.UI
                 }
 
                 int sCount = sockets.Length;
-                float totalWidth = 440f;
-                float btnWidth = sCount == 1 ? 360f : (sCount == 2 ? 210f : 142f);
+                float totalWidth = 420f;
+                float btnWidth = sCount == 1 ? 340f : (sCount == 2 ? 195f : 132f);
                 float btnSpacing = sCount > 1 ? (totalWidth - (sCount * btnWidth)) / (sCount - 1) + btnWidth : 0f;
                 float startX = sCount == 1 ? 0f : -((sCount - 1) * btnSpacing) / 2f;
 
@@ -592,7 +755,7 @@ namespace StarStrike.UI
                     Color sCol = isSelected ? CyberVectorTheme.VoltYellow : CyberVectorTheme.DimMuted;
                     int capturedIdx = i;
 
-                    GameObject sBtnObj = CreateButton(socketButtonContainer, $"SocketBtn_{i}", "", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * btnSpacing), 0), new Vector2(btnWidth, 48), sCol, defaultFont, 10);
+                    GameObject sBtnObj = CreateButton(socketButtonContainer, $"SocketBtn_{i}", "", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * btnSpacing), 0), new Vector2(btnWidth, 44), sCol, defaultFont, 9);
                     
                     // Socket Icon on Left
                     GameObject sBaseObj = new GameObject("SocketBaseIcon", typeof(RectTransform), typeof(Image));
@@ -600,8 +763,8 @@ namespace StarStrike.UI
                     RectTransform sBaseRt = sBaseObj.GetComponent<RectTransform>();
                     sBaseRt.anchorMin = new Vector2(0.04f, 0.5f);
                     sBaseRt.anchorMax = new Vector2(0.04f, 0.5f);
-                    sBaseRt.anchoredPosition = new Vector2(18f, 0f);
-                    sBaseRt.sizeDelta = new Vector2(28f, 28f);
+                    sBaseRt.anchoredPosition = new Vector2(16f, 0f);
+                    sBaseRt.sizeDelta = new Vector2(26f, 26f);
                     var sBaseImg = sBaseObj.GetComponent<Image>();
                     sBaseImg.color = Color.white;
                     sBaseImg.preserveAspect = true;
@@ -633,7 +796,7 @@ namespace StarStrike.UI
             string mountedOnActiveSocket = StorageService.GetSocketWeapon(currentShipId, activeSocketIndex);
             string equippedSkl = StorageService.GetSelectedSkill();
 
-            // Populate Weapon Buttons with Icons
+            // 3. Populate Weapon Buttons with Icons
             if (weaponButtonContainer != null)
             {
                 for (int i = weaponButtonContainer.childCount - 1; i >= 0; i--)
@@ -643,7 +806,7 @@ namespace StarStrike.UI
                     else DestroyImmediate(child.gameObject);
                 }
 
-                float btnSpacing = 86f;
+                float btnSpacing = 82f;
                 float startX = -((WeaponCatalog.Length - 1) * btnSpacing) / 2f;
 
                 for (int i = 0; i < WeaponCatalog.Length; i++)
@@ -668,13 +831,13 @@ namespace StarStrike.UI
                     else col = CyberVectorTheme.DimMuted;
 
                     string capturedWId = w.id;
-                    GameObject btnObj = CreateWeaponButtonWithIcon(weaponButtonContainer, $"WpnBtn_{w.id}", label, w.id, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * btnSpacing), 0), new Vector2(82, 54), col, defaultFont, 8);
+                    GameObject btnObj = CreateWeaponButtonWithIcon(weaponButtonContainer, $"WpnBtn_{w.id}", label, w.id, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * btnSpacing), 0), new Vector2(78, 50), col, defaultFont, 8);
                     Button btn = btnObj.GetComponent<Button>();
                     btn.onClick.AddListener(() => EquipWeaponToSocket(activeSocketIndex, capturedWId));
                 }
             }
 
-            // Populate Skill Buttons
+            // 4. Populate Skill Buttons
             if (skillButtonContainer != null)
             {
                 for (int i = skillButtonContainer.childCount - 1; i >= 0; i--)
@@ -684,7 +847,7 @@ namespace StarStrike.UI
                     else DestroyImmediate(child.gameObject);
                 }
 
-                float btnSpacing = 138f;
+                float btnSpacing = 136f;
                 float startX = -((SkillCatalog.Length - 1) * btnSpacing) / 2f;
 
                 for (int i = 0; i < SkillCatalog.Length; i++)
@@ -700,13 +863,13 @@ namespace StarStrike.UI
                     else col = CyberVectorTheme.DimMuted;
 
                     string capturedSId = s.id;
-                    GameObject btnObj = CreateButton(skillButtonContainer, $"SklBtn_{s.id}", label, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * btnSpacing), 0), new Vector2(132, 48), col, defaultFont, 11);
+                    GameObject btnObj = CreateButton(skillButtonContainer, $"SklBtn_{s.id}", label, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * btnSpacing), 0), new Vector2(130, 44), col, defaultFont, 10);
                     Button btn = btnObj.GetComponent<Button>();
                     btn.onClick.AddListener(() => EquipSkill(capturedSId));
                 }
             }
 
-            // Update Weapon Inspector Card
+            // 5. Update Weapon Inspector Card
             var wDef = GetWeaponDef(inspectedWeaponId);
             var activeSocket = (sockets.Length > 0 && activeSocketIndex < sockets.Length) ? sockets[activeSocketIndex] : new ShipWeaponController.HardpointSocketData { name = "NOSE HARDPOINT", localPosition = Vector2.zero };
 
@@ -738,7 +901,7 @@ namespace StarStrike.UI
                 weaponDetailDesc.text = $"<color=#7e9bc4>\"{wDef.description}\"</color>\n<color=#00f2ff>HARDPOINT TELEMETRY: </color><color=#ffe600>[{activeSocket.name}]</color> <color=#526b94>LOCAL: ({activeSocket.localPosition.x:F2}, {activeSocket.localPosition.y:F2})</color>";
             }
 
-            // Update Skill Inspector Card
+            // 6. Update Skill Inspector Card
             var sDef = GetSkillDef(inspectedSkillId);
             if (skillDetailTitle != null)
             {

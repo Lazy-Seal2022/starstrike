@@ -1974,6 +1974,77 @@ namespace StarStrike.Editor
                 failed++;
             }
 
+            // 25. EquipmentSelectUI & ShipSelectUI Interactive Weapon Sockets
+            try
+            {
+                StorageService.SaveLastShipEvolved("fighter");
+                var equipGo = new GameObject("Test_EquipUI_Sockets");
+                var equipUI = equipGo.AddComponent<StarStrike.UI.EquipmentSelectUI>();
+                equipUI.EnsureInitialized();
+
+                if (equipUI.ActiveSocketCount != 2)
+                    throw new System.Exception($"Expected 2 sockets for fighter, got {equipUI.ActiveSocketCount}");
+
+                var previewBox = equipGo.transform.Find("EquipmentSelectContainer/WeaponPanel/ShipPreviewBox");
+                if (previewBox == null)
+                    throw new System.Exception("ShipPreviewBox not found in EquipmentSelectUI hierarchy");
+
+                var shipSpriteTransform = previewBox.Find("ShipSprite");
+                if (shipSpriteTransform == null)
+                    throw new System.Exception("ShipSprite not found in ShipPreviewBox");
+
+                var socket0 = shipSpriteTransform.Find("ShipSocket_0");
+                var socket1 = shipSpriteTransform.Find("ShipSocket_1");
+                if (socket0 == null || socket1 == null)
+                    throw new System.Exception("ShipSocket_0 or ShipSocket_1 not found on ship preview image");
+
+                var btn0 = socket0.GetComponent<UnityEngine.UI.Button>();
+                var btn1 = socket1.GetComponent<UnityEngine.UI.Button>();
+                if (btn0 == null || btn1 == null)
+                    throw new System.Exception("Ship sockets must have Button components for interaction");
+
+                equipUI.SelectSocket(0);
+                equipUI.EquipWeaponToSocket(0, "scattergun");
+                if (StorageService.GetSocketWeapon("fighter", 0) != "scattergun")
+                    throw new System.Exception("Socket 0 weapon not equipped correctly to storage");
+
+                equipUI.SelectSocket(1);
+                equipUI.EquipWeaponToSocket(1, "beam");
+                if (StorageService.GetSocketWeapon("fighter", 1) != "beam")
+                    throw new System.Exception("Socket 1 weapon not equipped correctly to storage");
+
+                Object.DestroyImmediate(equipGo);
+
+                var shipSelectGo = new GameObject("Test_ShipSelectUI_Sockets");
+                var shipUI = shipSelectGo.AddComponent<StarStrike.UI.ShipSelectUI>();
+                shipUI.EnsureInitialized();
+                shipUI.SelectShipById("fighter");
+
+                var shipSelectPreview = shipSelectGo.transform.Find("ShipSelectContainer/ShowcasePanel/PreviewBox/ShipSprite");
+                if (shipSelectPreview == null)
+                    throw new System.Exception("ShipSprite not found in ShipSelectUI ShowcasePanel");
+
+                var previewSock0 = shipSelectPreview.Find("PreviewSocket_0");
+                var previewSock1 = shipSelectPreview.Find("PreviewSocket_1");
+                if (previewSock0 == null || previewSock1 == null)
+                    throw new System.Exception("PreviewSocket_0 or PreviewSocket_1 not found in ShipSelectUI");
+
+                var pBtn0 = previewSock0.GetComponent<UnityEngine.UI.Button>();
+                var pBtn1 = previewSock1.GetComponent<UnityEngine.UI.Button>();
+                if (pBtn0 == null || pBtn1 == null)
+                    throw new System.Exception("ShipSelectUI preview sockets must have interactive Button components");
+
+                Object.DestroyImmediate(shipSelectGo);
+
+                Debug.Log("[PASS] 25. Interactive Ship Weapon Sockets (Hull Display & Selection) verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 25. Interactive Sockets verification failed: {ex.Message}");
+                failed++;
+            }
+
             Debug.Log($"=== TOTAL VERIFICATION RESULT: {passed} PASSED, {failed} FAILED ===");
         }
 
