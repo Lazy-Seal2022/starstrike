@@ -172,7 +172,7 @@ namespace StarStrike.UI
 
             titleText = titleObj.GetComponent<Text>();
             titleText.font = defaultFont;
-            titleText.fontSize = 24;
+            titleText.fontSize = StarStrike.UI.UIHelper.ScaleFontSize(24);
             titleText.fontStyle = FontStyle.Bold;
             titleText.alignment = TextAnchor.MiddleCenter;
             titleText.text = "MISSION OVER";
@@ -188,7 +188,7 @@ namespace StarStrike.UI
 
             statsSummaryText = statsObj.GetComponent<Text>();
             statsSummaryText.font = defaultFont;
-            statsSummaryText.fontSize = 15;
+            statsSummaryText.fontSize = StarStrike.UI.UIHelper.ScaleFontSize(15);
             statsSummaryText.lineSpacing = 1.35f;
             statsSummaryText.alignment = TextAnchor.MiddleLeft;
             statsSummaryText.color = themeConfig != null ? themeConfig.textMuted : Color.gray;
@@ -205,7 +205,7 @@ namespace StarStrike.UI
 
             scoreText = scoreObj.GetComponent<Text>();
             scoreText.font = defaultFont;
-            scoreText.fontSize = 17;
+            scoreText.fontSize = StarStrike.UI.UIHelper.ScaleFontSize(17);
             scoreText.fontStyle = FontStyle.Bold;
             scoreText.alignment = TextAnchor.MiddleCenter;
             scoreText.color = themeConfig != null ? themeConfig.textPrimary : Color.white;
@@ -259,7 +259,7 @@ namespace StarStrike.UI
 
             var t = textObj.GetComponent<Text>();
             t.font = defaultFont;
-            t.fontSize = 14;
+            t.fontSize = StarStrike.UI.UIHelper.ScaleFontSize(14);
             t.fontStyle = FontStyle.Bold;
             t.alignment = TextAnchor.MiddleCenter;
             t.text = labelText;

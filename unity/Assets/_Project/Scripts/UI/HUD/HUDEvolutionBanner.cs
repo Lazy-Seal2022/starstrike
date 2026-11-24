@@ -141,7 +141,7 @@ namespace StarStrike.UI
             var label = textObj.AddComponent<Text>();
             label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             label.text = $"{shipDef.shipName}\n<color=#66CCFF>TIER {shipDef.tier}</color>";
-            label.fontSize = 12;
+            label.fontSize = StarStrike.UI.UIHelper.ScaleFontSize(12);
             label.alignment = TextAnchor.MiddleLeft;
             label.color = themeConfig != null ? themeConfig.textPrimary : Color.white;
             label.supportRichText = true;

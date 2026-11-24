@@ -104,8 +104,8 @@ namespace StarStrike.UI
             int screenH = Screen.height;
 
             // GUI Skin styling
-            GUI.skin.label.fontSize = 14;
-            GUI.skin.button.fontSize = 13;
+            GUI.skin.label.fontSize = StarStrike.UI.UIHelper.ScaleFontSize(14);
+            GUI.skin.button.fontSize = StarStrike.UI.UIHelper.ScaleFontSize(13);
 
             // 1. Top Bar: Ship Info & Gems
             GUI.Box(new Rect(10, 10, 320, 95), "");

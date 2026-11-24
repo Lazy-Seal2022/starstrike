@@ -66,7 +66,7 @@ namespace StarStrike.UI
             titleText = titleObj.GetComponent<Text>();
             titleText.text = "ACHIEVEMENT UNLOCKED";
             titleText.font = font;
-            titleText.fontSize = 20;
+            titleText.fontSize = StarStrike.UI.UIHelper.ScaleFontSize(20);
             titleText.fontStyle = FontStyle.Bold;
             titleText.color = Color.yellow;
             titleText.alignment = TextAnchor.MiddleCenter;
@@ -81,7 +81,7 @@ namespace StarStrike.UI
             descText = descObj.GetComponent<Text>();
             descText.text = "";
             descText.font = font;
-            descText.fontSize = 18;
+            descText.fontSize = StarStrike.UI.UIHelper.ScaleFontSize(18);
             descText.color = Color.white;
             descText.alignment = TextAnchor.MiddleCenter;
         }

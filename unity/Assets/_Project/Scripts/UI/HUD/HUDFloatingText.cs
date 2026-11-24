@@ -185,7 +185,7 @@ namespace StarStrike.UI
                 : (damage >= 20f ? new Color(1f, 0.45f, 0.25f, 1f) : Color.white);
 
             string label = isCrit ? $"CRIT! {Mathf.RoundToInt(damage)}" : $"{Mathf.RoundToInt(damage)}";
-            float fontSize = isCrit ? 22f : 16f;
+            float fontSize = isCrit ? StarStrike.UI.UIHelper.ScaleFontSize(22f) : StarStrike.UI.UIHelper.ScaleFontSize(16f);
             SpawnWorldNotice(worldPos, label, col, fontSize, isCrit);
         }
 
@@ -227,7 +227,7 @@ namespace StarStrike.UI
             if (item.textMesh != null)
             {
                 item.textMesh.text = message;
-                item.textMesh.fontSize = 18;
+                item.textMesh.fontSize = StarStrike.UI.UIHelper.ScaleFontSize(18);
                 item.textMesh.fontStyle = FontStyles.Bold;
                 item.textMesh.color = color;
             }

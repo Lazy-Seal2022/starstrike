@@ -6,7 +6,24 @@ namespace StarStrike.UI
 {
     public static class UIHelper
     {
-        public static TextMeshProUGUI CreateTextMeshPro(Transform parent, string name, string text, int fontSize, FontStyles style, Color color, TextAlignmentOptions alignment, Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax)
+        public const float DefaultTextScale = 1.18f; // ~18% enlargement for optimal readability across all UI
+        public static float TextSizeScale = DefaultTextScale;
+
+        public static int ScaleFontSize(int baseFontSize)
+        {
+            if (baseFontSize <= 0) return baseFontSize;
+            int scaled = Mathf.RoundToInt(baseFontSize * TextSizeScale);
+            return Mathf.Max(scaled, baseFontSize + 1);
+        }
+
+        public static float ScaleFontSize(float baseFontSize)
+        {
+            if (baseFontSize <= 0f) return baseFontSize;
+            float scaled = baseFontSize * TextSizeScale;
+            return Mathf.Max(scaled, baseFontSize + 1f);
+        }
+
+        public static TextMeshProUGUI CreateTextMeshPro(Transform parent, string name, string text, int fontSize, FontStyles style, Color color, TextAlignmentOptions alignment, Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax, bool autoScale = true)
         {
             GameObject obj = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI));
             obj.transform.SetParent(parent, false);
@@ -19,7 +36,7 @@ namespace StarStrike.UI
 
             TextMeshProUGUI tmp = obj.GetComponent<TextMeshProUGUI>();
             tmp.text = text;
-            tmp.fontSize = fontSize;
+            tmp.fontSize = autoScale ? ScaleFontSize(fontSize) : fontSize;
             tmp.fontStyle = style;
             tmp.color = color;
             tmp.alignment = alignment;
@@ -31,7 +48,7 @@ namespace StarStrike.UI
             return tmp;
         }
 
-        public static TextMeshProUGUI CreateTextMeshProExplicit(Transform parent, string name, string text, int fontSize, FontStyles style, Color color, TextAlignmentOptions alignment, Vector2 anchor, Vector2 pos, Vector2 size)
+        public static TextMeshProUGUI CreateTextMeshProExplicit(Transform parent, string name, string text, int fontSize, FontStyles style, Color color, TextAlignmentOptions alignment, Vector2 anchor, Vector2 pos, Vector2 size, bool autoScale = false)
         {
             GameObject obj = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI));
             obj.transform.SetParent(parent, false);
@@ -45,7 +62,7 @@ namespace StarStrike.UI
 
             TextMeshProUGUI tmp = obj.GetComponent<TextMeshProUGUI>();
             tmp.text = text;
-            tmp.fontSize = fontSize;
+            tmp.fontSize = autoScale ? ScaleFontSize(fontSize) : fontSize;
             tmp.fontStyle = style;
             tmp.color = color;
             tmp.alignment = alignment;

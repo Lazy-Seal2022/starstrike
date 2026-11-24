@@ -962,7 +962,7 @@ namespace StarStrike.UI
         private TextMeshProUGUI CreateTextExplicit(Transform parent, string name, string text, int fontSize, FontStyles style, Color color, TextAlignmentOptions align,
             Vector2 anchor, Vector2 pos, Vector2 size)
         {
-            return UIHelper.CreateTextMeshProExplicit(parent, name, text, fontSize, style, color, align, anchor, pos, size);
+            return UIHelper.CreateTextMeshProExplicit(parent, name, text, UIHelper.ScaleFontSize(fontSize), style, color, align, anchor, pos, size);
         }
 
         private Button CreateButtonExplicit(Transform parent, string name, string label, Vector2 anchor, Vector2 pos, Vector2 size, Color color, int fontSize)

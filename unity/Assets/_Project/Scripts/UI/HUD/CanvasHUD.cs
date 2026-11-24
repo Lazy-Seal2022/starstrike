@@ -930,7 +930,7 @@ namespace StarStrike.UI
 
             Text txt = obj.GetComponent<Text>();
             txt.text = text;
-            txt.fontSize = fontSize;
+            txt.fontSize = StarStrike.UI.UIHelper.ScaleFontSize(fontSize);
             txt.fontStyle = fontStyle;
             txt.color = color;
             txt.alignment = alignment;
