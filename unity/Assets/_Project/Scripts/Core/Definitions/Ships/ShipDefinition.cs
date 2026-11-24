@@ -27,6 +27,9 @@ namespace StarStrike.Core
         [Header("Aiming Mechanics")]
         [Tooltip("If true, weapon mounts and turrets track aim direction independently of ship hull rotation (e.g. Cruiser, Battleship)")]
         public bool canAimIndependently = false;
+
+        [Tooltip("Angular traverse/tilt speed for turrets in degrees per second (e.g. 95 deg/s for Battleship, 120 deg/s for Cruiser)")]
+        public float turretTraverseSpeed = 105f;
         
         [Header("Progression")]
         public int maxUpgradeLevel;

@@ -63,6 +63,7 @@ namespace StarStrike.Core
             def.maxUpgradeLevel = 5;
             def.hitboxRadius = 0.50f;
             def.shieldHitboxOffset = 0.18f;
+            def.turretTraverseSpeed = 280f;
             def.baseStats = new StatValues
             {
                 shieldCapacity = 120f,
@@ -102,6 +103,7 @@ namespace StarStrike.Core
             def.maxUpgradeLevel = 5;
             def.hitboxRadius = 0.65f;
             def.shieldHitboxOffset = 0.22f;
+            def.turretTraverseSpeed = 180f;
             def.baseStats = new StatValues
             {
                 shieldCapacity = 180f,
@@ -144,6 +146,7 @@ namespace StarStrike.Core
             def.maxUpgradeLevel = 6;
             def.hitboxRadius = 0.80f;
             def.shieldHitboxOffset = 0.25f;
+            def.turretTraverseSpeed = 150f;
             def.baseStats = new StatValues
             {
                 shieldCapacity = 240f,
@@ -189,6 +192,7 @@ namespace StarStrike.Core
             def.hitboxRadius = 1.05f;
             def.shieldHitboxOffset = 0.30f;
             def.canAimIndependently = true;
+            def.turretTraverseSpeed = 120f;
             def.baseStats = new StatValues
             {
                 shieldCapacity = 350f,
@@ -237,6 +241,7 @@ namespace StarStrike.Core
             def.maxUpgradeLevel = 6;
             def.hitboxRadius = 1.25f;
             def.shieldHitboxOffset = 0.35f;
+            def.turretTraverseSpeed = 130f;
             def.droneHangarCapacity = 4;
             def.defaultDroneType = "interceptor_drone";
             def.baseStats = new StatValues
@@ -286,6 +291,7 @@ namespace StarStrike.Core
             def.hitboxRadius = 1.55f;
             def.shieldHitboxOffset = 0.40f;
             def.canAimIndependently = true;
+            def.turretTraverseSpeed = 95f;
             def.baseStats = new StatValues
             {
                 shieldCapacity = 500f,

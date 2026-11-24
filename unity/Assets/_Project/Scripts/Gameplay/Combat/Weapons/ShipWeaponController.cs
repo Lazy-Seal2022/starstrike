@@ -66,6 +66,23 @@ namespace StarStrike.Gameplay
             }
         }
 
+        [Header("Turret Tracking & Aiming")]
+        [Tooltip("Angular traverse/tilt speed for turrets in degrees per second")]
+        public float turretTraverseSpeed = 105f;
+
+        public float CurrentTurretTraverseSpeed
+        {
+            get
+            {
+                var prog = GetComponent<PlayerProgression>();
+                if (prog != null && prog.currentShip != null && prog.currentShip.turretTraverseSpeed > 0f)
+                {
+                    return prog.currentShip.turretTraverseSpeed;
+                }
+                return turretTraverseSpeed;
+            }
+        }
+
         public Vector2 inputAimDirection = Vector2.zero;
 
         public Vector2 CurrentAimDirection
@@ -97,7 +114,7 @@ namespace StarStrike.Gameplay
             UpdateIndependentAiming();
         }
 
-        public void UpdateIndependentAiming()
+        public void UpdateIndependentAiming(float deltaTime = -1f, bool instant = false)
         {
             if (!CanAimIndependently && !HasAnyTurretSockets()) return;
 
@@ -119,6 +136,10 @@ namespace StarStrike.Gameplay
                 }
             }
 
+            float speed = CurrentTurretTraverseSpeed;
+            bool forceInstant = instant || (!Application.isPlaying && deltaTime < 0f);
+            float dt = (deltaTime >= 0f) ? deltaTime : (Application.isPlaying ? Time.deltaTime : 1.0f);
+
             Vector2 aimDir = CurrentAimDirection;
             if (aimDir.sqrMagnitude < 0.01f)
             {
@@ -127,13 +148,24 @@ namespace StarStrike.Gameplay
                     var inst = socketMountInstances[i];
                     if (inst != null && inst.mountTransform != null)
                     {
-                        inst.mountTransform.localRotation = Quaternion.identity;
+                        if (forceInstant)
+                        {
+                            inst.mountTransform.localRotation = Quaternion.identity;
+                        }
+                        else
+                        {
+                            inst.mountTransform.localRotation = Quaternion.RotateTowards(
+                                inst.mountTransform.localRotation,
+                                Quaternion.identity,
+                                speed * dt);
+                        }
                     }
                 }
                 return;
             }
 
             float targetAngle = Mathf.Atan2(aimDir.y, aimDir.x) * Mathf.Rad2Deg;
+            Quaternion targetWorldRot = Quaternion.Euler(0f, 0f, targetAngle);
 
             for (int i = 0; i < socketMountInstances.Count; i++)
             {
@@ -143,7 +175,18 @@ namespace StarStrike.Gameplay
                 bool canAim = CanAimIndependently || (inst.definition.mountType == SocketMountType.Turret);
                 if (canAim)
                 {
-                    inst.mountTransform.rotation = Quaternion.Euler(0f, 0f, targetAngle);
+                    if (forceInstant)
+                    {
+                        inst.mountTransform.rotation = targetWorldRot;
+                    }
+                    else
+                    {
+                        // Slowly tilt/traverse turret towards target angle
+                        inst.mountTransform.rotation = Quaternion.RotateTowards(
+                            inst.mountTransform.rotation,
+                            targetWorldRot,
+                            speed * dt);
+                    }
                 }
             }
         }

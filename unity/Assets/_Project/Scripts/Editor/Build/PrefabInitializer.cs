@@ -2318,6 +2318,13 @@ namespace StarStrike.Editor
                 if (Mathf.Abs(Mathf.DeltaAngle(angle, 90f)) > 1f)
                     throw new System.Exception($"Socket mount did not rotate to aim direction. Expected 90 deg, got {angle}");
 
+                // Verify slow turret tilt: at Battleship speed 95 deg/s, after dt=0.5s it should tilt to ~47.5 deg (not snap instantly)
+                firstMount.rotation = Quaternion.Euler(0f, 0f, 0f);
+                weaponCtrl.UpdateIndependentAiming(0.5f);
+                float gradualAngle = firstMount.eulerAngles.z;
+                if (gradualAngle < 38f || gradualAngle > 58f)
+                    throw new System.Exception($"Turret must tilt smoothly over time. Expected ~47.5 deg after 0.5s at 95 deg/s, got {gradualAngle}");
+
                 Object.DestroyImmediate(shipObj);
 
                 // Test Battleship & Cruiser hull steering: ship hull must NOT turn directly towards cursor
