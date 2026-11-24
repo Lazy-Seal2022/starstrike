@@ -20,6 +20,32 @@ namespace StarStrike.Gameplay
         private Rigidbody2D rb;
         private ShipHealth health;
 
+        [Header("Aim & Steering")]
+        public bool steerTowardsAim = true;
+
+        public bool CanAimIndependently
+        {
+            get
+            {
+                var prog = GetComponent<PlayerProgression>();
+                if (prog != null && prog.currentShip != null)
+                {
+                    if (prog.currentShip.canAimIndependently) return true;
+                    if (prog.currentShip.id == "battleship" || prog.currentShip.id == "cruiser") return true;
+                    if (prog.currentShip.shipClass == ShipClass.Battleship || prog.currentShip.shipClass == ShipClass.Cruiser) return true;
+                }
+                var weaponCtrl = GetComponent<ShipWeaponController>();
+                if (weaponCtrl != null)
+                {
+                    if (weaponCtrl.CanAimIndependently) return true;
+                    if (weaponCtrl.currentShipId == "battleship" || weaponCtrl.currentShipId == "cruiser") return true;
+                }
+                return false;
+            }
+        }
+
+        public bool ShouldSteerTowardsAim => steerTowardsAim && !CanAimIndependently;
+
         // Input state
         public Vector2 AimDirection { get; set; }
         public float TurnInput { get; set; }
@@ -93,18 +119,25 @@ namespace StarStrike.Gameplay
             HandleThrust();
         }
 
-        private void HandleSteering()
+        public void HandleSteering()
         {
+            if (rb == null) rb = GetComponent<Rigidbody2D>();
+            if (rb == null) return;
+
+            float dt = Time.fixedDeltaTime > 0f ? Time.fixedDeltaTime : 0.02f;
+
             if (Mathf.Abs(TurnInput) > 0.01f)
             {
-                float deltaAngle = TurnInput * agility * 45f * Time.fixedDeltaTime;
-                rb.MoveRotation(rb.rotation + deltaAngle);
+                float deltaAngle = TurnInput * agility * 45f * dt;
+                rb.rotation += deltaAngle;
+                rb.MoveRotation(rb.rotation);
             }
-            else if (AimDirection.sqrMagnitude > 0.01f)
+            else if (ShouldSteerTowardsAim && AimDirection.sqrMagnitude > 0.01f)
             {
                 float targetAngle = Mathf.Atan2(AimDirection.y, AimDirection.x) * Mathf.Rad2Deg;
                 float currentAngle = rb.rotation;
-                float angle = Mathf.MoveTowardsAngle(currentAngle, targetAngle, agility * 60f * Time.fixedDeltaTime);
+                float angle = Mathf.MoveTowardsAngle(currentAngle, targetAngle, agility * 60f * dt);
+                rb.rotation = angle;
                 rb.MoveRotation(angle);
             }
         }

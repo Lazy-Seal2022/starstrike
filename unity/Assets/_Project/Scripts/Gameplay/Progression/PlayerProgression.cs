@@ -61,6 +61,10 @@ namespace StarStrike.Gameplay
                 case "carrier":
                 case "vanguard": assetName = "Ship_Carrier"; break;
                 case "phantom": assetName = "Ship_Phantom"; break;
+                case "frigate": assetName = "Ship_Frigate"; break;
+                case "destroyer": assetName = "Ship_Destroyer"; break;
+                case "cruiser": assetName = "Ship_Cruiser"; break;
+                case "battleship": assetName = "Ship_Battleship"; break;
                 default:
                     string cap = char.ToUpper(id[0]) + id.Substring(1);
                     assetName = $"Ship_{cap}";
@@ -75,6 +79,10 @@ namespace StarStrike.Gameplay
             if (def == null)
             {
                 def = Resources.Load<ShipDefinition>("Data/Ship_Scout");
+            }
+            if (def != null && def.sprite == null)
+            {
+                def.sprite = ProceduralSpriteHelper.GetShipSprite(id);
             }
             return def;
         }
@@ -496,30 +504,65 @@ namespace StarStrike.Gameplay
 
             StatValues currentStats = ProgressionMath.GetCurrentStats(currentShip, gameConfig.upgradeDefinition, upgradeState);
 
+            // Calculate installed equipment module stat bonuses
+            float bonusShield = 0f;
+            float bonusShieldRegen = 0f;
+            float bonusHull = 0f;
+            float bonusEnergy = 0f;
+            float bonusEnergyRegen = 0f;
+            float bonusSpeed = 0f;
+            float bonusAgility = 0f;
+            float damageMultiplier = 1.0f;
+            float bonusArmorReduction = 0f;
+
+            string shipId = !string.IsNullOrEmpty(currentShip.id) ? currentShip.id : "scout";
+            var equippedModules = StorageService.GetAllEquippedModules(shipId);
+            foreach (var kvp in equippedModules)
+            {
+                var mod = EquipmentModuleCatalog.GetModule(kvp.Value);
+                if (mod != null)
+                {
+                    bonusShield += mod.shieldCapacityBonus;
+                    bonusShieldRegen += mod.shieldRegenBonus;
+                    bonusHull += mod.hullCapacityBonus;
+                    bonusEnergy += mod.energyCapacityBonus;
+                    bonusEnergyRegen += mod.energyRegenBonus;
+                    bonusSpeed += mod.speedBonus;
+                    bonusAgility += mod.agilityBonus;
+                    damageMultiplier *= mod.damageMultiplier;
+                    bonusArmorReduction += mod.collisionArmorBonus;
+                }
+            }
+
             if (health != null)
             {
-                health.maxShield = currentStats.shieldCapacity;
-                health.shieldRegen = currentStats.shieldRegen;
-                health.maxHull = currentStats.hullCapacity > 0 ? currentStats.hullCapacity : 80f;
-                health.maxEnergy = currentStats.energyCapacity;
-                health.energyRegen = currentStats.energyRegen;
+                health.maxShield = currentStats.shieldCapacity + bonusShield;
+                health.shieldRegen = currentStats.shieldRegen + bonusShieldRegen;
+                health.maxHull = (currentStats.hullCapacity > 0 ? currentStats.hullCapacity : 80f) + bonusHull;
+                health.maxEnergy = currentStats.energyCapacity + bonusEnergy;
+                health.energyRegen = currentStats.energyRegen + bonusEnergyRegen;
+                health.armorDamageReduction = Mathf.Clamp(currentShip.collisionArmorReduction + bonusArmorReduction, 0f, 0.75f);
             }
 
             if (movement != null)
             {
                 float spd = currentStats.speed > 35f ? currentStats.speed / 26f : currentStats.speed;
                 if (spd <= 0f) spd = 10f;
-                movement.maxSpeed = spd;
-                movement.acceleration = spd * 1.8f;
+                movement.maxSpeed = spd + (bonusSpeed > 0f ? bonusSpeed / 26f : 0f);
+                movement.acceleration = movement.maxSpeed * 1.8f;
 
                 float agl = currentStats.agility > 20f ? currentStats.agility / 30f : currentStats.agility;
                 if (agl <= 0f) agl = 6f;
-                movement.agility = agl;
+                movement.agility = agl + (bonusAgility > 0f ? bonusAgility / 30f : 0f);
+
+                bool isIndependentAimShip = currentShip != null && (currentShip.canAimIndependently || currentShip.id == "battleship" || currentShip.id == "cruiser" || currentShip.shipClass == ShipClass.Battleship || currentShip.shipClass == ShipClass.Cruiser);
+                movement.steerTowardsAim = !isIndependentAimShip;
             }
 
             if (weapon != null)
             {
-                weapon.pulseDamage = currentStats.pulseDamage > 0 ? currentStats.pulseDamage : 20f;
+                float baseDmg = currentStats.pulseDamage > 0 ? currentStats.pulseDamage : 20f;
+                weapon.pulseDamage = baseDmg * damageMultiplier;
                 float pSpd = currentStats.pulseSpeed > 35f ? currentStats.pulseSpeed / 26f : currentStats.pulseSpeed;
                 if (pSpd <= 0f) pSpd = 22f;
                 weapon.pulseSpeed = pSpd;
@@ -551,6 +594,10 @@ namespace StarStrike.Gameplay
             if (targetSprite != null)
             {
                 shipRenderer.sprite = targetSprite;
+                if (currentShip != null && currentShip.sprite == null)
+                {
+                    currentShip.sprite = targetSprite;
+                }
             }
 
             // Emissive glow setup (Feature #6): Apply emissive shader if ship definition has emissive texture

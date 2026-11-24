@@ -23,12 +23,22 @@ namespace StarStrike.Gameplay
             public IWeapon weaponInstance;
         }
 
+        [System.Serializable]
+        public class SocketMountInstance
+        {
+            public int socketIndex;
+            public Transform mountTransform;
+            public ShipSocketDefinition definition;
+            public IWeapon weapon;
+        }
+
         [Header("Weapons")]
         [SerializeField] private int currentWeaponIndex = 0;
         private readonly List<IWeapon> availableWeapons = new List<IWeapon>();
         private readonly List<MountedHardpointInfo> mountedHardpoints = new List<MountedHardpointInfo>();
         private readonly List<IWeapon> activeSocketWeapons = new List<IWeapon>();
-        private string currentShipId = "scout";
+        private readonly List<SocketMountInstance> socketMountInstances = new List<SocketMountInstance>();
+        public string currentShipId = "scout";
 
         public IWeapon CurrentWeapon => (availableWeapons.Count > 0 && currentWeaponIndex >= 0 && currentWeaponIndex < availableWeapons.Count) 
             ? availableWeapons[currentWeaponIndex] 
@@ -38,7 +48,114 @@ namespace StarStrike.Gameplay
         public int WeaponCount => availableWeapons.Count;
         public IReadOnlyList<IWeapon> AvailableWeapons => availableWeapons;
         public IReadOnlyList<MountedHardpointInfo> MountedHardpoints => mountedHardpoints;
+        public IReadOnlyList<SocketMountInstance> SocketMounts => socketMountInstances;
         public bool HasMultiSocketLoadout => mountedHardpoints.Count > 0;
+
+        public bool CanAimIndependently
+        {
+            get
+            {
+                var prog = GetComponent<PlayerProgression>();
+                if (prog != null && prog.currentShip != null)
+                {
+                    return prog.currentShip.canAimIndependently || 
+                           prog.currentShip.id == "battleship" || 
+                           prog.currentShip.id == "cruiser";
+                }
+                return currentShipId == "battleship" || currentShipId == "cruiser";
+            }
+        }
+
+        public Vector2 inputAimDirection = Vector2.zero;
+
+        public Vector2 CurrentAimDirection
+        {
+            get
+            {
+                if (inputAimDirection.sqrMagnitude > 0.01f)
+                {
+                    return inputAimDirection;
+                }
+
+                var inputProvider = GetComponent<IShipInputProvider>();
+                if (inputProvider != null && inputProvider.AimDirection.sqrMagnitude > 0.01f)
+                {
+                    return inputProvider.AimDirection;
+                }
+
+                if (PlayerInputReader.Instance != null && PlayerInputReader.Instance.AimDirection.sqrMagnitude > 0.01f)
+                {
+                    return PlayerInputReader.Instance.AimDirection;
+                }
+
+                return Vector2.zero;
+            }
+        }
+
+        private void Update()
+        {
+            UpdateIndependentAiming();
+        }
+
+        public void UpdateIndependentAiming()
+        {
+            if (!CanAimIndependently && !HasAnyTurretSockets()) return;
+
+            if (socketMountInstances.Count == 0)
+            {
+                for (int i = 0; i < transform.childCount; i++)
+                {
+                    var child = transform.GetChild(i);
+                    if (child.name.StartsWith("SocketMount_"))
+                    {
+                        socketMountInstances.Add(new SocketMountInstance
+                        {
+                            socketIndex = i,
+                            mountTransform = child,
+                            definition = new ShipSocketDefinition(child.name, child.localPosition, SocketSize.Medium, SocketMountType.Turret, 0f, "pulse"),
+                            weapon = child.GetComponentInChildren<IWeapon>()
+                        });
+                    }
+                }
+            }
+
+            Vector2 aimDir = CurrentAimDirection;
+            if (aimDir.sqrMagnitude < 0.01f)
+            {
+                for (int i = 0; i < socketMountInstances.Count; i++)
+                {
+                    var inst = socketMountInstances[i];
+                    if (inst != null && inst.mountTransform != null)
+                    {
+                        inst.mountTransform.localRotation = Quaternion.identity;
+                    }
+                }
+                return;
+            }
+
+            float targetAngle = Mathf.Atan2(aimDir.y, aimDir.x) * Mathf.Rad2Deg;
+
+            for (int i = 0; i < socketMountInstances.Count; i++)
+            {
+                var inst = socketMountInstances[i];
+                if (inst == null || inst.mountTransform == null) continue;
+
+                bool canAim = CanAimIndependently || (inst.definition.mountType == SocketMountType.Turret);
+                if (canAim)
+                {
+                    inst.mountTransform.rotation = Quaternion.Euler(0f, 0f, targetAngle);
+                }
+            }
+        }
+
+        public bool HasAnyTurretSockets()
+        {
+            for (int i = 0; i < socketMountInstances.Count; i++)
+            {
+                if (socketMountInstances[i].definition.mountType == SocketMountType.Turret) return true;
+            }
+            return false;
+        }
 
         private void Awake()
         {
@@ -106,6 +223,40 @@ namespace StarStrike.Gameplay
                     {
                         new HardpointSocketData { index = 0, name = "SOCKET 01 // PORT STEALTH BAY", localPosition = new Vector2(0.50f, 0.80f) },
                         new HardpointSocketData { index = 1, name = "SOCKET 02 // STARBOARD STEALTH BAY", localPosition = new Vector2(0.50f, -0.80f) }
+                    };
+                case "frigate":
+                    return new HardpointSocketData[]
+                    {
+                        new HardpointSocketData { index = 0, name = "SOCKET 01 // CENTER PROW", localPosition = new Vector2(1.65f, 0f) },
+                        new HardpointSocketData { index = 1, name = "SOCKET 02 // PORT FLANK", localPosition = new Vector2(0.50f, 1.15f) },
+                        new HardpointSocketData { index = 2, name = "SOCKET 03 // STARBOARD FLANK", localPosition = new Vector2(0.50f, -1.15f) }
+                    };
+                case "destroyer":
+                    return new HardpointSocketData[]
+                    {
+                        new HardpointSocketData { index = 0, name = "SOCKET 01 // PORT MAIN GUN", localPosition = new Vector2(1.85f, 0.65f) },
+                        new HardpointSocketData { index = 1, name = "SOCKET 02 // STARBOARD MAIN GUN", localPosition = new Vector2(1.85f, -0.65f) },
+                        new HardpointSocketData { index = 2, name = "SOCKET 03 // PORT TORPEDO SILO", localPosition = new Vector2(0.60f, 1.45f) },
+                        new HardpointSocketData { index = 3, name = "SOCKET 04 // STARBOARD TORPEDO SILO", localPosition = new Vector2(0.60f, -1.45f) }
+                    };
+                case "cruiser":
+                    return new HardpointSocketData[]
+                    {
+                        new HardpointSocketData { index = 0, name = "SOCKET 01 // SPINAL BEAM", localPosition = new Vector2(2.20f, 0f) },
+                        new HardpointSocketData { index = 1, name = "SOCKET 02 // PORT ROTARY TURRET", localPosition = new Vector2(1.10f, 1.35f) },
+                        new HardpointSocketData { index = 2, name = "SOCKET 03 // STARBOARD ROTARY TURRET", localPosition = new Vector2(1.10f, -1.35f) },
+                        new HardpointSocketData { index = 3, name = "SOCKET 04 // PORT BROADSIDE", localPosition = new Vector2(-0.30f, 1.65f) },
+                        new HardpointSocketData { index = 4, name = "SOCKET 05 // STARBOARD BROADSIDE", localPosition = new Vector2(-0.30f, -1.65f) }
+                    };
+                case "battleship":
+                    return new HardpointSocketData[]
+                    {
+                        new HardpointSocketData { index = 0, name = "SOCKET 01 // SPINAL LANCE", localPosition = new Vector2(3.10f, 0f) },
+                        new HardpointSocketData { index = 1, name = "SOCKET 02 // PORT HEAVY TURRET", localPosition = new Vector2(1.70f, 1.25f) },
+                        new HardpointSocketData { index = 2, name = "SOCKET 03 // STARBOARD HEAVY TURRET", localPosition = new Vector2(1.70f, -1.25f) },
+                        new HardpointSocketData { index = 3, name = "SOCKET 04 // BRIDGE COMMAND BATTERY", localPosition = new Vector2(0.40f, 0f) },
+                        new HardpointSocketData { index = 4, name = "SOCKET 05 // PORT HEAVY MISSILE POD", localPosition = new Vector2(-0.80f, 1.70f) },
+                        new HardpointSocketData { index = 5, name = "SOCKET 06 // STARBOARD HEAVY MISSILE POD", localPosition = new Vector2(-0.80f, -1.70f) }
                     };
                 default:
                     return new HardpointSocketData[]
@@ -245,6 +396,7 @@ namespace StarStrike.Gameplay
             {
                 activeSocketWeapons.Clear();
             }
+            socketMountInstances.Clear();
 
             // Spawn visual socket mounts on top of each ship weapon socket
             for (int i = 0; i < sockets.Length; i++)
@@ -277,6 +429,7 @@ namespace StarStrike.Gameplay
 
                 GameObject weaponPrefab = !string.IsNullOrEmpty(weaponId) ? GetWeaponPrefab(weaponId) : null;
                 GameObject socketMountPrefab = GetSocketMountPrefab();
+                IWeapon mountedWeapon = null;
 
                 if (weaponPrefab != null)
                 {
@@ -289,6 +442,7 @@ namespace StarStrike.Gameplay
                     var wComp = wpnObj.GetComponent<IWeapon>();
                     if (wComp != null)
                     {
+                        mountedWeapon = wComp;
                         if (mInfo != null)
                         {
                             mInfo.weaponInstance = wComp;
@@ -326,6 +480,25 @@ namespace StarStrike.Gameplay
                         mountGo.transform.localScale = new Vector3(0.38f, 0.38f, 1f);
                     }
                 }
+
+                var prog = GetComponent<PlayerProgression>();
+                ShipSocketDefinition socketDefinition = default;
+                if (prog != null && prog.currentShip != null && prog.currentShip.hardpointSockets != null && i < prog.currentShip.hardpointSockets.Length)
+                {
+                    socketDefinition = prog.currentShip.hardpointSockets[i];
+                }
+                else
+                {
+                    socketDefinition = new ShipSocketDefinition(sDef.name, sDef.localPosition, SocketSize.Medium, SocketMountType.Turret, 0f, weaponId);
+                }
+
+                socketMountInstances.Add(new SocketMountInstance
+                {
+                    socketIndex = sDef.index,
+                    mountTransform = mountGo.transform,
+                    definition = socketDefinition,
+                    weapon = mountedWeapon
+                });
             }
         }
 

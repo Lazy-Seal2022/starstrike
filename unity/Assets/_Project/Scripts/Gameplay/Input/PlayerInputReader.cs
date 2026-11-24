@@ -54,6 +54,7 @@ namespace StarStrike.Gameplay
         private bool virtualBrake;
         private bool virtualBoost;
         private bool virtualFire;
+        private float virtualTurn;
         private bool hasVirtualAim;
         private Vector2 virtualAimDirection;
 
@@ -210,6 +211,7 @@ namespace StarStrike.Gameplay
         public void SetBrake(bool value) => virtualBrake = value;
         public void SetBoost(bool value) => virtualBoost = value;
         public void SetFire(bool value) => virtualFire = value;
+        public void SetTurn(float value) => virtualTurn = value;
         
         public void SetAim(Vector2 dir)
         {
@@ -253,6 +255,11 @@ namespace StarStrike.Gameplay
                 movement.ApplyInput(this);
             }
 
+            if (weaponController != null)
+            {
+                weaponController.inputAimDirection = AimDirection;
+            }
+
             if (skillAction != null && skillAction.WasPressedThisFrame())
             {
                 TriggerSkill(SkillSlotType.Active1);
@@ -280,6 +287,7 @@ namespace StarStrike.Gameplay
             virtualBrake = false;
             virtualBoost = false;
             virtualFire = false;
+            virtualTurn = 0f;
             wasFirePressedLastFrame = false;
             fireHeldDuration = 0f;
             hasAutoFired = false;
@@ -416,9 +424,11 @@ namespace StarStrike.Gameplay
 
             // Turn input: +1 for counter-clockwise / Left, -1 for clockwise / Right
             float turnMult = invertTurn ? -1f : 1f;
-            float turn = 0f;
+            float turn = virtualTurn;
             if (keyA) turn += 1f * turnMult;
             if (keyD) turn -= 1f * turnMult;
+            if (pad != null && Mathf.Abs(padX) > 0.15f) turn -= padX * turnMult;
+            else if (Mathf.Abs(moveVal.x) > 0.15f && !keyA && !keyD) turn -= moveVal.x * turnMult;
             inputTurn = turn;
 
             // Aim direction resolution: Virtual -> Gamepad Right Stick -> Mouse Cursor -> Gamepad Left Stick
