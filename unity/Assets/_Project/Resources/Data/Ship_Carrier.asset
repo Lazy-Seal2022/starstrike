@@ -37,60 +37,60 @@ MonoBehaviour:
     pulseSpeed: 560
     speed: 160
     agility: 2.6
-  weaponSlots: 2
+  weaponSlots: 4
   hardpointSockets:
-  - socketId: Carrier_PDC_L
+  - socketId: Carrier_MainBattery
+    localPosition: {x: 2.5, y: 0}
+    mountAngle: 0
+    size: 1
+    mountType: 1
+    defaultWeaponId: pulse
+  - socketId: Carrier_TurretL
     localPosition: {x: 1.8, y: 1.2}
     mountAngle: 0
     size: 0
     mountType: 1
     defaultWeaponId: pulse
-  - socketId: Carrier_PDC_R
+  - socketId: Carrier_TurretR
     localPosition: {x: 1.8, y: -1.2}
     mountAngle: 0
     size: 0
     mountType: 1
     defaultWeaponId: pulse
-  - socketId: Carrier_HangarBayL
-    localPosition: {x: -0.4, y: 1.5}
-    mountAngle: -90
-    size: 3
-    mountType: 4
-    defaultWeaponId: pulse
-  - socketId: Carrier_HangarBayR
-    localPosition: {x: -0.4, y: -1.5}
-    mountAngle: 90
-    size: 3
-    mountType: 4
+  - socketId: Carrier_FlakAft
+    localPosition: {x: -0.8, y: 0}
+    mountAngle: 0
+    size: 0
+    mountType: 1
     defaultWeaponId: pulse
   equipmentSlots:
   - slotId: wpn_0
+    slotName: Central Main Turret
+    category: 0
+    size: 1
+    mountType: 1
+    localPosition: {x: 2.5, y: 0}
+    defaultItemId: pulse
+  - slotId: wpn_1
     slotName: Port PDC Turret
     category: 0
     size: 0
     mountType: 1
     localPosition: {x: 1.8, y: 1.2}
     defaultItemId: pulse
-  - slotId: wpn_1
+  - slotId: wpn_2
     slotName: Starboard PDC Turret
     category: 0
     size: 0
     mountType: 1
     localPosition: {x: 1.8, y: -1.2}
     defaultItemId: pulse
-  - slotId: wpn_2
-    slotName: Port Flight Deck
-    category: 0
-    size: 3
-    mountType: 4
-    localPosition: {x: -0.4, y: 1.5}
-    defaultItemId: pulse
   - slotId: wpn_3
-    slotName: Starboard Flight Deck
+    slotName: Aft PDC Flak Turret
     category: 0
-    size: 3
-    mountType: 4
-    localPosition: {x: -0.4, y: -1.5}
+    size: 0
+    mountType: 1
+    localPosition: {x: -0.8, y: 0}
     defaultItemId: pulse
   - slotId: def_0
     slotName: Carrier Shield Grid
@@ -123,10 +123,10 @@ MonoBehaviour:
   hitboxRadius: 1.25
   shieldHitboxOffset: 0.35
   weaponSockets:
+  - {x: 2.5, y: 0}
   - {x: 1.8, y: 1.2}
   - {x: 1.8, y: -1.2}
-  - {x: -0.4, y: 1.5}
-  - {x: -0.4, y: -1.5}
+  - {x: -0.8, y: 0}
   thrusterSockets:
   - {x: -2.8, y: 1}
   - {x: -2.8, y: -1}

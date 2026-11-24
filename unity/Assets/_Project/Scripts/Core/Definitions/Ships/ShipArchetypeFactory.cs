@@ -257,19 +257,26 @@ namespace StarStrike.Core
                 speed = 160f,
                 agility = 2.6f
             };
+            def.weaponSockets = new[]
+            {
+                new Vector2(2.50f, 0f),      // Central Main Battery
+                new Vector2(1.80f, 1.20f),   // Port Defense Turret
+                new Vector2(1.80f, -1.20f),  // Starboard Defense Turret
+                new Vector2(-0.80f, 0f)      // Aft Flak Turret
+            };
             def.hardpointSockets = new[]
             {
-                new ShipSocketDefinition("Carrier_PDC_L", new Vector2(1.80f, 1.20f), SocketSize.Light, SocketMountType.Turret, 0f, "pulse"),
-                new ShipSocketDefinition("Carrier_PDC_R", new Vector2(1.80f, -1.20f), SocketSize.Light, SocketMountType.Turret, 0f, "pulse"),
-                new ShipSocketDefinition("Carrier_HangarBayL", new Vector2(-0.40f, 1.50f), SocketSize.Hangar, SocketMountType.HangarBay, -90f, "hangar"),
-                new ShipSocketDefinition("Carrier_HangarBayR", new Vector2(-0.40f, -1.50f), SocketSize.Hangar, SocketMountType.HangarBay, 90f, "hangar")
+                new ShipSocketDefinition("Carrier_MainBattery", new Vector2(2.50f, 0f), SocketSize.Medium, SocketMountType.Turret, 0f, "pulse"),
+                new ShipSocketDefinition("Carrier_TurretL", new Vector2(1.80f, 1.20f), SocketSize.Light, SocketMountType.Turret, 0f, "pulse"),
+                new ShipSocketDefinition("Carrier_TurretR", new Vector2(1.80f, -1.20f), SocketSize.Light, SocketMountType.Turret, 0f, "pulse"),
+                new ShipSocketDefinition("Carrier_FlakAft", new Vector2(-0.80f, 0f), SocketSize.Light, SocketMountType.Turret, 0f, "pulse")
             };
             def.equipmentSlots = new[]
             {
-                new ShipEquipmentSlotDefinition("wpn_0", "Port PDC Turret", EquipmentSlotCategory.Weapon, new Vector2(1.80f, 1.20f), SocketSize.Light, SocketMountType.Turret, "pulse"),
-                new ShipEquipmentSlotDefinition("wpn_1", "Starboard PDC Turret", EquipmentSlotCategory.Weapon, new Vector2(1.80f, -1.20f), SocketSize.Light, SocketMountType.Turret, "pulse"),
-                new ShipEquipmentSlotDefinition("wpn_2", "Port Flight Deck", EquipmentSlotCategory.Weapon, new Vector2(-0.40f, 1.50f), SocketSize.Hangar, SocketMountType.HangarBay, "pulse"),
-                new ShipEquipmentSlotDefinition("wpn_3", "Starboard Flight Deck", EquipmentSlotCategory.Weapon, new Vector2(-0.40f, -1.50f), SocketSize.Hangar, SocketMountType.HangarBay, "pulse"),
+                new ShipEquipmentSlotDefinition("wpn_0", "Central Main Turret", EquipmentSlotCategory.Weapon, new Vector2(2.50f, 0f), SocketSize.Medium, SocketMountType.Turret, "pulse"),
+                new ShipEquipmentSlotDefinition("wpn_1", "Port PDC Turret", EquipmentSlotCategory.Weapon, new Vector2(1.80f, 1.20f), SocketSize.Light, SocketMountType.Turret, "pulse"),
+                new ShipEquipmentSlotDefinition("wpn_2", "Starboard PDC Turret", EquipmentSlotCategory.Weapon, new Vector2(1.80f, -1.20f), SocketSize.Light, SocketMountType.Turret, "pulse"),
+                new ShipEquipmentSlotDefinition("wpn_3", "Aft PDC Flak Turret", EquipmentSlotCategory.Weapon, new Vector2(-0.80f, 0f), SocketSize.Light, SocketMountType.Turret, "pulse"),
                 new ShipEquipmentSlotDefinition("def_0", "Carrier Shield Grid", EquipmentSlotCategory.Defense, new Vector2(0.50f, 0f), SocketSize.Medium, SocketMountType.FixedForward, "def_shield_booster"),
                 new ShipEquipmentSlotDefinition("rea_0", "Fleet Capacitor Bank", EquipmentSlotCategory.Reactor, new Vector2(-1.20f, 0f), SocketSize.Medium, SocketMountType.FixedForward, "rea_flux_capacitor"),
                 new ShipEquipmentSlotDefinition("aux_0", "Escort Drone Foundry", EquipmentSlotCategory.Auxiliary, new Vector2(0f, 0.70f), SocketSize.Heavy, SocketMountType.FixedForward, "aux_escort_dock"),

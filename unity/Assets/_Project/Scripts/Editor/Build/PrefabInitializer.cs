@@ -2336,6 +2336,31 @@ namespace StarStrike.Editor
 
                 Object.DestroyImmediate(shipObj);
 
+                // Test Carrier independent weapon socket aiming: ALL weapon sockets must tilt towards cursor
+                var carrierAimObj = new GameObject("Test_CarrierAiming");
+                carrierAimObj.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+                var cProg = carrierAimObj.AddComponent<PlayerProgression>();
+                cProg.currentShip = carrierDefTest;
+
+                var cWeaponCtrl = carrierAimObj.AddComponent<ShipWeaponController>();
+                cWeaponCtrl.currentShipId = "carrier";
+                cWeaponCtrl.UpdateSocketVisuals();
+
+                if (cWeaponCtrl.SocketMounts.Count < 3)
+                    throw new System.Exception($"Expected at least 3 socket mounts for carrier, got {cWeaponCtrl.SocketMounts.Count}");
+
+                // Aim straight UP (North, +Y, 90 deg)
+                cWeaponCtrl.inputAimDirection = new Vector2(0f, 1f);
+                cWeaponCtrl.UpdateIndependentAiming(-1f, true);
+
+                for (int i = 0; i < cWeaponCtrl.SocketMounts.Count; i++)
+                {
+                    float cAngle = cWeaponCtrl.SocketMounts[i].mountTransform.eulerAngles.z;
+                    if (Mathf.Abs(Mathf.DeltaAngle(cAngle, 90f)) > 1f)
+                        throw new System.Exception($"Carrier socket mount {i} must tilt to aim direction (90 deg), got {cAngle}");
+                }
+                Object.DestroyImmediate(carrierAimObj);
+
                 // Test Battleship & Cruiser hull steering: ship hull must NOT turn directly towards cursor
                 var bbMovementObj = new GameObject("Test_BattleshipHullSteering");
                 var bbRb = bbMovementObj.AddComponent<Rigidbody2D>();

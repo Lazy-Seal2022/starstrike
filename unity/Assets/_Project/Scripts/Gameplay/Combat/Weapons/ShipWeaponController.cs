@@ -190,21 +190,20 @@ namespace StarStrike.Gameplay
                 var inst = socketMountInstances[i];
                 if (inst == null || inst.mountTransform == null) continue;
 
-                bool canAim = CanAimIndependently && (inst.definition.mountType == SocketMountType.Turret);
-                if (canAim)
+                // Heavy ships (Cruiser, Battleship, Carrier) have CanAimIndependently == true,
+                // and tilt their weapons towards the cursor.
+                // Other ships have CanAimIndependently == false and are kept locked forward above.
+                if (forceInstant)
                 {
-                    if (forceInstant)
-                    {
-                        inst.mountTransform.rotation = targetWorldRot;
-                    }
-                    else
-                    {
-                        // Slowly tilt/traverse turret towards target angle
-                        inst.mountTransform.rotation = Quaternion.RotateTowards(
-                            inst.mountTransform.rotation,
-                            targetWorldRot,
-                            speed * dt);
-                    }
+                    inst.mountTransform.rotation = targetWorldRot;
+                }
+                else
+                {
+                    // Slowly tilt/traverse turret towards target angle
+                    inst.mountTransform.rotation = Quaternion.RotateTowards(
+                        inst.mountTransform.rotation,
+                        targetWorldRot,
+                        speed * dt);
                 }
             }
         }
@@ -277,8 +276,9 @@ namespace StarStrike.Gameplay
                     return new HardpointSocketData[]
                     {
                         new HardpointSocketData { index = 0, name = "SOCKET 01 // MAIN BATTERY", localPosition = new Vector2(2.50f, 0f) },
-                        new HardpointSocketData { index = 1, name = "SOCKET 02 // PORT PROW", localPosition = new Vector2(2.75f, 1.12f) },
-                        new HardpointSocketData { index = 2, name = "SOCKET 03 // STARBOARD PROW", localPosition = new Vector2(2.75f, -1.12f) }
+                        new HardpointSocketData { index = 1, name = "SOCKET 02 // PORT PROW", localPosition = new Vector2(1.80f, 1.20f) },
+                        new HardpointSocketData { index = 2, name = "SOCKET 03 // STARBOARD PROW", localPosition = new Vector2(1.80f, -1.20f) },
+                        new HardpointSocketData { index = 3, name = "SOCKET 04 // AFT FLAK PDC", localPosition = new Vector2(-0.80f, 0f) }
                     };
                 case "phantom":
                     return new HardpointSocketData[]
@@ -348,7 +348,9 @@ namespace StarStrike.Gameplay
                 var sDef = socketDefs[i];
                 string wId = StarStrike.Platform.Storage.StorageService.GetSocketWeapon(shipId, sDef.index);
                 int targetIdx = WeaponIdToIndex(wId);
-                IWeapon weaponComp = (targetIdx >= 0 && targetIdx < availableWeapons.Count) ? availableWeapons[targetIdx] : availableWeapons[0];
+                IWeapon weaponComp = (targetIdx >= 0 && targetIdx < availableWeapons.Count)
+                    ? availableWeapons[targetIdx]
+                    : (availableWeapons.Count > 0 ? availableWeapons[0] : null);
 
                 mountedHardpoints.Add(new MountedHardpointInfo
                 {

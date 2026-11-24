@@ -305,9 +305,9 @@ namespace StarStrike.Gameplay
             vanguard.tier = 3;
             vanguard.shipClass = ShipClass.Carrier;
             vanguard.maxUpgradeLevel = 6;
-            vanguard.weaponSlots = 2;
-            vanguard.hitboxRadius = 1.25f;
-            vanguard.shieldHitboxOffset = 0.35f;
+            vanguard.weaponSlots = 3;
+            vanguard.hitboxRadius = 0.80f;
+            vanguard.shieldHitboxOffset = 0.30f;
             vanguard.canAimIndependently = true;
             vanguard.turretTraverseSpeed = 130f;
             vanguard.droneHangarCapacity = 4;
@@ -316,10 +316,9 @@ namespace StarStrike.Gameplay
             vanguard.cameraOrthoSize = 13f;
             vanguard.hullMass = 6f;
             vanguard.weaponSockets = new Vector2[] {
-                new Vector2(1.80f, 1.20f),
-                new Vector2(1.80f, -1.20f),
-                new Vector2(-0.40f, 1.50f),
-                new Vector2(-0.40f, -1.50f)
+                new Vector2(2.50f, 0f),
+                new Vector2(2.75f, 1.12f),
+                new Vector2(2.75f, -1.12f)
             };
             vanguard.thrusterSockets = new Vector2[] {
                 new Vector2(-2.80f, 1.0f),
