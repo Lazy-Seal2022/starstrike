@@ -14,22 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: StarStrike.Core::StarStrike.Core.CombatConfig
   playerLaserSprite: {fileID: 21300000, guid: 162c7efa9cd1bfc499cbad10b77eb929, type: 3}
   enemyLaserSprite: {fileID: 21300000, guid: 26d8f0e9f208fdb47b4da0a64265f284, type: 3}
-  playerLaserPrefab: {fileID: 6223290879384829574, guid: 7da73f3bd2b80af46bc0f9a0bfb14cbb, type: 3}
-  enemyLaserPrefab: {fileID: 370965725377689996, guid: 9b2e3f98a25cf2f44b21cf25ee89dd2b, type: 3}
+  playerLaserPrefab: {fileID: 0}
+  enemyLaserPrefab: {fileID: 0}
   defaultPulseDamage: 18
   defaultPulseSpeed: 22
   projectileLifetime: 3
   laserColliderRadius: 0.35
-  gatlingBulletSprite: {fileID: 21300000, guid: 06036ddb822d463f968c6935debded63, type: 3}
-  scattergunPelletSprite: {fileID: 21300000, guid: 592f2c5ecd304f2faf1426de2d373075, type: 3}
-  missileSprite: {fileID: 21300000, guid: bef2ffb49ac14d2892dd89f01a07f04a, type: 3}
-  gatlingBulletPrefab: {fileID: 1000000000000001, guid: ec2d7ab8b96245358199e3c94e8bc9c8, type: 3}
-  scattergunPelletPrefab: {fileID: 1000000000000002, guid: a761ad902b5a45e794f69351413aba9d, type: 3}
-  missilePrefab: {fileID: 1000000000000003, guid: 5f67eae43c87486f9b72f54e4981e794, type: 3}
+  gatlingBulletSprite: {fileID: 0}
+  scattergunPelletSprite: {fileID: 0}
+  missileSprite: {fileID: 0}
+  gatlingBulletPrefab: {fileID: 0}
+  scattergunPelletPrefab: {fileID: 0}
+  missilePrefab: {fileID: 0}
   defaultFireRate: 0.22
   minFireRate: 0.1
   defaultEnergyCost: 6
-  recoilForce: 1.5
+  recoilForce: 0
   muzzleForwardOffset: 1.55
   dualWeaponSpread: 0.3
   bulletInaccuracyAngle: 2.5

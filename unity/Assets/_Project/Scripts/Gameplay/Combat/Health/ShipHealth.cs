@@ -23,6 +23,10 @@ namespace StarStrike.Gameplay
         [Tooltip("If true, allows a final 'Last Gasp' shot with partial energy, draining the capacitor to 0 and tripping lockout")]
         public bool allowOverdraw = true;
 
+        [Header("Defensive Armor Modifiers")]
+        [Range(0f, 0.75f)]
+        public float armorDamageReduction = 0f;
+
         [Header("Current State")]
         public float currentShield;
         public float currentHull;
@@ -40,6 +44,9 @@ namespace StarStrike.Gameplay
 
         public bool isPlayer = false;
         public bool isInvulnerable = false;
+        public bool flashRedOnHullHit = false;
+
+        public bool IsPlayerShip => isPlayer || CompareTag("Player") || gameObject.name == "Player" || GetComponent<PlayerProgression>() != null;
 
         public event Action<float, float> OnShieldChanged;
         public event Action<float, float> OnHullChanged;
@@ -54,7 +61,7 @@ namespace StarStrike.Gameplay
 
         private void Awake()
         {
-            if (CompareTag("Player") || gameObject.name == "Player")
+            if (CompareTag("Player") || gameObject.name == "Player" || GetComponent<PlayerProgression>() != null)
             {
                 isPlayer = true;
             }
@@ -139,6 +146,10 @@ namespace StarStrike.Gameplay
 
             if (leftoverDamage > 0f)
             {
+                if (armorDamageReduction > 0f)
+                {
+                    leftoverDamage *= (1f - Mathf.Clamp(armorDamageReduction, 0f, 0.75f));
+                }
                 currentHull = Mathf.Max(0f, currentHull - leftoverDamage);
             }
             
@@ -151,11 +162,14 @@ namespace StarStrike.Gameplay
             }
             else if (leftoverDamage > 0f)
             {
-                // Direct Hull Hit (Battlevoid: Harbinger style - armor impact flash)
-                var sr = GetComponent<SpriteRenderer>();
-                if (sr != null && StarStrike.Gameplay.FX.FXService.Instance != null)
+                // Direct Hull Hit (player ship does not flash red on hull hit)
+                if (!IsPlayerShip && flashRedOnHullHit)
                 {
-                    StarStrike.Gameplay.FX.FXService.Instance.FlashSprite(sr, new Color(1f, 0.35f, 0.35f, 1f));
+                    var sr = GetComponent<SpriteRenderer>();
+                    if (sr != null && StarStrike.Gameplay.FX.FXService.Instance != null)
+                    {
+                        StarStrike.Gameplay.FX.FXService.Instance.FlashSprite(sr, new Color(1f, 0.35f, 0.35f, 1f));
+                    }
                 }
             }
             pendingHitPoint = Vector2.zero;

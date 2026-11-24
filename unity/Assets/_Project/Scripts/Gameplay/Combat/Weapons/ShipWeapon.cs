@@ -251,18 +251,34 @@ namespace StarStrike.Gameplay
             
             StarStrike.Gameplay.Audio.AudioService.Instance?.PlaySound(isPlayer ? "laser" : "enemy_laser", 0.4f);
 
-            float recoil = combatConfig != null ? combatConfig.recoilForce : 1.5f;
-            if (rb != null && recoil > 0f)
-            {
-                rb.AddForce(-transform.right * recoil, ForceMode2D.Impulse);
-            }
+            // Recoil mechanism removed: zero shock-back impulse on weapon fire
 
             Vector2[] muzzlePositions = GetMuzzleWorldPositions();
+
+            Quaternion baseRotation = transform.rotation;
+            if (!IsMountedOnSocket())
+            {
+                var prog = GetComponent<PlayerProgression>();
+                bool canAim = (prog != null && prog.currentShip != null && (prog.currentShip.canAimIndependently || prog.currentShip.id == "cruiser" || prog.currentShip.id == "battleship"));
+                if (canAim)
+                {
+                    var inputProvider = GetComponent<IShipInputProvider>();
+                    Vector2 aimDir = inputProvider != null ? inputProvider.AimDirection : Vector2.zero;
+                    if (aimDir.sqrMagnitude < 0.01f && PlayerInputReader.Instance != null)
+                    {
+                        aimDir = PlayerInputReader.Instance.AimDirection;
+                    }
+                    if (aimDir.sqrMagnitude > 0.01f)
+                    {
+                        baseRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(aimDir.y, aimDir.x) * Mathf.Rad2Deg);
+                    }
+                }
+            }
 
             foreach (Vector2 nose in muzzlePositions)
             {
                 float spreadOffset = inaccuracyAngle > 0f ? Random.Range(-inaccuracyAngle, inaccuracyAngle) : 0f;
-                Quaternion bulletRotation = transform.rotation * Quaternion.Euler(0f, 0f, spreadOffset);
+                Quaternion bulletRotation = baseRotation * Quaternion.Euler(0f, 0f, spreadOffset);
 
                 string poolTag = isPlayer ? "PlayerLaser" : "EnemyLaser";
                 

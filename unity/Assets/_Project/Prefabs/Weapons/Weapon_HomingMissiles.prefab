@@ -51,7 +51,7 @@ MonoBehaviour:
   fireRate: 0.7
   energyCost: 16
   weaponSlots: 1
-  recoilForce: 2
+  recoilForce: 0
   missilePrefab: {fileID: 1000000000000003, guid: 5f67eae43c87486f9b72f54e4981e794, type: 3}
   customSockets: []
   isPlayer: 0

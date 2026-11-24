@@ -16,7 +16,7 @@ namespace StarStrike.Gameplay
         public float fireRate = 0.48f;
         public float energyCost = 14f;
         public int weaponSlots = 1;
-        public float recoilForce = 3.2f;
+        public float recoilForce = 0f;
 
         [Header("Prefabs")]
         public GameObject pelletPrefab;
@@ -102,10 +102,7 @@ namespace StarStrike.Gameplay
 
             StarStrike.Gameplay.Audio.AudioService.Instance?.PlaySound("laser", 0.6f);
 
-            if (rb != null && recoilForce > 0f)
-            {
-                rb.AddForce(-transform.right * recoilForce, ForceMode2D.Impulse);
-            }
+            // Recoil mechanism removed: zero shock-back impulse on weapon fire
 
             int totalPellets = basePellets + Mathf.Max(0, weaponSlots - 1) * 2;
             float startAngle = -spreadAngle * 0.5f;
@@ -136,12 +133,32 @@ namespace StarStrike.Gameplay
                 muzzles = new Vector2[] { (Vector2)transform.position + (Vector2)transform.right * 1.55f };
             }
 
+            Quaternion baseRotation = transform.rotation;
+            if (!IsMountedOnSocket())
+            {
+                var prog = GetComponent<PlayerProgression>();
+                bool canAim = (prog != null && prog.currentShip != null && (prog.currentShip.canAimIndependently || prog.currentShip.id == "cruiser" || prog.currentShip.id == "battleship"));
+                if (canAim)
+                {
+                    var inputProvider = GetComponent<IShipInputProvider>();
+                    Vector2 aimDir = inputProvider != null ? inputProvider.AimDirection : Vector2.zero;
+                    if (aimDir.sqrMagnitude < 0.01f && PlayerInputReader.Instance != null)
+                    {
+                        aimDir = PlayerInputReader.Instance.AimDirection;
+                    }
+                    if (aimDir.sqrMagnitude > 0.01f)
+                    {
+                        baseRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(aimDir.y, aimDir.x) * Mathf.Rad2Deg);
+                    }
+                }
+            }
+
             foreach (Vector2 nose in muzzles)
             {
                 for (int i = 0; i < totalPellets; i++)
                 {
                     float angle = startAngle + (step * i);
-                    Quaternion rot = transform.rotation * Quaternion.Euler(0, 0, angle);
+                    Quaternion rot = baseRotation * Quaternion.Euler(0, 0, angle);
 
                     GameObject pelletObj = null;
                     string poolTag = isPlayer ? "PlayerScatterPellet" : "EnemyScatterPellet";

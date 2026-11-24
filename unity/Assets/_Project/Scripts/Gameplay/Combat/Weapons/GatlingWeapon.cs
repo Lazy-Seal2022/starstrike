@@ -19,7 +19,7 @@ namespace StarStrike.Gameplay
         public float maxFireRate = 0.055f; // ~18.2 rounds/sec at peak RPM
         public float energyCost = 1.6f;
         public int weaponSlots = 1;
-        public float recoilForce = 0.35f;
+        public float recoilForce = 0f;
 
         [Header("Accuracy & Spread Bloom")]
         [Tooltip("Starting inaccuracy angle in degrees when cold")]
@@ -138,11 +138,7 @@ namespace StarStrike.Gameplay
             // Rapid mechanical audio
             StarStrike.Gameplay.Audio.AudioService.Instance?.PlaySound(isPlayer ? "laser" : "enemy_laser", 0.35f);
 
-            // Light rapid micro-recoil impulse
-            if (rb != null && recoilForce > 0f)
-            {
-                rb.AddForce(-transform.right * recoilForce, ForceMode2D.Impulse);
-            }
+            // Recoil mechanism removed: zero shock-back impulse on weapon fire
 
             // Muzzle positioning: supports ShipWeapon hardpoints or fallback forward nose
             Vector2[] muzzlePositions = GetMuzzleWorldPositions();
@@ -151,10 +147,30 @@ namespace StarStrike.Gameplay
             Vector2 firingMuzzle = muzzlePositions.Length > 0 ? muzzlePositions[currentSocketIndex % muzzlePositions.Length] : (Vector2)transform.position + (Vector2)transform.right * 0.7f;
             currentSocketIndex = (currentSocketIndex + 1) % Mathf.Max(1, muzzlePositions.Length);
 
+            Quaternion baseRotation = transform.rotation;
+            if (!IsMountedOnSocket())
+            {
+                var prog = GetComponent<PlayerProgression>();
+                bool canAim = (prog != null && prog.currentShip != null && (prog.currentShip.canAimIndependently || prog.currentShip.id == "cruiser" || prog.currentShip.id == "battleship"));
+                if (canAim)
+                {
+                    var inputProvider = GetComponent<IShipInputProvider>();
+                    Vector2 aimDir = inputProvider != null ? inputProvider.AimDirection : Vector2.zero;
+                    if (aimDir.sqrMagnitude < 0.01f && PlayerInputReader.Instance != null)
+                    {
+                        aimDir = PlayerInputReader.Instance.AimDirection;
+                    }
+                    if (aimDir.sqrMagnitude > 0.01f)
+                    {
+                        baseRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(aimDir.y, aimDir.x) * Mathf.Rad2Deg);
+                    }
+                }
+            }
+
             // Apply dynamic inaccuracy spread bloom
             float currentSpread = CurrentInaccuracyAngle;
             float spreadOffset = Random.Range(-currentSpread, currentSpread);
-            Quaternion bulletRotation = transform.rotation * Quaternion.Euler(0f, 0f, spreadOffset);
+            Quaternion bulletRotation = baseRotation * Quaternion.Euler(0f, 0f, spreadOffset);
 
             string poolTag = isPlayer ? "PlayerGatlingBullet" : "EnemyGatlingBullet";
             GameObject bulletObj = null;

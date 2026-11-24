@@ -54,7 +54,7 @@ MonoBehaviour:
   fireRate: 0.48
   energyCost: 14
   weaponSlots: 1
-  recoilForce: 3.2
+  recoilForce: 0
   pelletPrefab: {fileID: 1000000000000002, guid: a761ad902b5a45e794f69351413aba9d, type: 3}
   customSockets: []
   isPlayer: 0

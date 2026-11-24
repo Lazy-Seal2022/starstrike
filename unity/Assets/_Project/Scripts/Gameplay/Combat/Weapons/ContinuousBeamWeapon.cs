@@ -163,6 +163,24 @@ namespace StarStrike.Gameplay
             EnsureBeamRenderers(beamCount);
 
             Vector2 forward = transform.right;
+            if (!IsMountedOnSocket())
+            {
+                var prog = GetComponent<PlayerProgression>();
+                bool canAim = (prog != null && prog.currentShip != null && (prog.currentShip.canAimIndependently || prog.currentShip.id == "cruiser" || prog.currentShip.id == "battleship"));
+                if (canAim)
+                {
+                    var inputProvider = GetComponent<IShipInputProvider>();
+                    Vector2 aimDir = inputProvider != null ? inputProvider.AimDirection : Vector2.zero;
+                    if (aimDir.sqrMagnitude < 0.01f && PlayerInputReader.Instance != null)
+                    {
+                        aimDir = PlayerInputReader.Instance.AimDirection;
+                    }
+                    if (aimDir.sqrMagnitude > 0.01f)
+                    {
+                        forward = aimDir.normalized;
+                    }
+                }
+            }
             float tickDamage = damagePerSecond * dt;
 
             for (int i = 0; i < beamCount; i++)

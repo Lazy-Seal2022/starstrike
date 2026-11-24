@@ -84,7 +84,7 @@ MonoBehaviour:
   maxFireRate: 0.055
   energyCost: 1.6
   weaponSlots: 1
-  recoilForce: 0.35
+  recoilForce: 0
   baseInaccuracyAngle: 3.2
   maxInaccuracyAngle: 7.5
   spoolUpTime: 0.65

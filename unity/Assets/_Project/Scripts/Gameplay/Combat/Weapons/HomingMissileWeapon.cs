@@ -11,7 +11,7 @@ namespace StarStrike.Gameplay
         public float fireRate = 0.70f;
         public float energyCost = 16f;
         public int weaponSlots = 1;
-        public float recoilForce = 2.0f;
+        public float recoilForce = 0f;
 
         [Header("Prefabs")]
         public GameObject missilePrefab;
@@ -86,10 +86,7 @@ namespace StarStrike.Gameplay
 
             StarStrike.Gameplay.Audio.AudioService.Instance?.PlaySound("laser", 0.5f);
 
-            if (rb != null && recoilForce > 0f)
-            {
-                rb.AddForce(-transform.right * recoilForce, ForceMode2D.Impulse);
-            }
+            // Recoil mechanism removed: zero shock-back impulse on weapon fire
 
             Vector2[] muzzles = null;
             if (IsMountedOnSocket())
@@ -123,6 +120,26 @@ namespace StarStrike.Gameplay
                 }
             }
 
+            Quaternion baseRotation = transform.rotation;
+            if (!IsMountedOnSocket())
+            {
+                var prog = GetComponent<PlayerProgression>();
+                bool canAim = (prog != null && prog.currentShip != null && (prog.currentShip.canAimIndependently || prog.currentShip.id == "cruiser" || prog.currentShip.id == "battleship"));
+                if (canAim)
+                {
+                    var inputProvider = GetComponent<IShipInputProvider>();
+                    Vector2 aimDir = inputProvider != null ? inputProvider.AimDirection : Vector2.zero;
+                    if (aimDir.sqrMagnitude < 0.01f && PlayerInputReader.Instance != null)
+                    {
+                        aimDir = PlayerInputReader.Instance.AimDirection;
+                    }
+                    if (aimDir.sqrMagnitude > 0.01f)
+                    {
+                        baseRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(aimDir.y, aimDir.x) * Mathf.Rad2Deg);
+                    }
+                }
+            }
+
             foreach (Vector2 nose in muzzles)
             {
                 string poolTag = isPlayer ? "PlayerMissile" : "EnemyMissile";
@@ -130,7 +147,7 @@ namespace StarStrike.Gameplay
                 GameObject missileObj = null;
                 if (PoolManager.Instance != null)
                 {
-                    missileObj = PoolManager.Instance.Spawn(poolTag, nose, transform.rotation, () =>
+                    missileObj = PoolManager.Instance.Spawn(poolTag, nose, baseRotation, () =>
                     {
                         if (missilePrefab != null)
                         {
