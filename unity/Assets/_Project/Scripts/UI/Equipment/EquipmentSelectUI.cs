@@ -215,6 +215,7 @@ namespace StarStrike.UI
             inspectedSkillId = StorageService.GetSelectedSkill();
 
             BuildUI();
+            RefreshUI();
         }
 
         public void SetVisible(bool visible)

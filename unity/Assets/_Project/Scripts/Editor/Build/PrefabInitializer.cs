@@ -5,6 +5,7 @@ using StarStrike.Core;
 using StarStrike.Gameplay;
 using StarStrike.UI;
 using StarStrike.Network;
+using StarStrike.Platform.Storage;
 
 namespace StarStrike.Editor
 {

@@ -214,6 +214,7 @@ namespace StarStrike.UI
             }
 
             BuildUI();
+            RefreshUI();
         }
 
         public void SetVisible(bool visible)
