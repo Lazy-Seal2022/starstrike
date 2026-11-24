@@ -41,3 +41,8 @@ dist-ssr
 /[Uu]nity/*.sln
 
 test_sprite/
+
+# Local tools & virtual environment
+.venv/
+graphify-out/
+.agents/

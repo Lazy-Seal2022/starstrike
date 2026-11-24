@@ -27,11 +27,11 @@ MonoBehaviour:
     gemDropCount: 1
     visualScale: 0.75
     colliderRadius: 0.45
-  largePrefab: {fileID: 3263407791451844803, guid: b19cedbfbd1d80f4ea079540e768a941, type: 3}
-  mediumPrefab: {fileID: 3354090058735690287, guid: 111ec44a5a8306048abc434a7d61807f, type: 3}
-  smallPrefab: {fileID: 5718887496420375508, guid: 6604eca9f1d880b459f86b6d4939513f, type: 3}
-  gemCrystalPrefab: {fileID: 5510445325805244216, guid: 795d65608693fdf44b358f22c0294531, type: 3}
-  powerUpPrefab: {fileID: 1571697331678444011, guid: 9089f5201c0fbec4a8de36a5be4c8e68, type: 3}
+  largePrefab: {fileID: 0}
+  mediumPrefab: {fileID: 0}
+  smallPrefab: {fileID: 0}
+  gemCrystalPrefab: {fileID: 0}
+  powerUpPrefab: {fileID: 0}
   sprite: {fileID: 21300000, guid: c3494d382c308ff49b5d7a1fe97da904, type: 3}
   powerUpDropChance: 0.05
   fractureSplitCount: 2

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 4579930230762529400}
   - component: {fileID: 1645733140144124107}
   - component: {fileID: 818267782247554695}
+  - component: {fileID: 1395268402701120380}
   m_Layer: 0
   m_Name: Asteroid_Small
   m_TagString: Asteroid
@@ -48,8 +49,8 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDamping: 0.1
-  m_AngularDamping: 0.2
+  m_LinearDamping: 0.05
+  m_AngularDamping: 0.05
   m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -179,3 +180,16 @@ MonoBehaviour:
   maxHp: 20
   gemDropCount: 1
   hasCustomInitialVelocity: 0
+--- !u!114 &1395268402701120380
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5718887496420375508}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c40e0964cd554a4896f67187384c1e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: StarStrike.Gameplay::StarStrike.Gameplay.MinimapTrackable
+  Type: 2

@@ -47,6 +47,10 @@ namespace StarStrike.Editor
             CreateShipPrefab("interceptor", 3, 100f, 180f, 15f, 140f, 30f, 35f, 28f, 2);
             CreateShipPrefab("juggernaut", 3, 300f, 400f, 25f, 200f, 25f, 75f, 18f, 3);
             CreateShipPrefab("carrier", 3, 240f, 320f, 22f, 280f, 32f, 55f, 22f, 3);
+            CreateShipPrefab("frigate", 2, 140f, 180f, 16f, 110f, 22f, 32f, 24f, 3);
+            CreateShipPrefab("destroyer", 2, 220f, 240f, 18f, 140f, 20f, 45f, 20f, 4);
+            CreateShipPrefab("cruiser", 3, 320f, 350f, 22f, 180f, 24f, 55f, 18f, 5);
+            CreateShipPrefab("battleship", 3, 600f, 500f, 28f, 300f, 20f, 75f, 15f, 6);
 
             // 5. UI Prefabs
             CreateCanvasHUDPrefab();
@@ -403,6 +407,10 @@ namespace StarStrike.Editor
 
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = LoadArtSprite($"Ships/Ship_{capId}.png");
+            if (sr.sprite == null)
+            {
+                sr.sprite = StarStrike.Gameplay.ProceduralSpriteHelper.GetShipSprite(shipId);
+            }
             sr.sortingOrder = 4;
 
             var poly = go.AddComponent<PolygonCollider2D>();
@@ -1860,6 +1868,10 @@ namespace StarStrike.Editor
                 if (weapon.inaccuracyAngle <= 0f)
                     throw new System.Exception("Weapon inaccuracyAngle should be positive for realistic bullet spread");
 
+                // Verify zero recoil shock-back on ship when firing
+                if (rb.linearVelocity.sqrMagnitude > 0.0001f)
+                    throw new System.Exception("Ship must not shock back or gain reverse recoil velocity when firing");
+
                 Object.DestroyImmediate(shipObj);
                 Debug.Log("[PASS] 22. Weapon Kinematic Recoil, Sockets & Inaccuracy Spread verified");
                 passed++;
@@ -2195,6 +2207,381 @@ namespace StarStrike.Editor
             catch (System.Exception ex)
             {
                 Debug.LogError($"[FAIL] 27. Ship Archetypes verification failed: {ex.Message}");
+                failed++;
+            }
+
+            // --- 28. Multi-Category Modular Equipment System & Expanded Ship Fleet Roster ---
+            try
+            {
+                DataInitializer.EnsureShipAssets();
+
+                var frigateAsset = Resources.Load<ShipDefinition>("Data/Ship_Frigate");
+                var destroyerAsset = Resources.Load<ShipDefinition>("Data/Ship_Destroyer");
+                var cruiserAsset = Resources.Load<ShipDefinition>("Data/Ship_Cruiser");
+                var battleshipAsset = Resources.Load<ShipDefinition>("Data/Ship_Battleship");
+
+                if (frigateAsset == null || destroyerAsset == null || cruiserAsset == null || battleshipAsset == null)
+                    throw new System.Exception("Ship data assets (Frigate, Destroyer, Cruiser, Battleship) must exist in Resources/Data");
+
+                var defenseMods = EquipmentModuleCatalog.GetModulesByCategory(EquipmentSlotCategory.Defense);
+                var engineMods = EquipmentModuleCatalog.GetModulesByCategory(EquipmentSlotCategory.Engine);
+                var reactorMods = EquipmentModuleCatalog.GetModulesByCategory(EquipmentSlotCategory.Reactor);
+                var auxMods = EquipmentModuleCatalog.GetModulesByCategory(EquipmentSlotCategory.Auxiliary);
+
+                if (defenseMods.Count < 3 || engineMods.Count < 3 || reactorMods.Count < 3 || auxMods.Count < 3)
+                    throw new System.Exception("All 4 equipment module categories must have at least 3 distinct modules");
+
+                var battleship = ShipArchetypeFactory.CreateArchetype(ShipClass.Battleship);
+                if (battleship.equipmentSlots == null || battleship.equipmentSlots.Length != 11)
+                    throw new System.Exception("Battleship must have 11 modular equipment slots configured");
+
+                var cruiser = ShipArchetypeFactory.CreateArchetype(ShipClass.Cruiser);
+                if (cruiser.equipmentSlots == null || cruiser.equipmentSlots.Length != 9)
+                    throw new System.Exception("Cruiser must have 9 modular equipment slots configured");
+
+                var frigate = ShipArchetypeFactory.CreateArchetype(ShipClass.Frigate);
+                if (frigate.equipmentSlots == null || frigate.equipmentSlots.Length != 6)
+                    throw new System.Exception("Frigate must have 6 modular equipment slots configured");
+
+                // Test StorageService module saving & loading
+                StorageService.SaveEquippedModule("cruiser", "def_0", "def_shield_booster");
+                StorageService.SaveEquippedModule("cruiser", "eng_0", "eng_afterburner");
+                if (StorageService.GetEquippedModule("cruiser", "def_0") != "def_shield_booster")
+                    throw new System.Exception("StorageService failed to retrieve equipped defense module");
+                if (StorageService.GetEquippedModule("cruiser", "eng_0") != "eng_afterburner")
+                    throw new System.Exception("StorageService failed to retrieve equipped engine module");
+
+                // Test Procedural Sprites for new ship classes
+                var fSpr = StarStrike.Gameplay.ProceduralSpriteHelper.GenerateShipSprite("frigate");
+                var dSpr = StarStrike.Gameplay.ProceduralSpriteHelper.GenerateShipSprite("destroyer");
+                var cSpr = StarStrike.Gameplay.ProceduralSpriteHelper.GenerateShipSprite("cruiser");
+                var bSpr = StarStrike.Gameplay.ProceduralSpriteHelper.GenerateShipSprite("battleship");
+                if (fSpr == null || dSpr == null || cSpr == null || bSpr == null)
+                    throw new System.Exception("ProceduralSpriteHelper must generate procedural sprites for all 6 ship classes");
+
+                // Test Armor Damage Reduction
+                var testGo = new GameObject("TestArmorVerification");
+                var health = testGo.AddComponent<ShipHealth>();
+                health.maxShield = 0f;
+                health.currentShield = 0f;
+                health.maxHull = 200f;
+                health.currentHull = 200f;
+                health.armorDamageReduction = 0.20f;
+                health.TakeDamage(50f);
+                if (Mathf.Abs(health.CurrentHull - 160f) > 0.01f)
+                    throw new System.Exception($"Armor damage reduction failed. Expected 160 hull, got {health.CurrentHull}");
+                Object.DestroyImmediate(testGo);
+
+                Debug.Log("[PASS] 28. Multi-Category Modular Equipment System & Expanded Ship Fleet Roster verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 28. Modular Equipment System verification failed: {ex.Message}");
+                failed++;
+            }
+
+            // 29. Verify Battleship & Cruiser 360° Independent Aiming Mechanics
+            try
+            {
+                var cruiserDef = ShipArchetypeFactory.CreateArchetype(ShipClass.Cruiser);
+                var battleshipDef = ShipArchetypeFactory.CreateArchetype(ShipClass.Battleship);
+                var fighterDef = ShipArchetypeFactory.CreateArchetype(ShipClass.Fighter);
+
+                if (!cruiserDef.canAimIndependently)
+                    throw new System.Exception("Cruiser must have canAimIndependently set to true");
+                if (!battleshipDef.canAimIndependently)
+                    throw new System.Exception("Battleship must have canAimIndependently set to true");
+                if (fighterDef.canAimIndependently)
+                    throw new System.Exception("Fighter must have canAimIndependently set to false (fixed forward)");
+
+                // Test Battleship independent weapon socket aiming
+                var shipObj = new GameObject("Test_BattleshipAiming");
+                shipObj.transform.rotation = Quaternion.Euler(0f, 0f, 0f); // Ship facing East (+X, 0 deg)
+                var prog = shipObj.AddComponent<PlayerProgression>();
+                prog.currentShip = battleshipDef;
+
+                var weaponCtrl = shipObj.AddComponent<ShipWeaponController>();
+                weaponCtrl.currentShipId = "battleship";
+                weaponCtrl.UpdateSocketVisuals();
+
+                if (weaponCtrl.SocketMounts.Count < 3)
+                    throw new System.Exception($"Expected at least 3 socket mounts for battleship, got {weaponCtrl.SocketMounts.Count}");
+
+                // Aim straight UP (North, +Y, 90 deg) while ship heading remains 0 deg East
+                weaponCtrl.inputAimDirection = new Vector2(0f, 1f);
+                weaponCtrl.UpdateIndependentAiming();
+
+                // Turret / aimable socket mounts must be rotated to 90 degrees North, independent of ship's 0-degree East heading
+                var firstMount = weaponCtrl.SocketMounts[0].mountTransform;
+                float angle = firstMount.eulerAngles.z;
+                if (Mathf.Abs(Mathf.DeltaAngle(angle, 90f)) > 1f)
+                    throw new System.Exception($"Socket mount did not rotate to aim direction. Expected 90 deg, got {angle}");
+
+                Object.DestroyImmediate(shipObj);
+
+                // Test Battleship & Cruiser hull steering: ship hull must NOT turn directly towards cursor
+                var bbMovementObj = new GameObject("Test_BattleshipHullSteering");
+                var bbRb = bbMovementObj.AddComponent<Rigidbody2D>();
+                bbRb.rotation = 0f;
+                bbMovementObj.transform.rotation = Quaternion.Euler(0f, 0f, 0f); // Facing East (0 deg)
+                var bbProg = bbMovementObj.AddComponent<PlayerProgression>();
+                bbProg.currentShip = battleshipDef;
+                var bbMove = bbMovementObj.AddComponent<ShipMovement>();
+                bbMove.AimDirection = new Vector2(0f, 1f); // Cursor aiming North (90 deg)
+                bbMove.TurnInput = 0f;
+
+                if (bbMove.ShouldSteerTowardsAim)
+                    throw new System.Exception("Battleship ShouldSteerTowardsAim must be false (ship should not turn direct to cursor)");
+
+                bbMove.HandleSteering();
+                if (Mathf.Abs(Mathf.DeltaAngle(bbRb.rotation, 0f)) > 0.01f)
+                    throw new System.Exception($"Battleship hull should NOT rotate towards cursor. Expected 0 deg, got {bbRb.rotation}");
+
+                // Verify TurnInput (A/D or helm steering) DOES steer the Battleship
+                bbMove.TurnInput = 1f; // Turn counter-clockwise
+                bbMove.HandleSteering();
+                if (bbRb.rotation <= 0f)
+                    throw new System.Exception($"Battleship hull should steer with TurnInput. Expected > 0 deg, got {bbRb.rotation}");
+
+                Object.DestroyImmediate(bbMovementObj);
+
+                // Test Cruiser hull steering: also must NOT turn directly towards cursor
+                var crMovementObj = new GameObject("Test_CruiserHullSteering");
+                var crRb = crMovementObj.AddComponent<Rigidbody2D>();
+                crRb.rotation = 0f;
+                crMovementObj.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+                var crProg = crMovementObj.AddComponent<PlayerProgression>();
+                crProg.currentShip = cruiserDef;
+                var crMove = crMovementObj.AddComponent<ShipMovement>();
+                crMove.AimDirection = new Vector2(0f, 1f);
+                crMove.TurnInput = 0f;
+
+                if (crMove.ShouldSteerTowardsAim)
+                    throw new System.Exception("Cruiser ShouldSteerTowardsAim must be false (ship should not turn direct to cursor)");
+
+                crMove.HandleSteering();
+                if (Mathf.Abs(Mathf.DeltaAngle(crRb.rotation, 0f)) > 0.01f)
+                    throw new System.Exception($"Cruiser hull should NOT rotate towards cursor. Expected 0 deg, got {crRb.rotation}");
+
+                Object.DestroyImmediate(crMovementObj);
+
+                // Test Fighter fixed forward aiming (must NOT rotate independently)
+                var fighterObj = new GameObject("Test_FighterFixedAiming");
+                fighterObj.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+                var fProg = fighterObj.AddComponent<PlayerProgression>();
+                fProg.currentShip = fighterDef;
+
+                var fWeaponCtrl = fighterObj.AddComponent<ShipWeaponController>();
+                fWeaponCtrl.currentShipId = "fighter";
+                fWeaponCtrl.UpdateSocketVisuals();
+
+                fWeaponCtrl.inputAimDirection = new Vector2(0f, 1f);
+                fWeaponCtrl.UpdateIndependentAiming();
+
+                var fMount = fWeaponCtrl.SocketMounts[0].mountTransform;
+                float fAngle = fMount.eulerAngles.z;
+                if (Mathf.Abs(Mathf.DeltaAngle(fAngle, 0f)) > 1f)
+                    throw new System.Exception($"Fighter weapon mount should remain fixed to ship forward (0 deg), got {fAngle}");
+
+                // Fighter hull steering DOES turn towards cursor
+                var fRb = fighterObj.AddComponent<Rigidbody2D>();
+                fRb.rotation = 0f;
+                var fMove = fighterObj.AddComponent<ShipMovement>();
+                fMove.AimDirection = new Vector2(0f, 1f);
+                fMove.TurnInput = 0f;
+
+                if (!fMove.ShouldSteerTowardsAim)
+                    throw new System.Exception("Fighter ShouldSteerTowardsAim must be true");
+
+                fMove.HandleSteering();
+                if (fRb.rotation <= 0f)
+                    throw new System.Exception($"Fighter hull should rotate towards cursor. Expected > 0 deg, got {fRb.rotation}");
+
+                Object.DestroyImmediate(fighterObj);
+
+                // Verify Player ship does NOT change to red on direct hull hit
+                var testPlayerGo = new GameObject("Player");
+                testPlayerGo.tag = "Player";
+                var playerHealth = testPlayerGo.AddComponent<ShipHealth>();
+                var playerSr = testPlayerGo.AddComponent<SpriteRenderer>();
+                playerSr.color = Color.white;
+                playerHealth.maxShield = 0f;
+                playerHealth.currentShield = 0f;
+                playerHealth.maxHull = 100f;
+                playerHealth.currentHull = 100f;
+                playerHealth.TakeDamage(25f);
+                if (playerSr.color != Color.white)
+                    throw new System.Exception($"Player ship sprite color should remain unchanged on hull hit, got {playerSr.color}");
+                Object.DestroyImmediate(testPlayerGo);
+
+                Debug.Log("[PASS] 29. Battleship & Cruiser 360° Independent Aiming Mechanics verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 29. Independent Aiming verification failed: {ex.Message}");
+                failed++;
+            }
+
+            // 30. Verify Global UI & HUD Text Enlargement
+            try
+            {
+                if (StarStrike.UI.UIHelper.TextSizeScale <= 1.0f)
+                    throw new System.Exception("UIHelper.TextSizeScale must be greater than 1.0f for text enlargement");
+
+                int scaled16 = StarStrike.UI.UIHelper.ScaleFontSize(16);
+                if (scaled16 <= 16)
+                    throw new System.Exception($"UIHelper.ScaleFontSize(16) should be larger than 16, got {scaled16}");
+
+                var testRoot = new GameObject("TestTextEnlargement");
+                var tmp = StarStrike.UI.UIHelper.CreateTextMeshPro(
+                    testRoot.transform,
+                    "EnlargedLabel",
+                    "SORTIE",
+                    16,
+                    TMPro.FontStyles.Bold,
+                    Color.white,
+                    TMPro.TextAlignmentOptions.Center,
+                    Vector2.zero,
+                    Vector2.one,
+                    Vector2.zero,
+                    Vector2.zero);
+
+                if (tmp.fontSize <= 16)
+                    throw new System.Exception($"TextMeshPro fontSize was not enlarged. Expected > 16, got {tmp.fontSize}");
+
+                Object.DestroyImmediate(testRoot);
+
+                Debug.Log("[PASS] 30. Global UI & HUD Text Enlargement verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 30. Text enlargement verification failed: {ex.Message}");
+                failed++;
+            }
+
+            // 31. Verify "Used Future" Aesthetic & Visual Direction (Muted Hulls, Scale Windows, Cinematic Tracers)
+            try
+            {
+                StarStrike.Gameplay.ProceduralSpriteHelper.ClearCache();
+
+                // 1. Capital Ships Scale & Micro-Window Lights (Cruiser, Battleship, Carrier)
+                var bbSprite = StarStrike.Gameplay.ProceduralSpriteHelper.GenerateShipSprite("battleship");
+                var crSprite = StarStrike.Gameplay.ProceduralSpriteHelper.GenerateShipSprite("cruiser");
+                var caSprite = StarStrike.Gameplay.ProceduralSpriteHelper.GenerateShipSprite("carrier");
+                if (bbSprite == null || crSprite == null || caSprite == null)
+                    throw new System.Exception("Failed to generate capital ship sprites");
+
+                // Verify tiny pinpoint deck windows exist on capital ships
+                var bbTex = bbSprite.texture;
+                int bbWindowCount = 0;
+                float bbSatSum = 0f;
+                int bbHullPixelCount = 0;
+
+                for (int y = 0; y < bbTex.height; y++)
+                {
+                    for (int x = 0; x < bbTex.width; x++)
+                    {
+                        var col = bbTex.GetPixel(x, y);
+                        if (col.a > 0.5f)
+                        {
+                            Color.RGBToHSV(col, out float h, out float s, out float v);
+                            // Micro-deck windows: high brightness (>0.9) with warm incandescent or bridge cyan tint
+                            if (v > 0.90f && (col.r > 0.7f && col.g > 0.7f))
+                            {
+                                bbWindowCount++;
+                            }
+                            else
+                            {
+                                bbSatSum += s;
+                                bbHullPixelCount++;
+                            }
+                        }
+                    }
+                }
+
+                if (bbWindowCount < 10)
+                    throw new System.Exception($"Battleship must have at least 10 pinpoint deck windows for floating city scale, found {bbWindowCount}");
+
+                float bbAvgSat = bbHullPixelCount > 0 ? (bbSatSum / bbHullPixelCount) : 1f;
+                if (bbAvgSat > 0.35f)
+                    throw new System.Exception($"Battleship base hull should be muted industrial grey/slate (avg saturation < 0.35), got {bbAvgSat}");
+
+                // 2. Scale Contrast: Strike Craft (Fighter) should have cockpit canopy, NOT scattered deck window rows
+                var fSprite = StarStrike.Gameplay.ProceduralSpriteHelper.GenerateShipSprite("fighter");
+                var fTex = fSprite.texture;
+                int fCanopyPixels = 0;
+                float fSatSum = 0f;
+                int fHullPixelCount = 0;
+
+                for (int y = 0; y < fTex.height; y++)
+                {
+                    for (int x = 0; x < fTex.width; x++)
+                    {
+                        var col = fTex.GetPixel(x, y);
+                        if (col.a > 0.5f)
+                        {
+                            Color.RGBToHSV(col, out float h, out float s, out float v);
+                            // Cockpit glint / canopy
+                            if (v > 0.85f && col.b > 0.75f)
+                            {
+                                fCanopyPixels++;
+                            }
+                            else
+                            {
+                                fSatSum += s;
+                                fHullPixelCount++;
+                            }
+                        }
+                    }
+                }
+
+                if (fCanopyPixels == 0)
+                    throw new System.Exception("Fighter strike craft must have cockpit canopy specular glint");
+
+                float fAvgSat = fHullPixelCount > 0 ? (fSatSum / fHullPixelCount) : 1f;
+                if (fAvgSat > 0.35f)
+                    throw new System.Exception($"Fighter base hull should be muted industrial gunmetal (avg saturation < 0.35), got {fAvgSat}");
+
+                // 3. Cinematic Laser Tracers (Thick glowing bolts with blinding hot-white core)
+                var playerLaser = StarStrike.Gameplay.ProceduralSpriteHelper.GenerateLaserSprite(false);
+                var enemyLaser = StarStrike.Gameplay.ProceduralSpriteHelper.GenerateLaserSprite(true);
+                var gatlingTracer = StarStrike.Gameplay.ProceduralSpriteHelper.GenerateGatlingTracerSprite();
+
+                var pTex = playerLaser.texture;
+                var eTex = enemyLaser.texture;
+                var gTex = gatlingTracer.texture;
+
+                // Center core pixel should be ultra-hot pure white core
+                var pCore = pTex.GetPixel(pTex.width / 2, pTex.height / 2);
+                if (pCore.r < 0.9f || pCore.g < 0.9f || pCore.b < 0.9f)
+                    throw new System.Exception($"Player laser center core must be blinding hot white (r,g,b > 0.9), got {pCore}");
+
+                var eCore = eTex.GetPixel(eTex.width / 2, eTex.height / 2);
+                if (eCore.r < 0.9f || eCore.g < 0.9f || eCore.b < 0.9f)
+                    throw new System.Exception($"Enemy laser center core must be blinding hot white (r,g,b > 0.9), got {eCore}");
+
+                var gCore = gTex.GetPixel(gTex.width / 2, gTex.height / 2);
+                if (gCore.r < 0.9f || gCore.g < 0.9f)
+                    throw new System.Exception($"Gatling tracer center core must be hot white, got {gCore}");
+
+                // Chromatic mantle: outer halo should be saturated player cyan / enemy red
+                var pMantle = pTex.GetPixel(pTex.width / 2, (int)(pTex.height * 0.72f));
+                if (pMantle.b < 0.7f)
+                    throw new System.Exception($"Player laser mantle should be vibrant cyan-blue, got {pMantle}");
+
+                var eMantle = eTex.GetPixel(eTex.width / 2, (int)(eTex.height * 0.72f));
+                if (eMantle.r < 0.7f)
+                    throw new System.Exception($"Enemy laser mantle should be vibrant crimson, got {eMantle}");
+
+                Debug.Log("[PASS] 31. 'Used Future' Aesthetic & Visual Direction verified (Muted Hulls, Capital Scale Windows, Cinematic Tracers)");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 31. 'Used Future' Aesthetic verification failed: {ex.Message}");
                 failed++;
             }
 

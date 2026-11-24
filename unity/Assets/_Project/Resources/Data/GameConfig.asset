@@ -16,8 +16,8 @@ MonoBehaviour:
   worldHeight: 140
   asteroidCount: 50
   initialDroneCount: 6
-  enemyDronePrefab: {fileID: 4500293773924986577, guid: eacef16706b52eb409d88fb92d8be5e4, type: 3}
-  bossPrefab: {fileID: 7529469353253515448, guid: b843d8c1f0b2ae541ada8606d6932b45, type: 3}
+  enemyDronePrefab: {fileID: 0}
+  bossPrefab: {fileID: 0}
   baseFriction: 0.985
   maxVelocity: 500
   rotationSpeed: 0.08

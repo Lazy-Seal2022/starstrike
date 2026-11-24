@@ -200,13 +200,32 @@ namespace StarStrike.Editor
             phantom.baseStats = new StatValues { hullCapacity = 110, shieldCapacity = 160, shieldRegen = 16, energyCapacity = 160, energyRegen = 35, pulseDamage = 45, pulseSpeed = 850, speed = 420, agility = 7.0f };
             phantom = CreateOrUpdateAsset(phantom, $"{dataPath}/Ship_Phantom.asset");
 
-            scout.evolvesTo = new ShipDefinition[] { fighter, miner };
-            fighter.evolvesTo = new ShipDefinition[] { interceptor, phantom };
+            // Additional Naval Ship Classes
+            EnsureShipAssets();
+            var frigate = AssetDatabase.LoadAssetAtPath<ShipDefinition>($"{dataPath}/Ship_Frigate.asset");
+            var destroyer = AssetDatabase.LoadAssetAtPath<ShipDefinition>($"{dataPath}/Ship_Destroyer.asset");
+            var cruiser = AssetDatabase.LoadAssetAtPath<ShipDefinition>($"{dataPath}/Ship_Cruiser.asset");
+            var battleship = AssetDatabase.LoadAssetAtPath<ShipDefinition>($"{dataPath}/Ship_Battleship.asset");
+
+            scout.equipmentSlots = scout.GetEquipmentSlots();
+            fighter.equipmentSlots = fighter.GetEquipmentSlots();
+            miner.equipmentSlots = miner.GetEquipmentSlots();
+            interceptor.equipmentSlots = interceptor.GetEquipmentSlots();
+            juggernaut.equipmentSlots = juggernaut.GetEquipmentSlots();
+            carrier.equipmentSlots = carrier.GetEquipmentSlots();
+            phantom.equipmentSlots = phantom.GetEquipmentSlots();
+
+            scout.evolvesTo = new ShipDefinition[] { fighter, frigate, miner };
+            fighter.evolvesTo = new ShipDefinition[] { interceptor, destroyer };
+            frigate.evolvesTo = new ShipDefinition[] { cruiser, phantom };
             miner.evolvesTo = new ShipDefinition[] { juggernaut, carrier };
+            destroyer.evolvesTo = new ShipDefinition[] { battleship };
+            cruiser.evolvesTo = new ShipDefinition[] { battleship, carrier };
             interceptor.evolvesTo = new ShipDefinition[0];
             juggernaut.evolvesTo = new ShipDefinition[0];
             phantom.evolvesTo = new ShipDefinition[0];
             carrier.evolvesTo = new ShipDefinition[0];
+            battleship.evolvesTo = new ShipDefinition[0];
 
             EditorUtility.SetDirty(scout);
             EditorUtility.SetDirty(fighter);
@@ -215,6 +234,10 @@ namespace StarStrike.Editor
             EditorUtility.SetDirty(juggernaut);
             EditorUtility.SetDirty(phantom);
             EditorUtility.SetDirty(carrier);
+            EditorUtility.SetDirty(frigate);
+            EditorUtility.SetDirty(destroyer);
+            EditorUtility.SetDirty(cruiser);
+            EditorUtility.SetDirty(battleship);
 
             // 10. Master Game Config
             var gameConfig = ScriptableObject.CreateInstance<GameConfig>();
@@ -321,6 +344,41 @@ namespace StarStrike.Editor
             AssetDatabase.Refresh();
 
             Debug.Log("StarStrike pure ScriptableObject configuration assets and prefabs successfully generated!");
+        }
+
+        public static void EnsureShipAssets()
+        {
+            string dataPath = "Assets/_Project/Resources/Data";
+            EnsureFolder("Assets/_Project", "Resources");
+            EnsureFolder("Assets/_Project/Resources", "Data");
+
+            var frigate = ShipArchetypeFactory.CreateArchetype(ShipClass.Frigate);
+            frigate.sprite = StarStrike.Gameplay.ProceduralSpriteHelper.GenerateShipSprite("frigate");
+            CreateOrUpdateAsset(frigate, $"{dataPath}/Ship_Frigate.asset");
+
+            var destroyer = ShipArchetypeFactory.CreateArchetype(ShipClass.Destroyer);
+            destroyer.sprite = StarStrike.Gameplay.ProceduralSpriteHelper.GenerateShipSprite("destroyer");
+            CreateOrUpdateAsset(destroyer, $"{dataPath}/Ship_Destroyer.asset");
+
+            var cruiser = ShipArchetypeFactory.CreateArchetype(ShipClass.Cruiser);
+            cruiser.sprite = StarStrike.Gameplay.ProceduralSpriteHelper.GenerateShipSprite("cruiser");
+            cruiser.canAimIndependently = true;
+            CreateOrUpdateAsset(cruiser, $"{dataPath}/Ship_Cruiser.asset");
+
+            var battleship = ShipArchetypeFactory.CreateArchetype(ShipClass.Battleship);
+            battleship.sprite = StarStrike.Gameplay.ProceduralSpriteHelper.GenerateShipSprite("battleship");
+            battleship.canAimIndependently = true;
+            CreateOrUpdateAsset(battleship, $"{dataPath}/Ship_Battleship.asset");
+
+            var carrier = ShipArchetypeFactory.CreateArchetype(ShipClass.Carrier);
+            carrier.sprite = StarStrike.Gameplay.ProceduralSpriteHelper.GenerateShipSprite("carrier");
+            CreateOrUpdateAsset(carrier, $"{dataPath}/Ship_Carrier.asset");
+
+            var fighter = ShipArchetypeFactory.CreateArchetype(ShipClass.Fighter);
+            fighter.sprite = StarStrike.Gameplay.ProceduralSpriteHelper.GenerateShipSprite("fighter");
+            CreateOrUpdateAsset(fighter, $"{dataPath}/Ship_Fighter.asset");
+
+            AssetDatabase.SaveAssets();
         }
 
         private static void EnsureFolder(string parent, string name)
