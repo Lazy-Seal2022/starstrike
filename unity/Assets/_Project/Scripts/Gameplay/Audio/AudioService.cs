@@ -299,6 +299,8 @@ namespace StarStrike.Gameplay.Audio
             LoadClipWithFallback("explosion", () => GenerateNoise(44100, 0.4f, 0.8f));
             LoadClipWithFallback("upgrade", () => GenerateTone(44100, 0.3f, 440f, 880f, 0.6f, WaveType.Sine));
             LoadClipWithFallback("click", () => GenerateTone(44100, 0.05f, 600f, 900f, 0.4f, WaveType.Sine));
+            LoadClipWithFallback("power_down", () => GenerateTone(44100, 0.2f, 320f, 160f, 0.45f, WaveType.Sawtooth));
+            LoadClipWithFallback("power_up", () => GenerateTone(44100, 0.25f, 350f, 700f, 0.45f, WaveType.Sine));
 
             // Register compatibility aliases
             if (proceduralClips.TryGetValue("laser", out var laserClip))

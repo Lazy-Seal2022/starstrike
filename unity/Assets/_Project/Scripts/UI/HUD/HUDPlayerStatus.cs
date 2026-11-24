@@ -50,6 +50,10 @@ namespace StarStrike.UI
 
         private float targetBoostRatio = 1f;
 
+        private bool isEnergyLockedOut = false;
+        private float energyRecoveryTarget = 0f;
+        private float cachedMaxEnergy = 80f;
+
         private string cachedShipId = "SCOUT";
         private string cachedWeaponName = "Pulse Laser";
 
@@ -66,6 +70,7 @@ namespace StarStrike.UI
             GameEvents.OnShieldChanged += HandleShieldChanged;
             GameEvents.OnHullChanged += HandleHullChanged;
             GameEvents.OnEnergyChanged += HandleEnergyChanged;
+            GameEvents.OnEnergyLockoutChanged += HandleEnergyLockoutChanged;
             GameEvents.OnGemCollected += HandleGemCollected;
             GameEvents.OnPlayerEvolved += HandlePlayerEvolved;
             GameEvents.OnWeaponSwapped += HandleWeaponSwapped;
@@ -76,6 +81,7 @@ namespace StarStrike.UI
             GameEvents.OnShieldChanged -= HandleShieldChanged;
             GameEvents.OnHullChanged -= HandleHullChanged;
             GameEvents.OnEnergyChanged -= HandleEnergyChanged;
+            GameEvents.OnEnergyLockoutChanged -= HandleEnergyLockoutChanged;
             GameEvents.OnGemCollected -= HandleGemCollected;
             GameEvents.OnPlayerEvolved -= HandlePlayerEvolved;
             GameEvents.OnWeaponSwapped -= HandleWeaponSwapped;
@@ -154,6 +160,13 @@ namespace StarStrike.UI
                 float pulse = Mathf.PingPong(Time.time * themeConfig.warningPulseFrequency, 1f);
                 shieldText.color = Color.Lerp(themeConfig.dangerColor, themeConfig.textPrimary, pulse);
             }
+
+            // 7. Energy Capacitor Lockout Pulse
+            if (isEnergyLockedOut && energyFill != null)
+            {
+                float pulse = Mathf.PingPong(Time.time * 4f, 1f);
+                energyFill.color = Color.Lerp(new Color(1f, 0.35f, 0.05f), new Color(1f, 0.75f, 0.2f), pulse);
+            }
         }
 
         public void HandleShieldChanged(float current, float max)
@@ -190,11 +203,31 @@ namespace StarStrike.UI
 
         public void HandleEnergyChanged(float current, float max)
         {
+            cachedMaxEnergy = max;
             targetEnergyRatio = max > 0 ? Mathf.Clamp01(current / max) : 0f;
 
-            string energyStr = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
+            string energyStr;
+            if (isEnergyLockedOut)
+            {
+                energyStr = $"REBOOT [{Mathf.CeilToInt(current)}/{Mathf.CeilToInt(energyRecoveryTarget)}]";
+            }
+            else
+            {
+                energyStr = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
+            }
             if (energyText != null) energyText.text = energyStr;
             if (energyTmpText != null) energyTmpText.text = energyStr;
+        }
+
+        public void HandleEnergyLockoutChanged(bool isLocked, float current, float target)
+        {
+            isEnergyLockedOut = isLocked;
+            energyRecoveryTarget = target;
+            if (!isLocked && themeConfig != null && energyFill != null)
+            {
+                energyFill.color = themeConfig.energyColor;
+            }
+            HandleEnergyChanged(current, cachedMaxEnergy);
         }
 
         public void HandleGemCollected(int amount, int total)

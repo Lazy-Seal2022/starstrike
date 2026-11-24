@@ -55,6 +55,8 @@ namespace StarStrike.UI
         private float maxHull = 80f;
         private float currentEnergy = 80f;
         private float maxEnergy = 80f;
+        private bool isEnergyLockedOut = false;
+        private float energyRecoveryTarget = 0f;
         private int totalGems = 0;
         private bool isUpgradesOpen = false;
         
@@ -115,6 +117,7 @@ namespace StarStrike.UI
             GameEvents.OnShieldChanged += HandleShieldChanged;
             GameEvents.OnHullChanged += HandleHullChanged;
             GameEvents.OnEnergyChanged += HandleEnergyChanged;
+            GameEvents.OnEnergyLockoutChanged += HandleEnergyLockoutChanged;
             GameEvents.OnGemCollected += HandleGemCollected;
             GameEvents.OnPlayerEvolved += HandlePlayerEvolved;
             GameEvents.OnGameStarted += HandleGameStarted;
@@ -132,6 +135,7 @@ namespace StarStrike.UI
             GameEvents.OnShieldChanged -= HandleShieldChanged;
             GameEvents.OnHullChanged -= HandleHullChanged;
             GameEvents.OnEnergyChanged -= HandleEnergyChanged;
+            GameEvents.OnEnergyLockoutChanged -= HandleEnergyLockoutChanged;
             GameEvents.OnGemCollected -= HandleGemCollected;
             GameEvents.OnPlayerEvolved -= HandlePlayerEvolved;
             GameEvents.OnGameStarted -= HandleGameStarted;
@@ -308,6 +312,25 @@ namespace StarStrike.UI
             if (playerStatus != null) playerStatus.HandleEnergyChanged(current, max);
         }
 
+        private void HandleEnergyLockoutChanged(bool isLocked, float current, float target)
+        {
+            isEnergyLockedOut = isLocked;
+            energyRecoveryTarget = target;
+            UpdateEnergyVisuals();
+
+            if (floatingTextController != null)
+            {
+                if (isLocked)
+                {
+                    floatingTextController.SpawnFloatingNotice("CAPACITOR DEPLETED // SYSTEM REBOOT", new Color(1f, 0.45f, 0.1f));
+                }
+                else
+                {
+                    floatingTextController.SpawnFloatingNotice("CAPACITOR RESTORED // WEAPONS ONLINE", new Color(0.2f, 0.9f, 0.45f));
+                }
+            }
+        }
+
         private void HandleGemCollected(int added, int total)
         {
             totalGems = total;
@@ -368,8 +391,29 @@ namespace StarStrike.UI
         private void UpdateEnergyVisuals()
         {
             float ratio = Mathf.Clamp01(currentEnergy / Mathf.Max(1f, maxEnergy));
-            if (energyFill != null) energyFill.fillAmount = ratio;
-            if (energyValueText != null) energyValueText.text = $"{Mathf.RoundToInt(currentEnergy)} / {Mathf.RoundToInt(maxEnergy)}";
+            if (energyFill != null)
+            {
+                energyFill.fillAmount = ratio;
+                if (isEnergyLockedOut)
+                {
+                    energyFill.color = new Color(1f, 0.55f, 0.1f, 0.95f);
+                }
+                else
+                {
+                    energyFill.color = new Color(0.18f, 0.8f, 0.44f, 1f);
+                }
+            }
+            if (energyValueText != null)
+            {
+                if (isEnergyLockedOut)
+                {
+                    energyValueText.text = $"<color=#ff8514>REBOOTING [{Mathf.RoundToInt(currentEnergy)}/{Mathf.RoundToInt(energyRecoveryTarget)}]</color>";
+                }
+                else
+                {
+                    energyValueText.text = $"{Mathf.RoundToInt(currentEnergy)} / {Mathf.RoundToInt(maxEnergy)}";
+                }
+            }
         }
 
         private void UpdateAllHUDVisuals()

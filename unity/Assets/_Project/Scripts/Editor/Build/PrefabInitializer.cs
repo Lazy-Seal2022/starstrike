@@ -2046,6 +2046,88 @@ namespace StarStrike.Editor
                 failed++;
             }
 
+            // 26. Verify Capacitor Depletion Lockout and Threshold Recovery System
+            try
+            {
+                var testGo = new GameObject("TestShip_CapacitorLockout");
+                var testHealth = testGo.AddComponent<ShipHealth>();
+                testHealth.maxEnergy = 100f;
+                testHealth.energyRegen = 20f;
+                testHealth.energyRecoveryThresholdRatio = 0.30f; // 30 energy threshold
+                testHealth.ResetMeters();
+
+                if (testHealth.CurrentEnergy != 100f || testHealth.IsEnergyLockedOut)
+                    throw new System.Exception("Initial energy state should be full and not locked out");
+
+                // Partial consumption should NOT lock out
+                bool consumedPart = testHealth.ConsumeEnergy(70f);
+                if (!consumedPart || testHealth.CurrentEnergy != 30f || testHealth.IsEnergyLockedOut)
+                    throw new System.Exception("Partial energy consumption should succeed without triggering lockout");
+
+                // Insufficient partial consumption should NOT lock out if energy remains > 0
+                bool consumedOver = testHealth.ConsumeEnergy(50f);
+                if (consumedOver || testHealth.CurrentEnergy != 30f || testHealth.IsEnergyLockedOut)
+                    throw new System.Exception("Insufficient consumption must fail without draining or locking out");
+
+                // Complete depletion triggers lockout
+                bool consumedRest = testHealth.ConsumeEnergy(30f);
+                if (!consumedRest || testHealth.CurrentEnergy != 0f || !testHealth.IsEnergyLockedOut)
+                    throw new System.Exception("Complete depletion of capacitor must trigger lockout state");
+
+                // While locked out, HasEnergy and ConsumeEnergy must return false
+                if (testHealth.HasEnergy(5f) || testHealth.ConsumeEnergy(5f))
+                    throw new System.Exception("HasEnergy and ConsumeEnergy must reject while capacitor is locked out");
+
+                // Regenerate partially below threshold (0.5 sec at 20/s = 10 energy < 30)
+                testHealth.RegenerateMeters(0.5f);
+                if (testHealth.CurrentEnergy < 9.9f || testHealth.CurrentEnergy > 10.1f)
+                    throw new System.Exception($"Capacitor should have regenerated to ~10 energy, got {testHealth.CurrentEnergy}");
+                if (!testHealth.IsEnergyLockedOut)
+                    throw new System.Exception("Capacitor must remain locked out below recovery threshold (10 < 30)");
+                if (testHealth.HasEnergy(5f) || testHealth.ConsumeEnergy(5f))
+                    throw new System.Exception("Lockout must prevent consuming even when energy is > request but below threshold");
+
+                // Regenerate past recovery threshold (1.1 sec at 20/s = +22 energy, total 32 > 30)
+                testHealth.RegenerateMeters(1.1f);
+                if (testHealth.CurrentEnergy < 31.9f || testHealth.IsEnergyLockedOut)
+                    throw new System.Exception("Capacitor must clear lockout once reaching recovery threshold (>= 30)");
+
+                // After lockout is cleared, weapons can consume energy normally
+                bool firedPost = testHealth.ConsumeEnergy(12f);
+                if (!firedPost || testHealth.CurrentEnergy < 19.9f || testHealth.IsEnergyLockedOut)
+                    throw new System.Exception("Energy consumption must succeed once lockout is cleared");
+
+                // Test fixed threshold override
+                testHealth.SetEnergyRecoveryThreshold(50f);
+                if (testHealth.EnergyRecoveryThreshold != 50f)
+                    throw new System.Exception("Fixed energy recovery threshold override failed to set");
+
+                // Deplete completely again
+                testHealth.ConsumeEnergy(testHealth.CurrentEnergy);
+                if (!testHealth.IsEnergyLockedOut)
+                    throw new System.Exception("Second depletion must re-trigger lockout");
+
+                // Regenerate to 40 (< 50 fixed threshold)
+                testHealth.RegenerateMeters(2.0f); // +40 energy
+                if (!testHealth.IsEnergyLockedOut)
+                    throw new System.Exception("Should still be locked out at 40 energy when threshold is 50");
+
+                // Regenerate past 50
+                testHealth.RegenerateMeters(0.6f); // +12 energy -> 52 energy
+                if (testHealth.IsEnergyLockedOut)
+                    throw new System.Exception("Lockout should clear once reaching fixed threshold 50");
+
+                Object.DestroyImmediate(testGo);
+
+                Debug.Log("[PASS] 26. Capacitor Depletion Lockout and Threshold Recovery System verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 26. Capacitor Lockout verification failed: {ex.Message}");
+                failed++;
+            }
+
             Debug.Log($"=== TOTAL VERIFICATION RESULT: {passed} PASSED, {failed} FAILED ===");
         }
 

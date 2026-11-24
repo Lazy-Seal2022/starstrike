@@ -189,5 +189,69 @@ namespace StarStrike.Tests.EditMode
             Assert.AreEqual(70f, health.currentShield, 0.01f);
             Assert.AreEqual(80f, health.currentEnergy, 0.01f); // capped at max (80)
         }
+
+        [Test]
+        public void ConsumeEnergy_TotalDepletion_TriggersEnergyLockout()
+        {
+            health.ConsumeEnergy(80f);
+            Assert.AreEqual(0f, health.currentEnergy);
+            Assert.IsTrue(health.IsEnergyLockedOut);
+        }
+
+        [Test]
+        public void EnergyLockout_PreventsWeaponFiringAndConsumingEnergy()
+        {
+            health.energyRegen = 20f;
+            health.ConsumeEnergy(80f);
+            Assert.IsTrue(health.IsEnergyLockedOut);
+
+            // Regenerate 10 energy (threshold is 30% of 80 = 24)
+            health.RegenerateMeters(0.5f); // 20 regen * 0.5 = 10 energy
+            Assert.AreEqual(10f, health.currentEnergy, 0.01f);
+            Assert.IsTrue(health.IsEnergyLockedOut);
+
+            Assert.IsFalse(health.HasEnergy(5f));
+            Assert.IsFalse(health.ConsumeEnergy(5f));
+            Assert.IsFalse(weapon.TryFire(health));
+        }
+
+        [Test]
+        public void EnergyLockout_RecoversWhenThresholdReached()
+        {
+            health.energyRegen = 20f;
+            health.ConsumeEnergy(80f);
+            Assert.IsTrue(health.IsEnergyLockedOut);
+
+            // Regenerate to 30 energy (>= 24 threshold)
+            health.RegenerateMeters(1.5f); // 20 regen * 1.5 = 30 energy
+            Assert.AreEqual(30f, health.currentEnergy, 0.01f);
+            Assert.IsFalse(health.IsEnergyLockedOut);
+
+            Assert.IsTrue(health.HasEnergy(12f));
+            bool fired = weapon.TryFire(health);
+            Assert.IsTrue(fired);
+            Assert.AreEqual(18f, health.currentEnergy, 0.01f);
+        }
+
+        [Test]
+        public void EnergyLockout_ConfigurableFixedThreshold()
+        {
+            health.energyRegen = 20f;
+            health.SetEnergyRecoveryThreshold(50f);
+            Assert.AreEqual(50f, health.EnergyRecoveryThreshold);
+
+            health.ConsumeEnergy(80f);
+            Assert.IsTrue(health.IsEnergyLockedOut);
+
+            // Regenerate to 40 energy (< 50)
+            health.RegenerateMeters(2.0f);
+            Assert.AreEqual(40f, health.currentEnergy, 0.01f);
+            Assert.IsTrue(health.IsEnergyLockedOut);
+
+            // Regenerate to 60 energy (>= 50)
+            health.RegenerateMeters(1.0f);
+            Assert.AreEqual(60f, health.currentEnergy, 0.01f);
+            Assert.IsFalse(health.IsEnergyLockedOut);
+        }
     }
 }

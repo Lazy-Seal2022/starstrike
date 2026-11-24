@@ -7,6 +7,7 @@ namespace StarStrike.Core
     {
         float CurrentEnergy { get; }
         float MaxEnergy { get; }
+        bool IsEnergyLockedOut { get; }
         bool HasEnergy(float amount);
         bool ConsumeEnergy(float amount);
     }
