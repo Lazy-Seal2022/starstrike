@@ -106,5 +106,45 @@ namespace StarStrike.Tests.EditMode
             Assert.AreEqual(battleship.hardpointSockets[5].localPosition, positions[5]);
             Assert.AreEqual(6, battleship.SocketCount);
         }
+
+        [Test]
+        public void ModularClassBuilders_ProperlyConfigureDedicatedShipVariants()
+        {
+            var scout = new ShipDefinition();
+            FighterClass.ConfigureScout(scout);
+            Assert.AreEqual("scout", scout.id);
+            Assert.AreEqual(ShipClass.Fighter, scout.shipClass);
+            Assert.AreEqual("Delta Scout", scout.shipName);
+
+            var fighter = new ShipDefinition();
+            FighterClass.ConfigureFighter(fighter);
+            Assert.AreEqual("fighter", fighter.id);
+            Assert.AreEqual(ShipClass.Fighter, fighter.shipClass);
+
+            var frigate = new ShipDefinition();
+            FrigateClass.ConfigureFrigate(frigate);
+            Assert.AreEqual("frigate", frigate.id);
+            Assert.AreEqual(ShipClass.Frigate, frigate.shipClass);
+
+            var destroyer = new ShipDefinition();
+            DestroyerClass.ConfigureDestroyer(destroyer);
+            Assert.AreEqual("destroyer", destroyer.id);
+            Assert.AreEqual(ShipClass.Destroyer, destroyer.shipClass);
+
+            var cruiser = new ShipDefinition();
+            CruiserClass.ConfigureCruiser(cruiser);
+            Assert.AreEqual("cruiser", cruiser.id);
+            Assert.AreEqual(ShipClass.Cruiser, cruiser.shipClass);
+
+            var carrier = new ShipDefinition();
+            CarrierClass.ConfigureCarrier(carrier);
+            Assert.AreEqual("carrier", carrier.id);
+            Assert.AreEqual(ShipClass.Carrier, carrier.shipClass);
+
+            var battleship = new ShipDefinition();
+            BattleshipClass.ConfigureBattleship(battleship);
+            Assert.AreEqual("battleship", battleship.id);
+            Assert.AreEqual(ShipClass.Battleship, battleship.shipClass);
+        }
     }
 }

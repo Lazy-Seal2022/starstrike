@@ -51,6 +51,7 @@ namespace StarStrike.UI
         {
             public string id;
             public string name;
+            public ShipClass shipClass;
             public int tier;
             public string role;
             public int cost;
@@ -70,6 +71,7 @@ namespace StarStrike.UI
             new ShipInfo {
                 id = "scout",
                 name = "Delta Scout",
+                shipClass = ShipClass.Fighter,
                 tier = 1,
                 role = "LIGHT RECON RECON // BALANCED MOBILITY",
                 cost = 0,
@@ -86,6 +88,7 @@ namespace StarStrike.UI
             new ShipInfo {
                 id = "fighter",
                 name = "Ares Fighter",
+                shipClass = ShipClass.Fighter,
                 tier = 2,
                 role = "ASSAULT STRIKER // DUAL HARDPOINTS",
                 cost = 500,
@@ -102,6 +105,7 @@ namespace StarStrike.UI
             new ShipInfo {
                 id = "miner",
                 name = "Goliath Miner",
+                shipClass = ShipClass.Frigate,
                 tier = 2,
                 role = "HEAVY EXTRACTION // REINFORCED HULL",
                 cost = 500,
@@ -118,6 +122,7 @@ namespace StarStrike.UI
             new ShipInfo {
                 id = "interceptor",
                 name = "Viper Interceptor",
+                shipClass = ShipClass.Fighter,
                 tier = 3,
                 role = "HIGH-SPEED PURSUIT // MAX AGILITY",
                 cost = 1500,
@@ -134,6 +139,7 @@ namespace StarStrike.UI
             new ShipInfo {
                 id = "juggernaut",
                 name = "Titan Juggernaut",
+                shipClass = ShipClass.Battleship,
                 tier = 3,
                 role = "HEAVY DREADNOUGHT // TRIPLE HARDPOINTS",
                 cost = 2000,
@@ -150,6 +156,7 @@ namespace StarStrike.UI
             new ShipInfo {
                 id = "phantom",
                 name = "Phantom Ghost",
+                shipClass = ShipClass.Fighter,
                 tier = 3,
                 role = "STEALTH INFILTRATOR // RAPID RECHARGE",
                 cost = 2500,
@@ -166,6 +173,7 @@ namespace StarStrike.UI
             new ShipInfo {
                 id = "carrier",
                 name = "Vanguard Carrier",
+                shipClass = ShipClass.Carrier,
                 tier = 3,
                 role = "FLEET CARRIER // AUTONOMOUS ESCORT SQUADRON",
                 cost = 0,
@@ -182,6 +190,7 @@ namespace StarStrike.UI
             new ShipInfo {
                 id = "vanguard",
                 name = "Vanguard Carrier",
+                shipClass = ShipClass.Carrier,
                 tier = 3,
                 role = "FLEET CARRIER // AUTONOMOUS ESCORT SQUADRON",
                 cost = 0,
@@ -198,6 +207,7 @@ namespace StarStrike.UI
             new ShipInfo {
                 id = "frigate",
                 name = "Viper Frigate",
+                shipClass = ShipClass.Frigate,
                 tier = 2,
                 role = "FAST WOLFPACK ESCORT // TRIPLE MOUNTS",
                 cost = 750,
@@ -214,6 +224,7 @@ namespace StarStrike.UI
             new ShipInfo {
                 id = "destroyer",
                 name = "Goliath Destroyer",
+                shipClass = ShipClass.Destroyer,
                 tier = 2,
                 role = "ANTI-CAPITAL GUNSHIP // QUAD BATTERY",
                 cost = 1200,
@@ -230,6 +241,7 @@ namespace StarStrike.UI
             new ShipInfo {
                 id = "cruiser",
                 name = "Hyperion Cruiser",
+                shipClass = ShipClass.Cruiser,
                 tier = 3,
                 role = "FLEET BATTLELINE // INDEPENDENT AIM MATRIX",
                 cost = 1800,
@@ -246,6 +258,7 @@ namespace StarStrike.UI
             new ShipInfo {
                 id = "battleship",
                 name = "Titan Dreadnought",
+                shipClass = ShipClass.Battleship,
                 tier = 3,
                 role = "SUPERHEAVY FORTRESS // 360° TURRET BATTERIES",
                 cost = 3000,
@@ -620,7 +633,7 @@ namespace StarStrike.UI
 
             if (shipRoleText != null)
             {
-                shipRoleText.text = $"<color=#00f2ff>// SPEC: {info.role}</color>";
+                shipRoleText.text = $"<color=#00f2ff>// CLASS: {info.shipClass.ToString().ToUpperInvariant()} // SPEC: {info.role}</color>";
             }
 
             if (shipPreviewImage != null)
