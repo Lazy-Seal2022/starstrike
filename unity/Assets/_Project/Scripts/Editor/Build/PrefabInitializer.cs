@@ -2132,6 +2132,72 @@ namespace StarStrike.Editor
                 failed++;
             }
 
+            // 27. Verify 6 Naval Ship Archetypes Data Architecture & Hardpoint Systems
+            try
+            {
+                var archetypes = ShipArchetypeFactory.CreateAllArchetypes();
+                if (archetypes == null || archetypes.Count != 6)
+                    throw new System.Exception($"Expected 6 naval ship archetypes, got {archetypes?.Count ?? 0}");
+
+                var fighter = ShipArchetypeFactory.CreateArchetype(ShipClass.Fighter);
+                var frigate = ShipArchetypeFactory.CreateArchetype(ShipClass.Frigate);
+                var destroyer = ShipArchetypeFactory.CreateArchetype(ShipClass.Destroyer);
+                var cruiser = ShipArchetypeFactory.CreateArchetype(ShipClass.Cruiser);
+                var carrier = ShipArchetypeFactory.CreateArchetype(ShipClass.Carrier);
+                var battleship = ShipArchetypeFactory.CreateArchetype(ShipClass.Battleship);
+
+                // Verify Progressive Camera & Mass Scaling
+                if (fighter.cameraOrthoSize >= frigate.cameraOrthoSize ||
+                    frigate.cameraOrthoSize >= destroyer.cameraOrthoSize ||
+                    destroyer.cameraOrthoSize >= cruiser.cameraOrthoSize ||
+                    cruiser.cameraOrthoSize >= carrier.cameraOrthoSize ||
+                    carrier.cameraOrthoSize >= battleship.cameraOrthoSize)
+                {
+                    throw new System.Exception("Camera orthographic size must scale progressively from Fighter (7.5) to Battleship (15.0)");
+                }
+
+                if (fighter.hullMass >= frigate.hullMass ||
+                    frigate.hullMass >= destroyer.hullMass ||
+                    destroyer.hullMass >= cruiser.hullMass ||
+                    cruiser.hullMass >= carrier.hullMass ||
+                    carrier.hullMass >= battleship.hullMass)
+                {
+                    throw new System.Exception("Hull mass must scale progressively from Fighter (1.0) to Battleship (9.0)");
+                }
+
+                // Verify Hardpoint Sockets & Roles
+                if (fighter.hardpointSockets.Length != 2 || fighter.hardpointSockets[0].size != SocketSize.Light)
+                    throw new System.Exception("Fighter must have 2 Light hardpoint sockets");
+
+                if (frigate.hardpointSockets.Length != 3)
+                    throw new System.Exception("Frigate must have 3 hardpoint sockets");
+
+                if (destroyer.hardpointSockets.Length != 4 || destroyer.hardpointSockets[2].size != SocketSize.Heavy)
+                    throw new System.Exception("Destroyer must have 4 sockets including Heavy torpedo pods");
+
+                if (cruiser.hardpointSockets.Length != 5)
+                    throw new System.Exception("Cruiser must have 5 sockets including turrets and broadsides");
+
+                if (carrier.hardpointSockets.Length != 4 || carrier.droneHangarCapacity != 4)
+                    throw new System.Exception("Carrier must have 4 sockets and drone hangar capacity of 4");
+
+                if (battleship.hardpointSockets.Length != 6 || battleship.hardpointSockets[0].size != SocketSize.Spinal || battleship.collisionArmorReduction < 0.35f)
+                    throw new System.Exception("Battleship must have 6 sockets including a Spinal mount and >= 35% collision armor reduction");
+
+                // Verify legacy interoperability
+                var bSockets = battleship.GetWeaponSocketPositions();
+                if (bSockets == null || bSockets.Length != 6 || battleship.SocketCount != 6)
+                    throw new System.Exception("Legacy GetWeaponSocketPositions must seamlessly project hardpointSockets");
+
+                Debug.Log("[PASS] 27. 6 Naval Ship Archetypes Data Architecture & Hardpoint Systems verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 27. Ship Archetypes verification failed: {ex.Message}");
+                failed++;
+            }
+
             Debug.Log($"=== TOTAL VERIFICATION RESULT: {passed} PASSED, {failed} FAILED ===");
         }
 
