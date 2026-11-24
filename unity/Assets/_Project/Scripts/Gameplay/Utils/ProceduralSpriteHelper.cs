@@ -400,14 +400,22 @@ namespace StarStrike.Gameplay
 
             if (!forceProcedural)
             {
-                string resName = "Weapon_Pulse";
-                if (lower.Contains("gatling") || lower == "4") resName = "Weapon_Gatling";
-                else if (lower.Contains("beam") || lower == "3") resName = "Weapon_Beam";
-                else if (lower.Contains("missile") || lower.Contains("homing") || lower == "2") resName = "Weapon_Missile";
-                else if (lower.Contains("scatter") || lower == "1") resName = "Weapon_Scattergun";
+                var combatConfig = Resources.Load<StarStrike.Core.CombatConfig>("Data/CombatConfig");
+                if (combatConfig != null)
+                {
+                    GameObject prefab = null;
+                    if (lower.Contains("gatling") || lower == "4") prefab = combatConfig.gatlingWeaponPrefab;
+                    else if (lower.Contains("beam") || lower == "3") prefab = combatConfig.continuousBeamWeaponPrefab;
+                    else if (lower.Contains("missile") || lower.Contains("homing") || lower == "2") prefab = combatConfig.homingMissileWeaponPrefab;
+                    else if (lower.Contains("scatter") || lower == "1") prefab = combatConfig.scattergunWeaponPrefab;
+                    else prefab = combatConfig.pulseLaserWeaponPrefab;
 
-                var loaded = Resources.Load<Sprite>($"Sprites/Weapons/{resName}");
-                if (loaded != null) return loaded;
+                    if (prefab != null)
+                    {
+                        var sr = prefab.GetComponent<SpriteRenderer>();
+                        if (sr != null && sr.sprite != null) return sr.sprite;
+                    }
+                }
             }
 
             if (lower.Contains("gatling") || lower == "4") return GetCachedOrGenerate(ref cachedWeaponGatling, () => GenerateWeaponIcon(new Color(1f, 0.85f, 0.25f), 1), forceProcedural);
@@ -421,9 +429,12 @@ namespace StarStrike.Gameplay
         {
             if (!forceProcedural)
             {
-                var loaded = Resources.Load<Sprite>("Sprites/Weapons/Weapon_Socket");
-                if (loaded == null) loaded = Resources.Load<Sprite>("Sprites/Weapons/Weapon_Slot");
-                if (loaded != null) return loaded;
+                var combatConfig = Resources.Load<StarStrike.Core.CombatConfig>("Data/CombatConfig");
+                if (combatConfig != null && combatConfig.socketMountPrefab != null)
+                {
+                    var sr = combatConfig.socketMountPrefab.GetComponent<SpriteRenderer>();
+                    if (sr != null && sr.sprite != null) return sr.sprite;
+                }
             }
             return GetCachedOrGenerate(ref cachedWeaponSocket, () => GenerateWeaponSocketIcon(), forceProcedural);
         }

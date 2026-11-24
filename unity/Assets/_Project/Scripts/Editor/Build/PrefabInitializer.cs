@@ -619,9 +619,7 @@ namespace StarStrike.Editor
         private static void SaveWeaponPrefab(GameObject go, string weaponName)
         {
             string path = $"Assets/_Project/Prefabs/Weapons/{weaponName}.prefab";
-            string resPath = $"Assets/_Project/Resources/Prefabs/Weapons/{weaponName}.prefab";
             PrefabUtility.SaveAsPrefabAsset(go, path);
-            PrefabUtility.SaveAsPrefabAsset(go, resPath);
             Object.DestroyImmediate(go);
         }
 
@@ -629,9 +627,6 @@ namespace StarStrike.Editor
         {
             EnsureFolder("Assets/_Project", "Prefabs");
             EnsureFolder("Assets/_Project/Prefabs", "Weapons");
-            EnsureFolder("Assets/_Project", "Resources");
-            EnsureFolder("Assets/_Project/Resources", "Prefabs");
-            EnsureFolder("Assets/_Project/Resources/Prefabs", "Weapons");
 
             var combatConfig = AssetDatabase.LoadAssetAtPath<CombatConfig>("Assets/_Project/Resources/Data/CombatConfig.asset");
 

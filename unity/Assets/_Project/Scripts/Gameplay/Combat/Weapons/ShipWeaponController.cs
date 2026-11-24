@@ -401,36 +401,38 @@ namespace StarStrike.Gameplay
             var combatConfig = Resources.Load<CombatConfig>("Data/CombatConfig");
             string lower = string.IsNullOrEmpty(weaponId) ? "pulse" : weaponId.ToLowerInvariant().Trim();
 
-            if (lower.Contains("gatling") || lower == "4")
+            if (combatConfig != null)
             {
-                if (combatConfig != null && combatConfig.gatlingWeaponPrefab != null) return combatConfig.gatlingWeaponPrefab;
-                return Resources.Load<GameObject>("Prefabs/Weapons/Weapon_RotaryGatling");
-            }
-            if (lower.Contains("beam") || lower == "3")
-            {
-                if (combatConfig != null && combatConfig.continuousBeamWeaponPrefab != null) return combatConfig.continuousBeamWeaponPrefab;
-                return Resources.Load<GameObject>("Prefabs/Weapons/Weapon_ContinuousBeam");
-            }
-            if (lower.Contains("missile") || lower.Contains("homing") || lower == "2")
-            {
-                if (combatConfig != null && combatConfig.homingMissileWeaponPrefab != null) return combatConfig.homingMissileWeaponPrefab;
-                return Resources.Load<GameObject>("Prefabs/Weapons/Weapon_HomingMissiles");
-            }
-            if (lower.Contains("scatter") || lower == "1")
-            {
-                if (combatConfig != null && combatConfig.scattergunWeaponPrefab != null) return combatConfig.scattergunWeaponPrefab;
-                return Resources.Load<GameObject>("Prefabs/Weapons/Weapon_Scattergun");
+                if (lower.Contains("gatling") || lower == "4")
+                {
+                    if (combatConfig.gatlingWeaponPrefab != null) return combatConfig.gatlingWeaponPrefab;
+                }
+                else if (lower.Contains("beam") || lower == "3")
+                {
+                    if (combatConfig.continuousBeamWeaponPrefab != null) return combatConfig.continuousBeamWeaponPrefab;
+                }
+                else if (lower.Contains("missile") || lower.Contains("homing") || lower == "2")
+                {
+                    if (combatConfig.homingMissileWeaponPrefab != null) return combatConfig.homingMissileWeaponPrefab;
+                }
+                else if (lower.Contains("scatter") || lower == "1")
+                {
+                    if (combatConfig.scattergunWeaponPrefab != null) return combatConfig.scattergunWeaponPrefab;
+                }
+                else
+                {
+                    if (combatConfig.pulseLaserWeaponPrefab != null) return combatConfig.pulseLaserWeaponPrefab;
+                }
             }
 
-            if (combatConfig != null && combatConfig.pulseLaserWeaponPrefab != null) return combatConfig.pulseLaserWeaponPrefab;
-            return Resources.Load<GameObject>("Prefabs/Weapons/Weapon_PulseLaser");
+            return null;
         }
 
         public static GameObject GetSocketMountPrefab()
         {
             var combatConfig = Resources.Load<CombatConfig>("Data/CombatConfig");
             if (combatConfig != null && combatConfig.socketMountPrefab != null) return combatConfig.socketMountPrefab;
-            return Resources.Load<GameObject>("Prefabs/Weapons/Weapon_SocketMount");
+            return null;
         }
 
         public void UpdateSocketVisuals()
