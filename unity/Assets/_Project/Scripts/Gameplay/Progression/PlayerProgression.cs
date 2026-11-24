@@ -303,20 +303,30 @@ namespace StarStrike.Gameplay
             vanguard.id = "vanguard";
             vanguard.shipName = "Vanguard Carrier";
             vanguard.tier = 3;
+            vanguard.shipClass = ShipClass.Carrier;
             vanguard.maxUpgradeLevel = 6;
-            vanguard.weaponSlots = 3;
-            vanguard.hitboxRadius = 0.80f;
-            vanguard.shieldHitboxOffset = 0.30f;
+            vanguard.weaponSlots = 2;
+            vanguard.hitboxRadius = 1.25f;
+            vanguard.shieldHitboxOffset = 0.35f;
+            vanguard.canAimIndependently = true;
+            vanguard.turretTraverseSpeed = 130f;
+            vanguard.droneHangarCapacity = 4;
+            vanguard.defaultDroneType = "interceptor_drone";
+            vanguard.collisionArmorReduction = 0.25f;
+            vanguard.cameraOrthoSize = 13f;
+            vanguard.hullMass = 6f;
             vanguard.weaponSockets = new Vector2[] {
-                new Vector2(2.50f, 0f),      // Central deck battery
-                new Vector2(2.75f, 1.12f),   // Port prow battery
-                new Vector2(2.75f, -1.12f)   // Starboard prow battery
+                new Vector2(1.80f, 1.20f),
+                new Vector2(1.80f, -1.20f),
+                new Vector2(-0.40f, 1.50f),
+                new Vector2(-0.40f, -1.50f)
             };
             vanguard.thrusterSockets = new Vector2[] {
-                new Vector2(-2.75f, 1.10f),
-                new Vector2(-2.75f, -1.10f)
+                new Vector2(-2.80f, 1.0f),
+                new Vector2(-2.80f, -1.0f),
+                new Vector2(-2.90f, 0f)
             };
-            vanguard.baseStats = new StatValues { hullCapacity = 240, shieldCapacity = 320, shieldRegen = 22, energyCapacity = 280, energyRegen = 32, pulseDamage = 55, pulseSpeed = 580, speed = 220, agility = 3.8f };
+            vanguard.baseStats = new StatValues { hullCapacity = 400, shieldCapacity = 280, shieldRegen = 18, energyCapacity = 220, energyRegen = 25, pulseDamage = 30, pulseSpeed = 560, speed = 160, agility = 2.6f };
 
             scout.evolvesTo = new ShipDefinition[] { fighter, miner };
             fighter.evolvesTo = new ShipDefinition[] { interceptor, phantom };

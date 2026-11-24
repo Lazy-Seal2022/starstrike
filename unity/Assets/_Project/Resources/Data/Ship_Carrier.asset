@@ -12,82 +12,125 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 452a726ac86488749bcfc0d806d22c9f, type: 3}
   m_Name: Ship_Carrier
   m_EditorClassIdentifier: StarStrike.Core::StarStrike.Core.ShipDefinition
-  id: vanguard
+  id: carrier
   shipName: Vanguard Carrier
   tier: 3
-  shipClass: 0
-  classRoleDescription: 
-  cameraOrthoSize: 8.5
-  hullMass: 1
-  collisionArmorReduction: 0
+  shipClass: 4
+  classRoleDescription: Fleet carrier commanding autonomous escort interceptor squadrons
+    and automated Point Defense Cannons.
+  cameraOrthoSize: 13
+  hullMass: 6
+  collisionArmorReduction: 0.25
+  canAimIndependently: 1
+  turretTraverseSpeed: 130
+  droneHangarCapacity: 4
+  defaultDroneType: interceptor_drone
   maxUpgradeLevel: 6
   evolvesTo: []
   baseStats:
-    shieldCapacity: 320
-    shieldRegen: 22
-    hullCapacity: 240
-    energyCapacity: 280
-    energyRegen: 32
-    pulseDamage: 55
-    pulseSpeed: 580
-    speed: 220
-    agility: 3.8
-  weaponSlots: 3
-  hardpointSockets: []
+    shieldCapacity: 280
+    shieldRegen: 18
+    hullCapacity: 400
+    energyCapacity: 220
+    energyRegen: 25
+    pulseDamage: 30
+    pulseSpeed: 560
+    speed: 160
+    agility: 2.6
+  weaponSlots: 2
+  hardpointSockets:
+  - socketId: Carrier_PDC_L
+    localPosition: {x: 1.8, y: 1.2}
+    mountAngle: 0
+    size: 0
+    mountType: 1
+    defaultWeaponId: pulse
+  - socketId: Carrier_PDC_R
+    localPosition: {x: 1.8, y: -1.2}
+    mountAngle: 0
+    size: 0
+    mountType: 1
+    defaultWeaponId: pulse
+  - socketId: Carrier_HangarBayL
+    localPosition: {x: -0.4, y: 1.5}
+    mountAngle: -90
+    size: 3
+    mountType: 4
+    defaultWeaponId: pulse
+  - socketId: Carrier_HangarBayR
+    localPosition: {x: -0.4, y: -1.5}
+    mountAngle: 90
+    size: 3
+    mountType: 4
+    defaultWeaponId: pulse
   equipmentSlots:
   - slotId: wpn_0
-    slotName: Socket_0
+    slotName: Port PDC Turret
     category: 0
-    size: 1
-    mountType: 0
-    localPosition: {x: 2.5, y: 0}
+    size: 0
+    mountType: 1
+    localPosition: {x: 1.8, y: 1.2}
     defaultItemId: pulse
   - slotId: wpn_1
-    slotName: Socket_1
+    slotName: Starboard PDC Turret
     category: 0
-    size: 1
-    mountType: 0
-    localPosition: {x: 2.75, y: 1.12}
+    size: 0
+    mountType: 1
+    localPosition: {x: 1.8, y: -1.2}
     defaultItemId: pulse
   - slotId: wpn_2
-    slotName: Socket_2
+    slotName: Port Flight Deck
     category: 0
-    size: 1
-    mountType: 0
-    localPosition: {x: 2.75, y: -1.12}
+    size: 3
+    mountType: 4
+    localPosition: {x: -0.4, y: 1.5}
+    defaultItemId: pulse
+  - slotId: wpn_3
+    slotName: Starboard Flight Deck
+    category: 0
+    size: 3
+    mountType: 4
+    localPosition: {x: -0.4, y: -1.5}
     defaultItemId: pulse
   - slotId: def_0
-    slotName: Shield Deflector Bay
+    slotName: Carrier Shield Grid
     category: 1
     size: 1
     mountType: 0
-    localPosition: {x: 0, y: 0}
+    localPosition: {x: 0.5, y: 0}
     defaultItemId: def_shield_booster
-  - slotId: eng_0
-    slotName: Sublight Propulsion Link
-    category: 2
-    size: 1
-    mountType: 0
-    localPosition: {x: -1.2, y: 0}
-    defaultItemId: eng_afterburner
   - slotId: rea_0
-    slotName: Capacitor Power Core
+    slotName: Fleet Capacitor Bank
     category: 3
     size: 1
     mountType: 0
-    localPosition: {x: -0.4, y: 0}
+    localPosition: {x: -1.2, y: 0}
     defaultItemId: rea_flux_capacitor
-  droneHangarCapacity: 0
-  defaultDroneType: 
-  hitboxRadius: 0.8
-  shieldHitboxOffset: 0.3
+  - slotId: aux_0
+    slotName: Escort Drone Foundry
+    category: 4
+    size: 2
+    mountType: 0
+    localPosition: {x: 0, y: 0.7}
+    defaultItemId: aux_escort_dock
+  - slotId: aux_1
+    slotName: Fleet Command Telemetry
+    category: 4
+    size: 2
+    mountType: 0
+    localPosition: {x: 0, y: -0.7}
+    defaultItemId: aux_targeting_comp
+  hitboxRadius: 1.25
+  shieldHitboxOffset: 0.35
   weaponSockets:
-  - {x: 2.5, y: 0}
-  - {x: 2.75, y: 1.12}
-  - {x: 2.75, y: -1.12}
+  - {x: 1.8, y: 1.2}
+  - {x: 1.8, y: -1.2}
+  - {x: -0.4, y: 1.5}
+  - {x: -0.4, y: -1.5}
   thrusterSockets:
-  - {x: -2.75, y: 1.1}
-  - {x: -2.75, y: -1.1}
+  - {x: -2.8, y: 1}
+  - {x: -2.8, y: -1}
+  - {x: -2.9, y: 0}
   prefab: {fileID: 0}
   sprite: {fileID: 21300000, guid: d7104f98124a4d259cbb1156fe811801, type: 3}
   emissiveTexture: {fileID: 2800000, guid: d4c03b6ef9cba394db19e8124d7ede96, type: 3}

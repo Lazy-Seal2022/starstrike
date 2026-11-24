@@ -34,7 +34,7 @@ namespace StarStrike.Platform.Storage
         public string selectedWeapon = "pulse";
         public List<string> shipWeaponEquipped = new List<string>();
         public List<string> shipModulesEquipped = new List<string>();
-        public List<string> unlockedShips = new List<string> { "scout" };
+        public List<string> unlockedShips = new List<string> { "scout", "carrier", "vanguard" };
         public List<string> achievements = new List<string>();
         
         [System.Serializable]
@@ -99,6 +99,15 @@ namespace StarStrike.Platform.Storage
             if (profile.screenShakeIntensity <= 0.001f && profile.masterVolume > 0f)
             {
                 profile.screenShakeIntensity = 1.0f;
+            }
+            if (profile.unlockedShips == null)
+            {
+                profile.unlockedShips = new List<string> { "scout", "carrier", "vanguard" };
+            }
+            else
+            {
+                if (!profile.unlockedShips.Contains("carrier")) profile.unlockedShips.Add("carrier");
+                if (!profile.unlockedShips.Contains("vanguard")) profile.unlockedShips.Add("vanguard");
             }
         }
 
