@@ -2064,17 +2064,13 @@ namespace StarStrike.Editor
                 if (!consumedPart || testHealth.CurrentEnergy != 30f || testHealth.IsEnergyLockedOut)
                     throw new System.Exception("Partial energy consumption should succeed without triggering lockout");
 
-                // Insufficient partial consumption should NOT lock out if energy remains > 0
-                bool consumedOver = testHealth.ConsumeEnergy(50f);
-                if (consumedOver || testHealth.CurrentEnergy != 30f || testHealth.IsEnergyLockedOut)
-                    throw new System.Exception("Insufficient consumption must fail without draining or locking out");
+                // Option 2 (Last Gasp Overdraw): Insufficient partial consumption (need 50, have 30)
+                // Overdraw allows the final shot, drains capacitor to 0, and trips lockout
+                bool overdrawShot = testHealth.ConsumeEnergy(50f);
+                if (!overdrawShot || testHealth.CurrentEnergy != 0f || !testHealth.IsEnergyLockedOut)
+                    throw new System.Exception("Option 2 Overdraw must fire final shot, drain energy to 0, and trigger lockout");
 
-                // Complete depletion triggers lockout
-                bool consumedRest = testHealth.ConsumeEnergy(30f);
-                if (!consumedRest || testHealth.CurrentEnergy != 0f || !testHealth.IsEnergyLockedOut)
-                    throw new System.Exception("Complete depletion of capacitor must trigger lockout state");
-
-                // While locked out, HasEnergy and ConsumeEnergy must return false
+                // Option 1 (Brownout / Lockout Block): While locked out, HasEnergy and ConsumeEnergy must return false
                 if (testHealth.HasEnergy(5f) || testHealth.ConsumeEnergy(5f))
                     throw new System.Exception("HasEnergy and ConsumeEnergy must reject while capacitor is locked out");
 
@@ -2116,6 +2112,14 @@ namespace StarStrike.Editor
                 testHealth.RegenerateMeters(0.6f); // +12 energy -> 52 energy
                 if (testHealth.IsEnergyLockedOut)
                     throw new System.Exception("Lockout should clear once reaching fixed threshold 50");
+
+                // Test Option 1 (Brownout without overdraw): allowOverdraw = false
+                testHealth.allowOverdraw = false;
+                testHealth.ResetMeters();
+                testHealth.ConsumeEnergy(testHealth.CurrentEnergy - 8f); // 8 energy left
+                bool strictDryFire = testHealth.ConsumeEnergy(12f); // 8 < 12, overdraw disabled
+                if (strictDryFire || !testHealth.IsEnergyLockedOut || testHealth.CurrentEnergy != 0f)
+                    throw new System.Exception("Option 1 dry-fire must reject firing, zero capacitor, and immediately trip lockout");
 
                 Object.DestroyImmediate(testGo);
 

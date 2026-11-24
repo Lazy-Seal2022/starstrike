@@ -96,13 +96,27 @@ namespace StarStrike.Tests.EditMode
         }
 
         [Test]
-        public void ConsumeEnergy_FailsWhenInsufficient()
+        public void ConsumeEnergy_FailsWhenInsufficient_WithoutOverdraw()
         {
+            health.allowOverdraw = false;
             health.ConsumeEnergy(75f); // 5 left
             bool consumed = health.ConsumeEnergy(12f);
 
             Assert.IsFalse(consumed);
-            Assert.AreEqual(5f, health.currentEnergy, 0.01f);
+            Assert.AreEqual(0f, health.currentEnergy); // Option 1: Brownout zeros & trips lockout
+            Assert.IsTrue(health.IsEnergyLockedOut);
+        }
+
+        [Test]
+        public void ConsumeEnergy_OverdrawsWhenInsufficient_WithOverdrawEnabled()
+        {
+            health.allowOverdraw = true;
+            health.ConsumeEnergy(75f); // 5 left
+            bool consumed = health.ConsumeEnergy(12f);
+
+            Assert.IsTrue(consumed); // Option 2: Last Gasp shot fires!
+            Assert.AreEqual(0f, health.currentEnergy);
+            Assert.IsTrue(health.IsEnergyLockedOut);
         }
 
         [Test]
@@ -118,12 +132,31 @@ namespace StarStrike.Tests.EditMode
         }
 
         [Test]
-        public void Weapon_TryFire_FailsWhenInsufficientEnergy()
+        public void Weapon_TryFire_FailsWhenInsufficientEnergy_WithoutOverdraw()
         {
+            health.allowOverdraw = false;
             health.ConsumeEnergy(75f); // leaves 5, cost is 12
             bool fired = weapon.TryFire(health);
 
             Assert.IsFalse(fired);
+            Assert.IsTrue(health.IsEnergyLockedOut);
+        }
+
+        [Test]
+        public void Weapon_TryFire_OverdrawsWhenInsufficientEnergy()
+        {
+            health.allowOverdraw = true;
+            health.ConsumeEnergy(75f); // leaves 5, cost is 12
+            bool fired = weapon.TryFire(health);
+
+            Assert.IsTrue(fired);
+            Assert.AreEqual(0f, health.currentEnergy);
+            Assert.IsTrue(health.IsEnergyLockedOut);
+
+            // Follow-up shot blocked by capacitor lockout
+            weapon.ResetCooldown();
+            bool followUpFired = weapon.TryFire(health);
+            Assert.IsFalse(followUpFired);
         }
 
         [Test]

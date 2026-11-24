@@ -57,6 +57,7 @@ namespace StarStrike.UI
         private float maxEnergy = 80f;
         private bool isEnergyLockedOut = false;
         private float energyRecoveryTarget = 0f;
+        private bool justOverdrawn = false;
         private int totalGems = 0;
         private bool isUpgradesOpen = false;
         
@@ -118,6 +119,7 @@ namespace StarStrike.UI
             GameEvents.OnHullChanged += HandleHullChanged;
             GameEvents.OnEnergyChanged += HandleEnergyChanged;
             GameEvents.OnEnergyLockoutChanged += HandleEnergyLockoutChanged;
+            GameEvents.OnCapacitorOverdrawn += HandleCapacitorOverdrawn;
             GameEvents.OnGemCollected += HandleGemCollected;
             GameEvents.OnPlayerEvolved += HandlePlayerEvolved;
             GameEvents.OnGameStarted += HandleGameStarted;
@@ -136,6 +138,7 @@ namespace StarStrike.UI
             GameEvents.OnHullChanged -= HandleHullChanged;
             GameEvents.OnEnergyChanged -= HandleEnergyChanged;
             GameEvents.OnEnergyLockoutChanged -= HandleEnergyLockoutChanged;
+            GameEvents.OnCapacitorOverdrawn -= HandleCapacitorOverdrawn;
             GameEvents.OnGemCollected -= HandleGemCollected;
             GameEvents.OnPlayerEvolved -= HandlePlayerEvolved;
             GameEvents.OnGameStarted -= HandleGameStarted;
@@ -312,6 +315,15 @@ namespace StarStrike.UI
             if (playerStatus != null) playerStatus.HandleEnergyChanged(current, max);
         }
 
+        private void HandleCapacitorOverdrawn()
+        {
+            justOverdrawn = true;
+            if (floatingTextController != null)
+            {
+                floatingTextController.SpawnFloatingNotice("OVERDRAW! CAPACITOR DEPLETED", new Color(1f, 0.35f, 0.1f));
+            }
+        }
+
         private void HandleEnergyLockoutChanged(bool isLocked, float current, float target)
         {
             isEnergyLockedOut = isLocked;
@@ -322,7 +334,11 @@ namespace StarStrike.UI
             {
                 if (isLocked)
                 {
-                    floatingTextController.SpawnFloatingNotice("CAPACITOR DEPLETED // SYSTEM REBOOT", new Color(1f, 0.45f, 0.1f));
+                    if (!justOverdrawn)
+                    {
+                        floatingTextController.SpawnFloatingNotice("CAPACITOR DEPLETED // SYSTEM REBOOT", new Color(1f, 0.45f, 0.1f));
+                    }
+                    justOverdrawn = false;
                 }
                 else
                 {

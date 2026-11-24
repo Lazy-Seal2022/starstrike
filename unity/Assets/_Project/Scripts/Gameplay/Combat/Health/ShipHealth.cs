@@ -14,12 +14,14 @@ namespace StarStrike.Gameplay
         public float maxEnergy = 80f;
         public float energyRegen = 18f;
 
-        [Header("Energy Capacitor Lockout")]
+        [Header("Energy Capacitor Lockout & Overdraw")]
         public bool isEnergyLockedOut = false;
         [Tooltip("Ratio of max energy required to clear lockout (default 0.30 = 30%)")]
         public float energyRecoveryThresholdRatio = 0.30f;
         [Tooltip("If > 0, overrides ratio with an exact energy value to clear lockout")]
         public float fixedEnergyRecoveryThreshold = 0f;
+        [Tooltip("If true, allows a final 'Last Gasp' shot with partial energy, draining the capacitor to 0 and tripping lockout")]
+        public bool allowOverdraw = true;
 
         [Header("Current State")]
         public float currentShield;
@@ -30,6 +32,7 @@ namespace StarStrike.Gameplay
         public float MaxEnergy => maxEnergy;
         public bool IsEnergyLockedOut => isEnergyLockedOut;
         public float EnergyRecoveryThreshold => GetEnergyRecoveryThreshold();
+        public bool AllowOverdraw => allowOverdraw;
         public float CurrentHull => currentHull;
         public float MaxHull => maxHull;
         public float CurrentShield => currentShield;
@@ -42,6 +45,7 @@ namespace StarStrike.Gameplay
         public event Action<float, float> OnHullChanged;
         public event Action<float, float> OnEnergyChanged;
         public event Action<bool, float, float> OnEnergyLockoutChanged;
+        public event Action OnCapacitorOverdrawn;
         public event Action<float> OnDamaged;
         public event Action<Vector2, float> OnShieldImpact;
         public event Action OnDied;
@@ -249,6 +253,11 @@ namespace StarStrike.Gameplay
 
         public bool ConsumeEnergy(float amount)
         {
+            return ConsumeEnergy(amount, allowOverdraw);
+        }
+
+        public bool ConsumeEnergy(float amount, bool canOverdraw)
+        {
             if (isEnergyLockedOut) return false;
 
             if (currentEnergy >= amount)
@@ -263,12 +272,32 @@ namespace StarStrike.Gameplay
                 return true;
             }
 
-            if (currentEnergy <= 0.001f)
+            // Option 2 (Last Gasp Overdraw):
+            // If there is any remaining capacitor energy, allow this final shot, drain capacitor to 0, and enter lockout
+            if (canOverdraw && currentEnergy > 0.001f)
             {
                 currentEnergy = 0f;
+                TriggerCapacitorOverdrawn();
                 TriggerEnergyLockout(true);
+                NotifyChanges();
+                return true;
             }
+
+            // Option 1 (Dry Fire / Brownout):
+            // Attempted to draw energy with zero/insufficient energy without overdraw -> trip circuit breaker into lockout
+            currentEnergy = 0f;
+            TriggerEnergyLockout(true);
+            NotifyChanges();
             return false;
+        }
+
+        private void TriggerCapacitorOverdrawn()
+        {
+            OnCapacitorOverdrawn?.Invoke();
+            if (isPlayer)
+            {
+                GameEvents.TriggerCapacitorOverdrawn();
+            }
         }
 
         private void NotifyChanges()

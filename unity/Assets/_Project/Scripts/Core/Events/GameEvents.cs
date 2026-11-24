@@ -9,6 +9,7 @@ namespace StarStrike.Core
         public static event Action<float, float> OnHullChanged;   // current, max
         public static event Action<float, float> OnEnergyChanged; // current, max
         public static event Action<bool, float, float> OnEnergyLockoutChanged; // isLockedOut, currentEnergy, recoveryTarget
+        public static event Action OnCapacitorOverdrawn;
         public static event Action<float> OnPlayerDamaged;        // damageRatio (0..1)
         public static event Action<int, int> OnGemCollected;     // amount, total
         public static event Action<string> OnPlayerEvolved;       // shipId
@@ -19,6 +20,7 @@ namespace StarStrike.Core
         public static void TriggerHullChanged(float current, float max) => OnHullChanged?.Invoke(current, max);
         public static void TriggerEnergyChanged(float current, float max) => OnEnergyChanged?.Invoke(current, max);
         public static void TriggerEnergyLockoutChanged(bool isLockedOut, float currentEnergy, float recoveryTarget) => OnEnergyLockoutChanged?.Invoke(isLockedOut, currentEnergy, recoveryTarget);
+        public static void TriggerCapacitorOverdrawn() => OnCapacitorOverdrawn?.Invoke();
         public static void TriggerPlayerDamaged(float damageRatio) => OnPlayerDamaged?.Invoke(damageRatio);
         public static void TriggerGemCollected(int amount, int total) => OnGemCollected?.Invoke(amount, total);
         public static void TriggerPlayerEvolved(string shipId) => OnPlayerEvolved?.Invoke(shipId);
