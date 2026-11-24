@@ -31,6 +31,7 @@ namespace StarStrike.Gameplay
         private static Sprite cachedMissile;
         private static Sprite cachedPellet;
         private static Sprite cachedGatlingTracer;
+        private static Sprite cachedEscortDrone;
         private static Sprite cachedShieldRipple;
         private static Sprite cachedShieldDome;
         private static Sprite cachedWeaponPulse;
@@ -73,6 +74,7 @@ namespace StarStrike.Gameplay
             cachedMissile = null;
             cachedPellet = null;
             cachedGatlingTracer = null;
+            cachedEscortDrone = null;
         }
 
         private static Sprite GetCachedOrGenerate(ref Sprite cache, System.Func<Sprite> generator, bool forceNew = false)
@@ -240,6 +242,16 @@ namespace StarStrike.Gameplay
         public static Sprite GeneratePelletSprite()
         {
             return GenerateCircle(new Color(1f, 0.8f, 0.2f), 16);
+        }
+
+        public static Sprite GenerateEscortDroneSprite()
+        {
+            return GenerateShip(new Color(0.38f, 0.42f, 0.46f), new Color(0.0f, 0.85f, 1.0f), 32, 5, false);
+        }
+
+        public static Sprite GetEscortDroneSprite(bool forceProcedural = false)
+        {
+            return GetCachedOrGenerate(ref cachedEscortDrone, GenerateEscortDroneSprite, forceProcedural);
         }
 
         public static Sprite GetShipSprite(string type, bool forceProcedural = false)
