@@ -3,10 +3,10 @@
 ## Overview
 Player and enemy ship weaponry, projectile collision systems, ship durability, and ability execution.
 
-## Subdirectories
+## Structure
+- `ShipHealth.cs`: Shield and hull durability management, damage mitigation, and death dispatch.
 - **[Weapons](./Weapons/README.md)**: Weapon implementations (`ShipWeapon`, `ScattergunWeapon`, `HomingMissileWeapon`, `ContinuousBeamWeapon`) and `ShipWeaponController`.
 - **[Projectiles](./Projectiles/README.md)**: Physical ammunition bodies (`LaserProjectile`, `MissileProjectile`, `ShockwaveProjectile`).
-- **[Health](./Health/README.md)**: Shield and hull durability management (`ShipHealth`).
 - **[Skills](./Skills/README.md)**: Active and passive ability controllers and behaviors (`ShipSkillController`, `ForwardShockwaveBehavior`, `ReactiveBarrierPassiveBehavior`).
 
 ## Invariants

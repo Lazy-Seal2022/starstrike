@@ -4,14 +4,11 @@
 Pure C# data models, enumerations, stat value containers, and ScriptableObject schemas for weapons, ships, enemies, asteroids, loot, and game modes.
 
 ## Subdirectories
-- **Combat/**: `CombatConfig.cs`, `EnemyDefinition.cs`, `BossConfig.cs`
-- **Ships/**: `ShipDefinition.cs`, `ShipStats.cs`, `StatValues.cs`, `FlightConfig.cs`
+- **Combat/**: `CombatConfig.cs`, `EnemyDefinition.cs`, `BossConfig.cs`, `WaveDefinition.cs`
+- **Ships/**: `ShipDefinition.cs`, `ShipStats.cs`, `StatValues.cs`, `FlightConfig.cs`, `ShipArchetypeFactory.cs`, `ShipClass.cs`, `EquipmentModule.cs`
 - **Skills/**: `SkillDefinition.cs`, `SkillSlotType.cs`
-- **Asteroids/**: `AsteroidConfig.cs`
-- **Loot/**: `LootConfig.cs`
-- **Game/**: `GameConfig.cs`, `GameMode.cs`, `RunSummary.cs`, `UIThemeConfig.cs`
-- **Audio/**: `AudioConfig.cs`
-- **Waves/**: `WaveDefinition.cs`, `WaveConfig.cs`, `SpawnEntry.cs`
+- **Environment/**: `AsteroidConfig.cs`, `LootConfig.cs`
+- **Game/**: `GameConfig.cs`, `GameMode.cs`, `RunSummary.cs`, `UIThemeConfig.cs`, `AudioConfig.cs`
 
 ## Invariants
 - All classes remain data-pure with zero dependencies on scene GameObjects or MonoBehaviours.
