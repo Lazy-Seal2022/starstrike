@@ -47,6 +47,7 @@ namespace StarStrike.Core
                 new ShipEquipmentSlotDefinition("wpn_3", "Starboard Sponson Scattergun", EquipmentSlotCategory.Weapon, new Vector2(0.40f, -1.40f), SocketSize.Medium, SocketMountType.BroadsideRight, "scattergun"),
                 new ShipEquipmentSlotDefinition("wpn_4", "Aft Point Defense Turret", EquipmentSlotCategory.Weapon, new Vector2(-1.40f, 0f), SocketSize.Light, SocketMountType.Turret, "gatling"),
                 new ShipEquipmentSlotDefinition("def_0", "Phase Deflector Shielding", EquipmentSlotCategory.Defense, new Vector2(0.50f, 0f), SocketSize.Heavy, SocketMountType.FixedForward, "def_phase_deflector"),
+                new ShipEquipmentSlotDefinition("eng_0", "High-Output Sublight Thrusters", EquipmentSlotCategory.Engine, new Vector2(-1.80f, 0f), SocketSize.Heavy, SocketMountType.FixedForward, "eng_afterburner"),
                 new ShipEquipmentSlotDefinition("rea_0", "Cruiser Antimatter Drive", EquipmentSlotCategory.Reactor, new Vector2(-0.90f, 0f), SocketSize.Heavy, SocketMountType.FixedForward, "rea_tachyon_core"),
                 new ShipEquipmentSlotDefinition("aux_0", "Fire Control Targeting Grid", EquipmentSlotCategory.Auxiliary, new Vector2(1.80f, 0f), SocketSize.Medium, SocketMountType.FixedForward, "aux_targeting_comp")
             };

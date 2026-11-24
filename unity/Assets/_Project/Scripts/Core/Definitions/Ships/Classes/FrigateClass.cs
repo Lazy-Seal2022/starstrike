@@ -51,5 +51,39 @@ namespace StarStrike.Core
                 new Vector2(-1.50f, -0.40f)
             };
         }
+
+        public static void ConfigureMiner(ShipDefinition def)
+        {
+            def.id = "miner";
+            def.shipName = "Goliath Miner";
+            def.shipClass = ShipClass.Frigate;
+            def.tier = 2;
+            def.maxUpgradeLevel = 5;
+            def.hitboxRadius = 0.65f;
+            def.shieldHitboxOffset = 0.22f;
+            def.turretTraverseSpeed = 160f;
+            def.baseStats = new StatValues
+            {
+                shieldCapacity = 220f,
+                shieldRegen = 16f,
+                hullCapacity = 180f,
+                energyCapacity = 150f,
+                energyRegen = 20f,
+                pulseDamage = 40f,
+                pulseSpeed = 520f,
+                speed = 210f,
+                agility = 3.5f
+            };
+            def.hardpointSockets = new[]
+            {
+                new ShipSocketDefinition("Miner_Port", new Vector2(1.25f, 0.85f), SocketSize.Medium, SocketMountType.FixedForward, 0f, "pulse"),
+                new ShipSocketDefinition("Miner_Starboard", new Vector2(1.25f, -0.85f), SocketSize.Medium, SocketMountType.FixedForward, 0f, "pulse")
+            };
+            def.thrusterSockets = new[]
+            {
+                new Vector2(-1.4f, 0.4f),
+                new Vector2(-1.4f, -0.4f)
+            };
+        }
     }
 }

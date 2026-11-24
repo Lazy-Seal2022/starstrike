@@ -146,5 +146,23 @@ namespace StarStrike.Tests.EditMode
             Assert.AreEqual("battleship", battleship.id);
             Assert.AreEqual(ShipClass.Battleship, battleship.shipClass);
         }
+
+        [Test]
+        public void ShipArchetypeFactory_CreateShipById_ConfiguresAllVariantsCorrectly()
+        {
+            string[] shipIds = new[] { "scout", "fighter", "interceptor", "phantom", "miner", "frigate", "destroyer", "cruiser", "carrier", "vanguard", "juggernaut", "battleship" };
+
+            foreach (var id in shipIds)
+            {
+                var ship = ShipArchetypeFactory.CreateShipById(id);
+                Assert.IsNotNull(ship, $"Ship '{id}' must not be null");
+                Assert.AreEqual(id, ship.id, $"Ship id mismatch for '{id}'");
+                Assert.IsNotNull(ship.baseStats);
+                Assert.Greater(ship.baseStats.hullCapacity, 0f);
+                Assert.Greater(ship.baseStats.shieldCapacity, 0f);
+                Assert.IsNotNull(ship.weaponSockets);
+                Assert.GreaterOrEqual(ship.weaponSockets.Length, 1);
+            }
+        }
     }
 }

@@ -62,5 +62,46 @@ namespace StarStrike.Core
                 new Vector2(-3.60f, -0.40f)
             };
         }
+
+        public static void ConfigureJuggernaut(ShipDefinition def)
+        {
+            def.id = "juggernaut";
+            def.shipName = "Titan Juggernaut";
+            def.shipClass = ShipClass.Battleship;
+            def.tier = 3;
+            def.maxUpgradeLevel = 6;
+            def.hitboxRadius = 0.85f;
+            def.shieldHitboxOffset = 0.30f;
+            def.canAimIndependently = true;
+            def.turretTraverseSpeed = 110f;
+            def.collisionArmorReduction = 0.25f;
+            def.cameraOrthoSize = 12f;
+            def.hullMass = 4.5f;
+            def.baseStats = new StatValues
+            {
+                shieldCapacity = 400f,
+                shieldRegen = 25f,
+                hullCapacity = 300f,
+                energyCapacity = 200f,
+                energyRegen = 25f,
+                pulseDamage = 75f,
+                pulseSpeed = 480f,
+                speed = 180f,
+                agility = 2.5f
+            };
+            def.hardpointSockets = new[]
+            {
+                new ShipSocketDefinition("Juggernaut_Spinal", new Vector2(2.75f, 0f), SocketSize.Spinal, SocketMountType.Spinal, 0f, "pulse"),
+                new ShipSocketDefinition("Juggernaut_PortTurret", new Vector2(0.70f, 1.50f), SocketSize.Heavy, SocketMountType.Turret, 0f, "pulse"),
+                new ShipSocketDefinition("Juggernaut_StarboardTurret", new Vector2(0.70f, -1.50f), SocketSize.Heavy, SocketMountType.Turret, 0f, "pulse")
+            };
+            def.thrusterSockets = new[]
+            {
+                new Vector2(-2.75f, 0.85f),
+                new Vector2(-2.75f, 0.30f),
+                new Vector2(-2.75f, -0.30f),
+                new Vector2(-2.75f, -0.85f)
+            };
+        }
     }
 }

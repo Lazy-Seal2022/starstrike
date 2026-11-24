@@ -223,109 +223,13 @@ namespace StarStrike.Gameplay
 
         public static ShipDefinition CreateDefaultShipTree()
         {
-            var scout = ScriptableObject.CreateInstance<ShipDefinition>();
-            scout.id = "scout";
-            scout.shipName = "Delta Scout";
-            scout.tier = 1;
-            scout.maxUpgradeLevel = 4;
-            scout.weaponSlots = 1;
-            scout.hitboxRadius = 0.55f;
-            scout.weaponSockets = new Vector2[] { new Vector2(1.55f, 0f) };
-            scout.thrusterSockets = new Vector2[] { new Vector2(-1.55f, 0f) };
-            scout.baseStats = new StatValues { hullCapacity = 80, shieldCapacity = 100, shieldRegen = 8, energyCapacity = 80, energyRegen = 18, pulseDamage = 18, pulseSpeed = 600, speed = 260, agility = 4.5f };
-
-            var fighter = ScriptableObject.CreateInstance<ShipDefinition>();
-            fighter.id = "fighter";
-            fighter.shipName = "Ares Fighter";
-            fighter.tier = 2;
-            fighter.maxUpgradeLevel = 5;
-            fighter.weaponSlots = 2;
-            fighter.hitboxRadius = 0.55f;
-            fighter.weaponSockets = new Vector2[] { new Vector2(0.35f, 1.25f), new Vector2(0.35f, -1.25f) };
-            fighter.thrusterSockets = new Vector2[] { new Vector2(-1.5f, 0.5f), new Vector2(-1.5f, -0.5f) };
-            fighter.baseStats = new StatValues { hullCapacity = 120, shieldCapacity = 150, shieldRegen = 12, energyCapacity = 120, energyRegen = 24, pulseDamage = 28, pulseSpeed = 680, speed = 310, agility = 5.0f };
-
-            var miner = ScriptableObject.CreateInstance<ShipDefinition>();
-            miner.id = "miner";
-            miner.shipName = "Goliath Miner";
-            miner.tier = 2;
-            miner.maxUpgradeLevel = 5;
-            miner.weaponSlots = 2;
-            miner.hitboxRadius = 0.65f;
-            miner.weaponSockets = new Vector2[] { new Vector2(1.25f, 0.85f), new Vector2(1.25f, -0.85f) };
-            miner.thrusterSockets = new Vector2[] { new Vector2(-1.4f, 0.4f), new Vector2(-1.4f, -0.4f) };
-            miner.baseStats = new StatValues { hullCapacity = 180, shieldCapacity = 220, shieldRegen = 16, energyCapacity = 150, energyRegen = 20, pulseDamage = 40, pulseSpeed = 520, speed = 210, agility = 3.5f };
-
-            var interceptor = ScriptableObject.CreateInstance<ShipDefinition>();
-            interceptor.id = "interceptor";
-            interceptor.shipName = "Viper Interceptor";
-            interceptor.tier = 3;
-            interceptor.maxUpgradeLevel = 6;
-            interceptor.weaponSlots = 2;
-            interceptor.hitboxRadius = 0.50f;
-            interceptor.weaponSockets = new Vector2[] { new Vector2(0.45f, 1.15f), new Vector2(0.45f, -1.15f) };
-            interceptor.thrusterSockets = new Vector2[] { new Vector2(-1.5f, 0f) };
-            interceptor.baseStats = new StatValues { hullCapacity = 100, shieldCapacity = 180, shieldRegen = 15, energyCapacity = 140, energyRegen = 30, pulseDamage = 35, pulseSpeed = 800, speed = 400, agility = 6.5f };
-
-            var juggernaut = ScriptableObject.CreateInstance<ShipDefinition>();
-            juggernaut.id = "juggernaut";
-            juggernaut.shipName = "Titan Juggernaut";
-            juggernaut.tier = 3;
-            juggernaut.maxUpgradeLevel = 6;
-            juggernaut.weaponSlots = 3;
-            juggernaut.hitboxRadius = 0.85f;
-            juggernaut.shieldHitboxOffset = 0.30f;
-            juggernaut.weaponSockets = new Vector2[] {
-                new Vector2(2.75f, 0f),      // Central spinal cannon
-                new Vector2(0.70f, 1.50f),   // Port sponson turret
-                new Vector2(0.70f, -1.50f)   // Starboard sponson turret
-            };
-            juggernaut.thrusterSockets = new Vector2[] {
-                new Vector2(-2.75f, 0.85f),
-                new Vector2(-2.75f, 0.30f),
-                new Vector2(-2.75f, -0.30f),
-                new Vector2(-2.75f, -0.85f)
-            };
-            juggernaut.baseStats = new StatValues { hullCapacity = 300, shieldCapacity = 400, shieldRegen = 25, energyCapacity = 200, energyRegen = 25, pulseDamage = 75, pulseSpeed = 480, speed = 180, agility = 2.5f };
-
-            var phantom = ScriptableObject.CreateInstance<ShipDefinition>();
-            phantom.id = "phantom";
-            phantom.shipName = "Shadow Phantom";
-            phantom.tier = 3;
-            phantom.maxUpgradeLevel = 6;
-            phantom.weaponSlots = 2;
-            phantom.hitboxRadius = 0.50f;
-            phantom.weaponSockets = new Vector2[] { new Vector2(0.50f, 0.80f), new Vector2(0.50f, -0.80f) };
-            phantom.thrusterSockets = new Vector2[] { new Vector2(-1.4f, 0f) };
-            phantom.baseStats = new StatValues { hullCapacity = 110, shieldCapacity = 160, shieldRegen = 16, energyCapacity = 160, energyRegen = 35, pulseDamage = 45, pulseSpeed = 850, speed = 420, agility = 7.0f };
-
-            var vanguard = ScriptableObject.CreateInstance<ShipDefinition>();
-            vanguard.id = "vanguard";
-            vanguard.shipName = "Vanguard Carrier";
-            vanguard.tier = 3;
-            vanguard.shipClass = ShipClass.Carrier;
-            vanguard.maxUpgradeLevel = 6;
-            vanguard.weaponSlots = 3;
-            vanguard.hitboxRadius = 0.80f;
-            vanguard.shieldHitboxOffset = 0.30f;
-            vanguard.canAimIndependently = true;
-            vanguard.turretTraverseSpeed = 130f;
-            vanguard.droneHangarCapacity = 4;
-            vanguard.defaultDroneType = "interceptor_drone";
-            vanguard.collisionArmorReduction = 0.25f;
-            vanguard.cameraOrthoSize = 13f;
-            vanguard.hullMass = 6f;
-            vanguard.weaponSockets = new Vector2[] {
-                new Vector2(2.50f, 0f),
-                new Vector2(2.75f, 1.12f),
-                new Vector2(2.75f, -1.12f)
-            };
-            vanguard.thrusterSockets = new Vector2[] {
-                new Vector2(-2.80f, 1.0f),
-                new Vector2(-2.80f, -1.0f),
-                new Vector2(-2.90f, 0f)
-            };
-            vanguard.baseStats = new StatValues { hullCapacity = 400, shieldCapacity = 280, shieldRegen = 18, energyCapacity = 220, energyRegen = 25, pulseDamage = 30, pulseSpeed = 560, speed = 160, agility = 2.6f };
+            var scout = ShipArchetypeFactory.CreateShipById("scout");
+            var fighter = ShipArchetypeFactory.CreateShipById("fighter");
+            var miner = ShipArchetypeFactory.CreateShipById("miner");
+            var interceptor = ShipArchetypeFactory.CreateShipById("interceptor");
+            var juggernaut = ShipArchetypeFactory.CreateShipById("juggernaut");
+            var phantom = ShipArchetypeFactory.CreateShipById("phantom");
+            var vanguard = ShipArchetypeFactory.CreateShipById("vanguard");
 
             scout.evolvesTo = new ShipDefinition[] { fighter, miner };
             fighter.evolvesTo = new ShipDefinition[] { interceptor, phantom };

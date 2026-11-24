@@ -5,7 +5,7 @@ Pure C# data models, enumerations, stat value containers, and ScriptableObject s
 
 ## Subdirectories
 - **Combat/**: `CombatConfig.cs`, `EnemyDefinition.cs`, `BossConfig.cs`, `WaveDefinition.cs`
-- **Ships/**: `ShipDefinition.cs`, `ShipStats.cs`, `StatValues.cs`, `FlightConfig.cs`, `ShipArchetypeFactory.cs`, `ShipClass.cs`, `EquipmentModule.cs`
+- **Ships/**: `ShipDefinition.cs`, `StatValues.cs`, `FlightConfig.cs`, `ShipArchetypeFactory.cs`, `ShipClass.cs`, `EquipmentModule.cs`, `Classes/` (modular class builders)
 - **Skills/**: `SkillDefinition.cs`, `SkillSlotType.cs`
 - **Environment/**: `AsteroidConfig.cs`, `LootConfig.cs`
 - **Game/**: `GameConfig.cs`, `GameMode.cs`, `RunSummary.cs`, `UIThemeConfig.cs`, `AudioConfig.cs`
