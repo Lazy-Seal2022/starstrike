@@ -60,13 +60,26 @@ namespace StarStrike.Gameplay
         public void ResetCooldown() => lastFiredTime = -999f;
         public void StopFiring() { }
 
+        private bool IsMountedOnSocket()
+        {
+            if (transform.parent != null && (transform.parent.name.StartsWith("SocketMount_") || transform.name.StartsWith("Mounted_") || transform.name.StartsWith("Weapon_")))
+            {
+                return true;
+            }
+            return false;
+        }
+
         private void Awake()
         {
             if (combatConfig == null) combatConfig = Resources.Load<CombatConfig>("Data/CombatConfig");
             if (combatConfig == null) combatConfig = ScriptableObject.CreateInstance<CombatConfig>();
 
             rb = GetComponent<Rigidbody2D>();
-            if (CompareTag("Player") || gameObject.name == "Player")
+            if (rb == null) rb = GetComponentInParent<Rigidbody2D>();
+
+            if (CompareTag("Player") || gameObject.name == "Player" ||
+                (transform.root != null && (transform.root.CompareTag("Player") || transform.root.name == "Player")) ||
+                (transform.parent != null && (transform.parent.CompareTag("Player") || transform.parent.name == "Player")))
             {
                 isPlayer = true;
             }
@@ -201,6 +214,13 @@ namespace StarStrike.Gameplay
 
         public Vector2[] GetMuzzleWorldPositions()
         {
+            if (IsMountedOnSocket())
+            {
+                var muzzleTransform = transform.Find("MuzzlePoint");
+                Vector2 localMuzzle = muzzleTransform != null ? (Vector2)muzzleTransform.localPosition : new Vector2(0.5f, 0f);
+                return new Vector2[] { (Vector2)transform.TransformPoint(localMuzzle) };
+            }
+
             if (customSockets != null && customSockets.Length > 0)
             {
                 Vector2[] worlds = new Vector2[customSockets.Length];

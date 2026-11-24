@@ -31,5 +31,13 @@ namespace StarStrike.Core
         public float muzzleForwardOffset = 1.55f;
         public float dualWeaponSpread = 0.3f;
         public float bulletInaccuracyAngle = 2.5f;
+
+        [Header("Weapon Mount Prefabs")]
+        public GameObject pulseLaserWeaponPrefab;
+        public GameObject scattergunWeaponPrefab;
+        public GameObject homingMissileWeaponPrefab;
+        public GameObject continuousBeamWeaponPrefab;
+        public GameObject gatlingWeaponPrefab;
+        public GameObject socketMountPrefab;
     }
 }

@@ -54,6 +54,9 @@ namespace StarStrike.Editor
             CreateNetworkLaserPrefab();
             CreateNetworkPlayerShipPrefab();
 
+            // 7. Weapon Prefabs & Sockets
+            CreateWeaponPrefabs();
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
@@ -598,9 +601,217 @@ namespace StarStrike.Editor
             Object.DestroyImmediate(go);
         }
 
+        private static void SaveWeaponPrefab(GameObject go, string weaponName)
+        {
+            string path = $"Assets/_Project/Prefabs/Weapons/{weaponName}.prefab";
+            string resPath = $"Assets/_Project/Resources/Prefabs/Weapons/{weaponName}.prefab";
+            PrefabUtility.SaveAsPrefabAsset(go, path);
+            PrefabUtility.SaveAsPrefabAsset(go, resPath);
+            Object.DestroyImmediate(go);
+        }
+
+        private static void CreateWeaponPrefabs()
+        {
+            EnsureFolder("Assets/_Project", "Prefabs");
+            EnsureFolder("Assets/_Project/Prefabs", "Weapons");
+            EnsureFolder("Assets/_Project", "Resources");
+            EnsureFolder("Assets/_Project/Resources", "Prefabs");
+            EnsureFolder("Assets/_Project/Resources/Prefabs", "Weapons");
+
+            var combatConfig = AssetDatabase.LoadAssetAtPath<CombatConfig>("Assets/_Project/Resources/Data/CombatConfig.asset");
+
+            CreateWeaponPulseLaserPrefab(combatConfig);
+            CreateWeaponScattergunPrefab(combatConfig);
+            CreateWeaponHomingMissilesPrefab(combatConfig);
+            CreateWeaponContinuousBeamPrefab(combatConfig);
+            CreateWeaponRotaryGatlingPrefab(combatConfig);
+            CreateWeaponSocketMountPrefab(combatConfig);
+
+            if (combatConfig != null)
+            {
+                combatConfig.pulseLaserWeaponPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Weapons/Weapon_PulseLaser.prefab");
+                combatConfig.scattergunWeaponPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Weapons/Weapon_Scattergun.prefab");
+                combatConfig.homingMissileWeaponPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Weapons/Weapon_HomingMissiles.prefab");
+                combatConfig.continuousBeamWeaponPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Weapons/Weapon_ContinuousBeam.prefab");
+                combatConfig.gatlingWeaponPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Weapons/Weapon_RotaryGatling.prefab");
+                combatConfig.socketMountPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Weapons/Weapon_SocketMount.prefab");
+                EditorUtility.SetDirty(combatConfig);
+            }
+        }
+
+        private static void CreateWeaponPulseLaserPrefab(CombatConfig combatConfig)
+        {
+            GameObject go = new GameObject("Weapon_PulseLaser");
+            var weapon = go.AddComponent<ShipWeapon>();
+            weapon.combatConfig = combatConfig;
+            weapon.pulseDamage = 18f;
+            weapon.pulseSpeed = 22f;
+            weapon.fireRate = 0.22f;
+            weapon.energyCost = 6f;
+            weapon.inaccuracyAngle = 2.5f;
+            weapon.laserPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Projectiles/PlayerLaser.prefab");
+
+            var visual = new GameObject("Visual");
+            visual.transform.SetParent(go.transform, false);
+            visual.transform.localPosition = Vector3.zero;
+            visual.transform.localRotation = Quaternion.Euler(0f, 0f, -90f);
+            visual.transform.localScale = new Vector3(0.38f, 0.38f, 1f);
+            var sr = visual.AddComponent<SpriteRenderer>();
+            sr.sprite = LoadArtSprite("Weapons/Weapon_Pulse.png");
+            sr.sortingOrder = 3;
+
+            var muzzle = new GameObject("MuzzlePoint");
+            muzzle.transform.SetParent(go.transform, false);
+            muzzle.transform.localPosition = new Vector3(0.5f, 0f, 0f);
+
+            SaveWeaponPrefab(go, "Weapon_PulseLaser");
+        }
+
+        private static void CreateWeaponScattergunPrefab(CombatConfig combatConfig)
+        {
+            GameObject go = new GameObject("Weapon_Scattergun");
+            var weapon = go.AddComponent<ScattergunWeapon>();
+            weapon.combatConfig = combatConfig;
+            weapon.pelletDamage = 10f;
+            weapon.pelletSpeed = 26f;
+            weapon.basePellets = 5;
+            weapon.spreadAngle = 32f;
+            weapon.fireRate = 0.48f;
+            weapon.energyCost = 14f;
+            weapon.pelletPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Projectiles/PlayerScatterPellet.prefab");
+
+            var visual = new GameObject("Visual");
+            visual.transform.SetParent(go.transform, false);
+            visual.transform.localPosition = Vector3.zero;
+            visual.transform.localRotation = Quaternion.Euler(0f, 0f, -90f);
+            visual.transform.localScale = new Vector3(0.38f, 0.38f, 1f);
+            var sr = visual.AddComponent<SpriteRenderer>();
+            sr.sprite = LoadArtSprite("Weapons/Weapon_Scattergun.png");
+            sr.sortingOrder = 3;
+
+            var muzzle = new GameObject("MuzzlePoint");
+            muzzle.transform.SetParent(go.transform, false);
+            muzzle.transform.localPosition = new Vector3(0.5f, 0f, 0f);
+
+            SaveWeaponPrefab(go, "Weapon_Scattergun");
+        }
+
+        private static void CreateWeaponHomingMissilesPrefab(CombatConfig combatConfig)
+        {
+            GameObject go = new GameObject("Weapon_HomingMissiles");
+            var weapon = go.AddComponent<HomingMissileWeapon>();
+            weapon.missileDamage = 45f;
+            weapon.missileSpeed = 16f;
+            weapon.fireRate = 0.70f;
+            weapon.energyCost = 16f;
+            weapon.missilePrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Projectiles/PlayerMissile.prefab");
+
+            var visual = new GameObject("Visual");
+            visual.transform.SetParent(go.transform, false);
+            visual.transform.localPosition = Vector3.zero;
+            visual.transform.localRotation = Quaternion.Euler(0f, 0f, -90f);
+            visual.transform.localScale = new Vector3(0.38f, 0.38f, 1f);
+            var sr = visual.AddComponent<SpriteRenderer>();
+            sr.sprite = LoadArtSprite("Weapons/Weapon_Missile.png");
+            sr.sortingOrder = 3;
+
+            var muzzle = new GameObject("MuzzlePoint");
+            muzzle.transform.SetParent(go.transform, false);
+            muzzle.transform.localPosition = new Vector3(0.5f, 0f, 0f);
+
+            SaveWeaponPrefab(go, "Weapon_HomingMissiles");
+        }
+
+        private static void CreateWeaponContinuousBeamPrefab(CombatConfig combatConfig)
+        {
+            GameObject go = new GameObject("Weapon_ContinuousBeam");
+            var weapon = go.AddComponent<ContinuousBeamWeapon>();
+            weapon.damagePerSecond = 75f;
+            weapon.energyCostPerSecond = 22f;
+            weapon.maxRange = 16f;
+            weapon.fireRate = 0.05f;
+            weapon.beamColor = new Color(0.2f, 0.95f, 1f, 0.9f);
+
+            var visual = new GameObject("Visual");
+            visual.transform.SetParent(go.transform, false);
+            visual.transform.localPosition = Vector3.zero;
+            visual.transform.localRotation = Quaternion.Euler(0f, 0f, -90f);
+            visual.transform.localScale = new Vector3(0.38f, 0.38f, 1f);
+            var sr = visual.AddComponent<SpriteRenderer>();
+            sr.sprite = LoadArtSprite("Weapons/Weapon_Beam.png");
+            sr.sortingOrder = 3;
+
+            var muzzle = new GameObject("MuzzlePoint");
+            muzzle.transform.SetParent(go.transform, false);
+            muzzle.transform.localPosition = new Vector3(0.5f, 0f, 0f);
+
+            SaveWeaponPrefab(go, "Weapon_ContinuousBeam");
+        }
+
+        private static void CreateWeaponRotaryGatlingPrefab(CombatConfig combatConfig)
+        {
+            GameObject go = new GameObject("Weapon_RotaryGatling");
+            var weapon = go.AddComponent<GatlingWeapon>();
+            weapon.combatConfig = combatConfig;
+            weapon.bulletDamage = 8.5f;
+            weapon.bulletSpeed = 34f;
+            weapon.baseFireRate = 0.10f;
+            weapon.maxFireRate = 0.055f;
+            weapon.energyCost = 1.6f;
+            weapon.baseInaccuracyAngle = 3.2f;
+            weapon.maxInaccuracyAngle = 7.5f;
+            weapon.spoolUpTime = 0.65f;
+            weapon.spoolDecayTime = 0.4f;
+            weapon.tracerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Projectiles/PlayerGatlingBullet.prefab");
+
+            var visual = new GameObject("Visual");
+            visual.transform.SetParent(go.transform, false);
+            visual.transform.localPosition = Vector3.zero;
+            visual.transform.localRotation = Quaternion.Euler(0f, 0f, -90f);
+            visual.transform.localScale = new Vector3(0.38f, 0.38f, 1f);
+            var sr = visual.AddComponent<SpriteRenderer>();
+            sr.sprite = LoadArtSprite("Weapons/Weapon_Gatling.png");
+            sr.sortingOrder = 3;
+
+            var muzzle = new GameObject("MuzzlePoint");
+            muzzle.transform.SetParent(go.transform, false);
+            muzzle.transform.localPosition = new Vector3(0.5f, 0f, 0f);
+
+            SaveWeaponPrefab(go, "Weapon_RotaryGatling");
+        }
+
+        private static void CreateWeaponSocketMountPrefab(CombatConfig combatConfig)
+        {
+            GameObject go = new GameObject("Weapon_SocketMount");
+            var visual = new GameObject("Visual");
+            visual.transform.SetParent(go.transform, false);
+            visual.transform.localPosition = Vector3.zero;
+            visual.transform.localRotation = Quaternion.Euler(0f, 0f, -90f);
+            visual.transform.localScale = new Vector3(0.38f, 0.38f, 1f);
+            var sr = visual.AddComponent<SpriteRenderer>();
+            sr.sprite = LoadArtSprite("Weapons/Weapon_Socket.png");
+            sr.sortingOrder = 2;
+
+            SaveWeaponPrefab(go, "Weapon_SocketMount");
+        }
+
         private static void EnsureFolder(string parent, string name)
         {
             string full = $"{parent}/{name}";
+            try
+            {
+                if (full.StartsWith("Assets/"))
+                {
+                    string sub = full.Substring("Assets/".Length);
+                    string diskPath = System.IO.Path.Combine(Application.dataPath, sub);
+                    if (!System.IO.Directory.Exists(diskPath))
+                    {
+                        System.IO.Directory.CreateDirectory(diskPath);
+                    }
+                }
+            }
+            catch {}
+
             if (!AssetDatabase.IsValidFolder(full))
             {
                 AssetDatabase.CreateFolder(parent, name);
@@ -1704,6 +1915,62 @@ namespace StarStrike.Editor
             catch (System.Exception ex)
             {
                 Debug.LogError($"[FAIL] 23. Weapon Archetypes verification failed: {ex.Message}");
+                failed++;
+            }
+
+            // 24. Verify Modular Weapon Prefabs & Sockets
+            try
+            {
+                CreateWeaponPrefabs();
+
+                string[] expectedPrefabs = new string[]
+                {
+                    "Assets/_Project/Prefabs/Weapons/Weapon_PulseLaser.prefab",
+                    "Assets/_Project/Prefabs/Weapons/Weapon_Scattergun.prefab",
+                    "Assets/_Project/Prefabs/Weapons/Weapon_HomingMissiles.prefab",
+                    "Assets/_Project/Prefabs/Weapons/Weapon_ContinuousBeam.prefab",
+                    "Assets/_Project/Prefabs/Weapons/Weapon_RotaryGatling.prefab",
+                    "Assets/_Project/Prefabs/Weapons/Weapon_SocketMount.prefab"
+                };
+
+                foreach (var path in expectedPrefabs)
+                {
+                    var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                    if (prefab == null)
+                        throw new System.Exception($"Prefab missing at {path}");
+                }
+
+                // Verify loading via ShipWeaponController
+                var pulsePrefab = ShipWeaponController.GetWeaponPrefab("pulse");
+                var scatterPrefab = ShipWeaponController.GetWeaponPrefab("scattergun");
+                var missilePrefab = ShipWeaponController.GetWeaponPrefab("missile");
+                var beamPrefab = ShipWeaponController.GetWeaponPrefab("beam");
+                var gatlingPrefab = ShipWeaponController.GetWeaponPrefab("gatling");
+                var mountPrefab = ShipWeaponController.GetSocketMountPrefab();
+
+                if (pulsePrefab == null || scatterPrefab == null || missilePrefab == null || 
+                    beamPrefab == null || gatlingPrefab == null || mountPrefab == null)
+                {
+                    throw new System.Exception("ShipWeaponController failed to load one or more weapon prefabs");
+                }
+
+                // Test instantiation of a ship with mounted weapon prefabs
+                var testShip = new GameObject("Test_ShipWithMountedWeapons");
+                testShip.tag = "Player";
+                testShip.AddComponent<Rigidbody2D>();
+                var testController = testShip.AddComponent<ShipWeaponController>();
+                testController.UpdateSocketVisuals();
+
+                if (testShip.transform.childCount == 0)
+                    throw new System.Exception("Ship sockets were not instantiated on test ship");
+
+                Object.DestroyImmediate(testShip);
+                Debug.Log("[PASS] 24. Modular Weapon Prefabs, Sockets & Visual Hardpoints verified");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 24. Weapon Prefabs verification failed: {ex.Message}");
                 failed++;
             }
 

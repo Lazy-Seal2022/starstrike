@@ -1003,6 +1003,7 @@ MonoBehaviour:
   weaponSlots: 2
   fireRate: 0.22
   energyCost: 6
+  inaccuracyAngle: 2.5
   weaponSockets:
   - {x: 0.35, y: 1.25}
   - {x: 0.35, y: -1.25}

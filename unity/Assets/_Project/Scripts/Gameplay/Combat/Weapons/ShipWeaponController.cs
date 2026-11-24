@@ -181,6 +181,43 @@ namespace StarStrike.Gameplay
             UpdateSocketVisuals();
         }
 
+        public static GameObject GetWeaponPrefab(string weaponId)
+        {
+            var combatConfig = Resources.Load<CombatConfig>("Data/CombatConfig");
+            string lower = string.IsNullOrEmpty(weaponId) ? "pulse" : weaponId.ToLowerInvariant().Trim();
+
+            if (lower.Contains("gatling") || lower == "4")
+            {
+                if (combatConfig != null && combatConfig.gatlingWeaponPrefab != null) return combatConfig.gatlingWeaponPrefab;
+                return Resources.Load<GameObject>("Prefabs/Weapons/Weapon_RotaryGatling");
+            }
+            if (lower.Contains("beam") || lower == "3")
+            {
+                if (combatConfig != null && combatConfig.continuousBeamWeaponPrefab != null) return combatConfig.continuousBeamWeaponPrefab;
+                return Resources.Load<GameObject>("Prefabs/Weapons/Weapon_ContinuousBeam");
+            }
+            if (lower.Contains("missile") || lower.Contains("homing") || lower == "2")
+            {
+                if (combatConfig != null && combatConfig.homingMissileWeaponPrefab != null) return combatConfig.homingMissileWeaponPrefab;
+                return Resources.Load<GameObject>("Prefabs/Weapons/Weapon_HomingMissiles");
+            }
+            if (lower.Contains("scatter") || lower == "1")
+            {
+                if (combatConfig != null && combatConfig.scattergunWeaponPrefab != null) return combatConfig.scattergunWeaponPrefab;
+                return Resources.Load<GameObject>("Prefabs/Weapons/Weapon_Scattergun");
+            }
+
+            if (combatConfig != null && combatConfig.pulseLaserWeaponPrefab != null) return combatConfig.pulseLaserWeaponPrefab;
+            return Resources.Load<GameObject>("Prefabs/Weapons/Weapon_PulseLaser");
+        }
+
+        public static GameObject GetSocketMountPrefab()
+        {
+            var combatConfig = Resources.Load<CombatConfig>("Data/CombatConfig");
+            if (combatConfig != null && combatConfig.socketMountPrefab != null) return combatConfig.socketMountPrefab;
+            return Resources.Load<GameObject>("Prefabs/Weapons/Weapon_SocketMount");
+        }
+
         public void UpdateSocketVisuals()
         {
             // Clean up existing visual hardpoint mounts
@@ -203,6 +240,12 @@ namespace StarStrike.Gameplay
 
             var sockets = GetShipHardpointSockets(currentShipId);
 
+            bool hasMountedInfos = mountedHardpoints.Count > 0;
+            if (hasMountedInfos)
+            {
+                activeSocketWeapons.Clear();
+            }
+
             // Spawn visual socket mounts on top of each ship weapon socket
             for (int i = 0; i < sockets.Length; i++)
             {
@@ -210,32 +253,78 @@ namespace StarStrike.Gameplay
                 var mountGo = new GameObject($"SocketMount_{sDef.index}");
                 mountGo.transform.SetParent(transform, false);
                 mountGo.transform.localPosition = new Vector3(sDef.localPosition.x, sDef.localPosition.y, 0f);
-                mountGo.transform.localRotation = Quaternion.Euler(0f, 0f, -90f); // Face forward along ship +X
-                mountGo.transform.localScale = new Vector3(0.38f, 0.38f, 1f);
+                mountGo.transform.localRotation = Quaternion.identity; // Forward along +X
+                mountGo.transform.localScale = Vector3.one;
 
                 // 1. Find equipped weapon for this socket
                 string weaponId = null;
+                MountedHardpointInfo mInfo = null;
                 for (int m = 0; m < mountedHardpoints.Count; m++)
                 {
                     if (mountedHardpoints[m].socketIndex == sDef.index)
                     {
+                        mInfo = mountedHardpoints[m];
                         weaponId = mountedHardpoints[m].weaponId;
                         break;
                     }
                 }
 
-                // 2. If the weapon socket is installed, replace it with the weapon sprite.
-                // Otherwise, display the empty weapon socket sprite.
-                var socketSr = mountGo.AddComponent<SpriteRenderer>();
-                if (!string.IsNullOrEmpty(weaponId))
+                if (string.IsNullOrEmpty(weaponId) && !hasMountedInfos)
                 {
+                    weaponId = StarStrike.Platform.Storage.StorageService.GetSocketWeapon(currentShipId, sDef.index);
+                    if (string.IsNullOrEmpty(weaponId) && sDef.index == 0) weaponId = "pulse";
+                }
+
+                GameObject weaponPrefab = !string.IsNullOrEmpty(weaponId) ? GetWeaponPrefab(weaponId) : null;
+                GameObject socketMountPrefab = GetSocketMountPrefab();
+
+                if (weaponPrefab != null)
+                {
+                    GameObject wpnObj = Instantiate(weaponPrefab, mountGo.transform, false);
+                    wpnObj.name = $"Mounted_{weaponId}";
+                    wpnObj.transform.localPosition = Vector3.zero;
+                    wpnObj.transform.localRotation = Quaternion.identity;
+                    wpnObj.transform.localScale = Vector3.one;
+
+                    var wComp = wpnObj.GetComponent<IWeapon>();
+                    if (wComp != null)
+                    {
+                        if (mInfo != null)
+                        {
+                            mInfo.weaponInstance = wComp;
+                        }
+                        if (!activeSocketWeapons.Contains(wComp))
+                        {
+                            activeSocketWeapons.Add(wComp);
+                        }
+                    }
+                }
+                else if (!string.IsNullOrEmpty(weaponId))
+                {
+                    var socketSr = mountGo.AddComponent<SpriteRenderer>();
                     socketSr.sprite = ProceduralSpriteHelper.GetWeaponSprite(weaponId);
                     socketSr.sortingOrder = 3;
+                    mountGo.transform.localRotation = Quaternion.Euler(0f, 0f, -90f);
+                    mountGo.transform.localScale = new Vector3(0.38f, 0.38f, 1f);
                 }
                 else
                 {
-                    socketSr.sprite = ProceduralSpriteHelper.GetWeaponSocketSprite();
-                    socketSr.sortingOrder = 2;
+                    if (socketMountPrefab != null)
+                    {
+                        GameObject mountVisual = Instantiate(socketMountPrefab, mountGo.transform, false);
+                        mountVisual.name = "EmptySocketVisual";
+                        mountVisual.transform.localPosition = Vector3.zero;
+                        mountVisual.transform.localRotation = Quaternion.identity;
+                        mountVisual.transform.localScale = Vector3.one;
+                    }
+                    else
+                    {
+                        var socketSr = mountGo.AddComponent<SpriteRenderer>();
+                        socketSr.sprite = ProceduralSpriteHelper.GetWeaponSocketSprite();
+                        socketSr.sortingOrder = 2;
+                        mountGo.transform.localRotation = Quaternion.Euler(0f, 0f, -90f);
+                        mountGo.transform.localScale = new Vector3(0.38f, 0.38f, 1f);
+                    }
                 }
             }
         }
@@ -275,6 +364,10 @@ namespace StarStrike.Gameplay
             for (int i = 0; i < availableWeapons.Count; i++)
             {
                 availableWeapons[i]?.StopFiring();
+            }
+            for (int i = 0; i < activeSocketWeapons.Count; i++)
+            {
+                activeSocketWeapons[i]?.StopFiring();
             }
         }
 

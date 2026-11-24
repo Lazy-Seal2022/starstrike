@@ -64,7 +64,11 @@ namespace StarStrike.Gameplay
             if (fireRate < minRate) fireRate = minRate;
 
             rb = GetComponent<Rigidbody2D>();
-            if (CompareTag("Player") || gameObject.name == "Player")
+            if (rb == null) rb = GetComponentInParent<Rigidbody2D>();
+
+            if (CompareTag("Player") || gameObject.name == "Player" ||
+                (transform.root != null && (transform.root.CompareTag("Player") || transform.root.name == "Player")) ||
+                (transform.parent != null && (transform.parent.CompareTag("Player") || transform.parent.name == "Player")))
             {
                 isPlayer = true;
             }
@@ -94,8 +98,35 @@ namespace StarStrike.Gameplay
             return new float[] { 0f };
         }
 
+        private bool IsMountedOnSocket()
+        {
+            if (transform.parent != null && (transform.parent.name.StartsWith("SocketMount_") || transform.name.StartsWith("Mounted_") || transform.name.StartsWith("Weapon_")))
+            {
+                return true;
+            }
+            return false;
+        }
+
         public Vector2[] GetActiveSocketLocalPositions()
         {
+            if (IsMountedOnSocket())
+            {
+                var muzzleTransform = transform.Find("MuzzlePoint");
+                if (muzzleTransform != null)
+                {
+                    return new Vector2[] { (Vector2)muzzleTransform.localPosition };
+                }
+                if (weaponSlots == 2)
+                {
+                    return new Vector2[] { new Vector2(0.5f, 0.15f), new Vector2(0.5f, -0.15f) };
+                }
+                if (weaponSlots >= 3)
+                {
+                    return new Vector2[] { new Vector2(0.5f, 0.15f), new Vector2(0.5f, 0f), new Vector2(0.5f, -0.15f) };
+                }
+                return new Vector2[] { new Vector2(0.5f, 0f) };
+            }
+
             if (weaponSockets == null || weaponSockets.Length == 0)
             {
                 var prog = GetComponent<PlayerProgression>();

@@ -50,6 +50,15 @@ namespace StarStrike.Gameplay
 
         public void ResetCooldown() => lastTickTime = -999f;
 
+        private bool IsMountedOnSocket()
+        {
+            if (transform.parent != null && (transform.parent.name.StartsWith("SocketMount_") || transform.name.StartsWith("Mounted_") || transform.name.StartsWith("Weapon_")))
+            {
+                return true;
+            }
+            return false;
+        }
+
         private void Awake()
         {
             EnsureBeamRenderers(1);
@@ -115,7 +124,13 @@ namespace StarStrike.Gameplay
             dt = Mathf.Clamp(dt, 0.01f, 0.1f);
 
             Vector2[] muzzles = null;
-            if (customSockets != null && customSockets.Length > 0)
+            if (IsMountedOnSocket())
+            {
+                var muzzleTransform = transform.Find("MuzzlePoint");
+                Vector2 localMuzzle = muzzleTransform != null ? (Vector2)muzzleTransform.localPosition : new Vector2(0.5f, 0f);
+                muzzles = new Vector2[] { (Vector2)transform.TransformPoint(localMuzzle) };
+            }
+            else if (customSockets != null && customSockets.Length > 0)
             {
                 muzzles = new Vector2[customSockets.Length];
                 for (int i = 0; i < customSockets.Length; i++)

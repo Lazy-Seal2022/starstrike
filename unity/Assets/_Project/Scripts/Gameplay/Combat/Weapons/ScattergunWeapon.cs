@@ -40,13 +40,26 @@ namespace StarStrike.Gameplay
         private Rigidbody2D rb;
         public bool isPlayer = false;
 
+        private bool IsMountedOnSocket()
+        {
+            if (transform.parent != null && (transform.parent.name.StartsWith("SocketMount_") || transform.name.StartsWith("Mounted_") || transform.name.StartsWith("Weapon_")))
+            {
+                return true;
+            }
+            return false;
+        }
+
         private void Awake()
         {
             if (combatConfig == null) combatConfig = Resources.Load<CombatConfig>("Data/CombatConfig");
             if (combatConfig == null) combatConfig = ScriptableObject.CreateInstance<CombatConfig>();
 
             rb = GetComponent<Rigidbody2D>();
-            if (CompareTag("Player") || gameObject.name == "Player")
+            if (rb == null) rb = GetComponentInParent<Rigidbody2D>();
+
+            if (CompareTag("Player") || gameObject.name == "Player" ||
+                (transform.root != null && (transform.root.CompareTag("Player") || transform.root.name == "Player")) ||
+                (transform.parent != null && (transform.parent.CompareTag("Player") || transform.parent.name == "Player")))
             {
                 isPlayer = true;
             }
@@ -98,7 +111,13 @@ namespace StarStrike.Gameplay
             float startAngle = -spreadAngle * 0.5f;
             float step = totalPellets > 1 ? spreadAngle / (totalPellets - 1) : 0f;
             Vector2[] muzzles = null;
-            if (customSockets != null && customSockets.Length > 0)
+            if (IsMountedOnSocket())
+            {
+                var muzzleTransform = transform.Find("MuzzlePoint");
+                Vector2 localMuzzle = muzzleTransform != null ? (Vector2)muzzleTransform.localPosition : new Vector2(0.5f, 0f);
+                muzzles = new Vector2[] { (Vector2)transform.TransformPoint(localMuzzle) };
+            }
+            else if (customSockets != null && customSockets.Length > 0)
             {
                 muzzles = new Vector2[customSockets.Length];
                 for (int i = 0; i < customSockets.Length; i++)
