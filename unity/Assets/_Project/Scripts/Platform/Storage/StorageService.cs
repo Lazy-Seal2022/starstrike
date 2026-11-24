@@ -33,6 +33,7 @@ namespace StarStrike.Platform.Storage
         public string selectedSkill = "forward_shockwave";
         public string selectedWeapon = "pulse";
         public List<string> shipWeaponEquipped = new List<string>();
+        public List<string> shipModulesEquipped = new List<string>();
         public List<string> unlockedShips = new List<string> { "scout" };
         public List<string> achievements = new List<string>();
         
@@ -386,6 +387,84 @@ namespace StarStrike.Platform.Storage
 
         public static string GetSelectedWeapon() => GetEquippedWeapon(GetLastShipEvolved());
         public static void SaveSelectedWeapon(string weaponId) => SaveEquippedWeapon(GetLastShipEvolved(), weaponId);
+
+        public static string GetEquippedModule(string shipId, string slotId, string defaultModuleId = "")
+        {
+            if (string.IsNullOrEmpty(shipId)) shipId = GetLastShipEvolved();
+            if (string.IsNullOrEmpty(shipId)) shipId = "scout";
+            if (string.IsNullOrEmpty(slotId)) return defaultModuleId ?? "";
+
+            shipId = shipId.ToLowerInvariant();
+            slotId = slotId.ToLowerInvariant();
+
+            if (Profile.shipModulesEquipped != null)
+            {
+                string prefix = $"{shipId}:{slotId}:";
+                for (int i = 0; i < Profile.shipModulesEquipped.Count; i++)
+                {
+                    string entry = Profile.shipModulesEquipped[i];
+                    if (entry != null && entry.StartsWith(prefix))
+                    {
+                        return entry.Substring(prefix.Length);
+                    }
+                }
+            }
+            return defaultModuleId ?? "";
+        }
+
+        public static void SaveEquippedModule(string shipId, string slotId, string moduleId)
+        {
+            if (string.IsNullOrEmpty(shipId)) shipId = GetLastShipEvolved();
+            if (string.IsNullOrEmpty(shipId)) shipId = "scout";
+            if (string.IsNullOrEmpty(slotId)) return;
+            if (string.IsNullOrEmpty(moduleId)) moduleId = "";
+
+            shipId = shipId.ToLowerInvariant();
+            slotId = slotId.ToLowerInvariant();
+            moduleId = moduleId.ToLowerInvariant();
+
+            if (Profile.shipModulesEquipped == null)
+            {
+                Profile.shipModulesEquipped = new List<string>();
+            }
+
+            string prefix = $"{shipId}:{slotId}:";
+            Profile.shipModulesEquipped.RemoveAll(e => e != null && e.StartsWith(prefix));
+            if (!string.IsNullOrEmpty(moduleId))
+            {
+                Profile.shipModulesEquipped.Add($"{prefix}{moduleId}");
+            }
+            SaveProfile();
+        }
+
+        public static Dictionary<string, string> GetAllEquippedModules(string shipId)
+        {
+            var dict = new Dictionary<string, string>();
+            if (string.IsNullOrEmpty(shipId)) shipId = GetLastShipEvolved();
+            if (string.IsNullOrEmpty(shipId)) shipId = "scout";
+            shipId = shipId.ToLowerInvariant();
+
+            if (Profile.shipModulesEquipped != null)
+            {
+                string prefix = $"{shipId}:";
+                for (int i = 0; i < Profile.shipModulesEquipped.Count; i++)
+                {
+                    string entry = Profile.shipModulesEquipped[i];
+                    if (entry != null && entry.StartsWith(prefix))
+                    {
+                        string remainder = entry.Substring(prefix.Length);
+                        int colon = remainder.IndexOf(':');
+                        if (colon > 0)
+                        {
+                            string slotId = remainder.Substring(0, colon);
+                            string modId = remainder.Substring(colon + 1);
+                            dict[slotId] = modId;
+                        }
+                    }
+                }
+            }
+            return dict;
+        }
         
         public static void AddMetaGems(int amount)
         {

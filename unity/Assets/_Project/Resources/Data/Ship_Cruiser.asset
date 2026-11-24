@@ -1,0 +1,153 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 452a726ac86488749bcfc0d806d22c9f, type: 3}
+  m_Name: Ship_Cruiser
+  m_EditorClassIdentifier: StarStrike.Core::StarStrike.Core.ShipDefinition
+  id: cruiser
+  shipName: Hyperion Cruiser
+  tier: 3
+  shipClass: 3
+  classRoleDescription: Fleet backbone battleline warship, 360-degree turret coverage,
+    heavy energy aegis.
+  cameraOrthoSize: 12
+  hullMass: 4
+  collisionArmorReduction: 0.2
+  canAimIndependently: 1
+  maxUpgradeLevel: 6
+  evolvesTo: []
+  baseStats:
+    shieldCapacity: 350
+    shieldRegen: 22
+    hullCapacity: 320
+    energyCapacity: 180
+    energyRegen: 24
+    pulseDamage: 55
+    pulseSpeed: 600
+    speed: 190
+    agility: 3.2
+  weaponSlots: 5
+  hardpointSockets:
+  - socketId: Cruiser_SpineHeavy
+    localPosition: {x: 2.2, y: 0}
+    mountAngle: 0
+    size: 2
+    mountType: 0
+    defaultWeaponId: beam
+  - socketId: Cruiser_TurretL
+    localPosition: {x: 1.1, y: 1.35}
+    mountAngle: 0
+    size: 1
+    mountType: 1
+    defaultWeaponId: gatling
+  - socketId: Cruiser_TurretR
+    localPosition: {x: 1.1, y: -1.35}
+    mountAngle: 0
+    size: 1
+    mountType: 1
+    defaultWeaponId: gatling
+  - socketId: Cruiser_BroadsideL
+    localPosition: {x: -0.3, y: 1.65}
+    mountAngle: -90
+    size: 0
+    mountType: 2
+    defaultWeaponId: pulse
+  - socketId: Cruiser_BroadsideR
+    localPosition: {x: -0.3, y: -1.65}
+    mountAngle: 90
+    size: 0
+    mountType: 3
+    defaultWeaponId: pulse
+  equipmentSlots:
+  - slotId: wpn_0
+    slotName: Spinal Heavy Beam
+    category: 0
+    size: 2
+    mountType: 0
+    localPosition: {x: 2.2, y: 0}
+    defaultItemId: beam
+  - slotId: wpn_1
+    slotName: Port Rotary Turret
+    category: 0
+    size: 1
+    mountType: 1
+    localPosition: {x: 1.1, y: 1.35}
+    defaultItemId: gatling
+  - slotId: wpn_2
+    slotName: Starboard Rotary Turret
+    category: 0
+    size: 1
+    mountType: 1
+    localPosition: {x: 1.1, y: -1.35}
+    defaultItemId: gatling
+  - slotId: wpn_3
+    slotName: Port Broadside Battery
+    category: 0
+    size: 0
+    mountType: 2
+    localPosition: {x: -0.3, y: 1.65}
+    defaultItemId: pulse
+  - slotId: wpn_4
+    slotName: Starboard Broadside Battery
+    category: 0
+    size: 0
+    mountType: 3
+    localPosition: {x: -0.3, y: -1.65}
+    defaultItemId: pulse
+  - slotId: def_0
+    slotName: Primary Aegis Field
+    category: 1
+    size: 1
+    mountType: 0
+    localPosition: {x: 0.3, y: 0}
+    defaultItemId: def_shield_booster
+  - slotId: def_1
+    slotName: Reinforced Belt Armor
+    category: 1
+    size: 1
+    mountType: 0
+    localPosition: {x: -0.3, y: 0}
+    defaultItemId: def_nanite_armor
+  - slotId: eng_0
+    slotName: Heavy Ion Drive
+    category: 2
+    size: 1
+    mountType: 0
+    localPosition: {x: -2.4, y: 0}
+    defaultItemId: eng_afterburner
+  - slotId: rea_0
+    slotName: Hyperion Power Plant
+    category: 3
+    size: 1
+    mountType: 0
+    localPosition: {x: -1.2, y: 0}
+    defaultItemId: rea_flux_capacitor
+  droneHangarCapacity: 0
+  defaultDroneType: 
+  hitboxRadius: 1.05
+  shieldHitboxOffset: 0.3
+  weaponSockets:
+  - {x: 2.2, y: 0}
+  - {x: 1.1, y: 1.35}
+  - {x: 1.1, y: -1.35}
+  - {x: -0.3, y: 1.65}
+  - {x: -0.3, y: -1.65}
+  thrusterSockets:
+  - {x: -2.4, y: 0.8}
+  - {x: -2.4, y: -0.8}
+  - {x: -2.6, y: 0}
+  prefab: {fileID: 0}
+  sprite: {fileID: 0}
+  emissiveTexture: {fileID: 0}
+  emissiveColor: {r: 0.25, g: 0.9, b: 1, a: 1}
+  emissiveIntensity: 1.8
+  color: {r: 1, g: 1, b: 1, a: 1}
+  scale: 1

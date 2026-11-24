@@ -15,6 +15,11 @@ MonoBehaviour:
   id: phantom
   shipName: Shadow Phantom
   tier: 3
+  shipClass: 0
+  classRoleDescription: 
+  cameraOrthoSize: 8.5
+  hullMass: 1
+  collisionArmorReduction: 0
   maxUpgradeLevel: 6
   evolvesTo: []
   baseStats:
@@ -28,6 +33,45 @@ MonoBehaviour:
     speed: 420
     agility: 7
   weaponSlots: 2
+  hardpointSockets: []
+  equipmentSlots:
+  - slotId: wpn_0
+    slotName: Socket_0
+    category: 0
+    size: 1
+    mountType: 0
+    localPosition: {x: 0.5, y: 0.8}
+    defaultItemId: pulse
+  - slotId: wpn_1
+    slotName: Socket_1
+    category: 0
+    size: 1
+    mountType: 0
+    localPosition: {x: 0.5, y: -0.8}
+    defaultItemId: pulse
+  - slotId: def_0
+    slotName: Shield Deflector Bay
+    category: 1
+    size: 1
+    mountType: 0
+    localPosition: {x: 0, y: 0}
+    defaultItemId: def_shield_booster
+  - slotId: eng_0
+    slotName: Sublight Propulsion Link
+    category: 2
+    size: 1
+    mountType: 0
+    localPosition: {x: -1.2, y: 0}
+    defaultItemId: eng_afterburner
+  - slotId: rea_0
+    slotName: Capacitor Power Core
+    category: 3
+    size: 1
+    mountType: 0
+    localPosition: {x: -0.4, y: 0}
+    defaultItemId: rea_flux_capacitor
+  droneHangarCapacity: 0
+  defaultDroneType: 
   hitboxRadius: 0.5
   shieldHitboxOffset: 0.2
   weaponSockets:

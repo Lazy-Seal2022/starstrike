@@ -15,9 +15,15 @@ MonoBehaviour:
   id: scout
   shipName: Delta Scout
   tier: 1
+  shipClass: 0
+  classRoleDescription: 
+  cameraOrthoSize: 8.5
+  hullMass: 1
+  collisionArmorReduction: 0
   maxUpgradeLevel: 4
   evolvesTo:
   - {fileID: 11400000, guid: 4174fcb51d8ff4e4985793be86c3b293, type: 2}
+  - {fileID: 11400000, guid: b7f1a2c3aaaa3024cacb9ba4164882c9, type: 2}
   - {fileID: 11400000, guid: 7d9e90ad31b804d46ab8480796934480, type: 2}
   baseStats:
     shieldCapacity: 100
@@ -30,13 +36,45 @@ MonoBehaviour:
     speed: 260
     agility: 4.5
   weaponSlots: 1
+  hardpointSockets: []
+  equipmentSlots:
+  - slotId: wpn_0
+    slotName: Socket_0
+    category: 0
+    size: 1
+    mountType: 0
+    localPosition: {x: 1.55, y: 0}
+    defaultItemId: pulse
+  - slotId: def_0
+    slotName: Shield Deflector Bay
+    category: 1
+    size: 1
+    mountType: 0
+    localPosition: {x: 0, y: 0}
+    defaultItemId: def_shield_booster
+  - slotId: eng_0
+    slotName: Sublight Propulsion Link
+    category: 2
+    size: 1
+    mountType: 0
+    localPosition: {x: -1.2, y: 0}
+    defaultItemId: eng_afterburner
+  - slotId: rea_0
+    slotName: Capacitor Power Core
+    category: 3
+    size: 1
+    mountType: 0
+    localPosition: {x: -0.4, y: 0}
+    defaultItemId: rea_flux_capacitor
+  droneHangarCapacity: 0
+  defaultDroneType: 
   hitboxRadius: 0.55
   shieldHitboxOffset: 0.2
   weaponSockets:
   - {x: 1.55, y: 0}
   thrusterSockets:
   - {x: -1.55, y: 0}
-  prefab: {fileID: 223025568944328213, guid: 0a92f4f3bd9a86041a3fa1d71ec3343c, type: 3}
+  prefab: {fileID: 0}
   sprite: {fileID: 21300000, guid: 93264e0fdec00d74a922256fb6343842, type: 3}
   emissiveTexture: {fileID: 2800000, guid: cdd6021915b7cbe4e8728bf15b470c41, type: 3}
   emissiveColor: {r: 0.25, g: 0.9, b: 1, a: 1}

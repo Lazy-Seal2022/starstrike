@@ -23,6 +23,10 @@ namespace StarStrike.Core
 
         [Tooltip("Collision damage resistance ratio (0 = full damage, 0.40 = 40% reduction)")]
         public float collisionArmorReduction = 0f;
+
+        [Header("Aiming Mechanics")]
+        [Tooltip("If true, weapon mounts and turrets track aim direction independently of ship hull rotation (e.g. Cruiser, Battleship)")]
+        public bool canAimIndependently = false;
         
         [Header("Progression")]
         public int maxUpgradeLevel;
@@ -36,6 +40,9 @@ namespace StarStrike.Core
 
         [Header("Modular Hardpoint Sockets")]
         public ShipSocketDefinition[] hardpointSockets = new ShipSocketDefinition[0];
+
+        [Header("Modular Equipment Slots")]
+        public ShipEquipmentSlotDefinition[] equipmentSlots = new ShipEquipmentSlotDefinition[0];
 
         [Header("Carrier & Drone Systems")]
         public int droneHangarCapacity = 0;
@@ -99,5 +106,98 @@ namespace StarStrike.Core
         }
 
         public int SocketCount => (hardpointSockets != null && hardpointSockets.Length > 0) ? hardpointSockets.Length : (weaponSockets != null ? weaponSockets.Length : weaponSlots);
+
+        /// <summary>
+        /// Retrieves the complete list of equipment slots. If equipmentSlots is not explicitly configured,
+        /// generates default slots from weapon hardpoints plus baseline Defense, Engine, and Reactor slots.
+        /// </summary>
+        public ShipEquipmentSlotDefinition[] GetEquipmentSlots()
+        {
+            if (equipmentSlots != null && equipmentSlots.Length > 0)
+            {
+                return equipmentSlots;
+            }
+
+            var list = new System.Collections.Generic.List<ShipEquipmentSlotDefinition>();
+
+            // 1. Weapon hardpoints
+            var wPositions = GetWeaponSocketPositions();
+            for (int i = 0; i < wPositions.Length; i++)
+            {
+                var sDef = GetSocket(i);
+                string slotName = !string.IsNullOrEmpty(sDef.socketId) ? sDef.socketId : $"Weapon Hardpoint {i + 1}";
+                list.Add(new ShipEquipmentSlotDefinition(
+                    $"wpn_{i}",
+                    slotName,
+                    EquipmentSlotCategory.Weapon,
+                    wPositions[i],
+                    sDef.size != 0 ? sDef.size : SocketSize.Medium,
+                    sDef.mountType,
+                    sDef.defaultWeaponId ?? "pulse"
+                ));
+            }
+
+            // 2. Default Defense slot
+            list.Add(new ShipEquipmentSlotDefinition(
+                "def_0",
+                "Shield Deflector Bay",
+                EquipmentSlotCategory.Defense,
+                new Vector2(0f, 0f),
+                SocketSize.Medium,
+                SocketMountType.FixedForward,
+                "def_shield_booster"
+            ));
+
+            // 3. Default Engine slot
+            list.Add(new ShipEquipmentSlotDefinition(
+                "eng_0",
+                "Sublight Propulsion Link",
+                EquipmentSlotCategory.Engine,
+                new Vector2(-1.2f, 0f),
+                SocketSize.Medium,
+                SocketMountType.FixedForward,
+                "eng_afterburner"
+            ));
+
+            // 4. Default Reactor slot
+            list.Add(new ShipEquipmentSlotDefinition(
+                "rea_0",
+                "Capacitor Power Core",
+                EquipmentSlotCategory.Reactor,
+                new Vector2(-0.4f, 0f),
+                SocketSize.Medium,
+                SocketMountType.FixedForward,
+                "rea_flux_capacitor"
+            ));
+
+            return list.ToArray();
+        }
+
+        public ShipEquipmentSlotDefinition[] GetSlotsByCategory(EquipmentSlotCategory category)
+        {
+            var all = GetEquipmentSlots();
+            var list = new System.Collections.Generic.List<ShipEquipmentSlotDefinition>();
+            for (int i = 0; i < all.Length; i++)
+            {
+                if (all[i].category == category)
+                {
+                    list.Add(all[i]);
+                }
+            }
+            return list.ToArray();
+        }
+
+        public ShipEquipmentSlotDefinition GetEquipmentSlot(string slotId)
+        {
+            var all = GetEquipmentSlots();
+            for (int i = 0; i < all.Length; i++)
+            {
+                if (string.Equals(all[i].slotId, slotId, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return all[i];
+                }
+            }
+            return default;
+        }
     }
 }

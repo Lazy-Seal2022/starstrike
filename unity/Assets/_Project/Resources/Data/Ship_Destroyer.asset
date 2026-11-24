@@ -1,0 +1,131 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 452a726ac86488749bcfc0d806d22c9f, type: 3}
+  m_Name: Ship_Destroyer
+  m_EditorClassIdentifier: StarStrike.Core::StarStrike.Core.ShipDefinition
+  id: destroyer
+  shipName: Goliath Destroyer
+  tier: 2
+  shipClass: 2
+  classRoleDescription: Anti-capital heavy gunship, massive forward torpedoes, high
+    kinetic alpha strike.
+  cameraOrthoSize: 10.5
+  hullMass: 2.5
+  collisionArmorReduction: 0.1
+  canAimIndependently: 0
+  maxUpgradeLevel: 6
+  evolvesTo: []
+  baseStats:
+    shieldCapacity: 240
+    shieldRegen: 18
+    hullCapacity: 220
+    energyCapacity: 140
+    energyRegen: 20
+    pulseDamage: 45
+    pulseSpeed: 580
+    speed: 230
+    agility: 4.2
+  weaponSlots: 4
+  hardpointSockets:
+  - socketId: Destroyer_MainGunL
+    localPosition: {x: 1.85, y: 0.65}
+    mountAngle: 0
+    size: 1
+    mountType: 0
+    defaultWeaponId: scattergun
+  - socketId: Destroyer_MainGunR
+    localPosition: {x: 1.85, y: -0.65}
+    mountAngle: 0
+    size: 1
+    mountType: 0
+    defaultWeaponId: scattergun
+  - socketId: Destroyer_TorpedoL
+    localPosition: {x: 0.6, y: 1.45}
+    mountAngle: 0
+    size: 2
+    mountType: 0
+    defaultWeaponId: missile
+  - socketId: Destroyer_TorpedoR
+    localPosition: {x: 0.6, y: -1.45}
+    mountAngle: 0
+    size: 2
+    mountType: 0
+    defaultWeaponId: missile
+  equipmentSlots:
+  - slotId: wpn_0
+    slotName: Port Main Gun
+    category: 0
+    size: 1
+    mountType: 0
+    localPosition: {x: 1.85, y: 0.65}
+    defaultItemId: scattergun
+  - slotId: wpn_1
+    slotName: Starboard Main Gun
+    category: 0
+    size: 1
+    mountType: 0
+    localPosition: {x: 1.85, y: -0.65}
+    defaultItemId: scattergun
+  - slotId: wpn_2
+    slotName: Port Heavy Torpedo Silo
+    category: 0
+    size: 2
+    mountType: 0
+    localPosition: {x: 0.6, y: 1.45}
+    defaultItemId: missile
+  - slotId: wpn_3
+    slotName: Starboard Heavy Torpedo Silo
+    category: 0
+    size: 2
+    mountType: 0
+    localPosition: {x: 0.6, y: -1.45}
+    defaultItemId: missile
+  - slotId: def_0
+    slotName: Reactive Armor Plating
+    category: 1
+    size: 1
+    mountType: 0
+    localPosition: {x: 0, y: 0}
+    defaultItemId: def_nanite_armor
+  - slotId: rea_0
+    slotName: Tachyon Reactor Core
+    category: 3
+    size: 1
+    mountType: 0
+    localPosition: {x: -0.8, y: 0}
+    defaultItemId: rea_tachyon_core
+  - slotId: aux_0
+    slotName: Fire Control Computer
+    category: 4
+    size: 1
+    mountType: 0
+    localPosition: {x: 0.8, y: 0}
+    defaultItemId: aux_targeting_comp
+  droneHangarCapacity: 0
+  defaultDroneType: 
+  hitboxRadius: 0.8
+  shieldHitboxOffset: 0.25
+  weaponSockets:
+  - {x: 1.85, y: 0.65}
+  - {x: 1.85, y: -0.65}
+  - {x: 0.6, y: 1.45}
+  - {x: 0.6, y: -1.45}
+  thrusterSockets:
+  - {x: -2, y: 0.6}
+  - {x: -2, y: -0.6}
+  prefab: {fileID: 0}
+  sprite: {fileID: 0}
+  emissiveTexture: {fileID: 0}
+  emissiveColor: {r: 0.25, g: 0.9, b: 1, a: 1}
+  emissiveIntensity: 1.8
+  color: {r: 1, g: 1, b: 1, a: 1}
+  scale: 1

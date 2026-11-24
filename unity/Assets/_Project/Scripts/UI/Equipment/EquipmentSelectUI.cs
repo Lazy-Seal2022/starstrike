@@ -33,7 +33,9 @@ namespace StarStrike.UI
 
         private string currentShipId = "scout";
         private int activeSocketIndex = 0;
+        private int activeSlotIndex = 0;
         private string inspectedWeaponId = "pulse";
+        private string inspectedModuleId = "def_shield_booster";
         private string inspectedSkillId = "forward_shockwave";
 
         public string CurrentShipId
@@ -56,12 +58,34 @@ namespace StarStrike.UI
 
         public int ActiveSocketCount => ShipWeaponController.GetShipHardpointSockets(CurrentShipId).Length;
 
+        public int ActiveSlotIndex
+        {
+            get
+            {
+                EnsureInitialized();
+                return activeSlotIndex;
+            }
+        }
+
+        public int ActiveSlotCount => GetCurrentShipSlots().Length;
+
+        public EquipmentSlotCategory ActiveSlotCategory => GetCurrentSlot().category;
+
         public string InspectedWeaponId
         {
             get
             {
                 EnsureInitialized();
                 return inspectedWeaponId;
+            }
+        }
+
+        public string InspectedModuleId
+        {
+            get
+            {
+                EnsureInitialized();
+                return inspectedModuleId;
             }
         }
 
@@ -293,13 +317,13 @@ namespace StarStrike.UI
         {
             if (Keyboard.current == null) return;
 
-            if (Keyboard.current.digit1Key.wasPressedThisFrame) EquipWeaponByIndex(0);
-            else if (Keyboard.current.digit2Key.wasPressedThisFrame) EquipWeaponByIndex(1);
-            else if (Keyboard.current.digit3Key.wasPressedThisFrame) EquipWeaponByIndex(2);
-            else if (Keyboard.current.digit4Key.wasPressedThisFrame) EquipWeaponByIndex(3);
-            else if (Keyboard.current.digit5Key.wasPressedThisFrame) EquipWeaponByIndex(4);
-            else if (Keyboard.current.qKey.wasPressedThisFrame || Keyboard.current.leftArrowKey.wasPressedThisFrame) SelectPreviousSocket();
-            else if (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.tabKey.wasPressedThisFrame) SelectNextSocket();
+            if (Keyboard.current.digit1Key.wasPressedThisFrame) EquipItemByIndex(0);
+            else if (Keyboard.current.digit2Key.wasPressedThisFrame) EquipItemByIndex(1);
+            else if (Keyboard.current.digit3Key.wasPressedThisFrame) EquipItemByIndex(2);
+            else if (Keyboard.current.digit4Key.wasPressedThisFrame) EquipItemByIndex(3);
+            else if (Keyboard.current.digit5Key.wasPressedThisFrame) EquipItemByIndex(4);
+            else if (Keyboard.current.qKey.wasPressedThisFrame || Keyboard.current.leftArrowKey.wasPressedThisFrame) SelectPreviousSlot();
+            else if (Keyboard.current.eKey.wasPressedThisFrame || Keyboard.current.rightArrowKey.wasPressedThisFrame || Keyboard.current.tabKey.wasPressedThisFrame) SelectNextSlot();
             else if (Keyboard.current.hKey.wasPressedThisFrame) GoToHangar();
             else if (Keyboard.current.escapeKey.wasPressedThisFrame) GoToMainMenu();
             else if (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame)
@@ -544,6 +568,52 @@ namespace StarStrike.UI
             });
         }
 
+        private ShipEquipmentSlotDefinition[] GetCurrentShipSlots()
+        {
+            var def = PlayerProgression.GetShipDefinitionById(currentShipId);
+            if (def != null)
+            {
+                var s = def.GetEquipmentSlots();
+                if (s != null && s.Length > 0) return s;
+            }
+
+            var sockets = ShipWeaponController.GetShipHardpointSockets(currentShipId);
+            var list = new List<ShipEquipmentSlotDefinition>();
+            for (int i = 0; i < sockets.Length; i++)
+            {
+                list.Add(new ShipEquipmentSlotDefinition($"wpn_{i}", sockets[i].name, EquipmentSlotCategory.Weapon, sockets[i].localPosition, SocketSize.Medium, SocketMountType.FixedForward, "pulse"));
+            }
+            list.Add(new ShipEquipmentSlotDefinition("def_0", "Defensive Shield Bay", EquipmentSlotCategory.Defense, Vector2.zero, SocketSize.Medium, SocketMountType.FixedForward, "def_shield_booster"));
+            list.Add(new ShipEquipmentSlotDefinition("eng_0", "Vector Thrusters", EquipmentSlotCategory.Engine, new Vector2(-1.2f, 0f), SocketSize.Medium, SocketMountType.FixedForward, "eng_afterburner"));
+            list.Add(new ShipEquipmentSlotDefinition("rea_0", "Flux Capacitor Core", EquipmentSlotCategory.Reactor, new Vector2(-0.4f, 0f), SocketSize.Medium, SocketMountType.FixedForward, "rea_flux_capacitor"));
+            return list.ToArray();
+        }
+
+        public ShipEquipmentSlotDefinition GetCurrentSlot()
+        {
+            var slots = GetCurrentShipSlots();
+            if (slots.Length == 0) return default;
+            int idx = Mathf.Clamp(activeSlotIndex, 0, slots.Length - 1);
+            return slots[idx];
+        }
+
+        public void EquipItemByIndex(int index)
+        {
+            var slot = GetCurrentSlot();
+            if (slot.category == EquipmentSlotCategory.Weapon)
+            {
+                EquipWeaponByIndex(index);
+            }
+            else
+            {
+                var modules = EquipmentModuleCatalog.GetModulesByCategory(slot.category);
+                if (index >= 0 && index < modules.Count)
+                {
+                    EquipModuleToSlot(activeSlotIndex, modules[index].id);
+                }
+            }
+        }
+
         private void EquipWeaponByIndex(int index)
         {
             if (index >= 0 && index < WeaponCatalog.Length)
@@ -577,12 +647,72 @@ namespace StarStrike.UI
             RefreshUI();
         }
 
+        public void EquipModuleToSlot(int slotIndex, string moduleId)
+        {
+            EnsureInitialized();
+            var slots = GetCurrentShipSlots();
+            if (slotIndex < 0 || slotIndex >= slots.Length) slotIndex = 0;
+            activeSlotIndex = slotIndex;
+            var slot = slots[slotIndex];
+
+            if (slot.category == EquipmentSlotCategory.Weapon)
+            {
+                EquipWeaponToSocket(activeSocketIndex, moduleId);
+                return;
+            }
+
+            inspectedModuleId = moduleId;
+            StorageService.SaveEquippedModule(currentShipId, slot.slotId, moduleId);
+            StarStrike.Gameplay.Audio.AudioService.Instance?.PlayUISound("click");
+            RefreshUI();
+        }
+
+        public void SelectSlot(int slotIndex)
+        {
+            EnsureInitialized();
+            var slots = GetCurrentShipSlots();
+            if (slots.Length == 0) return;
+            activeSlotIndex = Mathf.Clamp(slotIndex, 0, slots.Length - 1);
+            var slot = slots[activeSlotIndex];
+
+            if (slot.category == EquipmentSlotCategory.Weapon)
+            {
+                int wpnIdx = 0;
+                for (int i = 0; i < activeSlotIndex; i++)
+                {
+                    if (slots[i].category == EquipmentSlotCategory.Weapon) wpnIdx++;
+                }
+                activeSocketIndex = wpnIdx;
+                inspectedWeaponId = StorageService.GetSocketWeapon(currentShipId, activeSocketIndex);
+            }
+            else
+            {
+                inspectedModuleId = StorageService.GetEquippedModule(currentShipId, slot.slotId, slot.defaultItemId);
+            }
+
+            StarStrike.Gameplay.Audio.AudioService.Instance?.PlayUISound("click");
+            RefreshUI();
+        }
+
         public void SelectSocket(int socketIndex)
         {
             EnsureInitialized();
-            var sockets = ShipWeaponController.GetShipHardpointSockets(currentShipId);
-            if (sockets.Length == 0) return;
-            activeSocketIndex = Mathf.Clamp(socketIndex, 0, sockets.Length - 1);
+            var slots = GetCurrentShipSlots();
+            int wpnCount = 0;
+            for (int i = 0; i < slots.Length; i++)
+            {
+                if (slots[i].category == EquipmentSlotCategory.Weapon)
+                {
+                    if (wpnCount == socketIndex)
+                    {
+                        SelectSlot(i);
+                        return;
+                    }
+                    wpnCount++;
+                }
+            }
+
+            activeSocketIndex = Mathf.Clamp(socketIndex, 0, Mathf.Max(0, ShipWeaponController.GetShipHardpointSockets(currentShipId).Length - 1));
             inspectedWeaponId = StorageService.GetSocketWeapon(currentShipId, activeSocketIndex);
             StarStrike.Gameplay.Audio.AudioService.Instance?.PlayUISound("click");
             RefreshUI();
@@ -590,16 +720,26 @@ namespace StarStrike.UI
 
         public void SelectNextSocket()
         {
-            var sockets = ShipWeaponController.GetShipHardpointSockets(currentShipId);
-            if (sockets.Length <= 1) return;
-            SelectSocket((activeSocketIndex + 1) % sockets.Length);
+            SelectNextSlot();
         }
 
         public void SelectPreviousSocket()
         {
-            var sockets = ShipWeaponController.GetShipHardpointSockets(currentShipId);
-            if (sockets.Length <= 1) return;
-            SelectSocket((activeSocketIndex - 1 + sockets.Length) % sockets.Length);
+            SelectPreviousSlot();
+        }
+
+        public void SelectNextSlot()
+        {
+            var slots = GetCurrentShipSlots();
+            if (slots.Length <= 1) return;
+            SelectSlot((activeSlotIndex + 1) % slots.Length);
+        }
+
+        public void SelectPreviousSlot()
+        {
+            var slots = GetCurrentShipSlots();
+            if (slots.Length <= 1) return;
+            SelectSlot((activeSlotIndex - 1 + slots.Length) % slots.Length);
         }
 
         public void EquipSkill(string skillId)
@@ -625,26 +765,26 @@ namespace StarStrike.UI
                 gemsText.text = $"<color=#ffe600>META-GEMS: {StorageService.Profile.totalMetaGems}</color>";
             }
 
-            var sockets = ShipWeaponController.GetShipHardpointSockets(currentShipId);
-            if (activeSocketIndex >= sockets.Length) activeSocketIndex = 0;
+            var slots = GetCurrentShipSlots();
+            if (activeSlotIndex >= slots.Length) activeSlotIndex = 0;
+            var currentSlot = slots.Length > 0 ? slots[activeSlotIndex] : default;
 
             if (shipHeaderBanner != null)
             {
-                shipHeaderBanner.text = $"<color=#ffe600>ACTIVE CHASSIS: [ {currentShipId.ToUpper()} // {sockets.Length} HARDPOINTS DETECTED ]</color>";
+                shipHeaderBanner.text = $"<color=#ffe600>ACTIVE CHASSIS: [ {currentShipId.ToUpper()} // {slots.Length} EQUIPMENT SLOTS ]</color>";
             }
 
             Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
 
-            // 1. Render Interactive Sockets on Ship Hull Preview
+            // 1. Render Interactive Sockets & Modules on Ship Hull Preview
             if (shipPreviewImage != null)
             {
                 shipPreviewImage.sprite = ProceduralSpriteHelper.GetShipSprite(currentShipId);
 
-                // Clear previous socket overlays on preview
                 for (int i = shipPreviewImage.transform.childCount - 1; i >= 0; i--)
                 {
                     var child = shipPreviewImage.transform.GetChild(i);
-                    if (child.name.StartsWith("ShipSocket_"))
+                    if (child.name.StartsWith("ShipSocket_") || child.name.StartsWith("ShipSlot_"))
                     {
                         if (Application.isPlaying) Destroy(child.gameObject);
                         else DestroyImmediate(child.gameObject);
@@ -658,13 +798,14 @@ namespace StarStrike.UI
                 float boxW = 200f;
                 float boxH = 200f;
 
-                for (int i = 0; i < sockets.Length; i++)
+                int wpnCounter = 0;
+                for (int i = 0; i < slots.Length; i++)
                 {
-                    var sData = sockets[i];
-                    bool isSelected = (i == activeSocketIndex);
+                    var sData = slots[i];
+                    bool isSelected = (i == activeSlotIndex);
                     int capturedIdx = i;
 
-                    GameObject sockGo = new GameObject($"ShipSocket_{sData.index}", typeof(RectTransform), typeof(Image), typeof(Button));
+                    GameObject sockGo = new GameObject($"ShipSocket_{i}", typeof(RectTransform), typeof(Image), typeof(Button));
                     sockGo.transform.SetParent(shipPreviewImage.transform, false);
 
                     RectTransform sRt = sockGo.GetComponent<RectTransform>();
@@ -678,17 +819,19 @@ namespace StarStrike.UI
                     sImg.color = Color.white;
                     sImg.preserveAspect = true;
 
-                    string eqWpn = StorageService.GetSocketWeapon(currentShipId, sData.index);
-                    if (!string.IsNullOrEmpty(eqWpn))
+                    if (sData.category == EquipmentSlotCategory.Weapon)
                     {
-                        sImg.sprite = ProceduralSpriteHelper.GetWeaponSprite(eqWpn);
+                        string eqWpn = StorageService.GetSocketWeapon(currentShipId, wpnCounter);
+                        sImg.sprite = !string.IsNullOrEmpty(eqWpn) ? ProceduralSpriteHelper.GetWeaponSprite(eqWpn) : ProceduralSpriteHelper.GetWeaponSocketSprite();
+                        wpnCounter++;
                     }
                     else
                     {
-                        sImg.sprite = ProceduralSpriteHelper.GetWeaponSocketSprite();
+                        string eqMod = StorageService.GetEquippedModule(currentShipId, sData.slotId, sData.defaultItemId);
+                        sImg.sprite = ProceduralSpriteHelper.GetModuleIcon(eqMod, sData.category);
                     }
 
-                    // Tactical Corner-Bracket Reticle Overlay
+                    // Tactical Reticle
                     GameObject reticleGo = new GameObject("Reticle", typeof(RectTransform), typeof(Image));
                     reticleGo.transform.SetParent(sockGo.transform, false);
                     RectTransform rRt = reticleGo.GetComponent<RectTransform>();
@@ -696,37 +839,46 @@ namespace StarStrike.UI
                     rRt.anchorMax = new Vector2(0.5f, 0.5f);
                     rRt.anchoredPosition = Vector2.zero;
                     rRt.sizeDelta = isSelected ? new Vector2(46f, 46f) : new Vector2(36f, 36f);
-                    rRt.localRotation = Quaternion.Euler(0f, 0f, 90f); // Keep reticle screen-aligned
+                    rRt.localRotation = Quaternion.Euler(0f, 0f, 90f);
 
                     Image rImg = reticleGo.GetComponent<Image>();
                     rImg.sprite = CyberVectorTheme.GetTacticalReticleSprite();
-                    rImg.color = isSelected ? CyberVectorTheme.VoltYellow : new Color(0.35f, 0.55f, 0.75f, 0.50f);
+                    rImg.color = isSelected ? CyberVectorTheme.VoltYellow : GetCategoryColor(sData.category, 0.55f);
                     rImg.raycastTarget = false;
 
-                    // Tactical Socket Tag (Screen-aligned badge)
+                    // Tactical Badge Tag
                     GameObject tagGo = new GameObject("SocketTag", typeof(RectTransform));
                     tagGo.transform.SetParent(sockGo.transform, false);
                     RectTransform tRt = tagGo.GetComponent<RectTransform>();
                     tRt.anchorMin = new Vector2(0.5f, 0.5f);
                     tRt.anchorMax = new Vector2(0.5f, 0.5f);
                     tRt.anchoredPosition = new Vector2(0f, -28f);
-                    tRt.sizeDelta = new Vector2(100f, 18f);
+                    tRt.sizeDelta = new Vector2(110f, 18f);
                     tRt.localRotation = Quaternion.Euler(0f, 0f, 90f);
 
-                    string badgeName = sData.name.Replace(" Hardpoint", "").Replace(" Socket", "").ToUpper();
+                    string catCode = sData.category switch
+                    {
+                        EquipmentSlotCategory.Weapon => "WPN",
+                        EquipmentSlotCategory.Defense => "DEF",
+                        EquipmentSlotCategory.Engine => "ENG",
+                        EquipmentSlotCategory.Reactor => "REA",
+                        EquipmentSlotCategory.Auxiliary => "AUX",
+                        _ => "SLOT"
+                    };
+                    string shortName = sData.slotName.Replace(" Hardpoint", "").Replace(" Socket", "").Replace(" Mount", "").ToUpper();
                     string tagText = isSelected
-                        ? $"<color=#ffe600><b>► [0{i + 1}] {badgeName}</b></color>"
-                        : $"<color=#7e9bc4>[0{i + 1}] {badgeName}</color>";
+                        ? $"<color=#ffe600><b>► [{catCode}] {shortName}</b></color>"
+                        : $"<color=#7e9bc4>[{catCode}] {shortName}</color>";
 
                     CreateText(tagGo.transform, "TagText", tagText, 8, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, defaultFont);
 
                     Button sBtn = sockGo.GetComponent<Button>();
-                    CyberVectorTheme.ApplyVectorButtonStyle(sBtn, isSelected ? CyberVectorTheme.VoltYellow : CyberVectorTheme.NeonCyan, isSelected);
-                    sBtn.onClick.AddListener(() => SelectSocket(capturedIdx));
+                    CyberVectorTheme.ApplyVectorButtonStyle(sBtn, isSelected ? CyberVectorTheme.VoltYellow : GetCategoryColor(sData.category), isSelected);
+                    sBtn.onClick.AddListener(() => SelectSlot(capturedIdx));
                 }
             }
 
-            // 2. Populate Socket Selection Tabs
+            // 2. Populate Equipment Slot Selection Tabs
             if (socketButtonContainer != null)
             {
                 for (int i = socketButtonContainer.childCount - 1; i >= 0; i--)
@@ -736,109 +888,245 @@ namespace StarStrike.UI
                     else DestroyImmediate(child.gameObject);
                 }
 
-                int sCount = sockets.Length;
-                float totalWidth = 420f;
-                float btnWidth = sCount == 1 ? 340f : (sCount == 2 ? 195f : 132f);
+                int sCount = slots.Length;
+                float totalWidth = 430f;
+                float btnWidth = Mathf.Clamp(totalWidth / Mathf.Max(1, sCount), 70f, 140f);
                 float btnSpacing = sCount > 1 ? (totalWidth - (sCount * btnWidth)) / (sCount - 1) + btnWidth : 0f;
                 float startX = sCount == 1 ? 0f : -((sCount - 1) * btnSpacing) / 2f;
 
+                int wpnCounter = 0;
                 for (int i = 0; i < sCount; i++)
                 {
-                    var sData = sockets[i];
-                    string mountedWId = StorageService.GetSocketWeapon(currentShipId, sData.index);
-                    var mountedDef = GetWeaponDef(mountedWId);
-                    bool isSelected = (i == activeSocketIndex);
+                    var sData = slots[i];
+                    bool isSelected = (i == activeSlotIndex);
+                    string mountedItemName;
+                    Sprite itemIcon;
+
+                    if (sData.category == EquipmentSlotCategory.Weapon)
+                    {
+                        string eqWpn = StorageService.GetSocketWeapon(currentShipId, wpnCounter);
+                        var wDefLocal = GetWeaponDef(eqWpn);
+                        mountedItemName = wDefLocal.name;
+                        itemIcon = ProceduralSpriteHelper.GetWeaponSprite(eqWpn);
+                        wpnCounter++;
+                    }
+                    else
+                    {
+                        string eqMod = StorageService.GetEquippedModule(currentShipId, sData.slotId, sData.defaultItemId);
+                        var modInfo = EquipmentModuleCatalog.GetModule(eqMod);
+                        mountedItemName = modInfo != null ? modInfo.name : "EMPTY";
+                        itemIcon = ProceduralSpriteHelper.GetModuleIcon(eqMod, sData.category);
+                    }
+
+                    string catCode = sData.category switch
+                    {
+                        EquipmentSlotCategory.Weapon => "WPN",
+                        EquipmentSlotCategory.Defense => "DEF",
+                        EquipmentSlotCategory.Engine => "ENG",
+                        EquipmentSlotCategory.Reactor => "REA",
+                        EquipmentSlotCategory.Auxiliary => "AUX",
+                        _ => "MOD"
+                    };
 
                     string sLabel = isSelected
-                        ? $"<color=#ffe600><b>► {sData.name}</b></color>\n<color=#00f2ff>[{mountedDef.name.ToUpper()}]</color>"
-                        : $"<color=#ffffff>{sData.name}</color>\n<color=#7e9bc4>[{mountedDef.name.ToUpper()}]</color>";
+                        ? $"<color=#ffe600><b>► [{catCode}]</b></color>\n<color=#00f2ff>[{mountedItemName.ToUpper()}]</color>"
+                        : $"<color=#ffffff>[{catCode}]</color>\n<color=#7e9bc4>[{mountedItemName.ToUpper()}]</color>";
 
                     Color sCol = isSelected ? CyberVectorTheme.VoltYellow : CyberVectorTheme.DimMuted;
                     int capturedIdx = i;
 
-                    GameObject sBtnObj = CreateButton(socketButtonContainer, $"SocketBtn_{i}", "", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * btnSpacing), 0), new Vector2(btnWidth, 44), sCol, defaultFont, 9);
-                    
-                    // Socket Icon on Left
-                    GameObject sBaseObj = new GameObject("SocketBaseIcon", typeof(RectTransform), typeof(Image));
+                    GameObject sBtnObj = CreateButton(socketButtonContainer, $"SlotBtn_{i}", "", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * btnSpacing), 0), new Vector2(btnWidth, 44), sCol, defaultFont, 8);
+
+                    GameObject sBaseObj = new GameObject("SlotBaseIcon", typeof(RectTransform), typeof(Image));
                     sBaseObj.transform.SetParent(sBtnObj.transform, false);
                     RectTransform sBaseRt = sBaseObj.GetComponent<RectTransform>();
                     sBaseRt.anchorMin = new Vector2(0.04f, 0.5f);
                     sBaseRt.anchorMax = new Vector2(0.04f, 0.5f);
-                    sBaseRt.anchoredPosition = new Vector2(16f, 0f);
-                    sBaseRt.sizeDelta = new Vector2(26f, 26f);
+                    sBaseRt.anchoredPosition = new Vector2(12f, 0f);
+                    sBaseRt.sizeDelta = new Vector2(22f, 22f);
                     var sBaseImg = sBaseObj.GetComponent<Image>();
                     sBaseImg.color = Color.white;
                     sBaseImg.preserveAspect = true;
+                    sBaseImg.sprite = itemIcon;
 
-                    // If weapon socket is installed, replace it with the weapon sprite.
-                    // Otherwise, display the empty weapon socket sprite.
-                    if (!string.IsNullOrEmpty(mountedWId))
-                    {
-                        sBaseImg.sprite = ProceduralSpriteHelper.GetWeaponSprite(mountedWId);
-                    }
-                    else
-                    {
-                        sBaseImg.sprite = ProceduralSpriteHelper.GetWeaponSocketSprite();
-                    }
-
-                    // Label offset to right of icon
-                    CreateText(sBtnObj.transform, "Text", sLabel, 9, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, new Vector2(0.24f, 0f), new Vector2(1f, 1f), Vector2.zero, Vector2.zero, defaultFont);
+                    CreateText(sBtnObj.transform, "Text", sLabel, 8, FontStyle.Bold, Color.white, TextAnchor.MiddleLeft, new Vector2(0.32f, 0f), new Vector2(1f, 1f), Vector2.zero, Vector2.zero, defaultFont);
 
                     Button btn = sBtnObj.GetComponent<Button>();
-                    btn.onClick.AddListener(() => SelectSocket(capturedIdx));
+                    btn.onClick.AddListener(() => SelectSlot(capturedIdx));
                 }
             }
 
-            if (socketHeaderPrompt != null && sockets.Length > 0)
+            // 3. Populate Outfitting Matrix based on Active Slot Category
+            if (currentSlot.category == EquipmentSlotCategory.Weapon)
             {
-                socketHeaderPrompt.text = $"<color=#00f2ff>SELECT WEAPON FOR <b>[{sockets[activeSocketIndex].name}]</b> [1-5]:</color>";
-            }
-
-            string mountedOnActiveSocket = StorageService.GetSocketWeapon(currentShipId, activeSocketIndex);
-            string equippedSkl = StorageService.GetSelectedSkill();
-
-            // 3. Populate Weapon Buttons with Icons
-            if (weaponButtonContainer != null)
-            {
-                for (int i = weaponButtonContainer.childCount - 1; i >= 0; i--)
+                if (socketHeaderPrompt != null)
                 {
-                    var child = weaponButtonContainer.GetChild(i);
-                    if (Application.isPlaying) Destroy(child.gameObject);
-                    else DestroyImmediate(child.gameObject);
+                    socketHeaderPrompt.text = $"<color=#00f2ff>SELECT WEAPON FOR <b>[{currentSlot.slotName}]</b> [1-5]:</color>";
                 }
 
-                float btnSpacing = 82f;
-                float startX = -((WeaponCatalog.Length - 1) * btnSpacing) / 2f;
+                string mountedOnActiveSocket = StorageService.GetSocketWeapon(currentShipId, activeSocketIndex);
 
-                for (int i = 0; i < WeaponCatalog.Length; i++)
+                if (weaponButtonContainer != null)
                 {
-                    var w = WeaponCatalog[i];
-                    bool isMountedOnActive = string.Equals(w.id, mountedOnActiveSocket, System.StringComparison.OrdinalIgnoreCase);
-                    bool isInspected = string.Equals(w.id, inspectedWeaponId, System.StringComparison.OrdinalIgnoreCase);
-
-                    string archTag = w.archetype switch
+                    for (int i = weaponButtonContainer.childCount - 1; i >= 0; i--)
                     {
-                        WeaponArchetype.Beam => "BEAM",
-                        WeaponArchetype.Traceable => "TRACE",
-                        _ => "PROJ"
+                        var child = weaponButtonContainer.GetChild(i);
+                        if (Application.isPlaying) Destroy(child.gameObject);
+                        else DestroyImmediate(child.gameObject);
+                    }
+
+                    float btnSpacing = 82f;
+                    float startX = -((WeaponCatalog.Length - 1) * btnSpacing) / 2f;
+
+                    for (int i = 0; i < WeaponCatalog.Length; i++)
+                    {
+                        var w = WeaponCatalog[i];
+                        bool isMountedOnActive = string.Equals(w.id, mountedOnActiveSocket, System.StringComparison.OrdinalIgnoreCase);
+                        bool isInspected = string.Equals(w.id, inspectedWeaponId, System.StringComparison.OrdinalIgnoreCase);
+
+                        string archTag = w.archetype switch
+                        {
+                            WeaponArchetype.Beam => "BEAM",
+                            WeaponArchetype.Traceable => "TRACE",
+                            _ => "PROJ"
+                        };
+
+                        string label = isMountedOnActive
+                            ? $"<color=#ffe600>[{w.name.ToUpper()}]</color>\n★ MOUNTED"
+                            : $"{w.name.ToUpper()}\n<color=#7e9bc4>[{archTag}]</color>";
+                        Color col = isMountedOnActive ? CyberVectorTheme.VoltYellow : (isInspected ? CyberVectorTheme.NeonCyan : CyberVectorTheme.DimMuted);
+
+                        string capturedWId = w.id;
+                        GameObject btnObj = CreateWeaponButtonWithIcon(weaponButtonContainer, $"WpnBtn_{w.id}", label, w.id, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * btnSpacing), 0), new Vector2(78, 50), col, defaultFont, 8);
+                        Button btn = btnObj.GetComponent<Button>();
+                        btn.onClick.AddListener(() => EquipWeaponToSocket(activeSocketIndex, capturedWId));
+                    }
+                }
+
+                // Weapon Inspector Card
+                var wDef = GetWeaponDef(inspectedWeaponId);
+                if (weaponDetailIcon != null)
+                {
+                    weaponDetailIcon.sprite = ProceduralSpriteHelper.GetWeaponSprite(inspectedWeaponId);
+                }
+                if (weaponDetailTitle != null)
+                {
+                    string archBadge = wDef.archetype switch
+                    {
+                        WeaponArchetype.Beam => "<color=#5dade2>[ BEAM ]</color>",
+                        WeaponArchetype.Traceable => "<color=#e67e22>[ TRACEABLE ]</color>",
+                        _ => "<color=#95a5a6>[ PROJECTILE ]</color>"
                     };
+                    weaponDetailTitle.text = $"{archBadge} <color=#ffe600><b>{wDef.name.ToUpper()}</b></color>  <color=#7e9bc4>[ {wDef.classType} ]</color>";
+                }
+                if (weaponDetailStats != null)
+                {
+                    weaponDetailStats.text =
+                        CyberVectorTheme.FormatStatMeter("BASE DAMAGE", wDef.damage, 100, "DMG", CyberVectorTheme.VoltYellow) + "\n" +
+                        CyberVectorTheme.FormatStatMeter("CYCLIC RATE", wDef.fireRate, 10, "/SEC", CyberVectorTheme.NeonCyan) + "\n" +
+                        CyberVectorTheme.FormatStatMeter("ENERGY DRAIN", wDef.energyCost, 20, "ENG", CyberVectorTheme.NeonMagenta) + "\n" +
+                        $"<color=#00f2ff>DISPERSION     </color>  <color=#ffffff>{wDef.spread}</color>";
+                }
+                if (weaponDetailDesc != null)
+                {
+                    weaponDetailDesc.text = $"<color=#7e9bc4>\"{wDef.description}\"</color>\n<color=#00f2ff>HARDPOINT TELEMETRY: </color><color=#ffe600>[{currentSlot.slotName}]</color> <color=#526b94>LOCAL: ({currentSlot.localPosition.x:F2}, {currentSlot.localPosition.y:F2})</color>";
+                }
+            }
+            else
+            {
+                // Non-weapon equipment module category
+                if (socketHeaderPrompt != null)
+                {
+                    socketHeaderPrompt.text = $"<color=#00f2ff>SELECT {currentSlot.category.ToString().ToUpper()} MODULE FOR <b>[{currentSlot.slotName}]</b> [1-3]:</color>";
+                }
 
-                    string label = isMountedOnActive
-                        ? $"<color=#ffe600>[{w.name.ToUpper()}]</color>\n★ MOUNTED"
-                        : $"{w.name.ToUpper()}\n<color=#7e9bc4>[{archTag}]</color>";
-                    Color col;
-                    if (isMountedOnActive) col = CyberVectorTheme.VoltYellow;
-                    else if (isInspected) col = CyberVectorTheme.NeonCyan;
-                    else col = CyberVectorTheme.DimMuted;
+                string mountedModId = StorageService.GetEquippedModule(currentShipId, currentSlot.slotId, currentSlot.defaultItemId);
+                var moduleList = EquipmentModuleCatalog.GetModulesByCategory(currentSlot.category);
 
-                    string capturedWId = w.id;
-                    GameObject btnObj = CreateWeaponButtonWithIcon(weaponButtonContainer, $"WpnBtn_{w.id}", label, w.id, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * btnSpacing), 0), new Vector2(78, 50), col, defaultFont, 8);
-                    Button btn = btnObj.GetComponent<Button>();
-                    btn.onClick.AddListener(() => EquipWeaponToSocket(activeSocketIndex, capturedWId));
+                if (weaponButtonContainer != null)
+                {
+                    for (int i = weaponButtonContainer.childCount - 1; i >= 0; i--)
+                    {
+                        var child = weaponButtonContainer.GetChild(i);
+                        if (Application.isPlaying) Destroy(child.gameObject);
+                        else DestroyImmediate(child.gameObject);
+                    }
+
+                    float btnSpacing = 135f;
+                    float startX = -((moduleList.Count - 1) * btnSpacing) / 2f;
+
+                    for (int i = 0; i < moduleList.Count; i++)
+                    {
+                        var mod = moduleList[i];
+                        bool isMountedOnActive = string.Equals(mod.id, mountedModId, System.StringComparison.OrdinalIgnoreCase);
+                        bool isInspected = string.Equals(mod.id, inspectedModuleId, System.StringComparison.OrdinalIgnoreCase);
+
+                        string label = isMountedOnActive
+                            ? $"<color=#ffe600>[{mod.name.ToUpper()}]</color>\n★ INSTALLED"
+                            : $"{mod.name.ToUpper()}\n<color=#7e9bc4>[{currentSlot.category}]</color>";
+
+                        Color col = isMountedOnActive ? CyberVectorTheme.VoltYellow : (isInspected ? CyberVectorTheme.NeonCyan : CyberVectorTheme.DimMuted);
+                        string capturedModId = mod.id;
+
+                        GameObject btnObj = CreateModuleButtonWithIcon(weaponButtonContainer, $"ModBtn_{mod.id}", label, mod.id, currentSlot.category, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * btnSpacing), 0), new Vector2(130, 50), col, defaultFont, 8);
+                        Button btn = btnObj.GetComponent<Button>();
+                        btn.onClick.AddListener(() => EquipModuleToSlot(activeSlotIndex, capturedModId));
+                    }
+                }
+
+                // Module Inspector Card
+                var modDef = EquipmentModuleCatalog.GetModule(inspectedModuleId) ?? (moduleList.Count > 0 ? moduleList[0] : null);
+                if (modDef != null)
+                {
+                    if (weaponDetailIcon != null)
+                    {
+                        weaponDetailIcon.sprite = ProceduralSpriteHelper.GetModuleIcon(modDef.id, modDef.category);
+                    }
+                    if (weaponDetailTitle != null)
+                    {
+                        weaponDetailTitle.text = $"<color=#00f2ff>[ {modDef.category.ToString().ToUpper()} ]</color> <color=#ffe600><b>{modDef.name.ToUpper()}</b></color>  <color=#7e9bc4>[ {modDef.role} ]</color>";
+                    }
+                    if (weaponDetailStats != null)
+                    {
+                        string stat1 = "";
+                        string stat2 = "";
+                        string stat3 = "";
+
+                        switch (modDef.category)
+                        {
+                            case EquipmentSlotCategory.Defense:
+                                stat1 = CyberVectorTheme.FormatStatMeter("SHIELD CAPACITY", modDef.shieldCapacityBonus, 100, "+SHD", CyberVectorTheme.NeonCyan);
+                                stat2 = CyberVectorTheme.FormatStatMeter("HULL INTEGRITY", modDef.hullCapacityBonus, 150, "+HULL", CyberVectorTheme.VoltYellow);
+                                stat3 = $"<color=#00f2ff>COLLISION ARMOR: </color><color=#ffe600>+{modDef.collisionArmorBonus:P0} RESIST</color>  <color=#7e9bc4>REGEN: +{modDef.shieldRegenBonus}/s</color>";
+                                break;
+                            case EquipmentSlotCategory.Engine:
+                                stat1 = CyberVectorTheme.FormatStatMeter("CRUISE VELOCITY", modDef.speedBonus, 100, "+SPD", CyberVectorTheme.LaserGreen);
+                                stat2 = CyberVectorTheme.FormatStatMeter("ANGULAR AGILITY", modDef.agilityBonus * 10f, 40, "+AGL", CyberVectorTheme.VoltYellow);
+                                stat3 = $"<color=#00f2ff>POWER CONSUMPTION: </color><color=#7e9bc4>OPTIMIZED VECTOR RCS</color>";
+                                break;
+                            case EquipmentSlotCategory.Reactor:
+                                stat1 = CyberVectorTheme.FormatStatMeter("CAPACITOR POOL", modDef.energyCapacityBonus, 100, "+ENG", CyberVectorTheme.NeonMagenta);
+                                stat2 = CyberVectorTheme.FormatStatMeter("FAST RECHARGE", modDef.energyRegenBonus, 20, "+REG/S", CyberVectorTheme.VoltYellow);
+                                stat3 = $"<color=#00f2ff>OVERDRAW MITIGATION: </color><color=#ffe600>-{modDef.overdrawResistanceBonus:P0} BURNOUT</color>";
+                                break;
+                            case EquipmentSlotCategory.Auxiliary:
+                                stat1 = CyberVectorTheme.FormatStatMeter("DAMAGE BOOST", (modDef.damageMultiplier - 1f) * 100f, 50, "%AMP", CyberVectorTheme.VoltYellow);
+                                stat2 = CyberVectorTheme.FormatStatMeter("TRACTOR RADIUS", modDef.pickupRadiusBonus * 10f, 60, "+RAD", CyberVectorTheme.NeonCyan);
+                                stat3 = $"<color=#00f2ff>TACTICAL TELEMETRY: </color><color=#7e9bc4>AUTONOMOUS FLEET BUS</color>";
+                                break;
+                        }
+
+                        weaponDetailStats.text = $"{stat1}\n{stat2}\n{stat3}";
+                    }
+                    if (weaponDetailDesc != null)
+                    {
+                        weaponDetailDesc.text = $"<color=#7e9bc4>\"{modDef.description}\"</color>\n<color=#00f2ff>SLOT TELEMETRY: </color><color=#ffe600>[{currentSlot.slotName}]</color> <color=#526b94>LOCAL: ({currentSlot.localPosition.x:F2}, {currentSlot.localPosition.y:F2})</color>";
+                    }
                 }
             }
 
-            // 4. Populate Skill Buttons
+            // 4. Populate Tactical Combat Modules (Skills)
+            string equippedSkl = StorageService.GetSelectedSkill();
             if (skillButtonContainer != null)
             {
                 for (int i = skillButtonContainer.childCount - 1; i >= 0; i--)
@@ -858,10 +1146,7 @@ namespace StarStrike.UI
                     bool isInspected = string.Equals(s.id, inspectedSkillId, System.StringComparison.OrdinalIgnoreCase);
 
                     string label = isEquipped ? $"<color=#00f2ff>[{s.name.ToUpper()}]</color>\n★ MOUNTED" : $"{s.name.ToUpper()}";
-                    Color col;
-                    if (isEquipped) col = CyberVectorTheme.NeonCyan;
-                    else if (isInspected) col = CyberVectorTheme.VoltYellow;
-                    else col = CyberVectorTheme.DimMuted;
+                    Color col = isEquipped ? CyberVectorTheme.NeonCyan : (isInspected ? CyberVectorTheme.VoltYellow : CyberVectorTheme.DimMuted);
 
                     string capturedSId = s.id;
                     GameObject btnObj = CreateButton(skillButtonContainer, $"SklBtn_{s.id}", label, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * btnSpacing), 0), new Vector2(130, 44), col, defaultFont, 10);
@@ -870,39 +1155,7 @@ namespace StarStrike.UI
                 }
             }
 
-            // 5. Update Weapon Inspector Card
-            var wDef = GetWeaponDef(inspectedWeaponId);
-            var activeSocket = (sockets.Length > 0 && activeSocketIndex < sockets.Length) ? sockets[activeSocketIndex] : new ShipWeaponController.HardpointSocketData { name = "NOSE HARDPOINT", localPosition = Vector2.zero };
-
-            if (weaponDetailIcon != null)
-            {
-                weaponDetailIcon.sprite = ProceduralSpriteHelper.GetWeaponSprite(inspectedWeaponId);
-            }
-
-            if (weaponDetailTitle != null)
-            {
-                string archBadge = wDef.archetype switch
-                {
-                    WeaponArchetype.Beam => "<color=#5dade2>[ BEAM ]</color>",
-                    WeaponArchetype.Traceable => "<color=#e67e22>[ TRACEABLE ]</color>",
-                    _ => "<color=#95a5a6>[ PROJECTILE ]</color>"
-                };
-                weaponDetailTitle.text = $"{archBadge} <color=#ffe600><b>{wDef.name.ToUpper()}</b></color>  <color=#7e9bc4>[ {wDef.classType} ]</color>";
-            }
-            if (weaponDetailStats != null)
-            {
-                weaponDetailStats.text =
-                    CyberVectorTheme.FormatStatMeter("BASE DAMAGE", wDef.damage, 100, "DMG", CyberVectorTheme.VoltYellow) + "\n" +
-                    CyberVectorTheme.FormatStatMeter("CYCLIC RATE", wDef.fireRate, 10, "/SEC", CyberVectorTheme.NeonCyan) + "\n" +
-                    CyberVectorTheme.FormatStatMeter("ENERGY DRAIN", wDef.energyCost, 20, "ENG", CyberVectorTheme.NeonMagenta) + "\n" +
-                    $"<color=#00f2ff>DISPERSION     </color>  <color=#ffffff>{wDef.spread}</color>";
-            }
-            if (weaponDetailDesc != null)
-            {
-                weaponDetailDesc.text = $"<color=#7e9bc4>\"{wDef.description}\"</color>\n<color=#00f2ff>HARDPOINT TELEMETRY: </color><color=#ffe600>[{activeSocket.name}]</color> <color=#526b94>LOCAL: ({activeSocket.localPosition.x:F2}, {activeSocket.localPosition.y:F2})</color>";
-            }
-
-            // 6. Update Skill Inspector Card
+            // 5. Update Skill Inspector Card
             var sDef = GetSkillDef(inspectedSkillId);
             if (skillDetailTitle != null)
             {
@@ -915,6 +1168,58 @@ namespace StarStrike.UI
                     CyberVectorTheme.FormatStatMeter("RECHARGE CYCLE", sDef.cooldown, 10, "SEC", CyberVectorTheme.NeonCyan) + "\n\n" +
                     $"<color=#7e9bc4>\"{sDef.description}\"</color>";
             }
+        }
+
+        private Color GetCategoryColor(EquipmentSlotCategory category, float alpha = 1.0f)
+        {
+            Color c = category switch
+            {
+                EquipmentSlotCategory.Weapon => CyberVectorTheme.NeonCyan,
+                EquipmentSlotCategory.Defense => new Color(0.2f, 0.85f, 1f),
+                EquipmentSlotCategory.Engine => new Color(1f, 0.55f, 0.15f),
+                EquipmentSlotCategory.Reactor => CyberVectorTheme.VoltYellow,
+                EquipmentSlotCategory.Auxiliary => new Color(0.75f, 0.35f, 1f),
+                _ => CyberVectorTheme.NeonCyan
+            };
+            c.a = alpha;
+            return c;
+        }
+
+        private GameObject CreateModuleButtonWithIcon(Transform parent, string name, string label, string moduleId, EquipmentSlotCategory category, Vector2 anchorMin, Vector2 anchorMax, Vector2 pos, Vector2 size, Color bgColor, Font font, int fontSize = 8)
+        {
+            GameObject btnObj = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
+            btnObj.transform.SetParent(parent, false);
+            RectTransform rt = btnObj.GetComponent<RectTransform>();
+            rt.anchorMin = anchorMin;
+            rt.anchorMax = anchorMax;
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
+
+            Image img = btnObj.GetComponent<Image>();
+            img.sprite = CyberVectorTheme.GetButtonSprite();
+            img.type = Image.Type.Sliced;
+            img.color = Color.white;
+
+            Button btn = btnObj.GetComponent<Button>();
+            btn.onClick.AddListener(() =>
+            {
+                StarStrike.Gameplay.Audio.AudioService.Instance?.PlayUISound("click");
+            });
+            CyberVectorTheme.ApplyVectorButtonStyle(btn, bgColor, false);
+
+            GameObject iconObj = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+            iconObj.transform.SetParent(btnObj.transform, false);
+            RectTransform iconRt = iconObj.GetComponent<RectTransform>();
+            iconRt.anchorMin = new Vector2(0.5f, 0.68f);
+            iconRt.anchorMax = new Vector2(0.5f, 0.68f);
+            iconRt.anchoredPosition = Vector2.zero;
+            iconRt.sizeDelta = new Vector2(26f, 26f);
+            var iconImg = iconObj.GetComponent<Image>();
+            iconImg.sprite = ProceduralSpriteHelper.GetModuleIcon(moduleId, category);
+            iconImg.preserveAspect = true;
+
+            CreateText(btnObj.transform, "Text", label, fontSize, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, new Vector2(0f, 0.02f), new Vector2(1f, 0.45f), Vector2.zero, Vector2.zero, font);
+            return btnObj;
         }
 
         private WeaponDefinitionInfo GetWeaponDef(string id)

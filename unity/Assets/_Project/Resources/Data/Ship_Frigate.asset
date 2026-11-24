@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 452a726ac86488749bcfc0d806d22c9f, type: 3}
+  m_Name: Ship_Frigate
+  m_EditorClassIdentifier: StarStrike.Core::StarStrike.Core.ShipDefinition
+  id: frigate
+  shipName: Viper Frigate
+  tier: 2
+  shipClass: 1
+  classRoleDescription: Fast wolfpack raider and escort, tactical EMP/cloak flanker.
+  cameraOrthoSize: 9
+  hullMass: 1.6
+  collisionArmorReduction: 0.05
+  canAimIndependently: 0
+  maxUpgradeLevel: 5
+  evolvesTo: []
+  baseStats:
+    shieldCapacity: 180
+    shieldRegen: 16
+    hullCapacity: 140
+    energyCapacity: 110
+    energyRegen: 22
+    pulseDamage: 32
+    pulseSpeed: 640
+    speed: 280
+    agility: 5.8
+  weaponSlots: 3
+  hardpointSockets:
+  - socketId: Frigate_CenterProw
+    localPosition: {x: 1.65, y: 0}
+    mountAngle: 0
+    size: 1
+    mountType: 0
+    defaultWeaponId: beam
+  - socketId: Frigate_FlankL
+    localPosition: {x: 0.5, y: 1.15}
+    mountAngle: 0
+    size: 0
+    mountType: 0
+    defaultWeaponId: pulse
+  - socketId: Frigate_FlankR
+    localPosition: {x: 0.5, y: -1.15}
+    mountAngle: 0
+    size: 0
+    mountType: 0
+    defaultWeaponId: pulse
+  equipmentSlots:
+  - slotId: wpn_0
+    slotName: Center Prow Beam
+    category: 0
+    size: 1
+    mountType: 0
+    localPosition: {x: 1.65, y: 0}
+    defaultItemId: beam
+  - slotId: wpn_1
+    slotName: Port Flank Hardpoint
+    category: 0
+    size: 0
+    mountType: 0
+    localPosition: {x: 0.5, y: 1.15}
+    defaultItemId: pulse
+  - slotId: wpn_2
+    slotName: Starboard Flank Hardpoint
+    category: 0
+    size: 0
+    mountType: 0
+    localPosition: {x: 0.5, y: -1.15}
+    defaultItemId: pulse
+  - slotId: def_0
+    slotName: Shield Generator Bay
+    category: 1
+    size: 1
+    mountType: 0
+    localPosition: {x: 0, y: 0}
+    defaultItemId: def_shield_booster
+  - slotId: eng_0
+    slotName: Vector Thrusters
+    category: 2
+    size: 1
+    mountType: 0
+    localPosition: {x: -1.6, y: 0}
+    defaultItemId: eng_vector_thrusters
+  - slotId: aux_0
+    slotName: Graviton Siphon
+    category: 4
+    size: 1
+    mountType: 0
+    localPosition: {x: -0.6, y: 0}
+    defaultItemId: aux_graviton_siphon
+  droneHangarCapacity: 0
+  defaultDroneType: 
+  hitboxRadius: 0.65
+  shieldHitboxOffset: 0.22
+  weaponSockets:
+  - {x: 1.65, y: 0}
+  - {x: 0.5, y: 1.15}
+  - {x: 0.5, y: -1.15}
+  thrusterSockets:
+  - {x: -1.6, y: 0.45}
+  - {x: -1.6, y: -0.45}
+  prefab: {fileID: 0}
+  sprite: {fileID: 0}
+  emissiveTexture: {fileID: 0}
+  emissiveColor: {r: 0.25, g: 0.9, b: 1, a: 1}
+  emissiveIntensity: 1.8
+  color: {r: 1, g: 1, b: 1, a: 1}
+  scale: 1

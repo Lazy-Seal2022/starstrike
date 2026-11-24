@@ -1,0 +1,175 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 452a726ac86488749bcfc0d806d22c9f, type: 3}
+  m_Name: Ship_Battleship
+  m_EditorClassIdentifier: StarStrike.Core::StarStrike.Core.ShipDefinition
+  id: battleship
+  shipName: Titan Dreadnought
+  tier: 3
+  shipClass: 5
+  classRoleDescription: Superheavy dreadnought fortress, colossal spinal superweapon,
+    extreme armor mass.
+  cameraOrthoSize: 15
+  hullMass: 9
+  collisionArmorReduction: 0.4
+  canAimIndependently: 1
+  maxUpgradeLevel: 6
+  evolvesTo: []
+  baseStats:
+    shieldCapacity: 500
+    shieldRegen: 28
+    hullCapacity: 600
+    energyCapacity: 300
+    energyRegen: 20
+    pulseDamage: 75
+    pulseSpeed: 520
+    speed: 130
+    agility: 1.8
+  weaponSlots: 6
+  hardpointSockets:
+  - socketId: Battleship_SpinalLance
+    localPosition: {x: 3.1, y: 0}
+    mountAngle: 0
+    size: 3
+    mountType: 4
+    defaultWeaponId: beam
+  - socketId: Battleship_HeavyTurretL
+    localPosition: {x: 1.7, y: 1.25}
+    mountAngle: 0
+    size: 2
+    mountType: 1
+    defaultWeaponId: scattergun
+  - socketId: Battleship_HeavyTurretR
+    localPosition: {x: 1.7, y: -1.25}
+    mountAngle: 0
+    size: 2
+    mountType: 1
+    defaultWeaponId: scattergun
+  - socketId: Battleship_BridgeTurret
+    localPosition: {x: 0.4, y: 0}
+    mountAngle: 0
+    size: 2
+    mountType: 1
+    defaultWeaponId: gatling
+  - socketId: Battleship_MissilePodL
+    localPosition: {x: -0.8, y: 1.7}
+    mountAngle: 0
+    size: 2
+    mountType: 0
+    defaultWeaponId: missile
+  - socketId: Battleship_MissilePodR
+    localPosition: {x: -0.8, y: -1.7}
+    mountAngle: 0
+    size: 2
+    mountType: 0
+    defaultWeaponId: missile
+  equipmentSlots:
+  - slotId: wpn_0
+    slotName: Spinal Lance Superweapon
+    category: 0
+    size: 3
+    mountType: 4
+    localPosition: {x: 3.1, y: 0}
+    defaultItemId: beam
+  - slotId: wpn_1
+    slotName: Port Heavy Flak Turret
+    category: 0
+    size: 2
+    mountType: 1
+    localPosition: {x: 1.7, y: 1.25}
+    defaultItemId: scattergun
+  - slotId: wpn_2
+    slotName: Starboard Heavy Flak Turret
+    category: 0
+    size: 2
+    mountType: 1
+    localPosition: {x: 1.7, y: -1.25}
+    defaultItemId: scattergun
+  - slotId: wpn_3
+    slotName: Bridge Command Gatling
+    category: 0
+    size: 2
+    mountType: 1
+    localPosition: {x: 0.4, y: 0}
+    defaultItemId: gatling
+  - slotId: wpn_4
+    slotName: Port Heavy Missile Pod
+    category: 0
+    size: 2
+    mountType: 0
+    localPosition: {x: -0.8, y: 1.7}
+    defaultItemId: missile
+  - slotId: wpn_5
+    slotName: Starboard Heavy Missile Pod
+    category: 0
+    size: 2
+    mountType: 0
+    localPosition: {x: -0.8, y: -1.7}
+    defaultItemId: missile
+  - slotId: def_0
+    slotName: Phase Fortress Aegis
+    category: 1
+    size: 2
+    mountType: 0
+    localPosition: {x: 1, y: 0}
+    defaultItemId: def_phase_deflector
+  - slotId: def_1
+    slotName: Dreadnought Citadel Armor
+    category: 1
+    size: 2
+    mountType: 0
+    localPosition: {x: -0.2, y: 0}
+    defaultItemId: def_nanite_armor
+  - slotId: rea_0
+    slotName: Primary Singularity Core
+    category: 3
+    size: 2
+    mountType: 0
+    localPosition: {x: -1.5, y: 0.6}
+    defaultItemId: rea_flux_capacitor
+  - slotId: rea_1
+    slotName: Secondary Tachyon Loop
+    category: 3
+    size: 2
+    mountType: 0
+    localPosition: {x: -1.5, y: -0.6}
+    defaultItemId: rea_tachyon_core
+  - slotId: aux_0
+    slotName: Supercapital Targeting Mainframe
+    category: 4
+    size: 2
+    mountType: 0
+    localPosition: {x: -2.2, y: 0}
+    defaultItemId: aux_targeting_comp
+  droneHangarCapacity: 0
+  defaultDroneType: 
+  hitboxRadius: 1.55
+  shieldHitboxOffset: 0.4
+  weaponSockets:
+  - {x: 3.1, y: 0}
+  - {x: 1.7, y: 1.25}
+  - {x: 1.7, y: -1.25}
+  - {x: 0.4, y: 0}
+  - {x: -0.8, y: 1.7}
+  - {x: -0.8, y: -1.7}
+  thrusterSockets:
+  - {x: -3.4, y: 1.2}
+  - {x: -3.4, y: -1.2}
+  - {x: -3.6, y: 0.4}
+  - {x: -3.6, y: -0.4}
+  prefab: {fileID: 0}
+  sprite: {fileID: 0}
+  emissiveTexture: {fileID: 0}
+  emissiveColor: {r: 0.25, g: 0.9, b: 1, a: 1}
+  emissiveIntensity: 1.8
+  color: {r: 1, g: 1, b: 1, a: 1}
+  scale: 1

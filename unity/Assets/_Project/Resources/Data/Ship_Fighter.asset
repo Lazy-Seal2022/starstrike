@@ -15,10 +15,15 @@ MonoBehaviour:
   id: fighter
   shipName: Ares Fighter
   tier: 2
+  shipClass: 0
+  classRoleDescription: 
+  cameraOrthoSize: 8.5
+  hullMass: 1
+  collisionArmorReduction: 0
   maxUpgradeLevel: 5
   evolvesTo:
   - {fileID: 11400000, guid: d3604160893540c4e8cb479ebc0662c8, type: 2}
-  - {fileID: 11400000, guid: e73fb60892ee98748a474443bfc8824e, type: 2}
+  - {fileID: 11400000, guid: 1aeeca5de806b114e9ce8ea9e54def60, type: 2}
   baseStats:
     shieldCapacity: 150
     shieldRegen: 12
@@ -30,6 +35,45 @@ MonoBehaviour:
     speed: 310
     agility: 5
   weaponSlots: 2
+  hardpointSockets: []
+  equipmentSlots:
+  - slotId: wpn_0
+    slotName: Socket_0
+    category: 0
+    size: 1
+    mountType: 0
+    localPosition: {x: 0.35, y: 1.25}
+    defaultItemId: pulse
+  - slotId: wpn_1
+    slotName: Socket_1
+    category: 0
+    size: 1
+    mountType: 0
+    localPosition: {x: 0.35, y: -1.25}
+    defaultItemId: pulse
+  - slotId: def_0
+    slotName: Shield Deflector Bay
+    category: 1
+    size: 1
+    mountType: 0
+    localPosition: {x: 0, y: 0}
+    defaultItemId: def_shield_booster
+  - slotId: eng_0
+    slotName: Sublight Propulsion Link
+    category: 2
+    size: 1
+    mountType: 0
+    localPosition: {x: -1.2, y: 0}
+    defaultItemId: eng_afterburner
+  - slotId: rea_0
+    slotName: Capacitor Power Core
+    category: 3
+    size: 1
+    mountType: 0
+    localPosition: {x: -0.4, y: 0}
+    defaultItemId: rea_flux_capacitor
+  droneHangarCapacity: 0
+  defaultDroneType: 
   hitboxRadius: 0.55
   shieldHitboxOffset: 0.2
   weaponSockets:
@@ -38,7 +82,7 @@ MonoBehaviour:
   thrusterSockets:
   - {x: -1.5, y: 0.5}
   - {x: -1.5, y: -0.5}
-  prefab: {fileID: 4332942371631827694, guid: 611b425e3348f784487be078b9c4102f, type: 3}
+  prefab: {fileID: 0}
   sprite: {fileID: 21300000, guid: 0a8234e4f7ca8cf4eb5231febda87d6c, type: 3}
   emissiveTexture: {fileID: 0}
   emissiveColor: {r: 0.25, g: 0.9, b: 1, a: 1}
