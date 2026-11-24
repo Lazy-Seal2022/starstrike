@@ -65,19 +65,8 @@ namespace StarStrike.Bootstrap
                 Object.DontDestroyOnLoad(smGO);
             }
 
-            // 6. Ensure EventSystem exists and persists
-            var existingEventSystem = Object.FindAnyObjectByType<EventSystem>();
-            if (existingEventSystem == null)
-            {
-                var eventSystemGO = new GameObject("EventSystem");
-                eventSystemGO.AddComponent<EventSystem>();
-                eventSystemGO.AddComponent<InputSystemUIInputModule>();
-                Object.DontDestroyOnLoad(eventSystemGO);
-            }
-            else if (existingEventSystem.transform.parent == null)
-            {
-                Object.DontDestroyOnLoad(existingEventSystem.gameObject);
-            }
+            // 6. Ensure exactly one EventSystem exists and persists
+            EventSystemSingleton.EnforceSingleEventSystem();
 
             string activeScene = SceneManager.GetActiveScene().name;
             OnSceneLoaded(activeScene);
@@ -90,24 +79,14 @@ namespace StarStrike.Bootstrap
 
         private static void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            EventSystemSingleton.EnforceSingleEventSystem();
             OnSceneLoaded(scene.name);
         }
 
         public static void OnSceneLoaded(string activeScene)
         {
-            // Ensure EventSystem exists on scene transition
-            var es = Object.FindAnyObjectByType<EventSystem>();
-            if (es == null)
-            {
-                var eventSystemGO = new GameObject("EventSystem");
-                eventSystemGO.AddComponent<EventSystem>();
-                eventSystemGO.AddComponent<InputSystemUIInputModule>();
-                Object.DontDestroyOnLoad(eventSystemGO);
-            }
-            else if (es.transform.parent == null)
-            {
-                Object.DontDestroyOnLoad(es.gameObject);
-            }
+            // Ensure exactly one EventSystem exists on scene transition
+            EventSystemSingleton.EnforceSingleEventSystem();
 
             // 7. Scene-specific UI Setup
             if (activeScene == GameManager.SceneMainMenu)

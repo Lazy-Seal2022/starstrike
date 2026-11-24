@@ -69,6 +69,7 @@ namespace StarStrike.Editor
             var eventGo = new GameObject("EventSystem");
             eventGo.AddComponent<EventSystem>();
             eventGo.AddComponent<InputSystemUIInputModule>();
+            eventGo.AddComponent<EventSystemSingleton>();
 
             // 4. GameCanvas
             var canvasGo = new GameObject("GameCanvas");
@@ -124,6 +125,7 @@ namespace StarStrike.Editor
             var eventGo = new GameObject("EventSystem");
             eventGo.AddComponent<EventSystem>();
             eventGo.AddComponent<InputSystemUIInputModule>();
+            eventGo.AddComponent<EventSystemSingleton>();
 
             // 3. GameCanvas
             var canvasGo = new GameObject("GameCanvas");
@@ -174,6 +176,7 @@ namespace StarStrike.Editor
             var eventGo = new GameObject("EventSystem");
             eventGo.AddComponent<EventSystem>();
             eventGo.AddComponent<InputSystemUIInputModule>();
+            eventGo.AddComponent<EventSystemSingleton>();
 
             // 3. GameCanvas
             var canvasGo = new GameObject("GameCanvas");
