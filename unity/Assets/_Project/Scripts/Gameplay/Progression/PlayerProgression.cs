@@ -555,7 +555,7 @@ namespace StarStrike.Gameplay
                 if (agl <= 0f) agl = 6f;
                 movement.agility = agl + (bonusAgility > 0f ? bonusAgility / 30f : 0f);
 
-                bool isIndependentAimShip = currentShip != null && (currentShip.canAimIndependently || currentShip.id == "battleship" || currentShip.id == "cruiser" || currentShip.shipClass == ShipClass.Battleship || currentShip.shipClass == ShipClass.Cruiser);
+                bool isIndependentAimShip = currentShip != null && (currentShip.canAimIndependently || currentShip.id == "battleship" || currentShip.id == "cruiser" || currentShip.id == "carrier" || currentShip.id == "vanguard" || currentShip.shipClass == ShipClass.Battleship || currentShip.shipClass == ShipClass.Cruiser || currentShip.shipClass == ShipClass.Carrier);
                 movement.steerTowardsAim = !isIndependentAimShip;
             }
 
@@ -643,12 +643,35 @@ namespace StarStrike.Gameplay
                 transform.localScale = Vector3.one * 1.2f;
             else if (shipId == "juggernaut")
                 transform.localScale = Vector3.one * 1.6f;
-            else if (shipId == "vanguard")
+            else if (shipId == "vanguard" || shipId == "carrier")
                 transform.localScale = Vector3.one * 1.5f;
+            else if (shipId == "frigate")
+                transform.localScale = Vector3.one * 1.3f;
+            else if (shipId == "destroyer")
+                transform.localScale = Vector3.one * 1.45f;
+            else if (shipId == "cruiser")
+                transform.localScale = Vector3.one * 1.6f;
+            else if (shipId == "battleship")
+                transform.localScale = Vector3.one * 1.85f;
             else if (shipId == "phantom")
                 transform.localScale = Vector3.one * 1.15f;
             else
                 transform.localScale = Vector3.one * 1.0f;
+
+            // Carrier Hangar & Drone Squadron integration
+            bool isCarrier = currentShip != null && 
+                (currentShip.id == "carrier" || currentShip.id == "vanguard" || currentShip.shipClass == ShipClass.Carrier || currentShip.droneHangarCapacity > 0);
+            var hangar = GetComponent<StarStrike.Gameplay.Carrier.CarrierHangarController>();
+            if (isCarrier)
+            {
+                if (hangar == null) hangar = gameObject.AddComponent<StarStrike.Gameplay.Carrier.CarrierHangarController>();
+                hangar.enabled = true;
+                hangar.droneCapacity = currentShip.droneHangarCapacity > 0 ? currentShip.droneHangarCapacity : 4;
+            }
+            else if (hangar != null)
+            {
+                hangar.enabled = false;
+            }
 
             if (weapon == null) weapon = GetComponent<ShipWeapon>();
             if (weapon != null && currentShip != null)

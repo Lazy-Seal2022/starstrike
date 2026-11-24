@@ -137,7 +137,7 @@ namespace StarStrike.Gameplay
             if (!IsMountedOnSocket())
             {
                 var prog = GetComponent<PlayerProgression>();
-                bool canAim = (prog != null && prog.currentShip != null && (prog.currentShip.canAimIndependently || prog.currentShip.id == "cruiser" || prog.currentShip.id == "battleship"));
+                bool canAim = (prog != null && prog.currentShip != null && (prog.currentShip.canAimIndependently || prog.currentShip.id == "cruiser" || prog.currentShip.id == "battleship" || prog.currentShip.id == "carrier" || prog.currentShip.id == "vanguard" || prog.currentShip.shipClass == ShipClass.Carrier || prog.currentShip.shipClass == ShipClass.Cruiser || prog.currentShip.shipClass == ShipClass.Battleship));
                 if (canAim)
                 {
                     var inputProvider = GetComponent<IShipInputProvider>();

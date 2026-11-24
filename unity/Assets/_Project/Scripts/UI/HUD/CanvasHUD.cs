@@ -641,12 +641,7 @@ namespace StarStrike.UI
 
         private void EnsureEventSystem()
         {
-            if (FindAnyObjectByType<EventSystem>() == null)
-            {
-                GameObject esObj = new GameObject("EventSystem");
-                esObj.AddComponent<EventSystem>();
-                esObj.AddComponent<InputSystemUIInputModule>();
-            }
+            EventSystemSingleton.EnforceSingleEventSystem();
         }
 
         private void BuildCanvasIfNeeded()
@@ -880,6 +875,11 @@ namespace StarStrike.UI
             if (endGameModal == null)
             {
                 endGameModal = gameObject.AddComponent<HUDEndGameModal>();
+            }
+
+            if (GetComponent<StarStrike.UI.HUD.CarrierHUDOverlay>() == null)
+            {
+                gameObject.AddComponent<StarStrike.UI.HUD.CarrierHUDOverlay>();
             }
         }
 

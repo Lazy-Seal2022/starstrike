@@ -372,6 +372,7 @@ namespace StarStrike.Editor
 
             var carrier = ShipArchetypeFactory.CreateArchetype(ShipClass.Carrier);
             carrier.sprite = StarStrike.Gameplay.ProceduralSpriteHelper.GenerateShipSprite("carrier");
+            carrier.canAimIndependently = true;
             CreateOrUpdateAsset(carrier, $"{dataPath}/Ship_Carrier.asset");
 
             var fighter = ShipArchetypeFactory.CreateArchetype(ShipClass.Fighter);

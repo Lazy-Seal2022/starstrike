@@ -495,6 +495,12 @@ namespace StarStrike.Editor
                 centerMuzzle.transform.localPosition = new Vector3(def.weaponSockets[0].x, def.weaponSockets[0].y, 0f);
             }
 
+            if (shipId == "carrier" || shipId == "vanguard")
+            {
+                var hangar = go.AddComponent<StarStrike.Gameplay.Carrier.CarrierHangarController>();
+                hangar.droneCapacity = (def != null && def.droneHangarCapacity > 0) ? def.droneHangarCapacity : 4;
+            }
+
             SavePrefab(go, $"Ships/Ship_{capId}");
         }
 
@@ -2286,12 +2292,15 @@ namespace StarStrike.Editor
             {
                 var cruiserDef = ShipArchetypeFactory.CreateArchetype(ShipClass.Cruiser);
                 var battleshipDef = ShipArchetypeFactory.CreateArchetype(ShipClass.Battleship);
+                var carrierDefTest = ShipArchetypeFactory.CreateArchetype(ShipClass.Carrier);
                 var fighterDef = ShipArchetypeFactory.CreateArchetype(ShipClass.Fighter);
 
                 if (!cruiserDef.canAimIndependently)
                     throw new System.Exception("Cruiser must have canAimIndependently set to true");
                 if (!battleshipDef.canAimIndependently)
                     throw new System.Exception("Battleship must have canAimIndependently set to true");
+                if (!carrierDefTest.canAimIndependently)
+                    throw new System.Exception("Carrier must have canAimIndependently set to true");
                 if (fighterDef.canAimIndependently)
                     throw new System.Exception("Fighter must have canAimIndependently set to false (fixed forward)");
 
@@ -2406,6 +2415,31 @@ namespace StarStrike.Editor
                     throw new System.Exception($"Fighter hull should rotate towards cursor. Expected > 0 deg, got {fRb.rotation}");
 
                 Object.DestroyImmediate(fighterObj);
+
+                // Test Destroyer and Frigate fixed forward aiming (must NOT tilt weapons)
+                var destDef = ShipArchetypeFactory.CreateArchetype(ShipClass.Destroyer);
+                var frigDef = ShipArchetypeFactory.CreateArchetype(ShipClass.Frigate);
+                if (destDef.canAimIndependently)
+                    throw new System.Exception("Destroyer must have canAimIndependently set to false");
+                if (frigDef.canAimIndependently)
+                    throw new System.Exception("Frigate must have canAimIndependently set to false");
+
+                var destObj = new GameObject("Test_DestroyerFixedAiming");
+                destObj.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+                var dProg = destObj.AddComponent<PlayerProgression>();
+                dProg.currentShip = destDef;
+                var dWeaponCtrl = destObj.AddComponent<ShipWeaponController>();
+                dWeaponCtrl.currentShipId = "destroyer";
+                dWeaponCtrl.UpdateSocketVisuals();
+                dWeaponCtrl.inputAimDirection = new Vector2(0f, 1f);
+                dWeaponCtrl.UpdateIndependentAiming();
+                for (int i = 0; i < dWeaponCtrl.SocketMounts.Count; i++)
+                {
+                    float dAngle = dWeaponCtrl.SocketMounts[i].mountTransform.localEulerAngles.z;
+                    if (Mathf.Abs(Mathf.DeltaAngle(dAngle, 0f)) > 1f)
+                        throw new System.Exception($"Destroyer socket {i} should remain locked forward (0 deg), got {dAngle}");
+                }
+                Object.DestroyImmediate(destObj);
 
                 // Verify Player ship does NOT change to red on direct hull hit
                 var testPlayerGo = new GameObject("Player");
@@ -2589,6 +2623,124 @@ namespace StarStrike.Editor
             catch (System.Exception ex)
             {
                 Debug.LogError($"[FAIL] 31. 'Used Future' Aesthetic verification failed: {ex.Message}");
+                failed++;
+            }
+
+            // 32. Verify Carrier Ship Prototype (Drone Foundry, Squadron Deployment, Stance Commands, PDC)
+            try
+            {
+                var carrierDef = ShipArchetypeFactory.CreateArchetype(ShipClass.Carrier);
+                if (carrierDef == null)
+                    throw new System.Exception("Failed to create Carrier archetype");
+                if (carrierDef.droneHangarCapacity != 4)
+                    throw new System.Exception($"Carrier droneHangarCapacity expected 4, got {carrierDef.droneHangarCapacity}");
+                if (carrierDef.defaultDroneType != "interceptor_drone")
+                    throw new System.Exception($"Carrier defaultDroneType expected 'interceptor_drone', got {carrierDef.defaultDroneType}");
+
+                // Instantiate Carrier prototype GameObject
+                var carrierGo = new GameObject("Test_VanguardCarrier");
+                carrierGo.tag = "Player";
+                var prog = carrierGo.AddComponent<PlayerProgression>();
+                prog.currentShip = carrierDef;
+
+                var hangar = carrierGo.AddComponent<StarStrike.Gameplay.Carrier.CarrierHangarController>();
+                hangar.droneCapacity = carrierDef.droneHangarCapacity;
+                hangar.droneBuildTime = 3.0f;
+
+                // Test initial escort squadron deployment
+                hangar.SpawnInitialSquadron();
+                if (hangar.ActiveDroneCount != 4)
+                    throw new System.Exception($"Carrier should deploy 4 escort drones, got {hangar.ActiveDroneCount}");
+
+                var firstDrone = hangar.ActiveDrones[0];
+                if (firstDrone == null || firstDrone.carrier != hangar)
+                    throw new System.Exception("Escort drone must be valid and linked to mother carrier");
+                if (firstDrone.maxHull != 60f || firstDrone.maxShield != 80f)
+                    throw new System.Exception($"Escort drone defensive stats mismatch. Hull: {firstDrone.maxHull}, Shield: {firstDrone.maxShield}");
+
+                // Test Tactical Stance transitions
+                if (hangar.CurrentStance != StarStrike.Gameplay.Carrier.DroneCommandStance.DefensiveEscort)
+                    throw new System.Exception("Initial stance must be DefensiveEscort");
+
+                hangar.ToggleStance();
+                if (hangar.CurrentStance != StarStrike.Gameplay.Carrier.DroneCommandStance.OffensiveStrike)
+                    throw new System.Exception("First stance toggle must transition to OffensiveStrike");
+
+                hangar.ToggleStance();
+                if (hangar.CurrentStance != StarStrike.Gameplay.Carrier.DroneCommandStance.DockAndRepair)
+                    throw new System.Exception("Second stance toggle must transition to DockAndRepair");
+
+                hangar.ToggleStance();
+                if (hangar.CurrentStance != StarStrike.Gameplay.Carrier.DroneCommandStance.DefensiveEscort)
+                    throw new System.Exception("Third stance toggle must return to DefensiveEscort");
+
+                // Test Automated Foundry Replacement
+                hangar.NotifyDroneDestroyed(firstDrone);
+                Object.DestroyImmediate(firstDrone.gameObject);
+                if (hangar.ActiveDroneCount != 3)
+                    throw new System.Exception($"Active drone count should be 3 after destruction, got {hangar.ActiveDroneCount}");
+                if (!hangar.IsBuilding)
+                    throw new System.Exception("Foundry should be in building state when below capacity");
+
+                var replacement = hangar.LaunchNewDrone();
+                if (replacement == null || hangar.ActiveDroneCount != 4)
+                    throw new System.Exception($"Foundry replacement launch failed. Active count: {hangar.ActiveDroneCount}");
+                if (hangar.IsBuilding)
+                    throw new System.Exception("Foundry should not be building when at full capacity");
+
+                // Clean up spawned drones and carrier
+                for (int i = 0; i < hangar.ActiveDrones.Count; i++)
+                {
+                    if (hangar.ActiveDrones[i] != null)
+                    {
+                        Object.DestroyImmediate(hangar.ActiveDrones[i].gameObject);
+                    }
+                }
+                Object.DestroyImmediate(carrierGo);
+
+                Debug.Log("[PASS] 32. Carrier Ship Prototype verified (Drone Foundry, Squadron Deployment, Stance Commands, PDC)");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 32. Carrier Ship Prototype verification failed: {ex.Message}");
+                failed++;
+            }
+
+            // 33. Verify EventSystem Singleton Lifecycle Guarantee (Exactly one EventSystem maintained)
+            try
+            {
+                // Create multiple EventSystems to simulate duplicate scene loads
+                var es1 = new GameObject("Test_EventSystem_1");
+                es1.AddComponent<UnityEngine.EventSystems.EventSystem>();
+                es1.AddComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
+
+                var es2 = new GameObject("Test_EventSystem_2");
+                es2.AddComponent<UnityEngine.EventSystems.EventSystem>();
+                es2.AddComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
+
+                var allBefore = Object.FindObjectsByType<UnityEngine.EventSystems.EventSystem>(FindObjectsSortMode.None);
+                if (allBefore.Length < 2)
+                    throw new System.Exception($"Expected at least 2 EventSystems before deduplication, found {allBefore.Length}");
+
+                // Run enforcement
+                var keeper = StarStrike.UI.EventSystemSingleton.EnforceSingleEventSystem();
+                if (keeper == null)
+                    throw new System.Exception("EnforceSingleEventSystem returned null keeper");
+
+                var allAfter = Object.FindObjectsByType<UnityEngine.EventSystems.EventSystem>(FindObjectsSortMode.None);
+                if (allAfter.Length != 1)
+                    throw new System.Exception($"Expected exactly 1 EventSystem after deduplication, found {allAfter.Length}");
+
+                // Clean up keeper
+                Object.DestroyImmediate(keeper.gameObject);
+
+                Debug.Log("[PASS] 33. EventSystem Singleton Lifecycle Guarantee verified (Exactly 1 EventSystem enforced)");
+                passed++;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[FAIL] 33. EventSystem Singleton verification failed: {ex.Message}");
                 failed++;
             }
 

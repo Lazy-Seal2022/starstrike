@@ -31,14 +31,14 @@ namespace StarStrike.Gameplay
                 if (prog != null && prog.currentShip != null)
                 {
                     if (prog.currentShip.canAimIndependently) return true;
-                    if (prog.currentShip.id == "battleship" || prog.currentShip.id == "cruiser") return true;
-                    if (prog.currentShip.shipClass == ShipClass.Battleship || prog.currentShip.shipClass == ShipClass.Cruiser) return true;
+                    if (prog.currentShip.id == "battleship" || prog.currentShip.id == "cruiser" || prog.currentShip.id == "carrier" || prog.currentShip.id == "vanguard") return true;
+                    if (prog.currentShip.shipClass == ShipClass.Battleship || prog.currentShip.shipClass == ShipClass.Cruiser || prog.currentShip.shipClass == ShipClass.Carrier) return true;
                 }
                 var weaponCtrl = GetComponent<ShipWeaponController>();
                 if (weaponCtrl != null)
                 {
                     if (weaponCtrl.CanAimIndependently) return true;
-                    if (weaponCtrl.currentShipId == "battleship" || weaponCtrl.currentShipId == "cruiser") return true;
+                    if (weaponCtrl.currentShipId == "battleship" || weaponCtrl.currentShipId == "cruiser" || weaponCtrl.currentShipId == "carrier" || weaponCtrl.currentShipId == "vanguard") return true;
                 }
                 return false;
             }

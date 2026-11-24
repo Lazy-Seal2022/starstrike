@@ -241,6 +241,7 @@ namespace StarStrike.Core
             def.maxUpgradeLevel = 6;
             def.hitboxRadius = 1.25f;
             def.shieldHitboxOffset = 0.35f;
+            def.canAimIndependently = true;
             def.turretTraverseSpeed = 130f;
             def.droneHangarCapacity = 4;
             def.defaultDroneType = "interceptor_drone";

@@ -60,9 +60,14 @@ namespace StarStrike.Gameplay
                 {
                     return prog.currentShip.canAimIndependently || 
                            prog.currentShip.id == "battleship" || 
-                           prog.currentShip.id == "cruiser";
+                           prog.currentShip.id == "cruiser" ||
+                           prog.currentShip.id == "carrier" ||
+                           prog.currentShip.id == "vanguard" ||
+                           prog.currentShip.shipClass == ShipClass.Battleship ||
+                           prog.currentShip.shipClass == ShipClass.Cruiser ||
+                           prog.currentShip.shipClass == ShipClass.Carrier;
                 }
-                return currentShipId == "battleship" || currentShipId == "cruiser";
+                return currentShipId == "battleship" || currentShipId == "cruiser" || currentShipId == "carrier" || currentShipId == "vanguard";
             }
         }
 
@@ -116,7 +121,20 @@ namespace StarStrike.Gameplay
 
         public void UpdateIndependentAiming(float deltaTime = -1f, bool instant = false)
         {
-            if (!CanAimIndependently && !HasAnyTurretSockets()) return;
+            if (!CanAimIndependently)
+            {
+                // Non-heavy ships must NOT tilt their weapons towards the cursor.
+                // Keep all weapon sockets strictly locked straight forward (0 deg relative to ship hull).
+                for (int i = 0; i < socketMountInstances.Count; i++)
+                {
+                    var inst = socketMountInstances[i];
+                    if (inst != null && inst.mountTransform != null)
+                    {
+                        inst.mountTransform.localRotation = Quaternion.identity;
+                    }
+                }
+                return;
+            }
 
             if (socketMountInstances.Count == 0)
             {
@@ -129,7 +147,7 @@ namespace StarStrike.Gameplay
                         {
                             socketIndex = i,
                             mountTransform = child,
-                            definition = new ShipSocketDefinition(child.name, child.localPosition, SocketSize.Medium, SocketMountType.Turret, 0f, "pulse"),
+                            definition = new ShipSocketDefinition(child.name, child.localPosition, SocketSize.Medium, CanAimIndependently ? SocketMountType.Turret : SocketMountType.FixedForward, 0f, "pulse"),
                             weapon = child.GetComponentInChildren<IWeapon>()
                         });
                     }
@@ -172,7 +190,7 @@ namespace StarStrike.Gameplay
                 var inst = socketMountInstances[i];
                 if (inst == null || inst.mountTransform == null) continue;
 
-                bool canAim = CanAimIndependently || (inst.definition.mountType == SocketMountType.Turret);
+                bool canAim = CanAimIndependently && (inst.definition.mountType == SocketMountType.Turret);
                 if (canAim)
                 {
                     if (forceInstant)
@@ -193,6 +211,7 @@ namespace StarStrike.Gameplay
 
         public bool HasAnyTurretSockets()
         {
+            if (!CanAimIndependently) return false;
             for (int i = 0; i < socketMountInstances.Count; i++)
             {
                 if (socketMountInstances[i].definition.mountType == SocketMountType.Turret) return true;
@@ -532,7 +551,7 @@ namespace StarStrike.Gameplay
                 }
                 else
                 {
-                    socketDefinition = new ShipSocketDefinition(sDef.name, sDef.localPosition, SocketSize.Medium, SocketMountType.Turret, 0f, weaponId);
+                    socketDefinition = new ShipSocketDefinition(sDef.name, sDef.localPosition, SocketSize.Medium, CanAimIndependently ? SocketMountType.Turret : SocketMountType.FixedForward, 0f, weaponId);
                 }
 
                 socketMountInstances.Add(new SocketMountInstance
