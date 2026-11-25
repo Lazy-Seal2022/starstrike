@@ -126,5 +126,47 @@ namespace StarStrike.Tests.EditMode
             Assert.IsFalse(manager.IsWaveActive, "Wave should become inactive upon completion");
             Assert.IsTrue(manager.IsIntermission, "Manager should transition into intermission state");
         }
+
+        [Test]
+        public void WaveResources_ContainAllEnemyArchetypes()
+        {
+            var config = Resources.Load<WaveConfig>("Data/WaveConfig");
+            Assert.IsNotNull(config, "WaveConfig must load from Resources/Data/WaveConfig");
+            Assert.IsNotNull(config.waves);
+            Assert.GreaterOrEqual(config.waves.Length, 3);
+
+            var ids = new HashSet<string>();
+            foreach (var wave in config.waves)
+            {
+                if (wave == null || wave.enemySpawns == null) continue;
+                foreach (var entry in wave.enemySpawns)
+                {
+                    if (entry != null && !string.IsNullOrEmpty(entry.enemyId))
+                    {
+                        ids.Add(entry.enemyId);
+                    }
+                }
+            }
+
+            Assert.IsTrue(ids.Contains("EnemyDrone"), "Waves must include EnemyDrone");
+            Assert.IsTrue(ids.Contains("Kamikaze"), "Waves must include Kamikaze");
+            Assert.IsTrue(ids.Contains("Sniper"), "Waves must include Sniper");
+            Assert.IsTrue(ids.Contains("SupportShield"), "Waves must include SupportShield");
+        }
+
+        [Test]
+        public void WaveManager_ConfigureEnemyAI_ScalesStatsWithDifficultyMultiplier()
+        {
+            var go = Track(new GameObject("ScaledSniper"));
+            WaveManager.ConfigureEnemyAI(go, "Sniper", 1.5f);
+
+            var ai = go.GetComponent<EnemyAI>();
+            var health = go.GetComponent<ShipHealth>();
+            Assert.IsNotNull(ai);
+            Assert.IsNotNull(health);
+            Assert.AreEqual(EnemyArchetype.Sniper, ai.Archetype);
+            Assert.AreEqual(75f, health.maxShield, 0.01f, "Sniper base shield (50) should scale by 1.5x");
+            Assert.AreEqual(52.5f, health.maxHull, 0.01f, "Sniper base hull (35) should scale by 1.5x");
+        }
     }
 }

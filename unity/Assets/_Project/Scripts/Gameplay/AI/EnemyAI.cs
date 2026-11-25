@@ -40,6 +40,7 @@ namespace StarStrike.Gameplay
         private readonly HashSet<ShipHealth> shieldAuraBuffer = new HashSet<ShipHealth>();
         private EnemyArchetype lastAppliedVisualArchetype = (EnemyArchetype)(-1);
         private EnemyDefinition lastAppliedVisualDef;
+        private float statScale = 1f;
         private static readonly Collider2D[] overlapBuffer = new Collider2D[128];
         private static readonly ContactFilter2D overlapFilter = new ContactFilter2D { useTriggers = true, useLayerMask = false };
         private static Material sharedSniperLineMaterial;
@@ -110,8 +111,9 @@ namespace StarStrike.Gameplay
             sniperAimLine.enabled = false;
         }
 
-        public void ConfigureArchetype(EnemyArchetype archetype, EnemyDefinition customDef = null)
+        public void ConfigureArchetype(EnemyArchetype archetype, EnemyDefinition customDef = null, float statMultiplier = 1f)
         {
+            statScale = Mathf.Max(1f, statMultiplier);
             if (movement == null) movement = GetComponent<ShipMovement>();
             if (health == null) health = GetComponent<ShipHealth>();
             if (weapon == null) weapon = GetComponent<ShipWeapon>();
@@ -291,9 +293,9 @@ namespace StarStrike.Gameplay
 
             if (health != null)
             {
-                health.maxShield = definition.maxShield;
+                health.maxShield = definition.maxShield * statScale;
                 health.shieldRegen = definition.shieldRegen;
-                health.maxHull = definition.maxHull > 0 ? definition.maxHull : 40f;
+                health.maxHull = (definition.maxHull > 0 ? definition.maxHull : 40f) * statScale;
                 health.maxEnergy = 9999f;
                 health.energyRegen = 9999f;
                 health.ResetMeters();
@@ -308,7 +310,7 @@ namespace StarStrike.Gameplay
 
             if (weapon != null)
             {
-                weapon.pulseDamage = definition.pulseDamage;
+                weapon.pulseDamage = definition.pulseDamage * statScale;
                 weapon.pulseSpeed = definition.pulseSpeed;
                 weapon.fireRate = definition.fireRate;
                 weapon.energyCost = 0f;
@@ -321,6 +323,7 @@ namespace StarStrike.Gameplay
 
         private void OnEnable()
         {
+            statScale = 1f;
             ApplyStats();
             ApplyVisuals();
 
@@ -793,7 +796,7 @@ namespace StarStrike.Gameplay
             {
                 // Kamikaze death blast
                 float blastRadius = definition != null ? definition.kamikazeBlastRadius : 4.5f;
-                float blastDmg = definition != null ? definition.kamikazeBlastDamage : 45f;
+                float blastDmg = (definition != null ? definition.kamikazeBlastDamage : 45f) * statScale;
 
                 if (!Application.isPlaying) Physics2D.SyncTransforms();
                 int hitCount = Physics2D.OverlapCircle(transform.position, blastRadius, overlapFilter, overlapBuffer);

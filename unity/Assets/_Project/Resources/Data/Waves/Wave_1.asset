@@ -22,5 +22,10 @@ MonoBehaviour:
     spawnInterval: 4.5
     maxConcurrent: 5
     totalToSpawn: -1
+  - enemyId: Kamikaze
+    prefab: {fileID: 4500293773924986577, guid: eacef16706b52eb409d88fb92d8be5e4, type: 3}
+    spawnInterval: 9
+    maxConcurrent: 2
+    totalToSpawn: 4
   bossPrefab: {fileID: 0}
   clearGemReward: 15

@@ -49,6 +49,18 @@ namespace StarStrike.UI
         public GameObject mobileControlsRoot;
         public HUDSkillSlotView skillSlotView;
 
+        [Header("Tactical Telemetry UI")]
+        public GameObject waveBadgePanel;
+        public Text waveTitleText;
+        public Text waveTimerText;
+        public GameObject bossHealthPanel;
+        public Image bossHealthFill;
+        public Text bossTitleText;
+        public Text bossHpText;
+        public GameObject hazardBannerPanel;
+        public Image hazardBannerBg;
+        public Text hazardBannerText;
+
         private float currentShield = 100f;
         private float maxShield = 100f;
         private float currentHull = 80f;
@@ -61,6 +73,8 @@ namespace StarStrike.UI
         private int totalGems = 0;
         private bool isUpgradesOpen = false;
         private bool hasAppliedVisibility = false;
+        private bool isUiBuilt = false;
+        private bool isSubscribed = false;
         private int lastShieldCurInt = int.MinValue;
         private int lastShieldMaxInt = int.MinValue;
         private int lastHullCurInt = int.MinValue;
@@ -74,6 +88,21 @@ namespace StarStrike.UI
         private int lastUpgradeGems = int.MinValue;
         private int lastUpgradeLevelSum = int.MinValue;
         private bool forceRefreshUpgrades = true;
+        private int lastWaveDisplaySec = int.MinValue;
+        private int currentWaveNum = 1;
+        private string currentWaveName = "SECTOR RECON";
+        private bool isWaveIntermission = false;
+        private bool isBossBarVisible = false;
+        private string currentBossName = "DREADNOUGHT FLAGSHIP";
+        private int lastBossHpInt = int.MinValue;
+        private int lastBossMaxInt = int.MinValue;
+        private string lastBossPhase = "";
+        private bool isHazardBannerVisible = false;
+        private bool isHazardActiveState = false;
+        private float hazardWarningEndTime = -1f;
+        private float hazardAutoHideTime = -1f;
+        private string activeHazardLabel = "";
+        private int lastHazardCountdownSec = int.MinValue;
         
         private GameObject gameplayContainer;
 
@@ -109,7 +138,7 @@ namespace StarStrike.UI
             }
             Instance = this;
             EnsureEventSystem();
-            BuildCanvasIfNeeded();
+            EnsureInitialized();
             SetHUDVisible(false);
 
             if (FindAnyObjectByType<AchievementUI>() == null)
@@ -118,8 +147,15 @@ namespace StarStrike.UI
             }
         }
 
+        public void EnsureInitialized()
+        {
+            BuildCanvasIfNeeded();
+            SubscribeEvents();
+        }
+
         private void OnDestroy()
         {
+            UnsubscribeEvents();
             if (Instance == this) Instance = null;
         }
 
@@ -129,6 +165,21 @@ namespace StarStrike.UI
             {
                 ScreenManager.Instance.RegisterScreen(this);
             }
+            SubscribeEvents();
+        }
+
+        private void OnDisable()
+        {
+            if (ScreenManager.Instance != null)
+            {
+                ScreenManager.Instance.UnregisterScreen(this);
+            }
+            UnsubscribeEvents();
+        }
+
+        public void SubscribeEvents()
+        {
+            if (isSubscribed) return;
             GameEvents.OnShieldChanged += HandleShieldChanged;
             GameEvents.OnHullChanged += HandleHullChanged;
             GameEvents.OnEnergyChanged += HandleEnergyChanged;
@@ -139,15 +190,20 @@ namespace StarStrike.UI
             GameEvents.OnGameStarted += HandleGameStarted;
             GameEvents.OnWaveStarted += HandleWaveStarted;
             GameEvents.OnWaveCompleted += HandleWaveCompleted;
+            GameEvents.OnWaveTimeUpdated += HandleWaveTimeUpdated;
+            GameEvents.OnBossSpawned += HandleBossSpawned;
+            GameEvents.OnBossHealthChanged += HandleBossHealthChanged;
+            GameEvents.OnBossDefeated += HandleBossDefeated;
+            GameEvents.OnHazardWarning += HandleHazardWarning;
+            GameEvents.OnHazardTriggered += HandleHazardTriggered;
+            GameEvents.OnHazardEnded += HandleHazardEnded;
             NetworkLobbyUI.OnLobbyVisibilityChanged += HandleLobbyVisibilityChanged;
+            isSubscribed = true;
         }
 
-        private void OnDisable()
+        public void UnsubscribeEvents()
         {
-            if (ScreenManager.Instance != null)
-            {
-                ScreenManager.Instance.UnregisterScreen(this);
-            }
+            if (!isSubscribed) return;
             GameEvents.OnShieldChanged -= HandleShieldChanged;
             GameEvents.OnHullChanged -= HandleHullChanged;
             GameEvents.OnEnergyChanged -= HandleEnergyChanged;
@@ -158,22 +214,202 @@ namespace StarStrike.UI
             GameEvents.OnGameStarted -= HandleGameStarted;
             GameEvents.OnWaveStarted -= HandleWaveStarted;
             GameEvents.OnWaveCompleted -= HandleWaveCompleted;
+            GameEvents.OnWaveTimeUpdated -= HandleWaveTimeUpdated;
+            GameEvents.OnBossSpawned -= HandleBossSpawned;
+            GameEvents.OnBossHealthChanged -= HandleBossHealthChanged;
+            GameEvents.OnBossDefeated -= HandleBossDefeated;
+            GameEvents.OnHazardWarning -= HandleHazardWarning;
+            GameEvents.OnHazardTriggered -= HandleHazardTriggered;
+            GameEvents.OnHazardEnded -= HandleHazardEnded;
             NetworkLobbyUI.OnLobbyVisibilityChanged -= HandleLobbyVisibilityChanged;
+            isSubscribed = false;
         }
 
         private void HandleWaveStarted(int waveNumber, string waveName, float duration)
         {
+            currentWaveNum = waveNumber;
+            currentWaveName = string.IsNullOrEmpty(waveName) ? $"WAVE {waveNumber}" : waveName.ToUpperInvariant();
+            isWaveIntermission = false;
+            lastWaveDisplaySec = int.MinValue;
+            UpdateWaveBadge(duration);
+
             if (floatingTextController != null)
             {
-                floatingTextController.SpawnFloatingNotice($"WAVE {waveNumber}: {waveName.ToUpper()}", new Color(0.38f, 0.85f, 1f));
+                floatingTextController.SpawnFloatingNotice($"WAVE {waveNumber}: {currentWaveName}", new Color(0.38f, 0.85f, 1f));
             }
         }
 
         private void HandleWaveCompleted(int waveNumber, int rewardGems)
         {
+            isWaveIntermission = true;
+            lastWaveDisplaySec = int.MinValue;
+            if (waveTimerText != null)
+            {
+                waveTimerText.text = "<color=#4ade80>SECTOR CLEARED • NEXT WAVE</color>";
+            }
+
             if (floatingTextController != null)
             {
                 floatingTextController.SpawnFloatingNotice($"WAVE {waveNumber} CLEARED! +{rewardGems} GEMS", new Color(0.3f, 0.95f, 0.5f));
+            }
+        }
+
+        private void HandleWaveTimeUpdated(float remainingSeconds)
+        {
+            if (isWaveIntermission) return;
+            UpdateWaveBadge(remainingSeconds);
+        }
+
+        private void UpdateWaveBadge(float remainingSeconds)
+        {
+            if (waveTitleText != null)
+            {
+                int loop = WaveManager.Instance != null ? WaveManager.Instance.LoopCount : 0;
+                string loopSuffix = loop > 0 ? $" [LOOP {loop + 1}]" : "";
+                waveTitleText.text = $"WAVE {currentWaveNum} • {currentWaveName}{loopSuffix}";
+            }
+            if (waveTimerText != null)
+            {
+                int sec = Mathf.Max(0, Mathf.CeilToInt(remainingSeconds));
+                bool showBossWaiting = sec <= 0 && isBossBarVisible;
+                if (sec != lastWaveDisplaySec || showBossWaiting)
+                {
+                    lastWaveDisplaySec = sec;
+                    if (showBossWaiting)
+                    {
+                        waveTimerText.text = "<color=#ff4d6d>DEFEAT DREADNOUGHT</color>";
+                    }
+                    else
+                    {
+                        int mins = sec / 60;
+                        int rem = sec % 60;
+                        waveTimerText.text = $"TIME  {mins:00}:{rem:00}";
+                    }
+                }
+            }
+        }
+
+        private void HandleBossSpawned(string bossName, float currentHp, float maxHp)
+        {
+            currentBossName = string.IsNullOrEmpty(bossName) ? "DREADNOUGHT FLAGSHIP" : bossName.ToUpperInvariant();
+            isBossBarVisible = true;
+            lastBossHpInt = int.MinValue;
+            lastBossMaxInt = int.MinValue;
+            lastBossPhase = "";
+            UpdateBossHealthUI(currentHp, maxHp, "APPROACH");
+            if (bossHealthPanel != null)
+            {
+                bossHealthPanel.SetActive(GameManager.Instance == null || IsVisible);
+            }
+        }
+
+        private void HandleBossHealthChanged(float currentHp, float maxHp, string phaseLabel)
+        {
+            UpdateBossHealthUI(currentHp, maxHp, phaseLabel);
+        }
+
+        private void HandleBossDefeated()
+        {
+            isBossBarVisible = false;
+            if (bossHealthPanel != null)
+            {
+                bossHealthPanel.SetActive(false);
+            }
+        }
+
+        private void UpdateBossHealthUI(float currentHp, float maxHp, string phaseLabel)
+        {
+            float safeMax = Mathf.Max(1f, maxHp);
+            float ratio = Mathf.Clamp01(currentHp / safeMax);
+            if (bossHealthFill != null) bossHealthFill.fillAmount = ratio;
+
+            int curInt = Mathf.Max(0, Mathf.CeilToInt(currentHp));
+            int maxInt = Mathf.Max(1, Mathf.CeilToInt(safeMax));
+            string phase = phaseLabel ?? "";
+            if (bossTitleText != null && (phase != lastBossPhase || curInt == maxInt))
+            {
+                lastBossPhase = phase;
+                bossTitleText.text = string.IsNullOrEmpty(phase) ? currentBossName : $"{currentBossName} • {phase}";
+            }
+            if (bossHpText != null && (curInt != lastBossHpInt || maxInt != lastBossMaxInt))
+            {
+                lastBossHpInt = curInt;
+                lastBossMaxInt = maxInt;
+                bossHpText.text = $"{curInt} / {maxInt}";
+            }
+        }
+
+        private void HandleHazardWarning(string hazardName, float duration)
+        {
+            activeHazardLabel = string.IsNullOrEmpty(hazardName) ? "SECTOR HAZARD DETECTED" : hazardName.ToUpperInvariant();
+            isHazardBannerVisible = true;
+            isHazardActiveState = false;
+            hazardWarningEndTime = Time.unscaledTime + Mathf.Max(0f, duration);
+            hazardAutoHideTime = -1f;
+            lastHazardCountdownSec = int.MinValue;
+
+            if (hazardBannerBg != null) hazardBannerBg.color = new Color(0.45f, 0.24f, 0.03f, 0.92f);
+            UpdateHazardWarningText();
+            if (hazardBannerPanel != null)
+            {
+                hazardBannerPanel.SetActive(GameManager.Instance == null || IsVisible);
+            }
+        }
+
+        private void HandleHazardTriggered(string hazardName)
+        {
+            activeHazardLabel = string.IsNullOrEmpty(hazardName) ? "HAZARD ACTIVE" : hazardName.ToUpperInvariant();
+            isHazardBannerVisible = true;
+            isHazardActiveState = true;
+            hazardWarningEndTime = -1f;
+            hazardAutoHideTime = -1f;
+
+            if (hazardBannerBg != null) hazardBannerBg.color = new Color(0.55f, 0.08f, 0.12f, 0.94f);
+            if (hazardBannerText != null)
+            {
+                hazardBannerText.text = $"! {activeHazardLabel} ACTIVE !";
+            }
+            if (hazardBannerPanel != null)
+            {
+                hazardBannerPanel.SetActive(GameManager.Instance == null || IsVisible);
+            }
+        }
+
+        private void HandleHazardEnded(string result)
+        {
+            string label = string.IsNullOrEmpty(result) ? "HAZARD CLEARED" : result.ToUpperInvariant();
+            bool isImpact = label.Contains("IMPACT");
+            isHazardBannerVisible = true;
+            isHazardActiveState = true;
+            hazardWarningEndTime = -1f;
+            hazardAutoHideTime = Time.unscaledTime + 1.8f;
+
+            if (hazardBannerBg != null)
+            {
+                hazardBannerBg.color = isImpact
+                    ? new Color(0.55f, 0.08f, 0.12f, 0.92f)
+                    : new Color(0.08f, 0.36f, 0.22f, 0.92f);
+            }
+            if (hazardBannerText != null)
+            {
+                hazardBannerText.text = label;
+            }
+            if (hazardBannerPanel != null)
+            {
+                hazardBannerPanel.SetActive(GameManager.Instance == null || IsVisible);
+            }
+        }
+
+        private void UpdateHazardWarningText()
+        {
+            if (hazardBannerText == null) return;
+            int sec = hazardWarningEndTime > 0f ? Mathf.Max(0, Mathf.CeilToInt(hazardWarningEndTime - Time.unscaledTime)) : 0;
+            if (sec != lastHazardCountdownSec)
+            {
+                lastHazardCountdownSec = sec;
+                hazardBannerText.text = sec > 0
+                    ? $"WARNING: {activeHazardLabel} ({sec}s)"
+                    : $"WARNING: {activeHazardLabel}";
             }
         }
 
@@ -222,6 +458,14 @@ namespace StarStrike.UI
                     bool showMobile = forceShowMobileControls || Application.isMobilePlatform || (Touchscreen.current != null && Touchscreen.current.wasUpdatedThisFrame);
                     child.gameObject.SetActive(visible && showMobile);
                 }
+                else if (child.name == "BossHealthPanel")
+                {
+                    child.gameObject.SetActive(visible && isBossBarVisible);
+                }
+                else if (child.name == "HazardBannerPanel")
+                {
+                    child.gameObject.SetActive(visible && isHazardBannerVisible);
+                }
                 else
                 {
                     child.gameObject.SetActive(visible);
@@ -231,6 +475,9 @@ namespace StarStrike.UI
 
         private void HandleGameStarted()
         {
+            isBossBarVisible = false;
+            isHazardBannerVisible = false;
+            hazardAutoHideTime = -1f;
             SetHUDVisible(true);
         }
 
@@ -285,6 +532,20 @@ namespace StarStrike.UI
             {
                 UpdateUpgradeRows();
             }
+
+            if (isHazardBannerVisible)
+            {
+                if (!isHazardActiveState && hazardWarningEndTime > 0f)
+                {
+                    UpdateHazardWarningText();
+                }
+                if (hazardAutoHideTime > 0f && Time.unscaledTime >= hazardAutoHideTime)
+                {
+                    isHazardBannerVisible = false;
+                    hazardAutoHideTime = -1f;
+                    if (hazardBannerPanel != null) hazardBannerPanel.SetActive(false);
+                }
+            }
         }
 
         private void SyncPlayerInitialState()
@@ -306,6 +567,16 @@ namespace StarStrike.UI
                 currentEnergy = player.health != null && player.health.currentEnergy > 0f ? player.health.currentEnergy : maxEnergy;
                 totalGems = player.gems;
                 UpdateShipHeader(player.currentShip.tier, player.currentShip.shipName);
+            }
+
+            if (WaveManager.Instance != null && WaveManager.Instance.CurrentWave != null)
+            {
+                var w = WaveManager.Instance.CurrentWave;
+                currentWaveNum = w.waveNumber;
+                currentWaveName = string.IsNullOrEmpty(w.waveName) ? $"WAVE {w.waveNumber}" : w.waveName.ToUpperInvariant();
+                isWaveIntermission = WaveManager.Instance.IsIntermission;
+                lastWaveDisplaySec = int.MinValue;
+                UpdateWaveBadge(WaveManager.Instance.WaveTimeRemaining);
             }
         }
 
@@ -714,6 +985,9 @@ namespace StarStrike.UI
 
         private void BuildCanvasIfNeeded()
         {
+            if (isUiBuilt || waveBadgePanel != null) return;
+            isUiBuilt = true;
+
             if (canvas == null)
             {
                 canvas = GetComponent<Canvas>();
@@ -948,6 +1222,48 @@ namespace StarStrike.UI
             if (GetComponent<StarStrike.UI.HUD.CarrierHUDOverlay>() == null)
             {
                 gameObject.AddComponent<StarStrike.UI.HUD.CarrierHUDOverlay>();
+            }
+
+            // 6. Top-Right Wave Badge (Isolated Canvas for countdown updates)
+            waveBadgePanel = CreatePanel(transform, "WaveBadgePanel", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -20f), new Vector2(290f, 54f), new Color(0.04f, 0.08f, 0.16f, 0.88f), roundedSprite);
+            IsolateSubCanvas(waveBadgePanel, rootCanvas);
+            waveTitleText = CreateText(waveBadgePanel.transform, "WaveTitle", "WAVE 1 • SECTOR RECON", 12, FontStyle.Bold, new Color(0.38f, 0.85f, 1f), TextAnchor.MiddleRight, new Vector2(0f, 0.5f), new Vector2(1f, 1f), new Vector2(12f, 0f), new Vector2(-14f, -4f), defaultFont).GetComponent<Text>();
+            waveTimerText = CreateText(waveBadgePanel.transform, "WaveTimer", "TIME  00:30", 16, FontStyle.Bold, Color.white, TextAnchor.MiddleRight, new Vector2(0f, 0f), new Vector2(1f, 0.55f), new Vector2(12f, 4f), new Vector2(-14f, 0f), defaultFont).GetComponent<Text>();
+
+            // 7. Top-Center Boss Health Bar (Isolated Canvas, hidden until boss spawns)
+            bossHealthPanel = CreatePanel(transform, "BossHealthPanel", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -124f), new Vector2(460f, 44f), new Color(0.14f, 0.04f, 0.08f, 0.92f), roundedSprite);
+            IsolateSubCanvas(bossHealthPanel, rootCanvas);
+            bossTitleText = CreateText(bossHealthPanel.transform, "BossTitle", "DREADNOUGHT FLAGSHIP", 11, FontStyle.Bold, new Color(1f, 0.45f, 0.55f), TextAnchor.MiddleLeft, new Vector2(0f, 0.5f), new Vector2(0.7f, 1f), new Vector2(14f, 0f), new Vector2(0f, -4f), defaultFont).GetComponent<Text>();
+            bossHpText = CreateText(bossHealthPanel.transform, "BossHpVal", "1500 / 1500", 11, FontStyle.Bold, Color.white, TextAnchor.MiddleRight, new Vector2(0.65f, 0.5f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(-14f, -4f), defaultFont).GetComponent<Text>();
+            GameObject bossBarBg = CreatePanel(bossHealthPanel.transform, "BossBarBg", new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(14f, 8f), new Vector2(-28f, 12f), new Color(0.08f, 0.02f, 0.04f, 1f), roundedSprite);
+            bossBarBg.GetComponent<RectTransform>().pivot = new Vector2(0f, 0f);
+            bossBarBg.GetComponent<RectTransform>().offsetMin = new Vector2(14f, 8f);
+            bossBarBg.GetComponent<RectTransform>().offsetMax = new Vector2(-14f, 20f);
+            GameObject bossFillObj = CreateImage(bossBarBg.transform, "Fill", new Color(0.92f, 0.18f, 0.28f), roundedSprite, Image.Type.Filled);
+            bossHealthFill = bossFillObj.GetComponent<Image>();
+            bossHealthFill.fillMethod = Image.FillMethod.Horizontal;
+            bossHealthFill.fillOrigin = 0;
+            bossHealthFill.fillAmount = 1f;
+            bossHealthPanel.SetActive(false);
+
+            // 8. Upper-Center Hazard Alert Banner (Isolated Canvas, hidden until hazard events fire)
+            hazardBannerPanel = CreatePanel(transform, "HazardBannerPanel", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -176f), new Vector2(540f, 38f), new Color(0.45f, 0.24f, 0.03f, 0.92f), roundedSprite);
+            IsolateSubCanvas(hazardBannerPanel, rootCanvas);
+            hazardBannerBg = hazardBannerPanel.GetComponent<Image>();
+            hazardBannerText = CreateText(hazardBannerPanel.transform, "HazardText", "WARNING: SECTOR HAZARD DETECTED", 13, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, new Vector2(14f, 0f), new Vector2(-14f, 0f), defaultFont).GetComponent<Text>();
+            hazardBannerPanel.SetActive(false);
+        }
+
+        private static void IsolateSubCanvas(GameObject panel, Canvas rootCanvas)
+        {
+            if (panel == null) return;
+            Canvas subCanvas = panel.GetComponent<Canvas>();
+            if (subCanvas == null) subCanvas = panel.AddComponent<Canvas>();
+            if (rootCanvas != null && rootCanvas != subCanvas)
+            {
+                subCanvas.overrideSorting = true;
+                subCanvas.sortingLayerID = rootCanvas.sortingLayerID;
+                subCanvas.sortingOrder = rootCanvas.sortingOrder + 1;
             }
         }
 

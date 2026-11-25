@@ -29,6 +29,8 @@ namespace StarStrike.Gameplay
         private float bulletHellAngle = 0f;
         private float bulletHellWindupTimer = 0f;
         private const float BULLET_HELL_WINDUP = 0.8f;
+        private int lastBroadcastHpInt = -1;
+        private BossPhase lastBroadcastPhase = (BossPhase)(-1);
 
         private LineRenderer telegraphLine;
         private static Material cachedTelegraphMat;
@@ -104,7 +106,64 @@ namespace StarStrike.Gameplay
             currentPhase = BossPhase.Approaching;
             phaseTimer = 0f;
             bulletHellWindupTimer = 0f;
+            lastBroadcastHpInt = -1;
+            lastBroadcastPhase = (BossPhase)(-1);
             if (telegraphLine != null) telegraphLine.enabled = false;
+
+            float maxHp = health.maxShield + health.maxHull;
+            float totalHp = health.currentShield + health.currentHull;
+            GameEvents.TriggerBossSpawned(GetBossTitle(), totalHp, maxHp);
+            BroadcastBossHealth(force: true);
+        }
+
+        public void ApplyDifficultyScale(float scale)
+        {
+            float safeScale = Mathf.Max(1f, scale);
+            if (health != null)
+            {
+                float baseShield = config != null ? config.maxShield : health.maxShield;
+                float baseHull = (config != null && config.maxHull > 0f) ? config.maxHull : 1500f;
+                health.maxShield = baseShield * safeScale;
+                health.maxHull = baseHull * safeScale;
+                health.ResetMeters();
+            }
+            if (weapon != null)
+            {
+                float baseDmg = config != null ? config.pulseDamage : weapon.pulseDamage;
+                weapon.pulseDamage = baseDmg * safeScale;
+            }
+            float maxHp = health != null ? health.maxShield + health.maxHull : 0f;
+            float totalHp = health != null ? health.currentShield + health.currentHull : 0f;
+            GameEvents.TriggerBossSpawned(GetBossTitle(), totalHp, maxHp);
+            BroadcastBossHealth(force: true);
+        }
+
+        private string GetBossTitle() => "DREADNOUGHT FLAGSHIP";
+
+        private static string GetPhaseLabel(BossPhase phase)
+        {
+            switch (phase)
+            {
+                case BossPhase.Approaching: return "APPROACH";
+                case BossPhase.SweepingLasers: return "SWEEPING LASERS";
+                case BossPhase.BulletHell: return "BULLET STORM";
+                case BossPhase.Enraged: return "ENRAGED";
+                default: return "";
+            }
+        }
+
+        private void BroadcastBossHealth(bool force = false)
+        {
+            if (health == null) return;
+            float totalHp = Mathf.Max(0f, health.currentShield + health.currentHull);
+            float maxHp = Mathf.Max(1f, health.maxShield + health.maxHull);
+            int hpInt = Mathf.CeilToInt(totalHp);
+            if (force || hpInt != lastBroadcastHpInt || currentPhase != lastBroadcastPhase)
+            {
+                lastBroadcastHpInt = hpInt;
+                lastBroadcastPhase = currentPhase;
+                GameEvents.TriggerBossHealthChanged(totalHp, maxHp, GetPhaseLabel(currentPhase));
+            }
         }
 
         private void OnDisable()
@@ -215,6 +274,8 @@ namespace StarStrike.Gameplay
                     RunEnraged(toPlayer);
                     break;
             }
+
+            BroadcastBossHealth();
         }
 
         private void RunApproach(Vector2 toPlayer)

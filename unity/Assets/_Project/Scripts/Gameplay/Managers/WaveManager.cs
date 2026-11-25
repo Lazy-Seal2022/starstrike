@@ -36,8 +36,14 @@ namespace StarStrike.Gameplay
         public bool IsWaveActive => isWaveActive;
         public bool IsIntermission => isIntermission;
         public float WaveTimeRemaining => CurrentWave != null && CurrentWave.durationSeconds > 0 ? Mathf.Max(0f, CurrentWave.durationSeconds - waveTimer) : 0f;
+        public int LoopCount => loopCount;
+        public float CurrentDifficultyScale => (waveConfig != null && loopCount > 0 && waveConfig.difficultyMultiplierPerLoop > 0f)
+            ? Mathf.Pow(waveConfig.difficultyMultiplierPerLoop, loopCount)
+            : 1f;
 
         private readonly Dictionary<string, float> spawnTimers = new Dictionary<string, float>();
+        private readonly Dictionary<string, int> spawnedCountsByKey = new Dictionary<string, int>();
+        private readonly Dictionary<string, List<GameObject>> activeEnemiesByKey = new Dictionary<string, List<GameObject>>();
         private readonly List<GameObject> activeWaveEnemies = new List<GameObject>();
         private bool bossSummonedForCurrentWave = false;
         private int lastBroadcastRemainingSec = -1;
@@ -128,6 +134,8 @@ namespace StarStrike.Gameplay
             lastBroadcastRemainingSec = -1;
             bossSummonedForCurrentWave = false;
             spawnTimers.Clear();
+            spawnedCountsByKey.Clear();
+            activeEnemiesByKey.Clear();
             activeWaveEnemies.Clear();
 
             // Notify listeners & display floating announcement
@@ -196,10 +204,18 @@ namespace StarStrike.Gameplay
 
         private void ProcessSpawnEntry(SpawnEntry entry)
         {
-            string key = entry.enemyId;
+            string key = string.IsNullOrEmpty(entry.enemyId) ? "EnemyDrone" : entry.enemyId;
             if (!spawnTimers.ContainsKey(key))
             {
                 spawnTimers[key] = 0f;
+            }
+            if (!spawnedCountsByKey.TryGetValue(key, out int totalSpawned))
+            {
+                totalSpawned = 0;
+            }
+            if (entry.totalToSpawn > 0 && totalSpawned >= entry.totalToSpawn)
+            {
+                return;
             }
 
             spawnTimers[key] += Time.deltaTime;
@@ -208,19 +224,18 @@ namespace StarStrike.Gameplay
             {
                 spawnTimers[key] = 0f;
 
-                // Check active count
-                CleanActiveEnemyList();
-                if (activeWaveEnemies.Count < entry.maxConcurrent)
+                int activeForKey = CleanActiveEnemyListForKey(key);
+                if (entry.maxConcurrent <= 0 || activeForKey < entry.maxConcurrent)
                 {
-                    SpawnEnemy(entry);
+                    SpawnEnemy(entry, key);
                 }
             }
         }
 
-        private void SpawnEnemy(SpawnEntry entry)
+        private void SpawnEnemy(SpawnEntry entry, string key)
         {
             Vector2 spawnPos = GetOffscreenSpawnPosition();
-            string tag = string.IsNullOrEmpty(entry.enemyId) ? "EnemyDrone" : entry.enemyId;
+            string tag = key;
 
             GameObject enemyObj = null;
             if (PoolManager.Instance != null)
@@ -231,12 +246,10 @@ namespace StarStrike.Gameplay
                     {
                         var inst = Instantiate(entry.prefab, spawnPos, Quaternion.identity);
                         inst.name = tag;
-                        ConfigureEnemyAI(inst, tag);
                         return inst;
                     }
                     var fallback = new GameObject(tag);
                     fallback.AddComponent<EnemyAI>();
-                    ConfigureEnemyAI(fallback, tag);
                     return fallback;
                 });
             }
@@ -254,12 +267,25 @@ namespace StarStrike.Gameplay
 
             if (enemyObj != null)
             {
-                ConfigureEnemyAI(enemyObj, tag);
+                ConfigureEnemyAI(enemyObj, tag, CurrentDifficultyScale);
+                if (!activeEnemiesByKey.TryGetValue(tag, out var keyList))
+                {
+                    keyList = new List<GameObject>();
+                    activeEnemiesByKey[tag] = keyList;
+                }
+                keyList.Add(enemyObj);
                 activeWaveEnemies.Add(enemyObj);
+                spawnedCountsByKey.TryGetValue(tag, out int count);
+                spawnedCountsByKey[tag] = count + 1;
             }
         }
 
         public static void ConfigureEnemyAI(GameObject enemyObj, string tagOrId)
+        {
+            ConfigureEnemyAI(enemyObj, tagOrId, 1f);
+        }
+
+        public static void ConfigureEnemyAI(GameObject enemyObj, string tagOrId, float difficultyScale)
         {
             if (enemyObj == null) return;
             var ai = enemyObj.GetComponent<EnemyAI>();
@@ -268,23 +294,23 @@ namespace StarStrike.Gameplay
             string lower = (tagOrId ?? "").ToLowerInvariant();
             if (lower.Contains("kamikaze"))
             {
-                ai.ConfigureArchetype(EnemyArchetype.Kamikaze);
+                ai.ConfigureArchetype(EnemyArchetype.Kamikaze, null, difficultyScale);
             }
             else if (lower.Contains("sniper"))
             {
-                ai.ConfigureArchetype(EnemyArchetype.Sniper);
+                ai.ConfigureArchetype(EnemyArchetype.Sniper, null, difficultyScale);
             }
             else if (lower.Contains("support") || lower.Contains("aegis") || lower.Contains("shield"))
             {
-                ai.ConfigureArchetype(EnemyArchetype.SupportShield);
+                ai.ConfigureArchetype(EnemyArchetype.SupportShield, null, difficultyScale);
             }
             else if (lower.Contains("boss") || lower.Contains("dreadnought"))
             {
-                ai.ConfigureArchetype(EnemyArchetype.Boss);
+                ai.ConfigureArchetype(EnemyArchetype.Boss, null, difficultyScale);
             }
             else
             {
-                ai.ConfigureArchetype(EnemyArchetype.Drone);
+                ai.ConfigureArchetype(EnemyArchetype.Drone, null, difficultyScale);
             }
         }
 
@@ -296,9 +322,10 @@ namespace StarStrike.Gameplay
             float halfH = worldHeight * 0.5f;
             Vector2 pos = new Vector2(0f, halfH * 0.8f);
 
+            GameObject bossObj;
             if (PoolManager.Instance != null)
             {
-                PoolManager.Instance.Spawn("Boss", pos, Quaternion.identity, () =>
+                bossObj = PoolManager.Instance.Spawn("Boss", pos, Quaternion.identity, () =>
                 {
                     var inst = Instantiate(bossPrefab, pos, Quaternion.identity);
                     inst.name = "Boss";
@@ -307,14 +334,27 @@ namespace StarStrike.Gameplay
             }
             else
             {
-                var inst = Instantiate(bossPrefab, pos, Quaternion.identity);
-                inst.name = "Boss";
+                bossObj = Instantiate(bossPrefab, pos, Quaternion.identity);
+                bossObj.name = "Boss";
+            }
+
+            if (bossObj != null)
+            {
+                var bossBrain = bossObj.GetComponent<BossBrain>();
+                if (bossBrain != null)
+                {
+                    bossBrain.ApplyDifficultyScale(CurrentDifficultyScale);
+                }
             }
         }
 
         private void HandleEnemyDestroyed(string enemyId)
         {
             CleanActiveEnemyList();
+            foreach (var kvp in activeEnemiesByKey)
+            {
+                PruneEnemyList(kvp.Value);
+            }
         }
 
         private void HandleBossDefeated()
@@ -378,13 +418,25 @@ namespace StarStrike.Gameplay
             return candidate;
         }
 
+        private int CleanActiveEnemyListForKey(string key)
+        {
+            if (!activeEnemiesByKey.TryGetValue(key, out var list) || list == null) return 0;
+            PruneEnemyList(list);
+            return list.Count;
+        }
+
         private void CleanActiveEnemyList()
         {
-            for (int i = activeWaveEnemies.Count - 1; i >= 0; i--)
+            PruneEnemyList(activeWaveEnemies);
+        }
+
+        private static void PruneEnemyList(List<GameObject> list)
+        {
+            for (int i = list.Count - 1; i >= 0; i--)
             {
-                if (activeWaveEnemies[i] == null || !activeWaveEnemies[i].activeInHierarchy)
+                if (list[i] == null || !list[i].activeInHierarchy)
                 {
-                    activeWaveEnemies.RemoveAt(i);
+                    list.RemoveAt(i);
                 }
             }
         }

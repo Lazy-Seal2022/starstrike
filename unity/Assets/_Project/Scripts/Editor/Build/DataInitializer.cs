@@ -304,7 +304,8 @@ namespace StarStrike.Editor
             wave1.clearGemReward = 15;
             wave1.enemySpawns = new[]
             {
-                new SpawnEntry { enemyId = "EnemyDrone", prefab = dronePrefab, spawnInterval = 4.5f, maxConcurrent = 5, totalToSpawn = -1 }
+                new SpawnEntry { enemyId = "EnemyDrone", prefab = dronePrefab, spawnInterval = 4.5f, maxConcurrent = 5, totalToSpawn = -1 },
+                new SpawnEntry { enemyId = "Kamikaze", prefab = dronePrefab, spawnInterval = 9.0f, maxConcurrent = 2, totalToSpawn = 4 }
             };
             wave1 = CreateOrUpdateAsset(wave1, $"{wavesDir}/Wave_1.asset");
 
@@ -316,7 +317,9 @@ namespace StarStrike.Editor
             wave2.clearGemReward = 30;
             wave2.enemySpawns = new[]
             {
-                new SpawnEntry { enemyId = "EnemyDrone", prefab = dronePrefab, spawnInterval = 3.0f, maxConcurrent = 8, totalToSpawn = -1 }
+                new SpawnEntry { enemyId = "EnemyDrone", prefab = dronePrefab, spawnInterval = 3.5f, maxConcurrent = 6, totalToSpawn = -1 },
+                new SpawnEntry { enemyId = "Kamikaze", prefab = dronePrefab, spawnInterval = 7.5f, maxConcurrent = 3, totalToSpawn = 6 },
+                new SpawnEntry { enemyId = "Sniper", prefab = dronePrefab, spawnInterval = 10.0f, maxConcurrent = 2, totalToSpawn = -1 }
             };
             wave2 = CreateOrUpdateAsset(wave2, $"{wavesDir}/Wave_2.asset");
 
@@ -329,7 +332,9 @@ namespace StarStrike.Editor
             wave3.clearGemReward = 100;
             wave3.enemySpawns = new[]
             {
-                new SpawnEntry { enemyId = "EnemyDrone", prefab = dronePrefab, spawnInterval = 5.0f, maxConcurrent = 4, totalToSpawn = -1 }
+                new SpawnEntry { enemyId = "EnemyDrone", prefab = dronePrefab, spawnInterval = 5.0f, maxConcurrent = 3, totalToSpawn = -1 },
+                new SpawnEntry { enemyId = "SupportShield", prefab = dronePrefab, spawnInterval = 14.0f, maxConcurrent = 1, totalToSpawn = 3 },
+                new SpawnEntry { enemyId = "Sniper", prefab = dronePrefab, spawnInterval = 11.0f, maxConcurrent = 2, totalToSpawn = -1 }
             };
             wave3 = CreateOrUpdateAsset(wave3, $"{wavesDir}/Wave_3.asset");
 

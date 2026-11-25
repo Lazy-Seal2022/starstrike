@@ -20,7 +20,17 @@ MonoBehaviour:
   - enemyId: EnemyDrone
     prefab: {fileID: 4500293773924986577, guid: eacef16706b52eb409d88fb92d8be5e4, type: 3}
     spawnInterval: 5
-    maxConcurrent: 4
+    maxConcurrent: 3
+    totalToSpawn: -1
+  - enemyId: SupportShield
+    prefab: {fileID: 4500293773924986577, guid: eacef16706b52eb409d88fb92d8be5e4, type: 3}
+    spawnInterval: 14
+    maxConcurrent: 1
+    totalToSpawn: 3
+  - enemyId: Sniper
+    prefab: {fileID: 4500293773924986577, guid: eacef16706b52eb409d88fb92d8be5e4, type: 3}
+    spawnInterval: 11
+    maxConcurrent: 2
     totalToSpawn: -1
   bossPrefab: {fileID: 7529469353253515448, guid: b843d8c1f0b2ae541ada8606d6932b45, type: 3}
   clearGemReward: 100

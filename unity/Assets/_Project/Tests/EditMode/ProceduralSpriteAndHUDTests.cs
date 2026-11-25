@@ -33,6 +33,7 @@ namespace StarStrike.Tests.EditMode
         [TearDown]
         public void TearDown()
         {
+            if (hud != null) hud.UnsubscribeEvents();
             if (hudGo != null) Object.DestroyImmediate(hudGo);
             if (playerGo != null) Object.DestroyImmediate(playerGo);
         }
@@ -100,6 +101,37 @@ namespace StarStrike.Tests.EditMode
                 }
             }
             Assert.IsTrue(foundJuggernaut, "HUD must dynamically generate a button for TITAN JUGGERNAUT when player is a Miner");
+        }
+
+        [Test]
+        public void CanvasHUD_DisplaysWaveBossAndHazardEvents()
+        {
+            hud.EnsureInitialized();
+            GameEvents.TriggerWaveStarted(2, "Asteroid Incursion", 45f);
+            Assert.IsNotNull(hud.waveTitleText);
+            StringAssert.Contains("WAVE 2", hud.waveTitleText.text);
+            Assert.AreEqual("TIME  00:45", hud.waveTimerText.text);
+
+            GameEvents.TriggerWaveTimeUpdated(12f);
+            Assert.AreEqual("TIME  00:12", hud.waveTimerText.text);
+
+            GameEvents.TriggerBossSpawned("Dreadnought Flagship", 1500f, 1500f);
+            Assert.IsTrue(hud.bossHealthPanel.activeSelf, "Boss health panel must show on boss spawn");
+            StringAssert.Contains("1500 / 1500", hud.bossHpText.text);
+
+            GameEvents.TriggerBossHealthChanged(750f, 1500f, "ENRAGED");
+            Assert.AreEqual(0.5f, hud.bossHealthFill.fillAmount, 0.01f);
+            StringAssert.Contains("ENRAGED", hud.bossTitleText.text);
+
+            GameEvents.TriggerBossDefeated();
+            Assert.IsFalse(hud.bossHealthPanel.activeSelf, "Boss health panel must hide after boss defeat");
+
+            GameEvents.TriggerHazardWarning("SOLAR FLARE DETECTED", 3f);
+            Assert.IsTrue(hud.hazardBannerPanel.activeSelf, "Hazard banner must show on warning");
+            StringAssert.Contains("WARNING:", hud.hazardBannerText.text);
+
+            GameEvents.TriggerHazardTriggered("SOLAR FLARE");
+            StringAssert.Contains("ACTIVE", hud.hazardBannerText.text);
         }
     }
 }

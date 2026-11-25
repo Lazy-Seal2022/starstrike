@@ -33,6 +33,11 @@ namespace StarStrike.Core
         public static event Action OnBossDefeated;
         public static void TriggerBossDefeated() => OnBossDefeated?.Invoke();
 
+        public static event Action<string, float, float> OnBossSpawned; // bossName, currentHp, maxHp
+        public static event Action<float, float, string> OnBossHealthChanged; // currentHp, maxHp, phaseLabel
+        public static void TriggerBossSpawned(string bossName, float currentHp, float maxHp) => OnBossSpawned?.Invoke(bossName, currentHp, maxHp);
+        public static void TriggerBossHealthChanged(float currentHp, float maxHp, string phaseLabel) => OnBossHealthChanged?.Invoke(currentHp, maxHp, phaseLabel);
+
         public static event Action<RunSummary> OnGameOver;
         public static void TriggerGameOver(RunSummary summary) => OnGameOver?.Invoke(summary);
 
