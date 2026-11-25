@@ -51,6 +51,8 @@ MonoBehaviour:
   maxRange: 16
   weaponSlots: 1
   fireRate: 0.05
+  aimConeHalfAngle: 20
+  closeRangeLockRadius: 3.5
   beamColor: {r: 0.2, g: 0.95, b: 1, a: 0.9}
   beamRenderer: {fileID: 0}
   customSockets: []

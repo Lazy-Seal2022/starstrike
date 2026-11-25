@@ -13,12 +13,22 @@ namespace StarStrike.Gameplay
         public int weaponSlots = 1;
         public float fireRate = 0.05f; // Tick evaluation rate
 
+        [Header("Target Lock-On")]
+        [Range(0f, 90f)]
+        [Tooltip("Angular half-cone radius in degrees around weapon aim direction to snap onto objectives.")]
+        public float aimConeHalfAngle = 20f;
+
+        [Min(0f)]
+        [Tooltip("Close-range lock distance from ship/muzzle so enemies right in front of the ship still lock on even when too close for the 20-degree cone.")]
+        public float closeRangeLockRadius = 3.5f;
+
         [Header("Visuals")]
         public Color beamColor = new Color(0.2f, 0.95f, 1f, 0.9f);
         public LineRenderer beamRenderer; // Primary line renderer (socket 0)
 
         private readonly List<LineRenderer> activeRenderers = new List<LineRenderer>();
-        private readonly RaycastHit2D[] hitBuffer = new RaycastHit2D[16];
+        private readonly RaycastHit2D[] hitBuffer = new RaycastHit2D[32];
+        private readonly Collider2D[] targetOverlapBuffer = new Collider2D[128];
         private static readonly ContactFilter2D raycastFilter = new ContactFilter2D();
         private static Material sharedBeamMaterial;
 
@@ -192,16 +202,26 @@ namespace StarStrike.Gameplay
 
             EnsureBeamRenderers(beamCount);
 
+            if (!Application.isPlaying) Physics2D.SyncTransforms();
+
             Vector2 forward = ShipWeapon.ResolveIndependentAimDirection(
                 transform, IsMountedOnSocket(), ref cachedProgression, ref cachedInputProvider, ref hasLookedUpInputProvider);
+            if (forward.sqrMagnitude < 0.0001f) forward = Vector2.right;
+            else forward.Normalize();
+
             float tickDamage = damagePerSecond * dt;
+            Transform ownerRoot = transform.root;
 
             for (int i = 0; i < beamCount; i++)
             {
                 Vector2 origin = muzzles[i];
-                Vector2 endPoint = origin + forward * maxRange;
+                Vector2 beamDir;
+                Vector2 lockedObjectivePoint;
+                bool hasLockedObjective = TryFindLockedObjective(origin, forward, ownerRoot, out beamDir, out lockedObjectivePoint);
 
-                int hitCount = Physics2D.Raycast(origin, forward, raycastFilter, hitBuffer, maxRange);
+                Vector2 endPoint = origin + beamDir * maxRange;
+
+                int hitCount = Physics2D.Raycast(origin, beamDir, raycastFilter, hitBuffer, maxRange);
                 float closestDist = maxRange;
                 RaycastHit2D closestHit = default;
                 bool hasTarget = false;
@@ -209,7 +229,7 @@ namespace StarStrike.Gameplay
                 for (int h = 0; h < hitCount; h++)
                 {
                     var hit = hitBuffer[h];
-                    if (hit.collider == null || hit.collider.gameObject == gameObject) continue;
+                    if (hit.collider == null || hit.collider.transform.root == ownerRoot) continue;
 
                     bool isTarget = hit.collider.CompareTag("Enemy") || hit.collider.CompareTag("Boss") || hit.collider.CompareTag("Asteroid");
                     if (isTarget && hit.distance < closestDist)
@@ -222,25 +242,27 @@ namespace StarStrike.Gameplay
 
                 if (hasTarget && closestHit.collider != null)
                 {
-                    endPoint = closestHit.point;
-                    IDamageable damageable = closestHit.collider.GetComponent<IDamageable>();
-                    if (damageable == null) damageable = closestHit.collider.GetComponentInParent<IDamageable>();
-                    if (damageable == null && closestHit.collider.attachedRigidbody != null)
-                    {
-                        damageable = closestHit.collider.attachedRigidbody.GetComponent<IDamageable>();
-                    }
+                    Vector2 hitPoint = closestHit.distance > 0.05f
+                        ? closestHit.point
+                        : (hasLockedObjective ? lockedObjectivePoint : closestHit.point);
+                    endPoint = hitPoint;
 
+                    IDamageable damageable = ResolveDamageable(closestHit.collider);
                     if (damageable != null)
                     {
-                        damageable.TakeDamage(tickDamage, closestHit.point);
+                        damageable.TakeDamage(tickDamage, hitPoint);
                         pendingPopupDamage += tickDamage;
-                        pendingPopupPos = closestHit.point;
+                        pendingPopupPos = hitPoint;
                         hasPendingPopup = true;
                         if (Time.time - lastPopupEmitTime >= DamagePopupInterval)
                         {
                             FlushDamagePopup();
                         }
                     }
+                }
+                else if (hasLockedObjective)
+                {
+                    endPoint = lockedObjectivePoint;
                 }
 
                 var lr = activeRenderers[i];
@@ -264,6 +286,97 @@ namespace StarStrike.Gameplay
             }
 
             return true;
+        }
+
+        private static IDamageable ResolveDamageable(Collider2D col)
+        {
+            if (col == null) return null;
+            IDamageable damageable = col.GetComponent<IDamageable>();
+            if (damageable == null) damageable = col.GetComponentInParent<IDamageable>();
+            if (damageable == null && col.attachedRigidbody != null)
+            {
+                damageable = col.attachedRigidbody.GetComponent<IDamageable>();
+            }
+            return damageable;
+        }
+
+        private bool TryFindLockedObjective(Vector2 origin, Vector2 weaponDir, Transform ownerRoot, out Vector2 beamDir, out Vector2 objectivePoint)
+        {
+            beamDir = weaponDir;
+            objectivePoint = origin + weaponDir * maxRange;
+            if (aimConeHalfAngle <= 0f && closeRangeLockRadius <= 0f) return false;
+
+            Vector2 shipPos = ownerRoot != null ? (Vector2)ownerRoot.position : (Vector2)transform.position;
+            float scanRadius = maxRange + Vector2.Distance(shipPos, origin);
+            int count = Physics2D.OverlapCircle(origin, scanRadius, raycastFilter, targetOverlapBuffer);
+            int bestPriority = 0;
+            float bestScore = float.MaxValue;
+            bool found = false;
+
+            for (int i = 0; i < count; i++)
+            {
+                Collider2D col = targetOverlapBuffer[i];
+                if (col == null || !col.enabled || !col.gameObject.activeInHierarchy) continue;
+                if (col.transform.root == ownerRoot) continue;
+
+                bool isEnemy = col.CompareTag("Enemy") || col.CompareTag("Boss");
+                bool isAsteroid = !isEnemy && col.CompareTag("Asteroid");
+                if (!isEnemy && !isAsteroid) continue;
+
+                if (ResolveDamageable(col) == null) continue;
+
+                Vector2 targetCenter = col.bounds.extents.sqrMagnitude > 0.0001f
+                    ? (Vector2)col.bounds.center
+                    : (Vector2)col.transform.TransformPoint(col.offset);
+                Vector2 toTarget = targetCenter - origin;
+                float distFromOrigin = toTarget.magnitude;
+                if (distFromOrigin > maxRange) continue;
+
+                Vector2 dir = distFromOrigin > 0.001f ? toTarget / distFromOrigin : weaponDir;
+                float muzzleAngle = Vector2.Angle(weaponDir, dir);
+                bool inMuzzleCone = muzzleAngle <= aimConeHalfAngle;
+
+                Vector2 toFromShip = targetCenter - shipPos;
+                float distFromShip = toFromShip.magnitude;
+                bool inForwardHemisphere = distFromShip <= 0.05f || Vector2.Dot(toFromShip, weaponDir) > 0f;
+                bool inShipCone = inForwardHemisphere && distFromShip > 0.001f && Vector2.Angle(weaponDir, toFromShip / distFromShip) <= aimConeHalfAngle;
+
+                bool inCloseFrontLock = false;
+                if (isEnemy && inForwardHemisphere && closeRangeLockRadius > 0f)
+                {
+                    float originEdgeDist = Vector2.Distance(origin, col.ClosestPoint(origin));
+                    float shipEdgeDist = Vector2.Distance(shipPos, col.ClosestPoint(shipPos));
+                    inCloseFrontLock = originEdgeDist <= closeRangeLockRadius || shipEdgeDist <= closeRangeLockRadius;
+                }
+
+                int priority;
+                if (isEnemy)
+                {
+                    if (inMuzzleCone || inShipCone) priority = 3;
+                    else if (inCloseFrontLock) priority = 2;
+                    else continue;
+                }
+                else
+                {
+                    if (!inMuzzleCone) continue;
+                    priority = 1;
+                }
+
+                if (priority < bestPriority) continue;
+
+                float effectiveAngle = Mathf.Min(muzzleAngle, distFromShip > 0.001f ? Vector2.Angle(weaponDir, toFromShip / distFromShip) : muzzleAngle);
+                float score = effectiveAngle + distFromOrigin * 0.5f;
+                if (priority > bestPriority || score < bestScore)
+                {
+                    bestPriority = priority;
+                    bestScore = score;
+                    beamDir = dir;
+                    objectivePoint = targetCenter;
+                    found = true;
+                }
+            }
+
+            return found;
         }
 
         private void FlushDamagePopup()

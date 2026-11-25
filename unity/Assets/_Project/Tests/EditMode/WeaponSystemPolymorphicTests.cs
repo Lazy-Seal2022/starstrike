@@ -107,6 +107,124 @@ namespace StarStrike.Tests.EditMode
         }
 
         [Test]
+        public void ContinuousBeamWeapon_LocksWithin20DegCone_AimsAtObjective_AndPrioritizesEnemiesOverAsteroids()
+        {
+            var beamWeapon = playerGo.AddComponent<ContinuousBeamWeapon>();
+            beamWeapon.damagePerSecond = 100f;
+            beamWeapon.energyCostPerSecond = 10f;
+            beamWeapon.maxRange = 20f;
+            beamWeapon.aimConeHalfAngle = 20f;
+
+            // Asteroid dead ahead (0 degrees, closer)
+            var asteroidGo = new GameObject("BlockingConeAsteroid");
+            asteroidGo.tag = "Asteroid";
+            asteroidGo.transform.position = new Vector3(4f, 0f, 0f);
+            var astCol = asteroidGo.AddComponent<CircleCollider2D>();
+            astCol.radius = 0.6f;
+            var astComp = asteroidGo.AddComponent<Asteroid>();
+
+            // Enemy inside 20-degree cone (at ~14 degrees off right axis)
+            float radIn = 14f * Mathf.Deg2Rad;
+            Vector3 enemyInPos = new Vector3(Mathf.Cos(radIn), Mathf.Sin(radIn), 0f) * 8f;
+            var enemyInGo = new GameObject("ConeEnemy");
+            enemyInGo.tag = "Enemy";
+            enemyInGo.transform.position = enemyInPos;
+            var enemyInHealth = enemyInGo.AddComponent<ShipHealth>();
+            enemyInHealth.maxShield = 100f;
+            enemyInHealth.currentShield = 100f;
+            enemyInHealth.maxHull = 100f;
+            enemyInHealth.currentHull = 100f;
+            enemyInGo.AddComponent<CircleCollider2D>().radius = 0.6f;
+
+            // Enemy outside 20-degree cone (~35 degrees)
+            float radOut = 35f * Mathf.Deg2Rad;
+            Vector3 enemyOutPos = new Vector3(Mathf.Cos(radOut), Mathf.Sin(radOut), 0f) * 6f;
+            var enemyOutGo = new GameObject("OutOfConeEnemy");
+            enemyOutGo.tag = "Enemy";
+            enemyOutGo.transform.position = enemyOutPos;
+            var enemyOutHealth = enemyOutGo.AddComponent<ShipHealth>();
+            enemyOutHealth.maxShield = 100f;
+            enemyOutHealth.currentShield = 100f;
+            enemyOutHealth.maxHull = 100f;
+            enemyOutHealth.currentHull = 100f;
+            enemyOutGo.AddComponent<CircleCollider2D>().radius = 0.6f;
+
+            try
+            {
+                Physics2D.SyncTransforms();
+
+                bool fired = beamWeapon.TryFire((IEnergyConsumer)health);
+                Assert.IsTrue(fired);
+
+                Assert.Less(enemyInHealth.currentShield, 100f, "Beam must lock onto and damage the in-cone enemy despite asteroid dead ahead");
+                Assert.AreEqual(100f, enemyOutHealth.currentShield, 0.01f, "Enemy outside 20 deg cone must remain undamaged");
+                Assert.IsNotNull(beamWeapon.beamRenderer);
+                Vector3 endPos = beamWeapon.beamRenderer.GetPosition(1);
+                Vector3 expectedDir = (enemyInPos - beamWeapon.beamRenderer.GetPosition(0)).normalized;
+                Vector3 actualDir = (endPos - beamWeapon.beamRenderer.GetPosition(0)).normalized;
+                Assert.Less(Vector2.Angle(expectedDir, actualDir), 2f, "Beam endpoint direction must aim directly at locked objective");
+            }
+            finally
+            {
+                beamWeapon.StopFiring();
+                Object.DestroyImmediate(asteroidGo);
+                Object.DestroyImmediate(enemyInGo);
+                Object.DestroyImmediate(enemyOutGo);
+            }
+        }
+
+        [Test]
+        public void ContinuousBeamWeapon_LocksCloseForwardEnemy_EvenWhenOutside20DegMuzzleCone()
+        {
+            var beamWeapon = playerGo.AddComponent<ContinuousBeamWeapon>();
+            beamWeapon.damagePerSecond = 100f;
+            beamWeapon.energyCostPerSecond = 10f;
+            beamWeapon.maxRange = 20f;
+            beamWeapon.aimConeHalfAngle = 20f;
+            beamWeapon.closeRangeLockRadius = 3.5f;
+
+            // Enemy is right in front/side of the ship (55 deg off ship center, behind default muzzle x=1.55)
+            Vector3 closeForwardPos = new Vector3(1.25f, 1.80f, 0f);
+            var closeEnemyGo = new GameObject("CloseForwardEnemy");
+            closeEnemyGo.tag = "Enemy";
+            closeEnemyGo.transform.position = closeForwardPos;
+            var closeHealth = closeEnemyGo.AddComponent<ShipHealth>();
+            closeHealth.maxShield = 100f;
+            closeHealth.currentShield = 100f;
+            closeHealth.maxHull = 100f;
+            closeHealth.currentHull = 100f;
+            closeEnemyGo.AddComponent<CircleCollider2D>().radius = 0.6f;
+
+            // Enemy behind the ship must NOT be shot
+            var rearEnemyGo = new GameObject("RearEnemy");
+            rearEnemyGo.tag = "Enemy";
+            rearEnemyGo.transform.position = new Vector3(-1.5f, 0.5f, 0f);
+            var rearHealth = rearEnemyGo.AddComponent<ShipHealth>();
+            rearHealth.maxShield = 100f;
+            rearHealth.currentShield = 100f;
+            rearHealth.maxHull = 100f;
+            rearHealth.currentHull = 100f;
+            rearEnemyGo.AddComponent<CircleCollider2D>().radius = 0.6f;
+
+            try
+            {
+                Physics2D.SyncTransforms();
+
+                bool fired = beamWeapon.TryFire((IEnergyConsumer)health);
+                Assert.IsTrue(fired);
+
+                Assert.Less(closeHealth.currentShield, 100f, "Close enemy in front of ship must be targeted even outside 20 deg cone");
+                Assert.AreEqual(100f, rearHealth.currentShield, 0.01f, "Enemy behind ship must not be targeted");
+            }
+            finally
+            {
+                beamWeapon.StopFiring();
+                Object.DestroyImmediate(closeEnemyGo);
+                Object.DestroyImmediate(rearEnemyGo);
+            }
+        }
+
+        [Test]
         public void ShipWeaponController_ManagesAllWeapons_AndSwapsViaIndex()
         {
             var controller = playerGo.AddComponent<ShipWeaponController>();

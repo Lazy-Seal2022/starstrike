@@ -740,6 +740,8 @@ namespace StarStrike.Editor
             weapon.energyCostPerSecond = 22f;
             weapon.maxRange = 16f;
             weapon.fireRate = 0.05f;
+            weapon.aimConeHalfAngle = 20f;
+            weapon.closeRangeLockRadius = 3.5f;
             weapon.beamColor = new Color(0.2f, 0.95f, 1f, 0.9f);
 
             var visual = new GameObject("Visual");
