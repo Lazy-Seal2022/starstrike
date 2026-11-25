@@ -14,6 +14,7 @@ namespace StarStrike.Gameplay
         public float stunDuration = 3.0f;
 
         private static readonly Collider2D[] hitBuffer = new Collider2D[128];
+        private static readonly ContactFilter2D hitFilter = new ContactFilter2D { useTriggers = true, useLayerMask = false };
 
         public void Initialize(GameObject ownerShip, SkillDefinition skillDef)
         {
@@ -40,11 +41,11 @@ namespace StarStrike.Gameplay
             }
 
             // 2. Physics AOE overlap
-            Physics2D.SyncTransforms();
-            Collider2D[] hits = Physics2D.OverlapCircleAll(origin, empRadius);
-            for (int i = 0; i < hits.Length; i++)
+            if (!Application.isPlaying) Physics2D.SyncTransforms();
+            int hitCount = Physics2D.OverlapCircle(origin, empRadius, hitFilter, hitBuffer);
+            for (int i = 0; i < hitCount; i++)
             {
-                Collider2D col = hits[i];
+                Collider2D col = hitBuffer[i];
                 if (col == null || col.gameObject == ownerShip) continue;
 
                 if (col.CompareTag("Enemy"))
@@ -69,13 +70,17 @@ namespace StarStrike.Gameplay
 
                     GameEvents.TriggerDamageDealt(col.transform.position, empDamage, false);
                 }
-                else if (col.GetComponent<Asteroid>() != null)
+                else
                 {
-                    col.GetComponent<Asteroid>().TakeDamage(empDamage * 0.5f);
-                    var sr = col.GetComponent<SpriteRenderer>();
-                    if (sr != null && FXService.Instance != null)
+                    var asteroid = col.GetComponent<Asteroid>();
+                    if (asteroid != null)
                     {
-                        FXService.Instance.FlashSprite(sr, Color.cyan, 0.2f);
+                        asteroid.TakeDamage(empDamage * 0.5f);
+                        var sr = col.GetComponent<SpriteRenderer>();
+                        if (sr != null && FXService.Instance != null)
+                        {
+                            FXService.Instance.FlashSprite(sr, Color.cyan, 0.2f);
+                        }
                     }
                 }
             }

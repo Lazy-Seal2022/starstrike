@@ -19,9 +19,12 @@ namespace StarStrike.Gameplay
         public bool IsEnemy => isEnemy;
 
         private Rigidbody2D rb;
+        private SpriteRenderer cachedSr;
         private Transform currentTarget;
         private float spawnTime;
         private float nextTargetSearchTime = 0f;
+        private static readonly Collider2D[] overlapBuffer = new Collider2D[64];
+        private static readonly ContactFilter2D overlapFilter = new ContactFilter2D { useTriggers = true, useLayerMask = false };
 
         private void Awake()
         {
@@ -44,10 +47,10 @@ namespace StarStrike.Gameplay
                 col.radius = 0.4f;
             }
 
-            SpriteRenderer sr = GetComponent<SpriteRenderer>();
-            if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSpriteHelper.GetMissileSprite();
-            sr.sortingOrder = 5;
+            cachedSr = GetComponent<SpriteRenderer>();
+            if (cachedSr == null) cachedSr = gameObject.AddComponent<SpriteRenderer>();
+            cachedSr.sprite = ProceduralSpriteHelper.GetMissileSprite();
+            cachedSr.sortingOrder = 5;
         }
 
         public void Initialize(float dmg, float spd, bool enemy)
@@ -58,11 +61,11 @@ namespace StarStrike.Gameplay
 
             if (rb == null) SetupPhysics();
 
-            SpriteRenderer sr = GetComponent<SpriteRenderer>();
-            if (sr != null)
+            if (cachedSr == null) cachedSr = GetComponent<SpriteRenderer>();
+            if (cachedSr != null)
             {
-                sr.sprite = ProceduralSpriteHelper.GetMissileSprite();
-                sr.color = enemy ? new Color(1f, 0.3f, 0.3f) : new Color(1f, 0.7f, 0.2f);
+                if (cachedSr.sprite == null) cachedSr.sprite = ProceduralSpriteHelper.GetMissileSprite();
+                cachedSr.color = enemy ? new Color(1f, 0.3f, 0.3f) : new Color(1f, 0.7f, 0.2f);
             }
 
             currentTarget = null;
@@ -130,12 +133,13 @@ namespace StarStrike.Gameplay
         private Transform FindNearestTarget()
         {
             float searchRadius = 25f;
-            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, searchRadius);
+            int hitCount = Physics2D.OverlapCircle(transform.position, searchRadius, overlapFilter, overlapBuffer);
             Transform bestTarget = null;
             float closestDistSqr = float.MaxValue;
 
-            foreach (var hit in hits)
+            for (int i = 0; i < hitCount; i++)
             {
+                var hit = overlapBuffer[i];
                 if (hit == null || !hit.gameObject.activeInHierarchy) continue;
 
                 bool isValid = false;
@@ -191,9 +195,10 @@ namespace StarStrike.Gameplay
             StarStrike.Gameplay.Audio.AudioService.Instance?.PlaySound("explosion", 0.7f);
 
             // Area of Effect damage
-            Collider2D[] victims = Physics2D.OverlapCircleAll(transform.position, blastRadius);
-            foreach (var victim in victims)
+            int victimCount = Physics2D.OverlapCircle(transform.position, blastRadius, overlapFilter, overlapBuffer);
+            for (int i = 0; i < victimCount; i++)
             {
+                var victim = overlapBuffer[i];
                 if (victim == null || !victim.gameObject.activeInHierarchy) continue;
 
                 bool validVictim = false;

@@ -35,8 +35,14 @@ namespace StarStrike.Gameplay
 
         // Support Shield specific state
         private Transform protectedAllyTarget;
+        private float nextAllySearchTime;
         private readonly List<ShipHealth> currentlyShieldedAllies = new List<ShipHealth>();
+        private readonly HashSet<ShipHealth> shieldAuraBuffer = new HashSet<ShipHealth>();
+        private EnemyArchetype lastAppliedVisualArchetype = (EnemyArchetype)(-1);
+        private EnemyDefinition lastAppliedVisualDef;
         private static readonly Collider2D[] overlapBuffer = new Collider2D[128];
+        private static readonly ContactFilter2D overlapFilter = new ContactFilter2D { useTriggers = true, useLayerMask = false };
+        private static Material sharedSniperLineMaterial;
 
         private void Awake()
         {
@@ -89,7 +95,15 @@ namespace StarStrike.Gameplay
             sniperAimLine.positionCount = 2;
             sniperAimLine.startWidth = 0.05f;
             sniperAimLine.endWidth = 0.02f;
-            sniperAimLine.material = new Material(Shader.Find("Sprites/Default"));
+            if (sharedSniperLineMaterial == null)
+            {
+                var shader = Shader.Find("Sprites/Default");
+                if (shader != null) sharedSniperLineMaterial = new Material(shader);
+            }
+            if (sharedSniperLineMaterial != null)
+            {
+                sniperAimLine.sharedMaterial = sharedSniperLineMaterial;
+            }
             sniperAimLine.startColor = new Color(0.8f, 0.2f, 1f, 0.2f);
             sniperAimLine.endColor = new Color(1f, 0.2f, 0.2f, 0.6f);
             sniperAimLine.sortingOrder = 6;
@@ -249,17 +263,25 @@ namespace StarStrike.Gameplay
             float scale = (definition != null && definition.visualScale > 0f) ? definition.visualScale : 1.0f;
             transform.localScale = Vector3.one * scale;
 
-            var poly = GetComponent<PolygonCollider2D>();
-            if (poly != null && spriteRenderer.sprite != null)
+            bool shapeChanged = spriteRenderer.sprite != null &&
+                (lastAppliedVisualArchetype != Archetype || lastAppliedVisualDef != definition);
+            if (shapeChanged)
             {
-                PlayerProgression.UpdatePolygonFromSprite(poly, spriteRenderer.sprite);
-            }
+                lastAppliedVisualArchetype = Archetype;
+                lastAppliedVisualDef = definition;
 
-            var shield = GetComponent<StarStrike.Gameplay.FX.ShipShieldField>();
-            if (shield != null)
-            {
-                shield.EnsureInitialized();
-                shield.RebuildShieldCollider();
+                var poly = GetComponent<PolygonCollider2D>();
+                if (poly != null)
+                {
+                    PlayerProgression.UpdatePolygonFromSprite(poly, spriteRenderer.sprite);
+                }
+
+                var shield = GetComponent<StarStrike.Gameplay.FX.ShipShieldField>();
+                if (shield != null)
+                {
+                    shield.EnsureInitialized();
+                    shield.RebuildShieldCollider();
+                }
             }
         }
 
@@ -474,25 +496,26 @@ namespace StarStrike.Gameplay
             float blastRadius = definition != null ? definition.kamikazeBlastRadius : 4.5f;
             float blastDmg = definition != null ? definition.kamikazeBlastDamage : 45f;
 
-            Physics2D.SyncTransforms();
-            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, blastRadius);
-            for (int i = 0; i < hits.Length; i++)
+            if (!Application.isPlaying) Physics2D.SyncTransforms();
+            int hitCount = Physics2D.OverlapCircle(transform.position, blastRadius, overlapFilter, overlapBuffer);
+            for (int i = 0; i < hitCount; i++)
             {
-                Collider2D col = hits[i];
+                Collider2D col = overlapBuffer[i];
                 if (col == null || col.gameObject == gameObject) continue;
 
                 // Player or asteroid damage
-                if (col.CompareTag("Player") || col.GetComponent<ShipHealth>() != null)
+                var sh = col.GetComponent<ShipHealth>();
+                if (col.CompareTag("Player") || sh != null)
                 {
-                    var sh = col.GetComponent<ShipHealth>();
                     if (sh != null && !sh.isInvulnerable)
                     {
                         sh.TakeDamage(blastDmg);
                     }
                 }
-                else if (col.GetComponent<Asteroid>() != null)
+                else
                 {
-                    col.GetComponent<Asteroid>().TakeDamage(blastDmg);
+                    var ast = col.GetComponent<Asteroid>();
+                    if (ast != null) ast.TakeDamage(blastDmg);
                 }
             }
 
@@ -640,15 +663,20 @@ namespace StarStrike.Gameplay
             {
                 return;
             }
+            if (Application.isPlaying && Time.time < nextAllySearchTime)
+            {
+                return;
+            }
+            nextAllySearchTime = Time.time + 0.25f;
 
             float closestSqrDist = float.MaxValue;
             Transform closest = null;
 
-            Physics2D.SyncTransforms();
-            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 25f);
-            for (int i = 0; i < hits.Length; i++)
+            if (!Application.isPlaying) Physics2D.SyncTransforms();
+            int hitCount = Physics2D.OverlapCircle(transform.position, 25f, overlapFilter, overlapBuffer);
+            for (int i = 0; i < hitCount; i++)
             {
-                Collider2D col = hits[i];
+                Collider2D col = overlapBuffer[i];
                 if (col == null || col.gameObject == gameObject) continue;
 
                 if (col.CompareTag("Enemy") && col.GetComponent<EnemyAI>() != null)
@@ -668,14 +696,14 @@ namespace StarStrike.Gameplay
         private void ApplySupportShieldAura()
         {
             float shieldRadius = definition != null ? definition.supportShieldRadius : 5.5f;
-            Physics2D.SyncTransforms();
-            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, shieldRadius);
+            if (!Application.isPlaying) Physics2D.SyncTransforms();
+            int hitCount = Physics2D.OverlapCircle(transform.position, shieldRadius, overlapFilter, overlapBuffer);
 
-            var insideThisFrame = new HashSet<ShipHealth>();
+            shieldAuraBuffer.Clear();
 
-            for (int i = 0; i < hits.Length; i++)
+            for (int i = 0; i < hitCount; i++)
             {
-                Collider2D col = hits[i];
+                Collider2D col = overlapBuffer[i];
                 if (col == null || col.gameObject == gameObject) continue;
 
                 if (col.CompareTag("Enemy"))
@@ -683,7 +711,7 @@ namespace StarStrike.Gameplay
                     var sh = col.GetComponent<ShipHealth>();
                     if (sh != null)
                     {
-                        insideThisFrame.Add(sh);
+                        shieldAuraBuffer.Add(sh);
                         sh.isInvulnerable = true;
                         if (!currentlyShieldedAllies.Contains(sh))
                         {
@@ -697,7 +725,7 @@ namespace StarStrike.Gameplay
             for (int i = currentlyShieldedAllies.Count - 1; i >= 0; i--)
             {
                 var sh = currentlyShieldedAllies[i];
-                if (sh == null || !insideThisFrame.Contains(sh))
+                if (sh == null || !shieldAuraBuffer.Contains(sh))
                 {
                     if (sh != null) sh.isInvulnerable = false;
                     currentlyShieldedAllies.RemoveAt(i);
@@ -767,11 +795,11 @@ namespace StarStrike.Gameplay
                 float blastRadius = definition != null ? definition.kamikazeBlastRadius : 4.5f;
                 float blastDmg = definition != null ? definition.kamikazeBlastDamage : 45f;
 
-                Physics2D.SyncTransforms();
-                Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, blastRadius);
-                for (int i = 0; i < hits.Length; i++)
+                if (!Application.isPlaying) Physics2D.SyncTransforms();
+                int hitCount = Physics2D.OverlapCircle(transform.position, blastRadius, overlapFilter, overlapBuffer);
+                for (int i = 0; i < hitCount; i++)
                 {
-                    Collider2D col = hits[i];
+                    Collider2D col = overlapBuffer[i];
                     if (col == null || col.gameObject == gameObject) continue;
 
                     var sh = col.GetComponent<ShipHealth>();
@@ -779,9 +807,10 @@ namespace StarStrike.Gameplay
                     {
                         sh.TakeDamage(blastDmg);
                     }
-                    else if (col.GetComponent<Asteroid>() != null)
+                    else
                     {
-                        col.GetComponent<Asteroid>().TakeDamage(blastDmg);
+                        var ast = col.GetComponent<Asteroid>();
+                        if (ast != null) ast.TakeDamage(blastDmg);
                     }
                 }
             }

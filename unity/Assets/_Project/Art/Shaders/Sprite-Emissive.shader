@@ -7,6 +7,8 @@ Shader "StarStrike/Sprite-Emissive"
         [MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
         [HideInInspector] _RendererColor ("RendererColor", Color) = (1,1,1,1)
         [HideInInspector] _Flip ("Flip", Vector) = (1,1,1,1)
+        [HideInInspector] _AlphaTex ("External Alpha", 2D) = "white" {}
+        [HideInInspector] _EnableExternalAlpha ("Enable External Alpha", Float) = 0
 
         [Header(Emissive Glow)]
         _EmissiveTex ("Emissive Map", 2D) = "black" {}
@@ -18,6 +20,7 @@ Shader "StarStrike/Sprite-Emissive"
     {
         Tags
         {
+            "RenderPipeline"="UniversalPipeline"
             "Queue"="Transparent"
             "IgnoreProjector"="True"
             "RenderType"="Transparent"
@@ -32,84 +35,59 @@ Shader "StarStrike/Sprite-Emissive"
 
         Pass
         {
-        CGPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
-            #pragma target 2.0
+            HLSLPROGRAM
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/Core2D.hlsl"
+
+            #pragma vertex UnlitVertex
+            #pragma fragment UnlitFragment
+
+            struct Attributes
+            {
+                COMMON_2D_INPUTS
+                half4 color : COLOR;
+                UNITY_SKINNED_VERTEX_INPUTS
+            };
+
+            struct Varyings
+            {
+                COMMON_2D_OUTPUTS
+                half4 color : COLOR;
+            };
+
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/2DCommon.hlsl"
+
             #pragma multi_compile_instancing
-            #pragma multi_compile _ PIXELSNAP_ON
-            #pragma multi_compile _ ETC1_EXTERNAL_ALPHA
-            #include "UnityCG.cginc"
+            #pragma multi_compile _ DEBUG_DISPLAY SKINNED_SPRITE
 
-            struct appdata_t
-            {
-                float4 vertex   : POSITION;
-                float4 color    : COLOR;
-                float2 texcoord : TEXCOORD0;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
-            };
-
-            struct v2f
-            {
-                float4 vertex   : SV_POSITION;
-                fixed4 color    : COLOR;
-                float2 texcoord : TEXCOORD0;
-                UNITY_VERTEX_OUTPUT_STEREO
-            };
-
-            sampler2D _MainTex;
-            sampler2D _AlphaTex;
-            sampler2D _EmissiveTex;
+            TEXTURE2D(_EmissiveTex);
+            SAMPLER(sampler_EmissiveTex);
 
             CBUFFER_START(UnityPerMaterial)
-                fixed4 _Color;
-                fixed4 _RendererColor;
-                fixed2 _Flip;
+                half4 _Color;
                 half4 _EmissiveColor;
                 half _EmissiveIntensity;
             CBUFFER_END
 
-            v2f vert(appdata_t IN)
+            Varyings UnlitVertex(Attributes input)
             {
-                v2f OUT;
-                UNITY_SETUP_INSTANCE_ID(IN);
-                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
+                UNITY_SKINNED_VERTEX_COMPUTE(input);
+                SetUpSpriteInstanceProperties();
+                input.positionOS = UnityFlipSprite(input.positionOS, unity_SpriteProps.xy);
 
-                OUT.vertex = UnityObjectToClipPos(IN.vertex);
-                OUT.texcoord = IN.texcoord;
-                OUT.color = IN.color * _Color * _RendererColor;
-
-                #ifdef PIXELSNAP_ON
-                OUT.vertex = UnityPixelSnap(OUT.vertex);
-                #endif
-
-                return OUT;
+                Varyings o = CommonUnlitVertex(input);
+                o.color = input.color * _Color * unity_SpriteColor;
+                return o;
             }
 
-            fixed4 SampleSpriteTexture(float2 uv)
+            half4 UnlitFragment(Varyings input) : SV_Target
             {
-                fixed4 color = tex2D(_MainTex, uv);
-                #if ETC1_EXTERNAL_ALPHA
-                fixed4 alpha = tex2D(_AlphaTex, uv);
-                color.a = lerp(color.a, alpha.r, _EnableExternalAlpha);
-                #endif
-                return color;
-            }
-
-            fixed4 frag(v2f IN) : SV_Target
-            {
-                fixed4 c = SampleSpriteTexture(IN.texcoord) * IN.color;
-
-                // Sample emissive map
-                half4 emissive = tex2D(_EmissiveTex, IN.texcoord);
+                half4 c = CommonUnlitFragment(input, input.color);
+                half4 emissive = SAMPLE_TEXTURE2D(_EmissiveTex, sampler_EmissiveTex, input.uv);
                 half3 glow = emissive.rgb * emissive.a * _EmissiveColor.rgb * _EmissiveIntensity;
-
-                // Additive HDR glow on premultiplied sprite color
                 c.rgb = c.rgb * c.a + glow;
-
                 return c;
             }
-        ENDCG
+            ENDHLSL
         }
     }
 }

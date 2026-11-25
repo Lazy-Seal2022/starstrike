@@ -14,6 +14,8 @@ namespace StarStrike.Gameplay.FX
 
         private void SetupGlobalVolume()
         {
+            if (FindAnyObjectByType<Volume>() != null) return;
+
             GameObject volumeObj = new GameObject("GlobalVolume");
             Volume volume = volumeObj.AddComponent<Volume>();
             volume.isGlobal = true;

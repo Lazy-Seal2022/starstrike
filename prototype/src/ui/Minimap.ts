@@ -9,6 +9,8 @@ export class Minimap {
   private coordText: Phaser.GameObjects.Text;
   private readonly radarSize = 120;
   private halfRadar = 60;
+  private lastCoordX = Number.NaN;
+  private lastCoordY = Number.NaN;
 
   constructor(
     private scene: Phaser.Scene,
@@ -113,7 +115,13 @@ export class Minimap {
       this.radarGraphics.closePath();
       this.radarGraphics.fillPath();
 
-      this.coordText.setText(`X: ${Math.round(pt.x)} Y: ${Math.round(pt.y)}`);
+      const rx = Math.round(pt.x);
+      const ry = Math.round(pt.y);
+      if (rx !== this.lastCoordX || ry !== this.lastCoordY) {
+        this.lastCoordX = rx;
+        this.lastCoordY = ry;
+        this.coordText.setText(`X: ${rx} Y: ${ry}`);
+      }
     }
   }
 

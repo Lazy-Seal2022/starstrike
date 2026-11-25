@@ -43,7 +43,11 @@ namespace StarStrike.Gameplay.Carrier
         private CircleCollider2D col;
         private float lastFireTime = -999f;
         private float lastDamageTime = -999f;
+        private float nextTargetSearchTime = 0f;
         private Vector2 velocity;
+        private static GameObject cachedDroneLaserPrefab;
+        private static readonly Collider2D[] overlapBuffer = new Collider2D[64];
+        private static readonly ContactFilter2D overlapFilter = new ContactFilter2D { useTriggers = true, useLayerMask = false };
 
         public float HullPercentage => maxHull > 0f ? Mathf.Clamp01(currentHull / maxHull) : 0f;
         public float ShieldPercentage => maxShield > 0f ? Mathf.Clamp01(currentShield / maxShield) : 0f;
@@ -151,7 +155,11 @@ namespace StarStrike.Gameplay.Carrier
             MoveTowards(targetPos);
 
             // Scan for nearby threats to intercept
-            currentTarget = FindBestTarget(transform.position, attackRange);
+            if (currentTarget == null || !currentTarget.gameObject.activeInHierarchy || Time.time >= nextTargetSearchTime)
+            {
+                nextTargetSearchTime = Time.time + 0.15f;
+                currentTarget = FindBestTarget(transform.position, attackRange);
+            }
             if (currentTarget != null)
             {
                 AimAt(currentTarget.position);
@@ -169,10 +177,14 @@ namespace StarStrike.Gameplay.Carrier
             Vector2 strikeTarget = carrier.CurrentAimPosition;
 
             // Prioritize enemies near the target or within strike range
-            currentTarget = FindBestTarget(strikeTarget, 7.5f);
-            if (currentTarget == null)
+            if (currentTarget == null || !currentTarget.gameObject.activeInHierarchy || Time.time >= nextTargetSearchTime)
             {
-                currentTarget = FindBestTarget(transform.position, attackRange * 1.5f);
+                nextTargetSearchTime = Time.time + 0.15f;
+                currentTarget = FindBestTarget(strikeTarget, 7.5f);
+                if (currentTarget == null)
+                {
+                    currentTarget = FindBestTarget(transform.position, attackRange * 1.5f);
+                }
             }
 
             Vector2 moveTarget = (currentTarget != null) ? (Vector2)currentTarget.position : strikeTarget;
@@ -244,15 +256,52 @@ namespace StarStrike.Gameplay.Carrier
 
             Vector2 fireDir = (targetPos - (Vector2)transform.position).normalized;
             Vector3 muzzlePos = transform.position + (Vector3)fireDir * 0.45f;
+            Quaternion rot = Quaternion.Euler(0f, 0f, Mathf.Atan2(fireDir.y, fireDir.x) * Mathf.Rad2Deg);
 
-            // Spawn cyan player laser projectile
-            GameObject laserObj = new GameObject("EscortDrone_Laser");
+            if (cachedDroneLaserPrefab == null)
+            {
+                cachedDroneLaserPrefab = Resources.Load<GameObject>("Prefabs/Projectiles/PlayerLaser");
+            }
+
+            // Spawn pooled cyan player laser projectile
+            GameObject laserObj;
+            if (PoolManager.Instance != null)
+            {
+                laserObj = PoolManager.Instance.Spawn("PlayerLaser", muzzlePos, rot, () =>
+                {
+                    if (cachedDroneLaserPrefab != null)
+                    {
+                        var inst = Instantiate(cachedDroneLaserPrefab, muzzlePos, rot);
+                        inst.name = "PlayerLaser";
+                        return inst;
+                    }
+                    var go = new GameObject("PlayerLaser");
+                    go.tag = "Laser";
+                    go.AddComponent<LaserProjectile>();
+                    return go;
+                });
+            }
+            else if (cachedDroneLaserPrefab != null)
+            {
+                laserObj = Instantiate(cachedDroneLaserPrefab, muzzlePos, rot);
+                laserObj.name = "PlayerLaser";
+            }
+            else
+            {
+                laserObj = new GameObject("EscortDrone_Laser");
+                laserObj.transform.position = muzzlePos;
+                laserObj.transform.rotation = rot;
+                laserObj.tag = "Laser";
+                laserObj.AddComponent<LaserProjectile>();
+            }
+
             laserObj.transform.position = muzzlePos;
-            laserObj.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(fireDir.y, fireDir.x) * Mathf.Rad2Deg);
-            laserObj.tag = "Laser";
-
-            var laser = laserObj.AddComponent<LaserProjectile>();
-            laser.Initialize(pulseDamage, pulseSpeed, false);
+            laserObj.transform.rotation = rot;
+            var laser = laserObj.GetComponent<LaserProjectile>();
+            if (laser != null)
+            {
+                laser.Initialize(pulseDamage, pulseSpeed, false);
+            }
         }
 
         public void TakeDamage(float damage)
@@ -292,13 +341,13 @@ namespace StarStrike.Gameplay.Carrier
 
         private Transform FindBestTarget(Vector2 searchOrigin, float radius)
         {
-            Collider2D[] hits = Physics2D.OverlapCircleAll(searchOrigin, radius);
+            int hitCount = Physics2D.OverlapCircle(searchOrigin, radius, overlapFilter, overlapBuffer);
             Transform best = null;
-            float closestDist = float.MaxValue;
+            float closestSqrDist = float.MaxValue;
 
-            for (int i = 0; i < hits.Length; i++)
+            for (int i = 0; i < hitCount; i++)
             {
-                var hit = hits[i];
+                var hit = overlapBuffer[i];
                 if (hit == null || hit.gameObject == gameObject) continue;
                 if (hit.CompareTag("Player") || hit.CompareTag("Laser")) continue;
 
@@ -307,10 +356,10 @@ namespace StarStrike.Gameplay.Carrier
 
                 if (isEnemy)
                 {
-                    float dist = Vector2.Distance(searchOrigin, hit.transform.position);
-                    if (dist < closestDist)
+                    float sqrDist = ((Vector2)hit.transform.position - searchOrigin).sqrMagnitude;
+                    if (sqrDist < closestSqrDist)
                     {
-                        closestDist = dist;
+                        closestSqrDist = sqrDist;
                         best = hit.transform;
                     }
                 }

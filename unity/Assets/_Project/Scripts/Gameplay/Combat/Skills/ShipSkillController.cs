@@ -140,7 +140,7 @@ namespace StarStrike.Gameplay
             {
                 var slot = slots[i];
                 if (slot == null) continue;
-                EnsureBehaviorInstance(slot);
+                if (slot.behaviorInstance == null) EnsureBehaviorInstance(slot);
 
                 if (slot.currentCooldown > 0f)
                 {

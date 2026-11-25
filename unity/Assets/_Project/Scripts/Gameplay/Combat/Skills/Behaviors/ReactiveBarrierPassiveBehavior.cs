@@ -11,6 +11,8 @@ namespace StarStrike.Gameplay
         private float internalCooldownRemaining = 0f;
         private float pulseRadius = 8f;
         private float pushForce = 16f;
+        private static readonly Collider2D[] hitBuffer = new Collider2D[64];
+        private static readonly ContactFilter2D hitFilter = new ContactFilter2D { useTriggers = true, useLayerMask = false };
 
         public float RemainingCooldown => internalCooldownRemaining;
 
@@ -60,10 +62,10 @@ namespace StarStrike.Gameplay
             Vector2 center = origin != Vector2.zero ? origin : (Vector2)ownerShip.transform.position;
 
             // 1. Purge enemy projectiles and repel hostiles in radius
-            Collider2D[] hits = Physics2D.OverlapCircleAll(center, pulseRadius);
-            for (int i = 0; i < hits.Length; i++)
+            int hitCount = Physics2D.OverlapCircle(center, pulseRadius, hitFilter, hitBuffer);
+            for (int i = 0; i < hitCount; i++)
             {
-                Collider2D hit = hits[i];
+                Collider2D hit = hitBuffer[i];
                 if (hit == null || hit.gameObject == ownerShip) continue;
 
                 LaserProjectile laser = hit.GetComponent<LaserProjectile>();

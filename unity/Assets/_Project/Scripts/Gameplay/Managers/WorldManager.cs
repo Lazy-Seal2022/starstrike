@@ -27,6 +27,7 @@ namespace StarStrike.Gameplay
         private float halfW;
         private float halfH;
         private LineRenderer lineRenderer;
+        private Camera cachedMainCamera;
 
         private void Awake()
         {
@@ -110,6 +111,7 @@ namespace StarStrike.Gameplay
 
             SetupCamera();
             DrawBorder();
+            PrewarmCorePools();
             
             SpawnAsteroidField();
             if (GameManager.Instance == null || GameManager.Instance.CurrentMode == GameMode.PvE)
@@ -236,14 +238,21 @@ namespace StarStrike.Gameplay
 
         private void LateUpdate()
         {
-            if (CameraController.Instance == null && playerTransform != null && Camera.main != null)
+            if (CameraController.Instance == null && playerTransform != null)
             {
-                Vector3 targetPos = new Vector3(playerTransform.position.x, playerTransform.position.y, -10f);
-                Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, targetPos, 8f * Time.deltaTime);
-                
-                if (StarStrike.Gameplay.FX.FXService.Instance != null)
+                if (cachedMainCamera == null || !cachedMainCamera.isActiveAndEnabled)
                 {
-                    Camera.main.transform.position += StarStrike.Gameplay.FX.FXService.CameraOffset;
+                    cachedMainCamera = Camera.main;
+                }
+                if (cachedMainCamera != null)
+                {
+                    Vector3 targetPos = new Vector3(playerTransform.position.x, playerTransform.position.y, -10f);
+                    cachedMainCamera.transform.position = Vector3.Lerp(cachedMainCamera.transform.position, targetPos, 8f * Time.deltaTime);
+
+                    if (StarStrike.Gameplay.FX.FXService.Instance != null)
+                    {
+                        cachedMainCamera.transform.position += StarStrike.Gameplay.FX.FXService.CameraOffset;
+                    }
                 }
             }
 
@@ -332,6 +341,62 @@ namespace StarStrike.Gameplay
             }
         }
 
+        private void PrewarmCorePools()
+        {
+            if (!Application.isPlaying || PoolManager.Instance == null) return;
+
+            var combatConfig = config != null && config.combatConfig != null
+                ? config.combatConfig
+                : Resources.Load<CombatConfig>("Data/CombatConfig");
+            var asteroidConfig = config != null && config.asteroidConfig != null
+                ? config.asteroidConfig
+                : Resources.Load<AsteroidConfig>("Data/AsteroidConfig");
+
+            PoolManager.Instance.Prewarm("ExplosionFX", StarStrike.Gameplay.FX.FXService.CreateExplosionPrefab, 12);
+            PoolManager.Instance.Prewarm("Gem", () =>
+            {
+                GameObject gemPrefab = asteroidConfig != null ? asteroidConfig.gemCrystalPrefab : null;
+                GameObject obj = gemPrefab != null ? Instantiate(gemPrefab) : new GameObject("GemCrystal");
+                obj.name = "GemCrystal";
+                if (obj.GetComponent<GemCrystal>() == null) obj.AddComponent<GemCrystal>();
+                return obj;
+            }, 24);
+            PoolManager.Instance.Prewarm("PlayerLaser", () => CreatePooledLaser("PlayerLaser", false, combatConfig), 24);
+            PoolManager.Instance.Prewarm("EnemyLaser", () => CreatePooledLaser("EnemyLaser", true, combatConfig), 16);
+            PoolManager.Instance.Prewarm("Asteroid_Large", () => CreateAsteroidObject("Asteroid_Large", Vector2.zero, asteroidLargePrefab), 12);
+            PoolManager.Instance.Prewarm("Asteroid_Medium", () => CreateAsteroidObject("Asteroid_Medium", Vector2.zero, asteroidMediumPrefab), 16);
+            PoolManager.Instance.Prewarm("Asteroid_Small", () => CreateAsteroidObject("Asteroid_Small", Vector2.zero, asteroidSmallPrefab), 16);
+        }
+
+        private static GameObject CreatePooledLaser(string tag, bool isEnemy, CombatConfig combatConfig)
+        {
+            GameObject prefab = combatConfig != null
+                ? (isEnemy ? combatConfig.enemyLaserPrefab : combatConfig.playerLaserPrefab)
+                : null;
+            GameObject obj = prefab != null ? Instantiate(prefab) : new GameObject(tag);
+            obj.name = tag;
+            obj.tag = isEnemy ? "EnemyLaser" : "Laser";
+            if (obj.GetComponent<LaserProjectile>() == null) obj.AddComponent<LaserProjectile>();
+            return obj;
+        }
+
+        private GameObject CreateAsteroidObject(string poolTag, Vector2 pos, GameObject prefabToUse)
+        {
+            GameObject obj = prefabToUse != null
+                ? Instantiate(prefabToUse, pos, Quaternion.identity)
+                : new GameObject(poolTag);
+            obj.name = poolTag;
+            obj.transform.position = pos;
+
+            Asteroid ast = obj.GetComponent<Asteroid>();
+            if (ast == null) ast = obj.AddComponent<Asteroid>();
+            if (poolTag.Contains("Large")) ast.tier = AsteroidTier.Large;
+            else if (poolTag.Contains("Medium")) ast.tier = AsteroidTier.Medium;
+            else ast.tier = AsteroidTier.Small;
+            ast.SetupStats();
+            return obj;
+        }
+
         private void SpawnSingleAsteroid(Vector2 pos)
         {
             string tag = "Asteroid_Large";
@@ -353,48 +418,13 @@ namespace StarStrike.Gameplay
                 prefabToUse = asteroidSmallPrefab;
             }
 
-            if (PoolManager.Instance != null) {
-                PoolManager.Instance.Spawn(tag, pos, Quaternion.identity, () => {
-                    if (prefabToUse != null)
-                    {
-                        var inst = Instantiate(prefabToUse, pos, Quaternion.identity);
-                        inst.name = tag;
-                        Asteroid a = inst.GetComponent<Asteroid>();
-                        if (a != null)
-                        {
-                            if (tag.Contains("Large")) a.tier = AsteroidTier.Large;
-                            else if (tag.Contains("Medium")) a.tier = AsteroidTier.Medium;
-                            else a.tier = AsteroidTier.Small;
-                            a.SetupStats();
-                        }
-                        return inst;
-                    }
-                    GameObject obj = new GameObject(tag);
-                    Asteroid ast = obj.AddComponent<Asteroid>();
-                    if (tag.Contains("Large")) ast.tier = AsteroidTier.Large;
-                    else if (tag.Contains("Medium")) ast.tier = AsteroidTier.Medium;
-                    else ast.tier = AsteroidTier.Small;
-                    ast.SetupStats();
-                    return obj;
-                });
-            } else {
-                GameObject astObj = null;
-                if (prefabToUse != null)
-                {
-                    astObj = Instantiate(prefabToUse, pos, Quaternion.identity);
-                    astObj.name = tag;
-                }
-                else
-                {
-                    astObj = new GameObject(tag);
-                    astObj.transform.position = pos;
-                }
-                Asteroid ast = astObj.GetComponent<Asteroid>();
-                if (ast == null) ast = astObj.AddComponent<Asteroid>();
-                if (tag.Contains("Large")) ast.tier = AsteroidTier.Large;
-                else if (tag.Contains("Medium")) ast.tier = AsteroidTier.Medium;
-                else ast.tier = AsteroidTier.Small;
-                ast.SetupStats();
+            if (PoolManager.Instance != null)
+            {
+                PoolManager.Instance.Spawn(tag, pos, Quaternion.identity, () => CreateAsteroidObject(tag, pos, prefabToUse));
+            }
+            else
+            {
+                CreateAsteroidObject(tag, pos, prefabToUse);
             }
         }
 

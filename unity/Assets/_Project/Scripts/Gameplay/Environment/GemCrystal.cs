@@ -16,11 +16,19 @@ namespace StarStrike.Gameplay
 
         private Rigidbody2D rb;
         private Transform playerTarget;
+        private static LootConfig sharedLootConfig;
 
         private void Awake()
         {
-            if (lootConfig == null) lootConfig = Resources.Load<LootConfig>("Data/LootConfig");
-            if (lootConfig == null) lootConfig = ScriptableObject.CreateInstance<LootConfig>();
+            if (lootConfig == null)
+            {
+                if (sharedLootConfig == null)
+                {
+                    sharedLootConfig = Resources.Load<LootConfig>("Data/LootConfig");
+                    if (sharedLootConfig == null) sharedLootConfig = ScriptableObject.CreateInstance<LootConfig>();
+                }
+                lootConfig = sharedLootConfig;
+            }
 
             gemValue = lootConfig.defaultGemValue;
             magnetRadius = lootConfig.magnetRadius;
@@ -94,10 +102,12 @@ namespace StarStrike.Gameplay
                 return;
             }
 
-            float dist = Vector2.Distance(transform.position, playerTarget.position);
-            if (dist <= magnetRadius)
+            Vector2 toPlayer = (Vector2)playerTarget.position - (Vector2)transform.position;
+            float sqrDist = toPlayer.sqrMagnitude;
+            if (sqrDist <= magnetRadius * magnetRadius && sqrDist > 0.0001f)
             {
-                Vector2 dir = ((Vector2)playerTarget.position - (Vector2)transform.position).normalized;
+                float dist = Mathf.Sqrt(sqrDist);
+                Vector2 dir = toPlayer / dist;
                 float pull = Mathf.Lerp(magnetSpeed * 1.5f, magnetSpeed * 0.5f, dist / magnetRadius);
                 rb.linearVelocity = dir * pull;
             }

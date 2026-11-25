@@ -33,9 +33,20 @@ export class World {
   }
 
   public query(...componentTypes: string[]): Entity[] {
-    return this.getAllEntities().filter((e) =>
-      e.isAlive && componentTypes.every((type) => e.hasComponent(type))
-    );
+    const matches: Entity[] = [];
+    const typeCount = componentTypes.length;
+    for (const entity of this.entities.values()) {
+      if (!entity.isAlive) continue;
+      let hasAll = true;
+      for (let i = 0; i < typeCount; i++) {
+        if (!entity.hasComponent(componentTypes[i])) {
+          hasAll = false;
+          break;
+        }
+      }
+      if (hasAll) matches.push(entity);
+    }
+    return matches;
   }
 
   public addSystem(system: System): this {

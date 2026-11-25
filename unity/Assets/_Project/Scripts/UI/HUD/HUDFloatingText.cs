@@ -39,6 +39,7 @@ namespace StarStrike.UI
         private readonly Stack<PooledText> pool = new Stack<PooledText>();
         private Canvas subCanvas;
         private GameObject textContainer;
+        private Camera cachedMainCamera;
 
         private void Awake()
         {
@@ -194,9 +195,13 @@ namespace StarStrike.UI
             if (!isActiveAndEnabled) return;
 
             Vector2 screenPos = Vector2.zero;
-            if (Camera.main != null)
+            if (cachedMainCamera == null || !cachedMainCamera.isActiveAndEnabled)
             {
-                screenPos = Camera.main.WorldToScreenPoint(worldPos);
+                cachedMainCamera = Camera.main;
+            }
+            if (cachedMainCamera != null)
+            {
+                screenPos = cachedMainCamera.WorldToScreenPoint(worldPos);
             }
 
             var item = GetOrCreateItem();

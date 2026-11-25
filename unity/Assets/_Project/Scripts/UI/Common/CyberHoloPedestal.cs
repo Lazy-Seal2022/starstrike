@@ -37,6 +37,28 @@ namespace StarStrike.UI
             {
                 pedestalImage = GetComponent<Image>();
             }
+            if (pedestalImage != null)
+            {
+                pedestalImage.raycastTarget = false;
+            }
+        }
+
+        private void Start()
+        {
+            IsolateCanvasIfNested(gameObject);
+            if (shipTransform != null)
+            {
+                IsolateCanvasIfNested(shipTransform.gameObject);
+            }
+        }
+
+        private static void IsolateCanvasIfNested(GameObject target)
+        {
+            if (target == null || target.GetComponent<Canvas>() != null) return;
+            if (target.GetComponentInParent<Canvas>() != null)
+            {
+                target.AddComponent<Canvas>();
+            }
         }
 
         private void OnEnable()

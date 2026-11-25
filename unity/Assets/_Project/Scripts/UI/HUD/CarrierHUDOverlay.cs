@@ -1,6 +1,8 @@
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using StarStrike.Core;
 using StarStrike.UI;
 using StarStrike.Gameplay.Carrier;
 
@@ -19,17 +21,55 @@ namespace StarStrike.UI.HUD
         private TextMeshProUGUI stanceText;
         private TextMeshProUGUI foundryText;
 
+        private float nextFindTime;
+        private int lastActive = -1;
+        private int lastCap = -1;
+        private DroneCommandStance lastStance = (DroneCommandStance)(-1);
+        private int lastBuildPct = -1;
+        private bool lastIsBuilding;
+        private bool hasFoundryState;
+        private readonly StringBuilder squadronSb = new StringBuilder(48);
+
+        private void OnEnable()
+        {
+            GameEvents.OnGameStarted += HandleRosterChanged;
+            GameEvents.OnPlayerEvolved += HandlePlayerEvolved;
+        }
+
+        private void OnDisable()
+        {
+            GameEvents.OnGameStarted -= HandleRosterChanged;
+            GameEvents.OnPlayerEvolved -= HandlePlayerEvolved;
+        }
+
         private void Start()
         {
             FindCarrier();
             BuildUI();
         }
 
+        private void HandleRosterChanged()
+        {
+            carrier = null;
+            nextFindTime = 0f;
+            FindCarrier();
+        }
+
+        private void HandlePlayerEvolved(string _)
+        {
+            HandleRosterChanged();
+        }
+
         private void Update()
         {
             if (carrier == null)
             {
-                FindCarrier();
+                if (Time.unscaledTime >= nextFindTime)
+                {
+                    nextFindTime = Time.unscaledTime + 1.0f;
+                    FindCarrier();
+                }
+
                 if (carrier == null)
                 {
                     if (panelRoot != null && panelRoot.activeSelf) panelRoot.SetActive(false);
@@ -57,7 +97,7 @@ namespace StarStrike.UI.HUD
             {
                 carrier = player.GetComponent<CarrierHangarController>();
             }
-            if (carrier == null)
+            if (carrier == null && nextFindTime <= 0f)
             {
                 carrier = FindAnyObjectByType<CarrierHangarController>();
             }
@@ -150,20 +190,26 @@ namespace StarStrike.UI.HUD
             // Squadron count
             int active = carrier.ActiveDroneCount;
             int cap = carrier.DroneCapacity;
-            if (squadronText != null)
+            if (squadronText != null && (active != lastActive || cap != lastCap))
             {
-                string pips = "";
+                lastActive = active;
+                lastCap = cap;
+                squadronSb.Clear();
+                squadronSb.Append("SQUADRON: ");
                 for (int i = 0; i < cap; i++)
                 {
-                    pips += (i < active) ? "■ " : "□ ";
+                    squadronSb.Append(i < active ? "■ " : "□ ");
                 }
-                squadronText.text = $"SQUADRON: {pips}({active}/{cap})";
+                squadronSb.Append('(').Append(active).Append('/').Append(cap).Append(')');
+                squadronText.text = squadronSb.ToString();
             }
 
             // Stance display
-            if (stanceText != null)
+            var stance = carrier.CurrentStance;
+            if (stanceText != null && stance != lastStance)
             {
-                switch (carrier.CurrentStance)
+                lastStance = stance;
+                switch (stance)
                 {
                     case DroneCommandStance.DefensiveEscort:
                         stanceText.text = "[F] STANCE: DEFENSIVE ESCORT";
@@ -183,16 +229,23 @@ namespace StarStrike.UI.HUD
             // Foundry fabrication display
             if (foundryText != null)
             {
-                if (carrier.IsBuilding)
+                bool isBuilding = carrier.IsBuilding;
+                int pct = isBuilding ? Mathf.RoundToInt(carrier.BuildProgress * 100f) : -1;
+                if (!hasFoundryState || isBuilding != lastIsBuilding || pct != lastBuildPct)
                 {
-                    int pct = Mathf.RoundToInt(carrier.BuildProgress * 100f);
-                    foundryText.text = $"FOUNDRY: {pct}%";
-                    foundryText.color = new Color(1f, 0.85f, 0.2f);
-                }
-                else
-                {
-                    foundryText.text = "FOUNDRY: READY";
-                    foundryText.color = new Color(0.4f, 1f, 0.6f);
+                    hasFoundryState = true;
+                    lastIsBuilding = isBuilding;
+                    lastBuildPct = pct;
+                    if (isBuilding)
+                    {
+                        foundryText.text = $"FOUNDRY: {pct}%";
+                        foundryText.color = new Color(1f, 0.85f, 0.2f);
+                    }
+                    else
+                    {
+                        foundryText.text = "FOUNDRY: READY";
+                        foundryText.color = new Color(0.4f, 1f, 0.6f);
+                    }
                 }
             }
         }

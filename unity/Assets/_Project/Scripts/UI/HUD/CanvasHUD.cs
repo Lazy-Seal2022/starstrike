@@ -60,6 +60,20 @@ namespace StarStrike.UI
         private bool justOverdrawn = false;
         private int totalGems = 0;
         private bool isUpgradesOpen = false;
+        private bool hasAppliedVisibility = false;
+        private int lastShieldCurInt = int.MinValue;
+        private int lastShieldMaxInt = int.MinValue;
+        private int lastHullCurInt = int.MinValue;
+        private int lastHullMaxInt = int.MinValue;
+        private int lastEnergyCurInt = int.MinValue;
+        private int lastEnergyMaxInt = int.MinValue;
+        private int lastEnergyRecInt = int.MinValue;
+        private bool lastEnergyLockedVisual = false;
+        private bool hasEnergyVisualInit = false;
+        private int lastGemsInt = int.MinValue;
+        private int lastUpgradeGems = int.MinValue;
+        private int lastUpgradeLevelSum = int.MinValue;
+        private bool forceRefreshUpgrades = true;
         
         private GameObject gameplayContainer;
 
@@ -174,6 +188,7 @@ namespace StarStrike.UI
         public void SetHUDVisible(bool visible)
         {
             IsVisible = visible;
+            hasAppliedVisibility = true;
             foreach (Transform child in transform)
             {
                 if (child.name == "MainMenuContainer" ||
@@ -240,7 +255,10 @@ namespace StarStrike.UI
                                      (NetworkLobbyUI.Instance != null && NetworkLobbyUI.Instance.IsVisible);
 
                 bool isPlaying = GameManager.Instance.CurrentState == GameState.Playing && !isOverlayOpen;
-                SetHUDVisible(isPlaying);
+                if (!hasAppliedVisibility || IsVisible != isPlaying)
+                {
+                    SetHUDVisible(isPlaying);
+                }
                 if (!isPlaying) return;
             }
 
@@ -350,13 +368,15 @@ namespace StarStrike.UI
         private void HandleGemCollected(int added, int total)
         {
             totalGems = total;
-            if (gemsText != null)
+            if (gemsText != null && lastGemsInt != totalGems)
             {
+                lastGemsInt = totalGems;
                 gemsText.text = $"<color=#4ade80><b>{totalGems}</b></color> GEMS";
             }
             if (playerStatus != null) playerStatus.HandleGemCollected(added, total);
             if (isUpgradesOpen)
             {
+                forceRefreshUpgrades = true;
                 UpdateUpgradeRows();
             }
         }
@@ -364,6 +384,7 @@ namespace StarStrike.UI
         private void HandlePlayerEvolved(string shipId)
         {
             lastEvoShipId = "";
+            forceRefreshUpgrades = true;
             PlayerProgression player = PlayerProgression.Instance;
             if (player != null && player.currentShip != null)
             {
@@ -394,14 +415,34 @@ namespace StarStrike.UI
         {
             float ratio = Mathf.Clamp01(currentShield / Mathf.Max(1f, maxShield));
             if (shieldFill != null) shieldFill.fillAmount = ratio;
-            if (shieldValueText != null) shieldValueText.text = $"{Mathf.RoundToInt(currentShield)} / {Mathf.RoundToInt(maxShield)}";
+            if (shieldValueText != null)
+            {
+                int curInt = Mathf.RoundToInt(currentShield);
+                int maxInt = Mathf.RoundToInt(maxShield);
+                if (curInt != lastShieldCurInt || maxInt != lastShieldMaxInt)
+                {
+                    lastShieldCurInt = curInt;
+                    lastShieldMaxInt = maxInt;
+                    shieldValueText.text = $"{curInt} / {maxInt}";
+                }
+            }
         }
 
         private void UpdateHullVisuals()
         {
             float ratio = Mathf.Clamp01(currentHull / Mathf.Max(1f, maxHull));
             if (hullFill != null) hullFill.fillAmount = ratio;
-            if (hullValueText != null) hullValueText.text = $"{Mathf.RoundToInt(currentHull)} / {Mathf.RoundToInt(maxHull)}";
+            if (hullValueText != null)
+            {
+                int curInt = Mathf.RoundToInt(currentHull);
+                int maxInt = Mathf.RoundToInt(maxHull);
+                if (curInt != lastHullCurInt || maxInt != lastHullMaxInt)
+                {
+                    lastHullCurInt = curInt;
+                    lastHullMaxInt = maxInt;
+                    hullValueText.text = $"{curInt} / {maxInt}";
+                }
+            }
         }
 
         private void UpdateEnergyVisuals()
@@ -410,26 +451,32 @@ namespace StarStrike.UI
             if (energyFill != null)
             {
                 energyFill.fillAmount = ratio;
-                if (isEnergyLockedOut)
+                if (!hasEnergyVisualInit || lastEnergyLockedVisual != isEnergyLockedOut)
                 {
-                    energyFill.color = new Color(1f, 0.55f, 0.1f, 0.95f);
-                }
-                else
-                {
-                    energyFill.color = new Color(0.18f, 0.8f, 0.44f, 1f);
+                    energyFill.color = isEnergyLockedOut
+                        ? new Color(1f, 0.55f, 0.1f, 0.95f)
+                        : new Color(0.18f, 0.8f, 0.44f, 1f);
                 }
             }
             if (energyValueText != null)
             {
-                if (isEnergyLockedOut)
+                int curInt = Mathf.RoundToInt(currentEnergy);
+                int maxInt = Mathf.RoundToInt(maxEnergy);
+                int recInt = Mathf.RoundToInt(energyRecoveryTarget);
+                if (!hasEnergyVisualInit || lastEnergyLockedVisual != isEnergyLockedOut ||
+                    curInt != lastEnergyCurInt ||
+                    (isEnergyLockedOut ? recInt != lastEnergyRecInt : maxInt != lastEnergyMaxInt))
                 {
-                    energyValueText.text = $"<color=#ff8514>REBOOTING [{Mathf.RoundToInt(currentEnergy)}/{Mathf.RoundToInt(energyRecoveryTarget)}]</color>";
-                }
-                else
-                {
-                    energyValueText.text = $"{Mathf.RoundToInt(currentEnergy)} / {Mathf.RoundToInt(maxEnergy)}";
+                    lastEnergyCurInt = curInt;
+                    lastEnergyMaxInt = maxInt;
+                    lastEnergyRecInt = recInt;
+                    energyValueText.text = isEnergyLockedOut
+                        ? $"<color=#ff8514>REBOOTING [{curInt}/{recInt}]</color>"
+                        : $"{curInt} / {maxInt}";
                 }
             }
+            lastEnergyLockedVisual = isEnergyLockedOut;
+            hasEnergyVisualInit = true;
         }
 
         private void UpdateAllHUDVisuals()
@@ -437,8 +484,13 @@ namespace StarStrike.UI
             UpdateShieldVisuals();
             UpdateHullVisuals();
             UpdateEnergyVisuals();
-            if (gemsText != null) gemsText.text = $"<color=#4ade80><b>{totalGems}</b></color> GEMS";
+            if (gemsText != null && lastGemsInt != totalGems)
+            {
+                lastGemsInt = totalGems;
+                gemsText.text = $"<color=#4ade80><b>{totalGems}</b></color> GEMS";
+            }
             UpdateEvolutionBanner();
+            forceRefreshUpgrades = true;
             UpdateUpgradeRows();
         }
 
@@ -455,6 +507,7 @@ namespace StarStrike.UI
             }
             if (isUpgradesOpen)
             {
+                forceRefreshUpgrades = true;
                 UpdateUpgradeRows();
             }
         }
@@ -463,6 +516,17 @@ namespace StarStrike.UI
         {
             PlayerProgression player = PlayerProgression.Instance;
             if (player == null) return;
+
+            var s = player.upgradeState;
+            int levelSum = s.shieldCapacityLevel + s.shieldRegenLevel + s.energyCapacityLevel + s.energyRegenLevel +
+                           s.pulseDamageLevel + s.pulseSpeedLevel + s.speedLevel + s.agilityLevel;
+            if (!forceRefreshUpgrades && lastUpgradeGems == player.gems && lastUpgradeLevelSum == levelSum)
+            {
+                return;
+            }
+            forceRefreshUpgrades = false;
+            lastUpgradeGems = player.gems;
+            lastUpgradeLevelSum = levelSum;
 
             foreach (UpgradeDefinition def in StatUpgrades)
             {
@@ -550,7 +614,11 @@ namespace StarStrike.UI
 
             for (int i = activeEvoButtons.Count - 1; i >= 0; i--)
             {
-                if (activeEvoButtons[i] != null) DestroyImmediate(activeEvoButtons[i]);
+                if (activeEvoButtons[i] != null)
+                {
+                    if (Application.isPlaying) Destroy(activeEvoButtons[i]);
+                    else DestroyImmediate(activeEvoButtons[i]);
+                }
             }
             activeEvoButtons.Clear();
 

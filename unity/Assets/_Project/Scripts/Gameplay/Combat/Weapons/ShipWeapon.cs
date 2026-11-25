@@ -44,6 +44,93 @@ namespace StarStrike.Gameplay
         private float lastFiredTime = -999f;
         public void ResetCooldown() => lastFiredTime = -999f;
         private Rigidbody2D rb;
+        private Transform cachedMuzzleTransform;
+        private bool hasLookedUpMuzzle;
+        private PlayerProgression cachedProgression;
+        private IShipInputProvider cachedInputProvider;
+        private bool hasLookedUpInputProvider;
+
+        private readonly Vector2[] localBuf1 = new Vector2[1];
+        private readonly Vector2[] localBuf2 = new Vector2[2];
+        private readonly Vector2[] localBuf3 = new Vector2[3];
+        private readonly Vector2[] worldBuf1 = new Vector2[1];
+        private readonly Vector2[] worldBuf2 = new Vector2[2];
+        private readonly Vector2[] worldBuf3 = new Vector2[3];
+        private Vector2[] worldBufDynamic;
+
+        public static bool CanShipAimIndependently(PlayerProgression prog)
+        {
+            if (prog == null || prog.currentShip == null) return false;
+            var ship = prog.currentShip;
+            return ship.canAimIndependently ||
+                   ship.id == "cruiser" || ship.id == "battleship" ||
+                   ship.id == "carrier" || ship.id == "vanguard" ||
+                   ship.shipClass == ShipClass.Carrier ||
+                   ship.shipClass == ShipClass.Cruiser ||
+                   ship.shipClass == ShipClass.Battleship;
+        }
+
+        public static Vector2 ResolveIndependentAimDirection(
+            Transform weaponTransform,
+            bool isMounted,
+            ref PlayerProgression cachedProg,
+            ref IShipInputProvider cachedInput,
+            ref bool hasLookedUpInput)
+        {
+            if (!isMounted)
+            {
+                if (cachedProg == null) cachedProg = weaponTransform.GetComponent<PlayerProgression>();
+                if (CanShipAimIndependently(cachedProg))
+                {
+                    if (!hasLookedUpInput)
+                    {
+                        cachedInput = weaponTransform.GetComponent<IShipInputProvider>();
+                        hasLookedUpInput = true;
+                    }
+                    Vector2 aimDir = cachedInput != null ? cachedInput.AimDirection : Vector2.zero;
+                    if (aimDir.sqrMagnitude < 0.01f && PlayerInputReader.Instance != null)
+                    {
+                        aimDir = PlayerInputReader.Instance.AimDirection;
+                    }
+                    if (aimDir.sqrMagnitude > 0.01f)
+                    {
+                        return aimDir.normalized;
+                    }
+                }
+            }
+            return weaponTransform.right;
+        }
+
+        public static Quaternion ResolveIndependentAimRotation(
+            Transform weaponTransform,
+            bool isMounted,
+            ref PlayerProgression cachedProg,
+            ref IShipInputProvider cachedInput,
+            ref bool hasLookedUpInput)
+        {
+            if (!isMounted)
+            {
+                if (cachedProg == null) cachedProg = weaponTransform.GetComponent<PlayerProgression>();
+                if (CanShipAimIndependently(cachedProg))
+                {
+                    if (!hasLookedUpInput)
+                    {
+                        cachedInput = weaponTransform.GetComponent<IShipInputProvider>();
+                        hasLookedUpInput = true;
+                    }
+                    Vector2 aimDir = cachedInput != null ? cachedInput.AimDirection : Vector2.zero;
+                    if (aimDir.sqrMagnitude < 0.01f && PlayerInputReader.Instance != null)
+                    {
+                        aimDir = PlayerInputReader.Instance.AimDirection;
+                    }
+                    if (aimDir.sqrMagnitude > 0.01f)
+                    {
+                        return Quaternion.Euler(0f, 0f, Mathf.Atan2(aimDir.y, aimDir.x) * Mathf.Rad2Deg);
+                    }
+                }
+            }
+            return weaponTransform.rotation;
+        }
 
         private void Awake()
         {
@@ -111,28 +198,39 @@ namespace StarStrike.Gameplay
         {
             if (IsMountedOnSocket())
             {
-                var muzzleTransform = transform.Find("MuzzlePoint");
-                if (muzzleTransform != null)
+                if (!hasLookedUpMuzzle)
                 {
-                    return new Vector2[] { (Vector2)muzzleTransform.localPosition };
+                    cachedMuzzleTransform = transform.Find("MuzzlePoint");
+                    hasLookedUpMuzzle = true;
+                }
+                if (cachedMuzzleTransform != null)
+                {
+                    localBuf1[0] = (Vector2)cachedMuzzleTransform.localPosition;
+                    return localBuf1;
                 }
                 if (weaponSlots == 2)
                 {
-                    return new Vector2[] { new Vector2(0.5f, 0.15f), new Vector2(0.5f, -0.15f) };
+                    localBuf2[0] = new Vector2(0.5f, 0.15f);
+                    localBuf2[1] = new Vector2(0.5f, -0.15f);
+                    return localBuf2;
                 }
                 if (weaponSlots >= 3)
                 {
-                    return new Vector2[] { new Vector2(0.5f, 0.15f), new Vector2(0.5f, 0f), new Vector2(0.5f, -0.15f) };
+                    localBuf3[0] = new Vector2(0.5f, 0.15f);
+                    localBuf3[1] = new Vector2(0.5f, 0f);
+                    localBuf3[2] = new Vector2(0.5f, -0.15f);
+                    return localBuf3;
                 }
-                return new Vector2[] { new Vector2(0.5f, 0f) };
+                localBuf1[0] = new Vector2(0.5f, 0f);
+                return localBuf1;
             }
 
             if (weaponSockets == null || weaponSockets.Length == 0)
             {
-                var prog = GetComponent<PlayerProgression>();
-                if (prog != null && prog.currentShip != null && prog.currentShip.weaponSockets != null && prog.currentShip.weaponSockets.Length > 0)
+                if (cachedProgression == null) cachedProgression = GetComponent<PlayerProgression>();
+                if (cachedProgression != null && cachedProgression.currentShip != null && cachedProgression.currentShip.weaponSockets != null && cachedProgression.currentShip.weaponSockets.Length > 0)
                 {
-                    weaponSockets = prog.currentShip.weaponSockets;
+                    weaponSockets = cachedProgression.currentShip.weaponSockets;
                 }
             }
 
@@ -142,74 +240,98 @@ namespace StarStrike.Gameplay
                 {
                     if (weaponSlots <= 1)
                     {
-                        return new Vector2[] { weaponSockets[0] };
+                        localBuf1[0] = weaponSockets[0];
+                        return localBuf1;
                     }
                     if (weaponSlots == 2)
                     {
-                        return new Vector2[]
-                        {
-                            weaponSockets[0] + new Vector2(0f, 0.35f),
-                            weaponSockets[0] - new Vector2(0f, 0.35f)
-                        };
+                        localBuf2[0] = weaponSockets[0] + new Vector2(0f, 0.35f);
+                        localBuf2[1] = weaponSockets[0] - new Vector2(0f, 0.35f);
+                        return localBuf2;
                     }
                     // 3 or more slots
-                    return new Vector2[]
-                    {
-                        weaponSockets[0] + new Vector2(0f, 0.35f),
-                        weaponSockets[0],
-                        weaponSockets[0] - new Vector2(0f, 0.35f)
-                    };
+                    localBuf3[0] = weaponSockets[0] + new Vector2(0f, 0.35f);
+                    localBuf3[1] = weaponSockets[0];
+                    localBuf3[2] = weaponSockets[0] - new Vector2(0f, 0.35f);
+                    return localBuf3;
                 }
                 else if (weaponSockets.Length == 2)
                 {
                     if (weaponSlots <= 1)
                     {
-                        return new Vector2[] { (weaponSockets[0] + weaponSockets[1]) * 0.5f };
+                        localBuf1[0] = (weaponSockets[0] + weaponSockets[1]) * 0.5f;
+                        return localBuf1;
                     }
                     if (weaponSlots == 2)
                     {
-                        return new Vector2[] { weaponSockets[0], weaponSockets[1] };
+                        localBuf2[0] = weaponSockets[0];
+                        localBuf2[1] = weaponSockets[1];
+                        return localBuf2;
                     }
                     // 3 or more slots
-                    return new Vector2[]
-                    {
-                        weaponSockets[0],
-                        (weaponSockets[0] + weaponSockets[1]) * 0.5f,
-                        weaponSockets[1]
-                    };
+                    localBuf3[0] = weaponSockets[0];
+                    localBuf3[1] = (weaponSockets[0] + weaponSockets[1]) * 0.5f;
+                    localBuf3[2] = weaponSockets[1];
+                    return localBuf3;
                 }
                 else
                 {
                     // 3 or more physical sockets (e.g. index 0=center, index 1=port, index 2=starboard)
                     if (weaponSlots <= 1)
                     {
-                        return new Vector2[] { weaponSockets[0] };
+                        localBuf1[0] = weaponSockets[0];
+                        return localBuf1;
                     }
                     if (weaponSlots == 2)
                     {
-                        return new Vector2[] { weaponSockets[1], weaponSockets[2] };
+                        localBuf2[0] = weaponSockets[1];
+                        localBuf2[1] = weaponSockets[2];
+                        return localBuf2;
                     }
                     // 3 slots: center + port + starboard
-                    return new Vector2[] { weaponSockets[0], weaponSockets[1], weaponSockets[2] };
+                    localBuf3[0] = weaponSockets[0];
+                    localBuf3[1] = weaponSockets[1];
+                    localBuf3[2] = weaponSockets[2];
+                    return localBuf3;
                 }
             }
 
             // Fallback: use combatConfig parameters with CalculateMuzzleOffsets
             float spread = combatConfig != null ? combatConfig.dualWeaponSpread : 0.3f;
             float fwd = combatConfig != null ? combatConfig.muzzleForwardOffset : 1.55f;
-            float[] offsets = CalculateMuzzleOffsets(weaponSlots, spread);
-            Vector2[] fallback = new Vector2[offsets.Length];
-            for (int i = 0; i < offsets.Length; i++)
+            if (weaponSlots >= 3)
             {
-                fallback[i] = new Vector2(fwd, offsets[i]);
+                localBuf3[0] = new Vector2(fwd, -spread);
+                localBuf3[1] = new Vector2(fwd, 0f);
+                localBuf3[2] = new Vector2(fwd, spread);
+                return localBuf3;
             }
-            return fallback;
+            if (weaponSlots == 2)
+            {
+                localBuf2[0] = new Vector2(fwd, -spread);
+                localBuf2[1] = new Vector2(fwd, spread);
+                return localBuf2;
+            }
+            localBuf1[0] = new Vector2(fwd, 0f);
+            return localBuf1;
         }
 
         public Vector2[] GetMuzzleWorldPositions()
         {
             Vector2[] locals = GetActiveSocketLocalPositions();
-            Vector2[] worlds = new Vector2[locals.Length];
+            Vector2[] worlds;
+            if (locals.Length == 1) worlds = worldBuf1;
+            else if (locals.Length == 2) worlds = worldBuf2;
+            else if (locals.Length == 3) worlds = worldBuf3;
+            else
+            {
+                if (worldBufDynamic == null || worldBufDynamic.Length != locals.Length)
+                {
+                    worldBufDynamic = new Vector2[locals.Length];
+                }
+                worlds = worldBufDynamic;
+            }
+
             for (int i = 0; i < locals.Length; i++)
             {
                 worlds[i] = (Vector2)transform.TransformPoint(locals[i]);
@@ -255,25 +377,8 @@ namespace StarStrike.Gameplay
 
             Vector2[] muzzlePositions = GetMuzzleWorldPositions();
 
-            Quaternion baseRotation = transform.rotation;
-            if (!IsMountedOnSocket())
-            {
-                var prog = GetComponent<PlayerProgression>();
-                bool canAim = (prog != null && prog.currentShip != null && (prog.currentShip.canAimIndependently || prog.currentShip.id == "cruiser" || prog.currentShip.id == "battleship" || prog.currentShip.id == "carrier" || prog.currentShip.id == "vanguard" || prog.currentShip.shipClass == ShipClass.Carrier || prog.currentShip.shipClass == ShipClass.Cruiser || prog.currentShip.shipClass == ShipClass.Battleship));
-                if (canAim)
-                {
-                    var inputProvider = GetComponent<IShipInputProvider>();
-                    Vector2 aimDir = inputProvider != null ? inputProvider.AimDirection : Vector2.zero;
-                    if (aimDir.sqrMagnitude < 0.01f && PlayerInputReader.Instance != null)
-                    {
-                        aimDir = PlayerInputReader.Instance.AimDirection;
-                    }
-                    if (aimDir.sqrMagnitude > 0.01f)
-                    {
-                        baseRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(aimDir.y, aimDir.x) * Mathf.Rad2Deg);
-                    }
-                }
-            }
+            Quaternion baseRotation = ResolveIndependentAimRotation(
+                transform, IsMountedOnSocket(), ref cachedProgression, ref cachedInputProvider, ref hasLookedUpInputProvider);
 
             foreach (Vector2 nose in muzzlePositions)
             {

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using StarStrike.Core;
 
@@ -35,8 +36,27 @@ namespace StarStrike.Gameplay.FX
             IsHitStopActive = false;
         }
 
+        private struct ActiveFlash
+        {
+            public SpriteRenderer sr;
+            public Color originalColor;
+            public float remaining;
+        }
+
         private Coroutine activeShakeCoroutine;
         private Coroutine activeHitStopCoroutine;
+        private readonly List<ActiveFlash> activeFlashes = new List<ActiveFlash>(16);
+        private static Material sharedParticleMaterial;
+
+        private static Material GetSharedParticleMaterial()
+        {
+            if (sharedParticleMaterial == null)
+            {
+                var shader = Shader.Find("Sprites/Default");
+                if (shader != null) sharedParticleMaterial = new Material(shader);
+            }
+            return sharedParticleMaterial;
+        }
 
         private void Awake()
         {
@@ -69,6 +89,37 @@ namespace StarStrike.Gameplay.FX
             GameEvents.OnAsteroidDestroyed -= SpawnExplosion;
             GameEvents.OnPlayerDamaged -= TriggerPlayerDamageShake;
             CameraOffset = Vector3.zero;
+            ClearActiveFlashes();
+        }
+
+        private void Update()
+        {
+            if (activeFlashes.Count == 0) return;
+            float dt = Time.unscaledDeltaTime;
+            for (int i = activeFlashes.Count - 1; i >= 0; i--)
+            {
+                var flash = activeFlashes[i];
+                flash.remaining -= dt;
+                if (flash.remaining <= 0f || flash.sr == null)
+                {
+                    if (flash.sr != null) flash.sr.color = flash.originalColor;
+                    activeFlashes.RemoveAt(i);
+                }
+                else
+                {
+                    activeFlashes[i] = flash;
+                }
+            }
+        }
+
+        private void ClearActiveFlashes()
+        {
+            for (int i = 0; i < activeFlashes.Count; i++)
+            {
+                var flash = activeFlashes[i];
+                if (flash.sr != null) flash.sr.color = flash.originalColor;
+            }
+            activeFlashes.Clear();
         }
 
         public void CameraShake(float duration, float magnitude)
@@ -164,16 +215,27 @@ namespace StarStrike.Gameplay.FX
 
         public void FlashSprite(SpriteRenderer sr, Color flashColor, float duration = 0.05f)
         {
-            if (sr != null && isActiveAndEnabled)
-                StartCoroutine(FlashRoutine(sr, flashColor, duration));
-        }
+            if (sr == null || !isActiveAndEnabled) return;
 
-        private IEnumerator FlashRoutine(SpriteRenderer sr, Color flashColor, float duration)
-        {
-            Color original = sr.color;
+            for (int i = 0; i < activeFlashes.Count; i++)
+            {
+                if (activeFlashes[i].sr == sr)
+                {
+                    var existing = activeFlashes[i];
+                    existing.remaining = duration;
+                    activeFlashes[i] = existing;
+                    sr.color = flashColor;
+                    return;
+                }
+            }
+
+            activeFlashes.Add(new ActiveFlash
+            {
+                sr = sr,
+                originalColor = sr.color,
+                remaining = duration
+            });
             sr.color = flashColor;
-            yield return new WaitForSecondsRealtime(duration);
-            if (sr != null) sr.color = original;
         }
 
         private void SpawnExplosion(Vector2 pos, string size)
@@ -249,7 +311,8 @@ namespace StarStrike.Gameplay.FX
             shape.shapeType = ParticleSystemShapeType.Sphere;
 
             var renderer = ps.GetComponent<ParticleSystemRenderer>();
-            renderer.material = new Material(Shader.Find("Sprites/Default"));
+            var mat = GetSharedParticleMaterial();
+            if (mat != null) renderer.sharedMaterial = mat;
 
             return obj;
         }
@@ -280,7 +343,8 @@ namespace StarStrike.Gameplay.FX
             obj.transform.localRotation = Quaternion.Euler(0, -90, 0); // Pointing backwards
 
             var renderer = ps.GetComponent<ParticleSystemRenderer>();
-            renderer.material = new Material(Shader.Find("Sprites/Default"));
+            var mat = GetSharedParticleMaterial();
+            if (mat != null) renderer.sharedMaterial = mat;
 
             return obj;
         }

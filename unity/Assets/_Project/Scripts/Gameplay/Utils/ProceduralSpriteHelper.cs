@@ -44,6 +44,13 @@ namespace StarStrike.Gameplay
         private static Sprite cachedEngineIcon;
         private static Sprite cachedReactorIcon;
         private static Sprite cachedAuxiliaryIcon;
+        private static StarStrike.Core.CombatConfig cachedCombatConfig;
+        private static Sprite cachedAssetMissile;
+        private static Sprite cachedAssetPellet;
+        private static Sprite cachedAssetGatlingTracer;
+        private static Sprite cachedAssetWeaponSocket;
+        private static readonly System.Collections.Generic.Dictionary<string, Sprite> cachedAssetShipSprites = new System.Collections.Generic.Dictionary<string, Sprite>();
+        private static readonly System.Collections.Generic.Dictionary<string, Sprite> cachedAssetWeaponSprites = new System.Collections.Generic.Dictionary<string, Sprite>();
 
         public static void ClearCache()
         {
@@ -75,6 +82,22 @@ namespace StarStrike.Gameplay
             cachedPellet = null;
             cachedGatlingTracer = null;
             cachedEscortDrone = null;
+            cachedCombatConfig = null;
+            cachedAssetMissile = null;
+            cachedAssetPellet = null;
+            cachedAssetGatlingTracer = null;
+            cachedAssetWeaponSocket = null;
+            cachedAssetShipSprites.Clear();
+            cachedAssetWeaponSprites.Clear();
+        }
+
+        private static StarStrike.Core.CombatConfig GetCombatConfig()
+        {
+            if (cachedCombatConfig == null)
+            {
+                cachedCombatConfig = Resources.Load<StarStrike.Core.CombatConfig>("Data/CombatConfig");
+            }
+            return cachedCombatConfig;
         }
 
         private static Sprite GetCachedOrGenerate(ref Sprite cache, System.Func<Sprite> generator, bool forceNew = false)
@@ -205,11 +228,12 @@ namespace StarStrike.Gameplay
         {
             if (!forceProcedural)
             {
-                var combatConfig = Resources.Load<StarStrike.Core.CombatConfig>("Data/CombatConfig");
-                if (combatConfig != null && combatConfig.gatlingBulletSprite != null)
+                if (cachedAssetGatlingTracer == null)
                 {
-                    return combatConfig.gatlingBulletSprite;
+                    var combatConfig = GetCombatConfig();
+                    if (combatConfig != null) cachedAssetGatlingTracer = combatConfig.gatlingBulletSprite;
                 }
+                if (cachedAssetGatlingTracer != null) return cachedAssetGatlingTracer;
             }
             return GetCachedOrGenerate(ref cachedGatlingTracer, GenerateGatlingTracerSprite, forceProcedural);
         }
@@ -258,48 +282,58 @@ namespace StarStrike.Gameplay
         {
             if (!forceProcedural)
             {
-                string assetName = "Ship_Scout";
-                switch (type != null ? type.ToLowerInvariant() : "scout")
+                string cacheKey = type != null ? type.ToLowerInvariant() : "scout";
+                if (cachedAssetShipSprites.TryGetValue(cacheKey, out Sprite cachedSprite))
                 {
-                    case "scout": assetName = "Ship_Scout"; break;
-                    case "fighter": assetName = "Ship_Fighter"; break;
-                    case "miner": assetName = "Ship_Miner"; break;
-                    case "interceptor": assetName = "Ship_Interceptor"; break;
-                    case "juggernaut": assetName = "Ship_Juggernaut"; break;
-                    case "vanguard":
-                    case "carrier": assetName = "Ship_Carrier"; break;
-                    case "phantom": assetName = "Ship_Phantom"; break;
-                    case "frigate": assetName = "Ship_Frigate"; break;
-                    case "destroyer": assetName = "Ship_Destroyer"; break;
-                    case "cruiser": assetName = "Ship_Cruiser"; break;
-                    case "battleship": assetName = "Ship_Battleship"; break;
-                    default:
-                        if (!string.IsNullOrEmpty(type))
-                        {
-                            string cap = char.ToUpper(type[0]) + type.Substring(1);
-                            assetName = $"Ship_{cap}";
-                        }
-                        break;
+                    if (cachedSprite != null) return cachedSprite;
                 }
-                var def = Resources.Load<StarStrike.Core.ShipDefinition>($"Data/{assetName}");
-                if (def == null && assetName == "Ship_Phantom")
+                else
                 {
-                    def = Resources.Load<StarStrike.Core.ShipDefinition>("Data/Ship_Interceptor");
-                }
-                if (def != null && def.sprite != null)
-                {
-                    return def.sprite;
-                }
-
-                if (type == "drone")
-                {
-                    var enemyDef = Resources.Load<StarStrike.Core.EnemyDefinition>("Data/Enemy_Drone");
-                    if (enemyDef != null && enemyDef.sprite != null) return enemyDef.sprite;
-                }
-                else if (type == "boss")
-                {
-                    var bossDef = Resources.Load<StarStrike.Core.BossConfig>("Data/BossConfig");
-                    if (bossDef != null && bossDef.sprite != null) return bossDef.sprite;
+                    string assetName = "Ship_Scout";
+                    switch (cacheKey)
+                    {
+                        case "scout": assetName = "Ship_Scout"; break;
+                        case "fighter": assetName = "Ship_Fighter"; break;
+                        case "miner": assetName = "Ship_Miner"; break;
+                        case "interceptor": assetName = "Ship_Interceptor"; break;
+                        case "juggernaut": assetName = "Ship_Juggernaut"; break;
+                        case "vanguard":
+                        case "carrier": assetName = "Ship_Carrier"; break;
+                        case "phantom": assetName = "Ship_Phantom"; break;
+                        case "frigate": assetName = "Ship_Frigate"; break;
+                        case "destroyer": assetName = "Ship_Destroyer"; break;
+                        case "cruiser": assetName = "Ship_Cruiser"; break;
+                        case "battleship": assetName = "Ship_Battleship"; break;
+                        default:
+                            if (!string.IsNullOrEmpty(type))
+                            {
+                                string cap = char.ToUpper(type[0]) + type.Substring(1);
+                                assetName = $"Ship_{cap}";
+                            }
+                            break;
+                    }
+                    Sprite found = null;
+                    var def = Resources.Load<StarStrike.Core.ShipDefinition>($"Data/{assetName}");
+                    if (def == null && assetName == "Ship_Phantom")
+                    {
+                        def = Resources.Load<StarStrike.Core.ShipDefinition>("Data/Ship_Interceptor");
+                    }
+                    if (def != null && def.sprite != null)
+                    {
+                        found = def.sprite;
+                    }
+                    else if (cacheKey == "drone")
+                    {
+                        var enemyDef = Resources.Load<StarStrike.Core.EnemyDefinition>("Data/Enemy_Drone");
+                        if (enemyDef != null) found = enemyDef.sprite;
+                    }
+                    else if (cacheKey == "boss")
+                    {
+                        var bossDef = Resources.Load<StarStrike.Core.BossConfig>("Data/BossConfig");
+                        if (bossDef != null) found = bossDef.sprite;
+                    }
+                    cachedAssetShipSprites[cacheKey] = found;
+                    if (found != null) return found;
                 }
             }
 
@@ -371,11 +405,12 @@ namespace StarStrike.Gameplay
         {
             if (!forceProcedural)
             {
-                var combatConfig = Resources.Load<StarStrike.Core.CombatConfig>("Data/CombatConfig");
-                if (combatConfig != null && combatConfig.missileSprite != null)
+                if (cachedAssetMissile == null)
                 {
-                    return combatConfig.missileSprite;
+                    var combatConfig = GetCombatConfig();
+                    if (combatConfig != null) cachedAssetMissile = combatConfig.missileSprite;
                 }
+                if (cachedAssetMissile != null) return cachedAssetMissile;
             }
             return GetCachedOrGenerate(ref cachedMissile, () => GenerateMissileSprite(), forceProcedural);
         }
@@ -384,11 +419,12 @@ namespace StarStrike.Gameplay
         {
             if (!forceProcedural)
             {
-                var combatConfig = Resources.Load<StarStrike.Core.CombatConfig>("Data/CombatConfig");
-                if (combatConfig != null && combatConfig.scattergunPelletSprite != null)
+                if (cachedAssetPellet == null)
                 {
-                    return combatConfig.scattergunPelletSprite;
+                    var combatConfig = GetCombatConfig();
+                    if (combatConfig != null) cachedAssetPellet = combatConfig.scattergunPelletSprite;
                 }
+                if (cachedAssetPellet != null) return cachedAssetPellet;
             }
             return GetCachedOrGenerate(ref cachedPellet, () => GeneratePelletSprite(), forceProcedural);
         }
@@ -400,21 +436,31 @@ namespace StarStrike.Gameplay
 
             if (!forceProcedural)
             {
-                var combatConfig = Resources.Load<StarStrike.Core.CombatConfig>("Data/CombatConfig");
-                if (combatConfig != null)
+                if (cachedAssetWeaponSprites.TryGetValue(lower, out Sprite cachedWeapon))
                 {
-                    GameObject prefab = null;
-                    if (lower.Contains("gatling") || lower == "4") prefab = combatConfig.gatlingWeaponPrefab;
-                    else if (lower.Contains("beam") || lower == "3") prefab = combatConfig.continuousBeamWeaponPrefab;
-                    else if (lower.Contains("missile") || lower.Contains("homing") || lower == "2") prefab = combatConfig.homingMissileWeaponPrefab;
-                    else if (lower.Contains("scatter") || lower == "1") prefab = combatConfig.scattergunWeaponPrefab;
-                    else prefab = combatConfig.pulseLaserWeaponPrefab;
-
-                    if (prefab != null)
+                    if (cachedWeapon != null) return cachedWeapon;
+                }
+                else
+                {
+                    Sprite resolved = null;
+                    var combatConfig = GetCombatConfig();
+                    if (combatConfig != null)
                     {
-                        var sr = prefab.GetComponent<SpriteRenderer>();
-                        if (sr != null && sr.sprite != null) return sr.sprite;
+                        GameObject prefab = null;
+                        if (lower.Contains("gatling") || lower == "4") prefab = combatConfig.gatlingWeaponPrefab;
+                        else if (lower.Contains("beam") || lower == "3") prefab = combatConfig.continuousBeamWeaponPrefab;
+                        else if (lower.Contains("missile") || lower.Contains("homing") || lower == "2") prefab = combatConfig.homingMissileWeaponPrefab;
+                        else if (lower.Contains("scatter") || lower == "1") prefab = combatConfig.scattergunWeaponPrefab;
+                        else prefab = combatConfig.pulseLaserWeaponPrefab;
+
+                        if (prefab != null)
+                        {
+                            var sr = prefab.GetComponent<SpriteRenderer>();
+                            if (sr != null) resolved = sr.sprite;
+                        }
                     }
+                    cachedAssetWeaponSprites[lower] = resolved;
+                    if (resolved != null) return resolved;
                 }
             }
 
@@ -429,12 +475,16 @@ namespace StarStrike.Gameplay
         {
             if (!forceProcedural)
             {
-                var combatConfig = Resources.Load<StarStrike.Core.CombatConfig>("Data/CombatConfig");
-                if (combatConfig != null && combatConfig.socketMountPrefab != null)
+                if (cachedAssetWeaponSocket == null)
                 {
-                    var sr = combatConfig.socketMountPrefab.GetComponent<SpriteRenderer>();
-                    if (sr != null && sr.sprite != null) return sr.sprite;
+                    var combatConfig = GetCombatConfig();
+                    if (combatConfig != null && combatConfig.socketMountPrefab != null)
+                    {
+                        var sr = combatConfig.socketMountPrefab.GetComponent<SpriteRenderer>();
+                        if (sr != null) cachedAssetWeaponSocket = sr.sprite;
+                    }
                 }
+                if (cachedAssetWeaponSocket != null) return cachedAssetWeaponSocket;
             }
             return GetCachedOrGenerate(ref cachedWeaponSocket, () => GenerateWeaponSocketIcon(), forceProcedural);
         }

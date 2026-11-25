@@ -100,8 +100,8 @@ namespace StarStrike.Editor
                 importer.filterMode = FilterMode.Bilinear;
                 importer.mipmapEnabled = false;
                 importer.alphaIsTransparency = true;
-                importer.isReadable = true;
-                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                importer.isReadable = false;
+                importer.textureCompression = TextureImporterCompression.Compressed;
                 importer.SaveAndReimport();
             }
         }

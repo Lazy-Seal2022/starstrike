@@ -34,6 +34,16 @@ namespace StarStrike.Gameplay
 
         private Rigidbody2D rb;
         public bool isPlayer = false;
+        private Transform cachedMuzzleTransform;
+        private bool hasLookedUpMuzzle;
+        private ShipWeapon cachedShipWeapon;
+        private bool hasLookedUpShipWeapon;
+        private PlayerProgression cachedProgression;
+        private IShipInputProvider cachedInputProvider;
+        private bool hasLookedUpInputProvider;
+        private readonly Vector2[] singleMuzzleBuffer = new Vector2[1];
+        private Vector2[] customMuzzleBuffer;
+        private Vector2[] fallbackMuzzleBuffer;
 
         private bool IsMountedOnSocket()
         {
@@ -91,54 +101,54 @@ namespace StarStrike.Gameplay
             Vector2[] muzzles = null;
             if (IsMountedOnSocket())
             {
-                var muzzleTransform = transform.Find("MuzzlePoint");
-                Vector2 localMuzzle = muzzleTransform != null ? (Vector2)muzzleTransform.localPosition : new Vector2(0.5f, 0f);
-                muzzles = new Vector2[] { (Vector2)transform.TransformPoint(localMuzzle) };
+                if (!hasLookedUpMuzzle)
+                {
+                    cachedMuzzleTransform = transform.Find("MuzzlePoint");
+                    hasLookedUpMuzzle = true;
+                }
+                Vector2 localMuzzle = cachedMuzzleTransform != null ? (Vector2)cachedMuzzleTransform.localPosition : new Vector2(0.5f, 0f);
+                singleMuzzleBuffer[0] = (Vector2)transform.TransformPoint(localMuzzle);
+                muzzles = singleMuzzleBuffer;
             }
             else if (customSockets != null && customSockets.Length > 0)
             {
-                muzzles = new Vector2[customSockets.Length];
+                if (customMuzzleBuffer == null || customMuzzleBuffer.Length != customSockets.Length)
+                {
+                    customMuzzleBuffer = new Vector2[customSockets.Length];
+                }
                 for (int i = 0; i < customSockets.Length; i++)
                 {
-                    muzzles[i] = (Vector2)transform.TransformPoint(customSockets[i]);
+                    customMuzzleBuffer[i] = (Vector2)transform.TransformPoint(customSockets[i]);
                 }
+                muzzles = customMuzzleBuffer;
             }
             else
             {
-                var shipWp = GetComponent<ShipWeapon>();
-                muzzles = shipWp != null ? shipWp.GetMuzzleWorldPositions() : null;
+                if (!hasLookedUpShipWeapon)
+                {
+                    cachedShipWeapon = GetComponent<ShipWeapon>();
+                    hasLookedUpShipWeapon = true;
+                }
+                muzzles = cachedShipWeapon != null ? cachedShipWeapon.GetMuzzleWorldPositions() : null;
             }
             if (muzzles == null || muzzles.Length == 0)
             {
                 float spread = 0.4f;
                 float fwd = 1.55f;
                 float[] offsets = ShipWeapon.CalculateMuzzleOffsets(weaponSlots, spread);
-                muzzles = new Vector2[offsets.Length];
+                if (fallbackMuzzleBuffer == null || fallbackMuzzleBuffer.Length != offsets.Length)
+                {
+                    fallbackMuzzleBuffer = new Vector2[offsets.Length];
+                }
                 for (int i = 0; i < offsets.Length; i++)
                 {
-                    muzzles[i] = (Vector2)transform.TransformPoint(new Vector2(fwd, offsets[i]));
+                    fallbackMuzzleBuffer[i] = (Vector2)transform.TransformPoint(new Vector2(fwd, offsets[i]));
                 }
+                muzzles = fallbackMuzzleBuffer;
             }
 
-            Quaternion baseRotation = transform.rotation;
-            if (!IsMountedOnSocket())
-            {
-                var prog = GetComponent<PlayerProgression>();
-                bool canAim = (prog != null && prog.currentShip != null && (prog.currentShip.canAimIndependently || prog.currentShip.id == "cruiser" || prog.currentShip.id == "battleship" || prog.currentShip.id == "carrier" || prog.currentShip.id == "vanguard" || prog.currentShip.shipClass == ShipClass.Carrier || prog.currentShip.shipClass == ShipClass.Cruiser || prog.currentShip.shipClass == ShipClass.Battleship));
-                if (canAim)
-                {
-                    var inputProvider = GetComponent<IShipInputProvider>();
-                    Vector2 aimDir = inputProvider != null ? inputProvider.AimDirection : Vector2.zero;
-                    if (aimDir.sqrMagnitude < 0.01f && PlayerInputReader.Instance != null)
-                    {
-                        aimDir = PlayerInputReader.Instance.AimDirection;
-                    }
-                    if (aimDir.sqrMagnitude > 0.01f)
-                    {
-                        baseRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(aimDir.y, aimDir.x) * Mathf.Rad2Deg);
-                    }
-                }
-            }
+            Quaternion baseRotation = ShipWeapon.ResolveIndependentAimRotation(
+                transform, IsMountedOnSocket(), ref cachedProgression, ref cachedInputProvider, ref hasLookedUpInputProvider);
 
             foreach (Vector2 nose in muzzles)
             {

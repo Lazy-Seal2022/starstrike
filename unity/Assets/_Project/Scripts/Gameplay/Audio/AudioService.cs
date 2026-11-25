@@ -47,6 +47,8 @@ namespace StarStrike.Gameplay.Audio
         private int sfxPoolIndex = 0;
         private Coroutine musicDuckingCoroutine;
         private Dictionary<string, AudioClip> proceduralClips = new Dictionary<string, AudioClip>();
+        private readonly HashSet<string> missingClips = new HashSet<string>();
+        private readonly Dictionary<string, float> lastSfxPlayTimes = new Dictionary<string, float>();
 
         private void Awake()
         {
@@ -337,9 +339,14 @@ namespace StarStrike.Gameplay.Audio
 
         public AudioClip GetClip(string id)
         {
+            if (string.IsNullOrEmpty(id)) return null;
             if (proceduralClips.TryGetValue(id, out AudioClip clip))
             {
                 return clip;
+            }
+            if (missingClips.Contains(id))
+            {
+                return null;
             }
             if (audioConfig != null)
             {
@@ -352,6 +359,10 @@ namespace StarStrike.Gameplay.Audio
             if (clip != null)
             {
                 proceduralClips[id] = clip;
+            }
+            else
+            {
+                missingClips.Add(id);
             }
             return clip;
         }
@@ -383,6 +394,17 @@ namespace StarStrike.Gameplay.Audio
             if (isMuted) return;
             float effectiveVolume = Mathf.Clamp01(volume * sfxVolume * masterVolume);
             if (effectiveVolume <= 0.001f) return;
+
+            if (Application.isPlaying)
+            {
+                float minInterval = (id == "laser" || id == "enemy_laser" || id == "laser_fire") ? 0.045f : 0.025f;
+                float now = Time.unscaledTime;
+                if (lastSfxPlayTimes.TryGetValue(id, out float lastPlayed) && (now - lastPlayed) < minInterval)
+                {
+                    return;
+                }
+                lastSfxPlayTimes[id] = now;
+            }
 
             AudioClip clip = GetClip(id);
             if (clip == null) return;

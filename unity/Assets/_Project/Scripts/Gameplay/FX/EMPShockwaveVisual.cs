@@ -16,6 +16,7 @@ namespace StarStrike.Gameplay.FX
         private float duration = 0.45f;
         private float elapsed = 0f;
         private const int SegmentCount = 48;
+        private static Material sharedRingMaterial;
 
         public static void Spawn(Vector3 position, float radius = 9.5f, float expandDuration = 0.45f)
         {
@@ -42,10 +43,14 @@ namespace StarStrike.Gameplay.FX
             ringLine.endWidth = 0.28f;
             ringLine.sortingOrder = 9;
 
-            var shader = Shader.Find("Sprites/Default");
-            if (shader != null)
+            if (sharedRingMaterial == null)
             {
-                ringLine.material = new Material(shader);
+                var shader = Shader.Find("Sprites/Default");
+                if (shader != null) sharedRingMaterial = new Material(shader);
+            }
+            if (sharedRingMaterial != null)
+            {
+                ringLine.sharedMaterial = sharedRingMaterial;
             }
 
             Color ringCol = new Color(0.35f, 0.95f, 1f, 0.95f);

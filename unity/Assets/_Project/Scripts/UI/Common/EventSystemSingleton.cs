@@ -22,11 +22,6 @@ namespace StarStrike.UI
             EnforceSingleEventSystem();
         }
 
-        private void Update()
-        {
-            EnforceSingleEventSystem();
-        }
-
         /// <summary>
         /// Scans all active EventSystems in the scene/application, preserves exactly one
         /// (preferring one marked DontDestroyOnLoad), and immediately destroys any duplicates.

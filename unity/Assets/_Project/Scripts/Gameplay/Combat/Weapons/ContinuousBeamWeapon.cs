@@ -48,6 +48,22 @@ namespace StarStrike.Gameplay
         private float lastTickTime = -999f;
         private bool isFiring = false;
 
+        private Transform cachedMuzzleTransform;
+        private bool hasLookedUpMuzzle;
+        private ShipWeapon cachedShipWeapon;
+        private bool hasLookedUpShipWeapon;
+        private PlayerProgression cachedProgression;
+        private IShipInputProvider cachedInputProvider;
+        private bool hasLookedUpInputProvider;
+        private readonly Vector2[] singleMuzzleBuffer = new Vector2[1];
+        private Vector2[] customMuzzleBuffer;
+
+        private float pendingPopupDamage;
+        private Vector2 pendingPopupPos;
+        private bool hasPendingPopup;
+        private float lastPopupEmitTime = -999f;
+        private const float DamagePopupInterval = 0.22f;
+
         public void ResetCooldown() => lastTickTime = -999f;
 
         private bool IsMountedOnSocket()
@@ -109,7 +125,7 @@ namespace StarStrike.Gameplay
             lr.startWidth = 0.18f;
             lr.endWidth = 0.12f;
             lr.useWorldSpace = true;
-            if (sharedBeamMaterial != null) lr.material = sharedBeamMaterial;
+            if (sharedBeamMaterial != null) lr.sharedMaterial = sharedBeamMaterial;
             lr.startColor = beamColor;
             lr.endColor = new Color(beamColor.r, beamColor.g, beamColor.b, 0.4f);
             lr.sortingOrder = 6;
@@ -126,27 +142,41 @@ namespace StarStrike.Gameplay
             Vector2[] muzzles = null;
             if (IsMountedOnSocket())
             {
-                var muzzleTransform = transform.Find("MuzzlePoint");
-                Vector2 localMuzzle = muzzleTransform != null ? (Vector2)muzzleTransform.localPosition : new Vector2(0.5f, 0f);
-                muzzles = new Vector2[] { (Vector2)transform.TransformPoint(localMuzzle) };
+                if (!hasLookedUpMuzzle)
+                {
+                    cachedMuzzleTransform = transform.Find("MuzzlePoint");
+                    hasLookedUpMuzzle = true;
+                }
+                Vector2 localMuzzle = cachedMuzzleTransform != null ? (Vector2)cachedMuzzleTransform.localPosition : new Vector2(0.5f, 0f);
+                singleMuzzleBuffer[0] = (Vector2)transform.TransformPoint(localMuzzle);
+                muzzles = singleMuzzleBuffer;
             }
             else if (customSockets != null && customSockets.Length > 0)
             {
-                muzzles = new Vector2[customSockets.Length];
+                if (customMuzzleBuffer == null || customMuzzleBuffer.Length != customSockets.Length)
+                {
+                    customMuzzleBuffer = new Vector2[customSockets.Length];
+                }
                 for (int i = 0; i < customSockets.Length; i++)
                 {
-                    muzzles[i] = (Vector2)transform.TransformPoint(customSockets[i]);
+                    customMuzzleBuffer[i] = (Vector2)transform.TransformPoint(customSockets[i]);
                 }
+                muzzles = customMuzzleBuffer;
             }
             else
             {
-                var shipWp = GetComponent<ShipWeapon>();
-                muzzles = shipWp != null ? shipWp.GetMuzzleWorldPositions() : null;
+                if (!hasLookedUpShipWeapon)
+                {
+                    cachedShipWeapon = GetComponent<ShipWeapon>();
+                    hasLookedUpShipWeapon = true;
+                }
+                muzzles = cachedShipWeapon != null ? cachedShipWeapon.GetMuzzleWorldPositions() : null;
             }
 
             if (muzzles == null || muzzles.Length == 0)
             {
-                muzzles = new Vector2[] { (Vector2)transform.position + (Vector2)transform.right * 1.55f };
+                singleMuzzleBuffer[0] = (Vector2)transform.position + (Vector2)transform.right * 1.55f;
+                muzzles = singleMuzzleBuffer;
             }
 
             int beamCount = muzzles.Length;
@@ -162,25 +192,8 @@ namespace StarStrike.Gameplay
 
             EnsureBeamRenderers(beamCount);
 
-            Vector2 forward = transform.right;
-            if (!IsMountedOnSocket())
-            {
-                var prog = GetComponent<PlayerProgression>();
-                bool canAim = (prog != null && prog.currentShip != null && (prog.currentShip.canAimIndependently || prog.currentShip.id == "cruiser" || prog.currentShip.id == "battleship" || prog.currentShip.id == "carrier" || prog.currentShip.id == "vanguard" || prog.currentShip.shipClass == ShipClass.Carrier || prog.currentShip.shipClass == ShipClass.Cruiser || prog.currentShip.shipClass == ShipClass.Battleship));
-                if (canAim)
-                {
-                    var inputProvider = GetComponent<IShipInputProvider>();
-                    Vector2 aimDir = inputProvider != null ? inputProvider.AimDirection : Vector2.zero;
-                    if (aimDir.sqrMagnitude < 0.01f && PlayerInputReader.Instance != null)
-                    {
-                        aimDir = PlayerInputReader.Instance.AimDirection;
-                    }
-                    if (aimDir.sqrMagnitude > 0.01f)
-                    {
-                        forward = aimDir.normalized;
-                    }
-                }
-            }
+            Vector2 forward = ShipWeapon.ResolveIndependentAimDirection(
+                transform, IsMountedOnSocket(), ref cachedProgression, ref cachedInputProvider, ref hasLookedUpInputProvider);
             float tickDamage = damagePerSecond * dt;
 
             for (int i = 0; i < beamCount; i++)
@@ -220,7 +233,13 @@ namespace StarStrike.Gameplay
                     if (damageable != null)
                     {
                         damageable.TakeDamage(tickDamage, closestHit.point);
-                        GameEvents.TriggerDamageDealt(closestHit.point, tickDamage, isCrit: false);
+                        pendingPopupDamage += tickDamage;
+                        pendingPopupPos = closestHit.point;
+                        hasPendingPopup = true;
+                        if (Time.time - lastPopupEmitTime >= DamagePopupInterval)
+                        {
+                            FlushDamagePopup();
+                        }
                     }
                 }
 
@@ -247,8 +266,18 @@ namespace StarStrike.Gameplay
             return true;
         }
 
+        private void FlushDamagePopup()
+        {
+            if (!hasPendingPopup || pendingPopupDamage <= 0.01f) return;
+            GameEvents.TriggerDamageDealt(pendingPopupPos, pendingPopupDamage, isCrit: false);
+            pendingPopupDamage = 0f;
+            hasPendingPopup = false;
+            lastPopupEmitTime = Time.time;
+        }
+
         public void StopFiring()
         {
+            FlushDamagePopup();
             isFiring = false;
             lastTickTime = -999f;
             for (int i = 0; i < activeRenderers.Count; i++)

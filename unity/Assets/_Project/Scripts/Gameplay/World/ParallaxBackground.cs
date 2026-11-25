@@ -11,6 +11,7 @@ namespace StarStrike.Gameplay
         private Transform cameraTransform;
         private Vector3[] startPositions;
         private GameObject[] layers;
+        private static Material sharedStarMaterial;
 
         private void Start()
         {
@@ -18,33 +19,70 @@ namespace StarStrike.Gameplay
 
             cameraTransform = Camera.main != null ? Camera.main.transform : null;
             if (cameraTransform == null) return;
-            
+
+            if (sharedStarMaterial == null)
+            {
+                var shader = Shader.Find("Sprites/Default");
+                if (shader != null)
+                {
+                    sharedStarMaterial = new Material(shader);
+                    Sprite starSprite = ProceduralSpriteHelper.GetStarSprite();
+                    if (starSprite != null && starSprite.texture != null)
+                    {
+                        sharedStarMaterial.mainTexture = starSprite.texture;
+                    }
+                }
+            }
+
             layers = new GameObject[layerCount];
             startPositions = new Vector3[layerCount];
+            const int starsPerLayer = 60;
+            var particles = new ParticleSystem.Particle[starsPerLayer];
 
             for (int i = 0; i < layerCount; i++)
             {
                 layers[i] = new GameObject($"ParallaxLayer_{i}");
                 layers[i].transform.SetParent(transform);
-                
+
                 // Set farther layers deeper in Z and smaller parallax factor
                 float zOffset = 10f + (i * 5f);
                 layers[i].transform.localPosition = new Vector3(0, 0, zOffset);
                 startPositions[i] = layers[i].transform.position;
 
-                // Add some star sprites
-                for (int j = 0; j < 60; j++)
+                var ps = layers[i].AddComponent<ParticleSystem>();
+                var main = ps.main;
+                main.playOnAwake = false;
+                main.loop = false;
+                main.simulationSpace = ParticleSystemSimulationSpace.Local;
+                main.maxParticles = starsPerLayer;
+                main.startLifetime = float.MaxValue;
+                main.startSpeed = 0f;
+
+                var emission = ps.emission;
+                emission.enabled = false;
+                var shape = ps.shape;
+                shape.enabled = false;
+
+                var psr = ps.GetComponent<ParticleSystemRenderer>();
+                psr.renderMode = ParticleSystemRenderMode.Billboard;
+                psr.sortingOrder = -10 - i;
+                if (sharedStarMaterial != null) psr.sharedMaterial = sharedStarMaterial;
+
+                for (int j = 0; j < starsPerLayer; j++)
                 {
-                    GameObject star = new GameObject("Star");
-                    star.transform.SetParent(layers[i].transform);
-                    star.transform.localPosition = new Vector3(Random.Range(-70f, 70f), Random.Range(-70f, 70f), 0);
-                    
-                    var sr = star.AddComponent<SpriteRenderer>();
-                    sr.sprite = ProceduralSpriteHelper.GetStarSprite();
-                    sr.color = new Color(1f, 1f, 1f, Random.Range(0.3f, 0.9f) - (i * 0.1f));
+                    float alpha = Mathf.Clamp01(Random.Range(0.3f, 0.9f) - (i * 0.1f));
                     float size = Random.Range(0.15f, 0.45f);
-                    star.transform.localScale = new Vector3(size, size, 1);
+                    particles[j] = new ParticleSystem.Particle
+                    {
+                        position = new Vector3(Random.Range(-70f, 70f), Random.Range(-70f, 70f), 0f),
+                        startColor = new Color(1f, 1f, 1f, alpha),
+                        startSize = size,
+                        remainingLifetime = 1000000f,
+                        startLifetime = 1000000f
+                    };
                 }
+                ps.SetParticles(particles, starsPerLayer);
+                ps.Pause();
             }
         }
 

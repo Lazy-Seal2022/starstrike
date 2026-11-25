@@ -39,6 +39,10 @@ namespace StarStrike.Gameplay
         private readonly List<IWeapon> activeSocketWeapons = new List<IWeapon>();
         private readonly List<SocketMountInstance> socketMountInstances = new List<SocketMountInstance>();
         public string currentShipId = "scout";
+        private PlayerProgression cachedProgression;
+        private IShipInputProvider cachedInputProvider;
+        private bool hasLookedUpInputProvider;
+        private static CombatConfig cachedCombatConfig;
 
         public IWeapon CurrentWeapon => (availableWeapons.Count > 0 && currentWeaponIndex >= 0 && currentWeaponIndex < availableWeapons.Count) 
             ? availableWeapons[currentWeaponIndex] 
@@ -55,17 +59,17 @@ namespace StarStrike.Gameplay
         {
             get
             {
-                var prog = GetComponent<PlayerProgression>();
-                if (prog != null && prog.currentShip != null)
+                if (cachedProgression == null) cachedProgression = GetComponent<PlayerProgression>();
+                if (cachedProgression != null && cachedProgression.currentShip != null)
                 {
-                    return prog.currentShip.canAimIndependently || 
-                           prog.currentShip.id == "battleship" || 
-                           prog.currentShip.id == "cruiser" ||
-                           prog.currentShip.id == "carrier" ||
-                           prog.currentShip.id == "vanguard" ||
-                           prog.currentShip.shipClass == ShipClass.Battleship ||
-                           prog.currentShip.shipClass == ShipClass.Cruiser ||
-                           prog.currentShip.shipClass == ShipClass.Carrier;
+                    return cachedProgression.currentShip.canAimIndependently ||
+                           cachedProgression.currentShip.id == "battleship" ||
+                           cachedProgression.currentShip.id == "cruiser" ||
+                           cachedProgression.currentShip.id == "carrier" ||
+                           cachedProgression.currentShip.id == "vanguard" ||
+                           cachedProgression.currentShip.shipClass == ShipClass.Battleship ||
+                           cachedProgression.currentShip.shipClass == ShipClass.Cruiser ||
+                           cachedProgression.currentShip.shipClass == ShipClass.Carrier;
                 }
                 return currentShipId == "battleship" || currentShipId == "cruiser" || currentShipId == "carrier" || currentShipId == "vanguard";
             }
@@ -79,10 +83,10 @@ namespace StarStrike.Gameplay
         {
             get
             {
-                var prog = GetComponent<PlayerProgression>();
-                if (prog != null && prog.currentShip != null && prog.currentShip.turretTraverseSpeed > 0f)
+                if (cachedProgression == null) cachedProgression = GetComponent<PlayerProgression>();
+                if (cachedProgression != null && cachedProgression.currentShip != null && cachedProgression.currentShip.turretTraverseSpeed > 0f)
                 {
-                    return prog.currentShip.turretTraverseSpeed;
+                    return cachedProgression.currentShip.turretTraverseSpeed;
                 }
                 return turretTraverseSpeed;
             }
@@ -99,10 +103,14 @@ namespace StarStrike.Gameplay
                     return inputAimDirection;
                 }
 
-                var inputProvider = GetComponent<IShipInputProvider>();
-                if (inputProvider != null && inputProvider.AimDirection.sqrMagnitude > 0.01f)
+                if (!hasLookedUpInputProvider)
                 {
-                    return inputProvider.AimDirection;
+                    cachedInputProvider = GetComponent<IShipInputProvider>();
+                    hasLookedUpInputProvider = true;
+                }
+                if (cachedInputProvider != null && cachedInputProvider.AimDirection.sqrMagnitude > 0.01f)
+                {
+                    return cachedInputProvider.AimDirection;
                 }
 
                 if (PlayerInputReader.Instance != null && PlayerInputReader.Instance.AimDirection.sqrMagnitude > 0.01f)
@@ -128,7 +136,7 @@ namespace StarStrike.Gameplay
                 for (int i = 0; i < socketMountInstances.Count; i++)
                 {
                     var inst = socketMountInstances[i];
-                    if (inst != null && inst.mountTransform != null)
+                    if (inst != null && inst.mountTransform != null && inst.mountTransform.localRotation != Quaternion.identity)
                     {
                         inst.mountTransform.localRotation = Quaternion.identity;
                     }
@@ -396,9 +404,18 @@ namespace StarStrike.Gameplay
             UpdateSocketVisuals();
         }
 
+        private static CombatConfig GetCombatConfig()
+        {
+            if (cachedCombatConfig == null)
+            {
+                cachedCombatConfig = Resources.Load<CombatConfig>("Data/CombatConfig");
+            }
+            return cachedCombatConfig;
+        }
+
         public static GameObject GetWeaponPrefab(string weaponId)
         {
-            var combatConfig = Resources.Load<CombatConfig>("Data/CombatConfig");
+            var combatConfig = GetCombatConfig();
             string lower = string.IsNullOrEmpty(weaponId) ? "pulse" : weaponId.ToLowerInvariant().Trim();
 
             if (combatConfig != null)
@@ -430,7 +447,7 @@ namespace StarStrike.Gameplay
 
         public static GameObject GetSocketMountPrefab()
         {
-            var combatConfig = Resources.Load<CombatConfig>("Data/CombatConfig");
+            var combatConfig = GetCombatConfig();
             if (combatConfig != null && combatConfig.socketMountPrefab != null) return combatConfig.socketMountPrefab;
             return null;
         }

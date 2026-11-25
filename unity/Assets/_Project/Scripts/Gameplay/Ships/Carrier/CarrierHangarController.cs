@@ -45,6 +45,10 @@ namespace StarStrike.Gameplay.Carrier
         private float lastLaunchTime = -999f;
         private float lastPdcFireTime = -999f;
         private int nextLaunchBayIndex = 0;
+        private Camera cachedMainCamera;
+        private static GameObject cachedPdcLaserPrefab;
+        private static readonly Collider2D[] overlapBuffer = new Collider2D[64];
+        private static readonly ContactFilter2D overlapFilter = new ContactFilter2D { useTriggers = true, useLayerMask = false };
 
         public DroneCommandStance CurrentStance => currentStance;
         public IReadOnlyList<CarrierEscortDrone> ActiveDrones => activeDrones;
@@ -61,11 +65,15 @@ namespace StarStrike.Gameplay.Carrier
         {
             get
             {
-                if (Camera.main != null && Mouse.current != null)
+                if (cachedMainCamera == null || !cachedMainCamera.isActiveAndEnabled)
+                {
+                    cachedMainCamera = Camera.main;
+                }
+                if (cachedMainCamera != null && Mouse.current != null)
                 {
                     Vector2 screenPos = Mouse.current.position.ReadValue();
-                    float camDist = Mathf.Abs(Camera.main.transform.position.z);
-                    return Camera.main.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, camDist));
+                    float camDist = Mathf.Abs(cachedMainCamera.transform.position.z);
+                    return cachedMainCamera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, camDist));
                 }
                 return (Vector2)transform.position + (Vector2)transform.right * 10f;
             }
@@ -214,23 +222,24 @@ namespace StarStrike.Gameplay.Carrier
             if (Time.time - lastPdcFireTime < pointDefenseFireRate) return;
 
             // Scan for incoming enemy projectiles, missiles, or close threats
-            Collider2D[] threats = Physics2D.OverlapCircleAll(transform.position, pointDefenseRange);
+            int hitCount = Physics2D.OverlapCircle(transform.position, pointDefenseRange, overlapFilter, overlapBuffer);
             Transform targetThreat = null;
-            float closestDist = float.MaxValue;
+            float closestSqrDist = float.MaxValue;
+            Vector2 origin = transform.position;
 
-            for (int i = 0; i < threats.Length; i++)
+            for (int i = 0; i < hitCount; i++)
             {
-                var hit = threats[i];
+                var hit = overlapBuffer[i];
                 if (hit == null || hit.gameObject == gameObject) continue;
                 if (hit.CompareTag("Player") || hit.CompareTag("Laser")) continue;
 
                 bool isThreat = hit.CompareTag("EnemyLaser") || hit.CompareTag("Enemy") || hit.CompareTag("Asteroid");
                 if (isThreat)
                 {
-                    float dist = Vector2.Distance(transform.position, hit.transform.position);
-                    if (dist < closestDist)
+                    float sqrDist = ((Vector2)hit.transform.position - origin).sqrMagnitude;
+                    if (sqrDist < closestSqrDist)
                     {
-                        closestDist = dist;
+                        closestSqrDist = sqrDist;
                         targetThreat = hit.transform;
                     }
                 }
@@ -247,14 +256,51 @@ namespace StarStrike.Gameplay.Carrier
         {
             Vector2 muzzlePos = (Vector2)transform.position + (Vector2)transform.right * 1.5f;
             Vector2 fireDir = (targetPos - muzzlePos).normalized;
+            Quaternion rot = Quaternion.Euler(0f, 0f, Mathf.Atan2(fireDir.y, fireDir.x) * Mathf.Rad2Deg);
 
-            GameObject flakObj = new GameObject("PDC_FlakTracer");
+            if (cachedPdcLaserPrefab == null)
+            {
+                cachedPdcLaserPrefab = Resources.Load<GameObject>("Prefabs/Projectiles/PlayerLaser");
+            }
+
+            GameObject flakObj;
+            if (PoolManager.Instance != null)
+            {
+                flakObj = PoolManager.Instance.Spawn("PlayerLaser", muzzlePos, rot, () =>
+                {
+                    if (cachedPdcLaserPrefab != null)
+                    {
+                        var inst = Instantiate(cachedPdcLaserPrefab, muzzlePos, rot);
+                        inst.name = "PlayerLaser";
+                        return inst;
+                    }
+                    var go = new GameObject("PlayerLaser");
+                    go.tag = "Laser";
+                    go.AddComponent<LaserProjectile>();
+                    return go;
+                });
+            }
+            else if (cachedPdcLaserPrefab != null)
+            {
+                flakObj = Instantiate(cachedPdcLaserPrefab, muzzlePos, rot);
+                flakObj.name = "PlayerLaser";
+            }
+            else
+            {
+                flakObj = new GameObject("PDC_FlakTracer");
+                flakObj.transform.position = muzzlePos;
+                flakObj.transform.rotation = rot;
+                flakObj.tag = "Laser";
+                flakObj.AddComponent<LaserProjectile>();
+            }
+
             flakObj.transform.position = muzzlePos;
-            flakObj.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(fireDir.y, fireDir.x) * Mathf.Rad2Deg);
-            flakObj.tag = "Laser";
-
-            var proj = flakObj.AddComponent<LaserProjectile>();
-            proj.Initialize(pointDefenseDamage, 32f, false);
+            flakObj.transform.rotation = rot;
+            var proj = flakObj.GetComponent<LaserProjectile>();
+            if (proj != null)
+            {
+                proj.Initialize(pointDefenseDamage, 32f, false);
+            }
         }
     }
 }

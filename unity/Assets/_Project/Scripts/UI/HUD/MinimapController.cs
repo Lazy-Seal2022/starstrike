@@ -28,6 +28,8 @@ namespace StarStrike.UI
         private List<MinimapTrackable> trackables = new List<MinimapTrackable>();
         private Dictionary<MinimapTrackable, RectTransform> trackableDots = new Dictionary<MinimapTrackable, RectTransform>();
         private readonly Queue<RectTransform> dotPool = new Queue<RectTransform>();
+        private readonly Dictionary<RectTransform, Image> dotImages = new Dictionary<RectTransform, Image>();
+        private readonly Dictionary<RectTransform, Vector2> dotLastPositions = new Dictionary<RectTransform, Vector2>();
         
         private Transform playerTransform;
 
@@ -161,6 +163,7 @@ namespace StarStrike.UI
                 {
                     kvp.Value.gameObject.SetActive(false);
                     dotPool.Enqueue(kvp.Value);
+                    dotLastPositions.Remove(kvp.Value);
                 }
             }
             trackableDots.Clear();
@@ -182,6 +185,7 @@ namespace StarStrike.UI
                 {
                     dotRt.gameObject.SetActive(false);
                     dotPool.Enqueue(dotRt);
+                    dotLastPositions.Remove(dotRt);
                 }
                 trackableDots.Remove(trackable);
             }
@@ -197,7 +201,13 @@ namespace StarStrike.UI
                 return;
             }
 
-            Vector2 playerPos = new Vector2(playerTransform.position.x, playerTransform.position.y);
+            Vector3 pPos3 = playerTransform.position;
+            Vector2 playerPos = new Vector2(pPos3.x, pPos3.y);
+            float scale = (mapSize * 0.5f) / radarRange;
+            float maxDist = (mapSize * 0.5f) - 6f;
+            float maxDistSqr = maxDist * maxDist;
+            bool hasJitter = radarJitter > 0.001f;
+            float jitterTime = hasJitter ? Time.time * 8f : 0f;
 
             for (int i = trackables.Count - 1; i >= 0; i--)
             {
@@ -211,48 +221,65 @@ namespace StarStrike.UI
                         {
                             deadDot.gameObject.SetActive(false);
                             dotPool.Enqueue(deadDot);
+                            dotLastPositions.Remove(deadDot);
                         }
                         trackableDots.Remove(trackable);
                     }
                     continue;
                 }
 
-                if (!trackableDots.ContainsKey(trackable))
+                if (!trackableDots.TryGetValue(trackable, out RectTransform dotRt))
                 {
-                    trackableDots[trackable] = CreateDot(trackable);
+                    dotRt = CreateDot(trackable);
+                    trackableDots[trackable] = dotRt;
                 }
 
-                RectTransform dotRt = trackableDots[trackable];
                 if (dotRt != null)
                 {
+                    Transform tr = trackable.transform;
                     if (trackable.Type == TrackableType.Player)
                     {
-                        dotRt.anchoredPosition = Vector2.zero;
-                        dotRt.localRotation = Quaternion.Euler(0, 0, trackable.transform.eulerAngles.z);
+                        if (!dotLastPositions.TryGetValue(dotRt, out Vector2 lastZero) || lastZero != Vector2.zero)
+                        {
+                            dotRt.anchoredPosition = Vector2.zero;
+                            dotLastPositions[dotRt] = Vector2.zero;
+                        }
+                        Quaternion targetRot = Quaternion.Euler(0, 0, tr.eulerAngles.z);
+                        if (dotRt.localRotation != targetRot)
+                        {
+                            dotRt.localRotation = targetRot;
+                        }
                     }
                     else
                     {
-                        Vector2 targetPos = new Vector2(trackable.transform.position.x, trackable.transform.position.y);
-                        Vector2 offset = targetPos - playerPos;
+                        Vector3 tPos3 = tr.position;
+                        Vector2 uiPos = new Vector2((tPos3.x - playerPos.x) * scale, (tPos3.y - playerPos.y) * scale);
 
-                        float scale = (mapSize / 2f) / radarRange;
-                        Vector2 uiPos = offset * scale;
-
-                        if (radarJitter > 0.001f)
+                        if (hasJitter)
                         {
-                            float noiseX = (Mathf.PerlinNoise(Time.time * 8f, i * 4.3f) - 0.5f) * radarJitter * 2f;
-                            float noiseY = (Mathf.PerlinNoise(i * 4.3f, Time.time * 8f) - 0.5f) * radarJitter * 2f;
-                            uiPos += new Vector2(noiseX, noiseY);
+                            float noiseX = (Mathf.PerlinNoise(jitterTime, i * 4.3f) - 0.5f) * radarJitter * 2f;
+                            float noiseY = (Mathf.PerlinNoise(i * 4.3f, jitterTime) - 0.5f) * radarJitter * 2f;
+                            uiPos.x += noiseX;
+                            uiPos.y += noiseY;
                         }
 
-                        float maxDist = (mapSize / 2f) - 6f;
-                        if (uiPos.magnitude > maxDist)
+                        float sqrLen = uiPos.sqrMagnitude;
+                        if (sqrLen > maxDistSqr)
                         {
-                            uiPos = uiPos.normalized * maxDist;
+                            uiPos *= maxDist / Mathf.Sqrt(sqrLen);
                         }
-                        
-                        dotRt.anchoredPosition = uiPos;
-                        dotRt.localRotation = trackable.transform.localRotation;
+
+                        if (!dotLastPositions.TryGetValue(dotRt, out Vector2 lastPos) || (lastPos - uiPos).sqrMagnitude > 0.0025f)
+                        {
+                            dotRt.anchoredPosition = uiPos;
+                            dotLastPositions[dotRt] = uiPos;
+                        }
+
+                        Quaternion localRot = tr.localRotation;
+                        if (dotRt.localRotation != localRot)
+                        {
+                            dotRt.localRotation = localRot;
+                        }
                     }
                 }
             }
@@ -261,6 +288,7 @@ namespace StarStrike.UI
         private RectTransform CreateDot(MinimapTrackable trackable)
         {
             RectTransform rt = null;
+            Image dotImage = null;
             while (dotPool.Count > 0 && rt == null)
             {
                 rt = dotPool.Dequeue();
@@ -274,22 +302,27 @@ namespace StarStrike.UI
                 rt.anchorMin = new Vector2(0.5f, 0.5f);
                 rt.anchorMax = new Vector2(0.5f, 0.5f);
                 rt.pivot = new Vector2(0.5f, 0.5f);
-                
-                Image img = dotObj.GetComponent<Image>();
-                img.raycastTarget = false;
-                img.sprite = ProceduralSpriteHelper.GetCircleSprite(16);
+
+                dotImage = dotObj.GetComponent<Image>();
+                dotImage.raycastTarget = false;
+                dotImage.sprite = ProceduralSpriteHelper.GetCircleSprite(16);
+                dotImages[rt] = dotImage;
             }
             else
             {
                 rt.gameObject.name = "Dot_" + trackable.Type;
                 rt.gameObject.SetActive(true);
+                if (!dotImages.TryGetValue(rt, out dotImage))
+                {
+                    dotImage = rt.GetComponent<Image>();
+                    dotImages[rt] = dotImage;
+                }
             }
 
             float dotSize = trackable.Type == TrackableType.Player ? 8f : 5f;
             if (trackable.Type == TrackableType.Asteroid) dotSize = 4f;
             rt.sizeDelta = new Vector2(dotSize, dotSize);
 
-            Image dotImage = rt.GetComponent<Image>();
             if (dotImage != null)
             {
                 switch (trackable.Type)
@@ -301,6 +334,7 @@ namespace StarStrike.UI
                 }
             }
 
+            dotLastPositions.Remove(rt);
             return rt;
         }
     }

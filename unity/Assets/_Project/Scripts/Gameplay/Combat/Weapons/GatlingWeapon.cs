@@ -56,6 +56,15 @@ namespace StarStrike.Gameplay
         private int currentSocketIndex = 0;
         private Rigidbody2D rb;
         public bool isPlayer = false;
+        private Transform cachedMuzzleTransform;
+        private bool hasLookedUpMuzzle;
+        private ShipWeapon cachedShipWeapon;
+        private bool hasLookedUpShipWeapon;
+        private PlayerProgression cachedProgression;
+        private IShipInputProvider cachedInputProvider;
+        private bool hasLookedUpInputProvider;
+        private readonly Vector2[] singleMuzzleBuffer = new Vector2[1];
+        private Vector2[] customMuzzleBuffer;
 
         public void ResetCooldown() => lastFiredTime = -999f;
         public void StopFiring() { }
@@ -147,25 +156,8 @@ namespace StarStrike.Gameplay
             Vector2 firingMuzzle = muzzlePositions.Length > 0 ? muzzlePositions[currentSocketIndex % muzzlePositions.Length] : (Vector2)transform.position + (Vector2)transform.right * 0.7f;
             currentSocketIndex = (currentSocketIndex + 1) % Mathf.Max(1, muzzlePositions.Length);
 
-            Quaternion baseRotation = transform.rotation;
-            if (!IsMountedOnSocket())
-            {
-                var prog = GetComponent<PlayerProgression>();
-                bool canAim = (prog != null && prog.currentShip != null && (prog.currentShip.canAimIndependently || prog.currentShip.id == "cruiser" || prog.currentShip.id == "battleship" || prog.currentShip.id == "carrier" || prog.currentShip.id == "vanguard" || prog.currentShip.shipClass == ShipClass.Carrier || prog.currentShip.shipClass == ShipClass.Cruiser || prog.currentShip.shipClass == ShipClass.Battleship));
-                if (canAim)
-                {
-                    var inputProvider = GetComponent<IShipInputProvider>();
-                    Vector2 aimDir = inputProvider != null ? inputProvider.AimDirection : Vector2.zero;
-                    if (aimDir.sqrMagnitude < 0.01f && PlayerInputReader.Instance != null)
-                    {
-                        aimDir = PlayerInputReader.Instance.AimDirection;
-                    }
-                    if (aimDir.sqrMagnitude > 0.01f)
-                    {
-                        baseRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(aimDir.y, aimDir.x) * Mathf.Rad2Deg);
-                    }
-                }
-            }
+            Quaternion baseRotation = ShipWeapon.ResolveIndependentAimRotation(
+                transform, IsMountedOnSocket(), ref cachedProgression, ref cachedInputProvider, ref hasLookedUpInputProvider);
 
             // Apply dynamic inaccuracy spread bloom
             float currentSpread = CurrentInaccuracyAngle;
@@ -232,29 +224,41 @@ namespace StarStrike.Gameplay
         {
             if (IsMountedOnSocket())
             {
-                var muzzleTransform = transform.Find("MuzzlePoint");
-                Vector2 localMuzzle = muzzleTransform != null ? (Vector2)muzzleTransform.localPosition : new Vector2(0.5f, 0f);
-                return new Vector2[] { (Vector2)transform.TransformPoint(localMuzzle) };
+                if (!hasLookedUpMuzzle)
+                {
+                    cachedMuzzleTransform = transform.Find("MuzzlePoint");
+                    hasLookedUpMuzzle = true;
+                }
+                Vector2 localMuzzle = cachedMuzzleTransform != null ? (Vector2)cachedMuzzleTransform.localPosition : new Vector2(0.5f, 0f);
+                singleMuzzleBuffer[0] = (Vector2)transform.TransformPoint(localMuzzle);
+                return singleMuzzleBuffer;
             }
 
             if (customSockets != null && customSockets.Length > 0)
             {
-                Vector2[] worlds = new Vector2[customSockets.Length];
+                if (customMuzzleBuffer == null || customMuzzleBuffer.Length != customSockets.Length)
+                {
+                    customMuzzleBuffer = new Vector2[customSockets.Length];
+                }
                 for (int i = 0; i < customSockets.Length; i++)
                 {
-                    worlds[i] = (Vector2)transform.TransformPoint(customSockets[i]);
+                    customMuzzleBuffer[i] = (Vector2)transform.TransformPoint(customSockets[i]);
                 }
-                return worlds;
+                return customMuzzleBuffer;
             }
 
-            var shipWp = GetComponent<ShipWeapon>();
-            if (shipWp != null)
+            if (!hasLookedUpShipWeapon)
             {
-                return shipWp.GetMuzzleWorldPositions();
+                cachedShipWeapon = GetComponent<ShipWeapon>();
+                hasLookedUpShipWeapon = true;
+            }
+            if (cachedShipWeapon != null)
+            {
+                return cachedShipWeapon.GetMuzzleWorldPositions();
             }
 
-            Vector2 nose = (Vector2)transform.position + (Vector2)transform.right * 1.55f;
-            return new Vector2[] { nose };
+            singleMuzzleBuffer[0] = (Vector2)transform.position + (Vector2)transform.right * 1.55f;
+            return singleMuzzleBuffer;
         }
     }
 }

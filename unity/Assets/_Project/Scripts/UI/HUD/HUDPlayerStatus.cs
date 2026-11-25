@@ -57,6 +57,17 @@ namespace StarStrike.UI
         private string cachedShipId = "SCOUT";
         private string cachedWeaponName = "Pulse Laser";
 
+        private int lastShieldCurInt = int.MinValue;
+        private int lastShieldMaxInt = int.MinValue;
+        private int lastHullCurInt = int.MinValue;
+        private int lastHullMaxInt = int.MinValue;
+        private int lastEnergyCurInt = int.MinValue;
+        private int lastEnergyMaxInt = int.MinValue;
+        private int lastEnergyRecInt = int.MinValue;
+        private bool lastEnergyLockStr = false;
+        private bool hasEnergyStrInit = false;
+        private bool wasDangerPulsing = false;
+
         private void Awake()
         {
             if (themeConfig == null) themeConfig = Resources.Load<UIThemeConfig>("Data/UIThemeConfig");
@@ -115,50 +126,56 @@ namespace StarStrike.UI
             float smoothSpeed = themeConfig != null ? themeConfig.barFillSmoothSpeed : 12f;
 
             // 1. Smooth Shield Fill
-            currentShieldRatio = Mathf.MoveTowards(currentShieldRatio, targetShieldRatio, smoothSpeed * dt);
-            if (shieldFill != null)
+            if (!Mathf.Approximately(currentShieldRatio, targetShieldRatio))
             {
-                shieldFill.fillAmount = currentShieldRatio;
+                currentShieldRatio = Mathf.MoveTowards(currentShieldRatio, targetShieldRatio, smoothSpeed * dt);
+                if (shieldFill != null) shieldFill.fillAmount = currentShieldRatio;
             }
 
             // 2. Lagging Damage Ghost Bar
             float delay = themeConfig != null ? themeConfig.ghostBarDelaySeconds : 0.35f;
             float drainSpeed = themeConfig != null ? themeConfig.ghostBarDrainSpeed : 3.5f;
 
-            if (Time.time - lastDamageTime > delay)
+            if (!Mathf.Approximately(ghostShieldRatio, targetShieldRatio) && Time.time - lastDamageTime > delay)
             {
                 ghostShieldRatio = Mathf.MoveTowards(ghostShieldRatio, targetShieldRatio, drainSpeed * dt);
-                if (shieldGhostFill != null)
-                {
-                    shieldGhostFill.fillAmount = ghostShieldRatio;
-                }
+                if (shieldGhostFill != null) shieldGhostFill.fillAmount = ghostShieldRatio;
             }
 
             // 3. Smooth Hull Fill
-            currentHullRatio = Mathf.MoveTowards(currentHullRatio, targetHullRatio, smoothSpeed * dt);
-            if (hullFill != null)
+            if (!Mathf.Approximately(currentHullRatio, targetHullRatio))
             {
-                hullFill.fillAmount = currentHullRatio;
+                currentHullRatio = Mathf.MoveTowards(currentHullRatio, targetHullRatio, smoothSpeed * dt);
+                if (hullFill != null) hullFill.fillAmount = currentHullRatio;
             }
 
             // 4. Smooth Energy Fill
-            currentEnergyRatio = Mathf.MoveTowards(currentEnergyRatio, targetEnergyRatio, smoothSpeed * dt);
-            if (energyFill != null)
+            if (!Mathf.Approximately(currentEnergyRatio, targetEnergyRatio))
             {
-                energyFill.fillAmount = currentEnergyRatio;
+                currentEnergyRatio = Mathf.MoveTowards(currentEnergyRatio, targetEnergyRatio, smoothSpeed * dt);
+                if (energyFill != null) energyFill.fillAmount = currentEnergyRatio;
             }
 
             // 5. Boost Fill
-            if (boostFill != null)
+            if (boostFill != null && !Mathf.Approximately(boostFill.fillAmount, targetBoostRatio))
             {
                 boostFill.fillAmount = Mathf.MoveTowards(boostFill.fillAmount, targetBoostRatio, smoothSpeed * dt);
             }
 
             // 6. Low Shield Danger Pulse
-            if (targetShieldRatio < 0.25f && shieldText != null && themeConfig != null)
+            if (shieldText != null && themeConfig != null)
             {
-                float pulse = Mathf.PingPong(Time.time * themeConfig.warningPulseFrequency, 1f);
-                shieldText.color = Color.Lerp(themeConfig.dangerColor, themeConfig.textPrimary, pulse);
+                if (targetShieldRatio < 0.25f)
+                {
+                    wasDangerPulsing = true;
+                    float pulse = Mathf.PingPong(Time.time * themeConfig.warningPulseFrequency, 1f);
+                    shieldText.color = Color.Lerp(themeConfig.dangerColor, themeConfig.textPrimary, pulse);
+                }
+                else if (wasDangerPulsing)
+                {
+                    wasDangerPulsing = false;
+                    shieldText.color = themeConfig.textPrimary;
+                }
             }
 
             // 7. Energy Capacitor Lockout Pulse
@@ -187,18 +204,32 @@ namespace StarStrike.UI
 
             targetShieldRatio = newRatio;
 
-            string shieldStr = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
-            if (shieldText != null) shieldText.text = shieldStr;
-            if (shieldTmpText != null) shieldTmpText.text = shieldStr;
+            int curInt = Mathf.CeilToInt(current);
+            int maxInt = Mathf.CeilToInt(max);
+            if (curInt != lastShieldCurInt || maxInt != lastShieldMaxInt)
+            {
+                lastShieldCurInt = curInt;
+                lastShieldMaxInt = maxInt;
+                string shieldStr = $"{curInt} / {maxInt}";
+                if (shieldText != null) shieldText.text = shieldStr;
+                if (shieldTmpText != null) shieldTmpText.text = shieldStr;
+            }
         }
 
         public void HandleHullChanged(float current, float max)
         {
             targetHullRatio = max > 0 ? Mathf.Clamp01(current / max) : 0f;
 
-            string hullStr = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
-            if (hullText != null) hullText.text = hullStr;
-            if (hullTmpText != null) hullTmpText.text = hullStr;
+            int curInt = Mathf.CeilToInt(current);
+            int maxInt = Mathf.CeilToInt(max);
+            if (curInt != lastHullCurInt || maxInt != lastHullMaxInt)
+            {
+                lastHullCurInt = curInt;
+                lastHullMaxInt = maxInt;
+                string hullStr = $"{curInt} / {maxInt}";
+                if (hullText != null) hullText.text = hullStr;
+                if (hullTmpText != null) hullTmpText.text = hullStr;
+            }
         }
 
         public void HandleEnergyChanged(float current, float max)
@@ -206,17 +237,24 @@ namespace StarStrike.UI
             cachedMaxEnergy = max;
             targetEnergyRatio = max > 0 ? Mathf.Clamp01(current / max) : 0f;
 
-            string energyStr;
-            if (isEnergyLockedOut)
+            int curInt = Mathf.CeilToInt(current);
+            int maxInt = Mathf.CeilToInt(max);
+            int recInt = Mathf.CeilToInt(energyRecoveryTarget);
+            if (!hasEnergyStrInit || lastEnergyLockStr != isEnergyLockedOut || curInt != lastEnergyCurInt ||
+                (isEnergyLockedOut ? recInt != lastEnergyRecInt : maxInt != lastEnergyMaxInt))
             {
-                energyStr = $"REBOOT [{Mathf.CeilToInt(current)}/{Mathf.CeilToInt(energyRecoveryTarget)}]";
+                hasEnergyStrInit = true;
+                lastEnergyLockStr = isEnergyLockedOut;
+                lastEnergyCurInt = curInt;
+                lastEnergyMaxInt = maxInt;
+                lastEnergyRecInt = recInt;
+
+                string energyStr = isEnergyLockedOut
+                    ? $"REBOOT [{curInt}/{recInt}]"
+                    : $"{curInt} / {maxInt}";
+                if (energyText != null) energyText.text = energyStr;
+                if (energyTmpText != null) energyTmpText.text = energyStr;
             }
-            else
-            {
-                energyStr = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
-            }
-            if (energyText != null) energyText.text = energyStr;
-            if (energyTmpText != null) energyTmpText.text = energyStr;
         }
 
         public void HandleEnergyLockoutChanged(bool isLocked, float current, float target)

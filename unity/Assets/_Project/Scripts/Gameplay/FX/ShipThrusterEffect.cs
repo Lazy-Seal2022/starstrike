@@ -10,6 +10,7 @@ namespace StarStrike.Gameplay.FX
         public Vector3 localOffset = new Vector3(-0.5f, 0f, 0f);
 
         private ParticleSystem exhaustParticles;
+        private bool hasAppliedState;
 
         public ParticleSystem ExhaustParticles => exhaustParticles;
 
@@ -44,6 +45,12 @@ namespace StarStrike.Gameplay.FX
         {
             EnsureInitialized();
 
+            if (hasAppliedState && IsThrusting == thrusting && IsBoosting == boosting)
+            {
+                return;
+            }
+
+            hasAppliedState = true;
             IsThrusting = thrusting;
             IsBoosting = boosting;
 

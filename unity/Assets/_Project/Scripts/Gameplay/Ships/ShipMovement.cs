@@ -19,6 +19,8 @@ namespace StarStrike.Gameplay
 
         private Rigidbody2D rb;
         private ShipHealth health;
+        private PlayerProgression cachedProgression;
+        private ShipWeaponController cachedWeaponCtrl;
 
         [Header("Aim & Steering")]
         public bool steerTowardsAim = true;
@@ -27,18 +29,18 @@ namespace StarStrike.Gameplay
         {
             get
             {
-                var prog = GetComponent<PlayerProgression>();
-                if (prog != null && prog.currentShip != null)
+                if (cachedProgression == null) cachedProgression = GetComponent<PlayerProgression>();
+                if (cachedProgression != null && cachedProgression.currentShip != null)
                 {
-                    if (prog.currentShip.canAimIndependently) return true;
-                    if (prog.currentShip.id == "battleship" || prog.currentShip.id == "cruiser" || prog.currentShip.id == "carrier" || prog.currentShip.id == "vanguard") return true;
-                    if (prog.currentShip.shipClass == ShipClass.Battleship || prog.currentShip.shipClass == ShipClass.Cruiser || prog.currentShip.shipClass == ShipClass.Carrier) return true;
+                    if (cachedProgression.currentShip.canAimIndependently) return true;
+                    if (cachedProgression.currentShip.id == "battleship" || cachedProgression.currentShip.id == "cruiser" || cachedProgression.currentShip.id == "carrier" || cachedProgression.currentShip.id == "vanguard") return true;
+                    if (cachedProgression.currentShip.shipClass == ShipClass.Battleship || cachedProgression.currentShip.shipClass == ShipClass.Cruiser || cachedProgression.currentShip.shipClass == ShipClass.Carrier) return true;
                 }
-                var weaponCtrl = GetComponent<ShipWeaponController>();
-                if (weaponCtrl != null)
+                if (cachedWeaponCtrl == null) cachedWeaponCtrl = GetComponent<ShipWeaponController>();
+                if (cachedWeaponCtrl != null)
                 {
-                    if (weaponCtrl.CanAimIndependently) return true;
-                    if (weaponCtrl.currentShipId == "battleship" || weaponCtrl.currentShipId == "cruiser" || weaponCtrl.currentShipId == "carrier" || weaponCtrl.currentShipId == "vanguard") return true;
+                    if (cachedWeaponCtrl.CanAimIndependently) return true;
+                    if (cachedWeaponCtrl.currentShipId == "battleship" || cachedWeaponCtrl.currentShipId == "cruiser" || cachedWeaponCtrl.currentShipId == "carrier" || cachedWeaponCtrl.currentShipId == "vanguard") return true;
                 }
                 return false;
             }

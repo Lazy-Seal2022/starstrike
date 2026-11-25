@@ -22,6 +22,15 @@ namespace StarStrike.Gameplay
         public int gemDropCount = 8;
 
         private Rigidbody2D rb;
+        private Collider2D cachedCol;
+        private CircleCollider2D cachedCircleCol;
+        private SpriteRenderer cachedSr;
+        private static AsteroidConfig sharedConfig;
+        private static bool hasSearchedFallbackPrefabs;
+        private static GameObject cachedGemFallback;
+        private static GameObject cachedPowerUpFallback;
+        private static GameObject cachedMedFallback;
+        private static GameObject cachedSmallFallback;
 
         private void Awake()
         {
@@ -30,7 +39,11 @@ namespace StarStrike.Gameplay
             rb.linearDamping = 0.05f;
             rb.angularDamping = 0.05f;
             tag = "Asteroid";
-            
+
+            cachedCol = GetComponent<Collider2D>();
+            cachedCircleCol = cachedCol as CircleCollider2D ?? GetComponent<CircleCollider2D>();
+            cachedSr = GetComponent<SpriteRenderer>();
+
             var trackable = GetComponent<StarStrike.Gameplay.MinimapTrackable>();
             if (trackable == null) trackable = gameObject.AddComponent<StarStrike.Gameplay.MinimapTrackable>();
             trackable.SetType(StarStrike.Gameplay.TrackableType.Asteroid);
@@ -45,16 +58,32 @@ namespace StarStrike.Gameplay
                 if (smallChildPrefab == null) smallChildPrefab = config.smallPrefab;
             }
 
-            if (gemCrystalPrefab == null) gemCrystalPrefab = Resources.Load<GameObject>("Prefabs/Environment/GemCrystal");
-            if (powerUpPrefab == null) powerUpPrefab = Resources.Load<GameObject>("Prefabs/Environment/PowerUpItem");
-            if (mediumChildPrefab == null) mediumChildPrefab = Resources.Load<GameObject>("Prefabs/Environment/Asteroid_Medium");
-            if (smallChildPrefab == null) smallChildPrefab = Resources.Load<GameObject>("Prefabs/Environment/Asteroid_Small");
+            if (!hasSearchedFallbackPrefabs)
+            {
+                hasSearchedFallbackPrefabs = true;
+                cachedGemFallback = Resources.Load<GameObject>("Prefabs/Environment/GemCrystal");
+                cachedPowerUpFallback = Resources.Load<GameObject>("Prefabs/Environment/PowerUpItem");
+                cachedMedFallback = Resources.Load<GameObject>("Prefabs/Environment/Asteroid_Medium");
+                cachedSmallFallback = Resources.Load<GameObject>("Prefabs/Environment/Asteroid_Small");
+            }
+
+            if (gemCrystalPrefab == null) gemCrystalPrefab = cachedGemFallback;
+            if (powerUpPrefab == null) powerUpPrefab = cachedPowerUpFallback;
+            if (mediumChildPrefab == null) mediumChildPrefab = cachedMedFallback;
+            if (smallChildPrefab == null) smallChildPrefab = cachedSmallFallback;
         }
 
         public void SetupStats()
         {
-            if (config == null) config = Resources.Load<AsteroidConfig>("Data/AsteroidConfig");
-            if (config == null) config = ScriptableObject.CreateInstance<AsteroidConfig>();
+            if (config == null)
+            {
+                if (sharedConfig == null)
+                {
+                    sharedConfig = Resources.Load<AsteroidConfig>("Data/AsteroidConfig");
+                    if (sharedConfig == null) sharedConfig = ScriptableObject.CreateInstance<AsteroidConfig>();
+                }
+                config = sharedConfig;
+            }
 
             AsteroidTierData data = config.GetTierData(tier);
             maxHp = data.maxHp;
@@ -64,25 +93,26 @@ namespace StarStrike.Gameplay
             currentHp = maxHp;
             transform.localScale = Vector3.one * scale;
 
-            CircleCollider2D col = GetComponent<CircleCollider2D>();
-            if (col == null) col = gameObject.AddComponent<CircleCollider2D>();
-            col.radius = data.colliderRadius;
+            if (cachedCircleCol == null) cachedCircleCol = GetComponent<CircleCollider2D>();
+            if (cachedCircleCol == null) cachedCircleCol = gameObject.AddComponent<CircleCollider2D>();
+            cachedCol = cachedCircleCol;
+            cachedCircleCol.radius = data.colliderRadius;
 
-            SpriteRenderer sr = GetComponent<SpriteRenderer>();
-            if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
-            if (sr.sprite == null)
+            if (cachedSr == null) cachedSr = GetComponent<SpriteRenderer>();
+            if (cachedSr == null) cachedSr = gameObject.AddComponent<SpriteRenderer>();
+            if (cachedSr.sprite == null)
             {
-                sr.sprite = config != null && config.sprite != null ? config.sprite : ProceduralSpriteHelper.GetAsteroidSprite();
+                cachedSr.sprite = config != null && config.sprite != null ? config.sprite : ProceduralSpriteHelper.GetAsteroidSprite();
             }
-            sr.sortingOrder = 2;
+            cachedSr.sortingOrder = 2;
         }
 
         public bool hasCustomInitialVelocity = false;
 
         private void OnEnable()
         {
-            var col = GetComponent<Collider2D>();
-            if (col != null) col.enabled = true;
+            if (cachedCol == null) cachedCol = GetComponent<Collider2D>();
+            if (cachedCol != null) cachedCol.enabled = true;
             if (rb != null) rb.simulated = true;
 
             if (!hasCustomInitialVelocity)
@@ -99,10 +129,11 @@ namespace StarStrike.Gameplay
         public void TakeDamage(float amount)
         {
             currentHp -= amount;
-            
+
             if (StarStrike.Gameplay.FX.FXService.Instance != null)
             {
-                StarStrike.Gameplay.FX.FXService.Instance.FlashSprite(GetComponent<SpriteRenderer>(), Color.white);
+                if (cachedSr == null) cachedSr = GetComponent<SpriteRenderer>();
+                StarStrike.Gameplay.FX.FXService.Instance.FlashSprite(cachedSr, Color.white);
             }
 
             if (currentHp <= 0f)
@@ -113,8 +144,8 @@ namespace StarStrike.Gameplay
 
         private void SplitAndDestroy()
         {
-            var col = GetComponent<Collider2D>();
-            if (col != null) col.enabled = false;
+            if (cachedCol == null) cachedCol = GetComponent<Collider2D>();
+            if (cachedCol != null) cachedCol.enabled = false;
             if (rb != null) rb.simulated = false;
 
             GameEvents.TriggerAsteroidDestroyed(transform.position, tier.ToString());

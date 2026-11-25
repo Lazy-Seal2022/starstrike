@@ -20,6 +20,9 @@ namespace StarStrike.Gameplay
         public bool IsEnemy => isEnemy;
 
         private Rigidbody2D rb;
+        private CircleCollider2D cachedCol;
+        private SpriteRenderer cachedSr;
+        private static CombatConfig sharedCombatConfig;
 
         private void Awake()
         {
@@ -28,24 +31,33 @@ namespace StarStrike.Gameplay
 
         public void SetupPhysics()
         {
-            if (combatConfig == null) combatConfig = Resources.Load<CombatConfig>("Data/CombatConfig");
-            if (combatConfig == null) combatConfig = ScriptableObject.CreateInstance<CombatConfig>();
+            if (combatConfig == null)
+            {
+                if (sharedCombatConfig == null)
+                {
+                    sharedCombatConfig = Resources.Load<CombatConfig>("Data/CombatConfig");
+                    if (sharedCombatConfig == null) sharedCombatConfig = ScriptableObject.CreateInstance<CombatConfig>();
+                }
+                combatConfig = sharedCombatConfig;
+            }
 
             lifetime = combatConfig.projectileLifetime;
 
-            rb = GetComponent<Rigidbody2D>();
+            if (rb == null) rb = GetComponent<Rigidbody2D>();
             if (rb != null)
             {
                 rb.gravityScale = 0f;
                 rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
             }
 
-            CircleCollider2D col = GetComponent<CircleCollider2D>();
-            if (col != null)
+            if (cachedCol == null) cachedCol = GetComponent<CircleCollider2D>();
+            if (cachedCol != null)
             {
-                col.isTrigger = true;
-                col.radius = combatConfig.laserColliderRadius;
+                cachedCol.isTrigger = true;
+                cachedCol.radius = combatConfig.laserColliderRadius;
             }
+
+            if (cachedSr == null) cachedSr = GetComponent<SpriteRenderer>();
         }
 
         public void Initialize(float dmg, float spd, bool enemy)
@@ -61,20 +73,23 @@ namespace StarStrike.Gameplay
                 SetupPhysics();
             }
 
-            SpriteRenderer sr = GetComponent<SpriteRenderer>();
-            if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
-            if (sr.sprite == null)
+            if (cachedSr == null)
+            {
+                cachedSr = GetComponent<SpriteRenderer>();
+                if (cachedSr == null) cachedSr = gameObject.AddComponent<SpriteRenderer>();
+            }
+            if (cachedSr.sprite == null)
             {
                 if (combatConfig != null)
                 {
-                    sr.sprite = isEnemy ? combatConfig.enemyLaserSprite : combatConfig.playerLaserSprite;
+                    cachedSr.sprite = isEnemy ? combatConfig.enemyLaserSprite : combatConfig.playerLaserSprite;
                 }
-                if (sr.sprite == null)
+                if (cachedSr.sprite == null)
                 {
-                    sr.sprite = ProceduralSpriteHelper.GetLaserSprite(isEnemy);
+                    cachedSr.sprite = ProceduralSpriteHelper.GetLaserSprite(isEnemy);
                 }
             }
-            sr.sortingOrder = 5;
+            cachedSr.sortingOrder = 5;
 
             if (rb != null)
             {

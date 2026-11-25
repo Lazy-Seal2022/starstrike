@@ -74,6 +74,14 @@ namespace StarStrike.UI
             if (drawerRt == null || themeConfig == null) return;
 
             Vector2 targetPos = IsOpen ? openPosition : closedPosition;
+            if ((drawerRt.anchoredPosition - targetPos).sqrMagnitude <= 0.01f)
+            {
+                if (drawerRt.anchoredPosition != targetPos)
+                {
+                    drawerRt.anchoredPosition = targetPos;
+                }
+                return;
+            }
             drawerRt.anchoredPosition = Vector2.Lerp(drawerRt.anchoredPosition, targetPos, Time.deltaTime * themeConfig.drawerSlideSpeed);
         }
 

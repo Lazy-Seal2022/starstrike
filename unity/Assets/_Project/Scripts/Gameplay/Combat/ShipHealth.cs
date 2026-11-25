@@ -67,6 +67,14 @@ namespace StarStrike.Gameplay
             }
         }
 
+        private SpriteRenderer cachedSr;
+
+        private SpriteRenderer GetCachedSpriteRenderer()
+        {
+            if (cachedSr == null) cachedSr = GetComponent<SpriteRenderer>();
+            return cachedSr;
+        }
+
         private void Start()
         {
             ResetMeters();
@@ -99,18 +107,19 @@ namespace StarStrike.Gameplay
 
         public void RegenerateMeters(float dt)
         {
-            bool changed = false;
+            bool shieldChanged = false;
+            bool energyChanged = false;
 
             if (currentShield < maxShield)
             {
                 currentShield = Mathf.Min(maxShield, currentShield + shieldRegen * dt);
-                changed = true;
+                shieldChanged = true;
             }
 
             if (currentEnergy < maxEnergy)
             {
                 currentEnergy = Mathf.Min(maxEnergy, currentEnergy + energyRegen * dt);
-                changed = true;
+                energyChanged = true;
             }
 
             if (isEnergyLockedOut)
@@ -119,14 +128,12 @@ namespace StarStrike.Gameplay
                 if (currentEnergy >= threshold)
                 {
                     TriggerEnergyLockout(false);
-                    changed = true;
+                    energyChanged = true;
                 }
             }
 
-            if (changed)
-            {
-                NotifyChanges();
-            }
+            if (shieldChanged) NotifyShieldChanged();
+            if (energyChanged) NotifyEnergyChanged();
         }
 
         public void TakeDamage(float amount, Vector2 hitPoint)
@@ -165,7 +172,7 @@ namespace StarStrike.Gameplay
                 // Direct Hull Hit (player ship does not flash red on hull hit)
                 if (!IsPlayerShip && flashRedOnHullHit)
                 {
-                    var sr = GetComponent<SpriteRenderer>();
+                    var sr = GetCachedSpriteRenderer();
                     if (sr != null && StarStrike.Gameplay.FX.FXService.Instance != null)
                     {
                         StarStrike.Gameplay.FX.FXService.Instance.FlashSprite(sr, new Color(1f, 0.35f, 0.35f, 1f));
@@ -194,7 +201,7 @@ namespace StarStrike.Gameplay
         {
             if (amount <= 0f || currentHull >= maxHull) return;
             currentHull = Mathf.Min(maxHull, currentHull + amount);
-            NotifyChanges();
+            NotifyHullChanged();
         }
 
         public float GetEnergyRecoveryThreshold()
@@ -241,7 +248,7 @@ namespace StarStrike.Gameplay
                 if (locked)
                 {
                     AudioService.Instance?.PlaySound("power_down", 0.85f);
-                    var sr = GetComponent<SpriteRenderer>();
+                    var sr = GetCachedSpriteRenderer();
                     if (sr != null && StarStrike.Gameplay.FX.FXService.Instance != null)
                     {
                         StarStrike.Gameplay.FX.FXService.Instance.FlashSprite(sr, new Color(1f, 0.45f, 0.1f, 1f));
@@ -250,7 +257,7 @@ namespace StarStrike.Gameplay
                 else
                 {
                     AudioService.Instance?.PlaySound("power_up", 0.85f);
-                    var sr = GetComponent<SpriteRenderer>();
+                    var sr = GetCachedSpriteRenderer();
                     if (sr != null && StarStrike.Gameplay.FX.FXService.Instance != null)
                     {
                         StarStrike.Gameplay.FX.FXService.Instance.FlashSprite(sr, new Color(0.2f, 0.85f, 1f, 1f));
@@ -282,7 +289,7 @@ namespace StarStrike.Gameplay
                     currentEnergy = 0f;
                     TriggerEnergyLockout(true);
                 }
-                NotifyChanges();
+                NotifyEnergyChanged();
                 return true;
             }
 
@@ -293,7 +300,7 @@ namespace StarStrike.Gameplay
                 currentEnergy = 0f;
                 TriggerCapacitorOverdrawn();
                 TriggerEnergyLockout(true);
-                NotifyChanges();
+                NotifyEnergyChanged();
                 return true;
             }
 
@@ -301,7 +308,7 @@ namespace StarStrike.Gameplay
             // Attempted to draw energy with zero/insufficient energy without overdraw -> trip circuit breaker into lockout
             currentEnergy = 0f;
             TriggerEnergyLockout(true);
-            NotifyChanges();
+            NotifyEnergyChanged();
             return false;
         }
 
@@ -314,18 +321,29 @@ namespace StarStrike.Gameplay
             }
         }
 
-        private void NotifyChanges()
+        private void NotifyShieldChanged()
         {
             OnShieldChanged?.Invoke(currentShield, maxShield);
-            OnHullChanged?.Invoke(currentHull, maxHull);
-            OnEnergyChanged?.Invoke(currentEnergy, maxEnergy);
+            if (isPlayer) GameEvents.TriggerShieldChanged(currentShield, maxShield);
+        }
 
-            if (isPlayer)
-            {
-                GameEvents.TriggerShieldChanged(currentShield, maxShield);
-                GameEvents.TriggerHullChanged(currentHull, maxHull);
-                GameEvents.TriggerEnergyChanged(currentEnergy, maxEnergy);
-            }
+        private void NotifyHullChanged()
+        {
+            OnHullChanged?.Invoke(currentHull, maxHull);
+            if (isPlayer) GameEvents.TriggerHullChanged(currentHull, maxHull);
+        }
+
+        private void NotifyEnergyChanged()
+        {
+            OnEnergyChanged?.Invoke(currentEnergy, maxEnergy);
+            if (isPlayer) GameEvents.TriggerEnergyChanged(currentEnergy, maxEnergy);
+        }
+
+        private void NotifyChanges()
+        {
+            NotifyShieldChanged();
+            NotifyHullChanged();
+            NotifyEnergyChanged();
         }
     }
 }

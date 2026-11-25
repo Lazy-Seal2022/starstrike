@@ -57,6 +57,16 @@ namespace StarStrike.Gameplay
         private float virtualTurn;
         private bool hasVirtualAim;
         private Vector2 virtualAimDirection;
+        private Camera cachedMainCamera;
+
+        private Camera GetMainCamera()
+        {
+            if (cachedMainCamera == null || !cachedMainCamera.isActiveAndEnabled)
+            {
+                cachedMainCamera = Camera.main;
+            }
+            return cachedMainCamera;
+        }
 
         private void Awake()
         {
@@ -453,15 +463,19 @@ namespace StarStrike.Gameplay
                     inputAimDirection = pad.rightStick.ReadValue().normalized;
                     hasDirectAim = true;
                 }
-                else if (mouse != null && Camera.main != null)
+                else if (mouse != null)
                 {
-                    Vector2 mousePos = mouse.position.ReadValue();
-                    float camDistance = Mathf.Abs(Camera.main.transform.position.z);
-                    Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, camDistance));
-                    Vector2 diff = (Vector2)mouseWorld - (Vector2)transform.position;
-                    if (diff.sqrMagnitude > 0.05f)
+                    Camera mainCam = GetMainCamera();
+                    if (mainCam != null)
                     {
-                        inputAimDirection = diff.normalized;
+                        Vector2 mousePos = mouse.position.ReadValue();
+                        float camDistance = Mathf.Abs(mainCam.transform.position.z);
+                        Vector3 mouseWorld = mainCam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, camDistance));
+                        Vector2 diff = (Vector2)mouseWorld - (Vector2)transform.position;
+                        if (diff.sqrMagnitude > 0.05f)
+                        {
+                            inputAimDirection = diff.normalized;
+                        }
                     }
                     hasDirectAim = false;
                 }
