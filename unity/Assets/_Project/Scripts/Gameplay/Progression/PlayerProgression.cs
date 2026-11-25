@@ -468,7 +468,7 @@ namespace StarStrike.Gameplay
                 if (agl <= 0f) agl = 6f;
                 movement.agility = agl + (bonusAgility > 0f ? bonusAgility / 30f : 0f);
 
-                bool isIndependentAimShip = currentShip != null && (currentShip.canAimIndependently || currentShip.id == "battleship" || currentShip.id == "cruiser" || currentShip.id == "carrier" || currentShip.id == "vanguard" || currentShip.shipClass == ShipClass.Battleship || currentShip.shipClass == ShipClass.Cruiser || currentShip.shipClass == ShipClass.Carrier);
+                bool isIndependentAimShip = ShipWeapon.CanShipAimIndependently(currentShip);
                 movement.steerTowardsAim = !isIndependentAimShip;
             }
 

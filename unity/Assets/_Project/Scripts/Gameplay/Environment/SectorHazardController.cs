@@ -103,6 +103,12 @@ namespace StarStrike.Gameplay
             }
         }
 
+        private static readonly RaycastHit2D[] hazardRayBuffer = new RaycastHit2D[16];
+        private static readonly ContactFilter2D hazardRayFilter = new ContactFilter2D { useTriggers = true, useLayerMask = false };
+        private WaitForSeconds cachedIonSurgeWait;
+        private float cachedIonSurgeDuration = -1f;
+        private static readonly WaitForSeconds SolarFlareSweepWait = new WaitForSeconds(0.4f);
+
         private void Update()
         {
             if (GameManager.Instance != null && GameManager.Instance.CurrentState != GameState.Playing)
@@ -166,7 +172,12 @@ namespace StarStrike.Gameplay
             AudioService.Instance?.PlaySound("click", 0.6f);
             FXService.Instance?.CameraShake(0.12f, 0.2f);
 
-            yield return new WaitForSeconds(ionSurgeDuration);
+            if (cachedIonSurgeWait == null || !Mathf.Approximately(cachedIonSurgeDuration, ionSurgeDuration))
+            {
+                cachedIonSurgeDuration = ionSurgeDuration;
+                cachedIonSurgeWait = new WaitForSeconds(ionSurgeDuration);
+            }
+            yield return cachedIonSurgeWait;
 
             // Restore normal flight damping & radar
             if (cachedPlayerMovement != null)
@@ -210,26 +221,12 @@ namespace StarStrike.Gameplay
             FXService.Instance?.CameraShake(0.35f, 0.45f);
             AudioService.Instance?.PlaySound("explosion", 1.1f);
 
-            yield return new WaitForSeconds(0.4f);
+            yield return SolarFlareSweepWait;
 
             // Check if player is safely sheltered behind an asteroid
             if (playerTransform != null && cachedPlayerHealth != null)
             {
-                Vector2 playerPos = playerTransform.position;
-                Vector2 raySource = -flareDirection.normalized;
-
-                // Raycast from player outward toward the incoming flare origin
-                RaycastHit2D[] hits = Physics2D.RaycastAll(playerPos, raySource, 30f);
-                bool isSheltered = false;
-
-                for (int i = 0; i < hits.Length; i++)
-                {
-                    if (hits[i].collider != null && hits[i].collider.GetComponent<Asteroid>() != null)
-                    {
-                        isSheltered = true;
-                        break;
-                    }
-                }
+                bool isSheltered = IsPositionSheltered(playerTransform.position);
 
                 if (isSheltered)
                 {
@@ -248,10 +245,11 @@ namespace StarStrike.Gameplay
         public bool IsPositionSheltered(Vector2 position)
         {
             Vector2 raySource = -flareDirection.normalized;
-            RaycastHit2D[] hits = Physics2D.RaycastAll(position, raySource, 30f);
-            for (int i = 0; i < hits.Length; i++)
+            int hitCount = Physics2D.Raycast(position, raySource, hazardRayFilter, hazardRayBuffer, 30f);
+            for (int i = 0; i < hitCount; i++)
             {
-                if (hits[i].collider != null && hits[i].collider.GetComponent<Asteroid>() != null)
+                var col = hazardRayBuffer[i].collider;
+                if (col != null && col.GetComponent<Asteroid>() != null)
                 {
                     return true;
                 }

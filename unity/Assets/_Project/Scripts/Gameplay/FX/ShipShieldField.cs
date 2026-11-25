@@ -63,6 +63,7 @@ namespace StarStrike.Gameplay.FX
         private const int MAX_CONTACT_ARCS = 4;
         private ContactArcSlot[] contactArcs;
         private int currentArcIndex = 0;
+        private bool hasActiveContactArc = false;
 
         private ShipHealth health;
         private GameObject domeObject;
@@ -649,6 +650,7 @@ namespace StarStrike.Gameplay.FX
                     targetLine.enabled = true;
 
                     contactArcs[slot].alpha = 0.95f;
+                    hasActiveContactArc = true;
                 }
             }
 
@@ -682,12 +684,10 @@ namespace StarStrike.Gameplay.FX
 
         private void Update()
         {
-            // Battlevoid: Harbinger style: Shield is invisible when idle.
-            // On hit, the shield only flares locally at the contact area and quickly fades out.
-            // Other parts of the shield perimeter remain completely invisible.
-            if (contactArcs != null)
+            if (hasActiveContactArc && contactArcs != null)
             {
                 float maxAlpha = 0f;
+                bool anyActive = false;
                 for (int i = 0; i < contactArcs.Length; i++)
                 {
                     if (contactArcs[i].alpha > 0f)
@@ -705,9 +705,11 @@ namespace StarStrike.Gameplay.FX
                             }
                         }
                     }
+                    if (contactArcs[i].alpha > 0f) anyActive = true;
                     if (contactArcs[i].alpha > maxAlpha) maxAlpha = contactArcs[i].alpha;
                 }
                 currentDomeAlpha = maxAlpha;
+                hasActiveContactArc = anyActive;
             }
             else if (currentDomeAlpha > 0f)
             {

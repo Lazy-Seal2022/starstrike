@@ -62,16 +62,9 @@ namespace StarStrike.Gameplay
                 if (cachedProgression == null) cachedProgression = GetComponent<PlayerProgression>();
                 if (cachedProgression != null && cachedProgression.currentShip != null)
                 {
-                    return cachedProgression.currentShip.canAimIndependently ||
-                           cachedProgression.currentShip.id == "battleship" ||
-                           cachedProgression.currentShip.id == "cruiser" ||
-                           cachedProgression.currentShip.id == "carrier" ||
-                           cachedProgression.currentShip.id == "vanguard" ||
-                           cachedProgression.currentShip.shipClass == ShipClass.Battleship ||
-                           cachedProgression.currentShip.shipClass == ShipClass.Cruiser ||
-                           cachedProgression.currentShip.shipClass == ShipClass.Carrier;
+                    return ShipWeapon.CanShipAimIndependently(cachedProgression.currentShip);
                 }
-                return currentShipId == "battleship" || currentShipId == "cruiser" || currentShipId == "carrier" || currentShipId == "vanguard";
+                return ShipWeapon.CanShipIdAimIndependently(currentShipId);
             }
         }
 

@@ -30,19 +30,11 @@ namespace StarStrike.Gameplay
             get
             {
                 if (cachedProgression == null) cachedProgression = GetComponent<PlayerProgression>();
-                if (cachedProgression != null && cachedProgression.currentShip != null)
-                {
-                    if (cachedProgression.currentShip.canAimIndependently) return true;
-                    if (cachedProgression.currentShip.id == "battleship" || cachedProgression.currentShip.id == "cruiser" || cachedProgression.currentShip.id == "carrier" || cachedProgression.currentShip.id == "vanguard") return true;
-                    if (cachedProgression.currentShip.shipClass == ShipClass.Battleship || cachedProgression.currentShip.shipClass == ShipClass.Cruiser || cachedProgression.currentShip.shipClass == ShipClass.Carrier) return true;
-                }
+                if (ShipWeapon.CanShipAimIndependently(cachedProgression)) return true;
+
                 if (cachedWeaponCtrl == null) cachedWeaponCtrl = GetComponent<ShipWeaponController>();
-                if (cachedWeaponCtrl != null)
-                {
-                    if (cachedWeaponCtrl.CanAimIndependently) return true;
-                    if (cachedWeaponCtrl.currentShipId == "battleship" || cachedWeaponCtrl.currentShipId == "cruiser" || cachedWeaponCtrl.currentShipId == "carrier" || cachedWeaponCtrl.currentShipId == "vanguard") return true;
-                }
-                return false;
+                return cachedWeaponCtrl != null &&
+                       (cachedWeaponCtrl.CanAimIndependently || ShipWeapon.CanShipIdAimIndependently(cachedWeaponCtrl.currentShipId));
             }
         }
 

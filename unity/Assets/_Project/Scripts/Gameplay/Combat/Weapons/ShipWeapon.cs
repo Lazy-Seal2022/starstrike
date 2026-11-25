@@ -58,16 +58,24 @@ namespace StarStrike.Gameplay
         private readonly Vector2[] worldBuf3 = new Vector2[3];
         private Vector2[] worldBufDynamic;
 
-        public static bool CanShipAimIndependently(PlayerProgression prog)
+        public static bool CanShipIdAimIndependently(string shipId)
         {
-            if (prog == null || prog.currentShip == null) return false;
-            var ship = prog.currentShip;
+            return shipId == "cruiser" || shipId == "battleship" || shipId == "carrier" || shipId == "vanguard";
+        }
+
+        public static bool CanShipAimIndependently(ShipDefinition ship)
+        {
+            if (ship == null) return false;
             return ship.canAimIndependently ||
-                   ship.id == "cruiser" || ship.id == "battleship" ||
-                   ship.id == "carrier" || ship.id == "vanguard" ||
+                   CanShipIdAimIndependently(ship.id) ||
                    ship.shipClass == ShipClass.Carrier ||
                    ship.shipClass == ShipClass.Cruiser ||
                    ship.shipClass == ShipClass.Battleship;
+        }
+
+        public static bool CanShipAimIndependently(PlayerProgression prog)
+        {
+            return prog != null && CanShipAimIndependently(prog.currentShip);
         }
 
         public static Vector2 ResolveIndependentAimDirection(

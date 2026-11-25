@@ -28,7 +28,7 @@ MonoBehaviour:
   maxUpgradeLevel: 6
   evolvesTo: []
   baseStats:
-    shieldCapacity: 280
+    shieldCapacity: 320
     shieldRegen: 18
     hullCapacity: 400
     energyCapacity: 220

@@ -124,106 +124,40 @@ namespace StarStrike.Bootstrap
             return canvas;
         }
 
+        private static void EnsureFullScreenUI<T>(Canvas canvas, string name, bool existingSingletonNull) where T : Component
+        {
+            if (!existingSingletonNull || Object.FindAnyObjectByType<T>() != null) return;
+
+            var go = new GameObject(name, typeof(RectTransform));
+            go.transform.SetParent(canvas.transform, false);
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            go.AddComponent<T>();
+        }
+
         private static void SetupMainMenuSceneUI()
         {
             Canvas canvas = EnsureCanvas();
-
-            // MainMenuUI
-            if (MainMenuUI.Instance == null && Object.FindAnyObjectByType<MainMenuUI>() == null)
-            {
-                var menuGO = new GameObject("MainMenuUI", typeof(RectTransform));
-                menuGO.transform.SetParent(canvas.transform, false);
-                var rt = menuGO.GetComponent<RectTransform>();
-                rt.anchorMin = Vector2.zero;
-                rt.anchorMax = Vector2.one;
-                rt.offsetMin = Vector2.zero;
-                rt.offsetMax = Vector2.zero;
-                menuGO.AddComponent<MainMenuUI>();
-            }
-
-            // SettingsUI (Overlay)
-            if (SettingsUI.Instance == null && Object.FindAnyObjectByType<SettingsUI>() == null)
-            {
-                var settingsGO = new GameObject("SettingsUI", typeof(RectTransform));
-                settingsGO.transform.SetParent(canvas.transform, false);
-                var rt = settingsGO.GetComponent<RectTransform>();
-                rt.anchorMin = Vector2.zero;
-                rt.anchorMax = Vector2.one;
-                rt.offsetMin = Vector2.zero;
-                rt.offsetMax = Vector2.zero;
-                settingsGO.AddComponent<SettingsUI>();
-            }
-
-            // NetworkLobbyUI (Overlay)
-            if (NetworkLobbyUI.Instance == null && Object.FindAnyObjectByType<NetworkLobbyUI>() == null)
-            {
-                var lobbyGO = new GameObject("NetworkLobbyUI", typeof(RectTransform));
-                lobbyGO.transform.SetParent(canvas.transform, false);
-                var rt = lobbyGO.GetComponent<RectTransform>();
-                rt.anchorMin = Vector2.zero;
-                rt.anchorMax = Vector2.one;
-                rt.offsetMin = Vector2.zero;
-                rt.offsetMax = Vector2.zero;
-                lobbyGO.AddComponent<NetworkLobbyUI>();
-            }
+            EnsureFullScreenUI<MainMenuUI>(canvas, "MainMenuUI", MainMenuUI.Instance == null);
+            EnsureFullScreenUI<SettingsUI>(canvas, "SettingsUI", SettingsUI.Instance == null);
+            EnsureFullScreenUI<NetworkLobbyUI>(canvas, "NetworkLobbyUI", NetworkLobbyUI.Instance == null);
         }
 
         private static void SetupShipSelectSceneUI()
         {
             Canvas canvas = EnsureCanvas();
-
-            if (ShipSelectUI.Instance == null && Object.FindAnyObjectByType<ShipSelectUI>() == null)
-            {
-                var shipSelectGO = new GameObject("ShipSelectUI", typeof(RectTransform));
-                shipSelectGO.transform.SetParent(canvas.transform, false);
-                var rt = shipSelectGO.GetComponent<RectTransform>();
-                rt.anchorMin = Vector2.zero;
-                rt.anchorMax = Vector2.one;
-                rt.offsetMin = Vector2.zero;
-                rt.offsetMax = Vector2.zero;
-                shipSelectGO.AddComponent<ShipSelectUI>();
-            }
-
-            if (SettingsUI.Instance == null && Object.FindAnyObjectByType<SettingsUI>() == null)
-            {
-                var settingsGO = new GameObject("SettingsUI", typeof(RectTransform));
-                settingsGO.transform.SetParent(canvas.transform, false);
-                var rt = settingsGO.GetComponent<RectTransform>();
-                rt.anchorMin = Vector2.zero;
-                rt.anchorMax = Vector2.one;
-                rt.offsetMin = Vector2.zero;
-                rt.offsetMax = Vector2.zero;
-                settingsGO.AddComponent<SettingsUI>();
-            }
+            EnsureFullScreenUI<ShipSelectUI>(canvas, "ShipSelectUI", ShipSelectUI.Instance == null);
+            EnsureFullScreenUI<SettingsUI>(canvas, "SettingsUI", SettingsUI.Instance == null);
         }
 
         private static void SetupEquipmentSelectSceneUI()
         {
             Canvas canvas = EnsureCanvas();
-
-            if (EquipmentSelectUI.Instance == null && Object.FindAnyObjectByType<EquipmentSelectUI>() == null)
-            {
-                var equipSelectGO = new GameObject("EquipmentSelectUI", typeof(RectTransform));
-                equipSelectGO.transform.SetParent(canvas.transform, false);
-                var rt = equipSelectGO.GetComponent<RectTransform>();
-                rt.anchorMin = Vector2.zero;
-                rt.anchorMax = Vector2.one;
-                rt.offsetMin = Vector2.zero;
-                rt.offsetMax = Vector2.zero;
-                equipSelectGO.AddComponent<EquipmentSelectUI>();
-            }
-
-            if (SettingsUI.Instance == null && Object.FindAnyObjectByType<SettingsUI>() == null)
-            {
-                var settingsGO = new GameObject("SettingsUI", typeof(RectTransform));
-                settingsGO.transform.SetParent(canvas.transform, false);
-                var rt = settingsGO.GetComponent<RectTransform>();
-                rt.anchorMin = Vector2.zero;
-                rt.anchorMax = Vector2.one;
-                rt.offsetMin = Vector2.zero;
-                rt.offsetMax = Vector2.zero;
-                settingsGO.AddComponent<SettingsUI>();
-            }
+            EnsureFullScreenUI<EquipmentSelectUI>(canvas, "EquipmentSelectUI", EquipmentSelectUI.Instance == null);
+            EnsureFullScreenUI<SettingsUI>(canvas, "SettingsUI", SettingsUI.Instance == null);
         }
 
         private static void SetupGameplaySceneUI()
@@ -244,45 +178,9 @@ namespace StarStrike.Bootstrap
             }
 
             Canvas canvas = EnsureCanvas();
-
-            // CanvasHUD (Combat HUD)
-            if (CanvasHUD.Instance == null && Object.FindAnyObjectByType<CanvasHUD>() == null)
-            {
-                var hudGO = new GameObject("CanvasHUD", typeof(RectTransform));
-                hudGO.transform.SetParent(canvas.transform, false);
-                var rt = hudGO.GetComponent<RectTransform>();
-                rt.anchorMin = Vector2.zero;
-                rt.anchorMax = Vector2.one;
-                rt.offsetMin = Vector2.zero;
-                rt.offsetMax = Vector2.zero;
-                hudGO.AddComponent<CanvasHUD>();
-            }
-
-            // SettingsUI (Pause Menu)
-            if (SettingsUI.Instance == null && Object.FindAnyObjectByType<SettingsUI>() == null)
-            {
-                var settingsGO = new GameObject("SettingsUI", typeof(RectTransform));
-                settingsGO.transform.SetParent(canvas.transform, false);
-                var rt = settingsGO.GetComponent<RectTransform>();
-                rt.anchorMin = Vector2.zero;
-                rt.anchorMax = Vector2.one;
-                rt.offsetMin = Vector2.zero;
-                rt.offsetMax = Vector2.zero;
-                settingsGO.AddComponent<SettingsUI>();
-            }
-
-            // NetworkScoreboardUI
-            if (NetworkScoreboardUI.Instance == null && Object.FindAnyObjectByType<NetworkScoreboardUI>() == null)
-            {
-                var scoreboardGO = new GameObject("NetworkScoreboardUI", typeof(RectTransform));
-                scoreboardGO.transform.SetParent(canvas.transform, false);
-                var rt = scoreboardGO.GetComponent<RectTransform>();
-                rt.anchorMin = Vector2.zero;
-                rt.anchorMax = Vector2.one;
-                rt.offsetMin = Vector2.zero;
-                rt.offsetMax = Vector2.zero;
-                scoreboardGO.AddComponent<NetworkScoreboardUI>();
-            }
+            EnsureFullScreenUI<CanvasHUD>(canvas, "CanvasHUD", CanvasHUD.Instance == null);
+            EnsureFullScreenUI<SettingsUI>(canvas, "SettingsUI", SettingsUI.Instance == null);
+            EnsureFullScreenUI<NetworkScoreboardUI>(canvas, "NetworkScoreboardUI", NetworkScoreboardUI.Instance == null);
         }
     }
 }

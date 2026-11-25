@@ -52,7 +52,7 @@ namespace StarStrike.Tests.EditMode
             Assert.AreEqual(6, frigate.equipmentSlots.Length, "Frigate should have 6 equipment slots");
             Assert.AreEqual(7, destroyer.equipmentSlots.Length, "Destroyer should have 7 equipment slots");
             Assert.AreEqual(9, cruiser.equipmentSlots.Length, "Cruiser should have 9 equipment slots");
-            Assert.AreEqual(8, carrier.equipmentSlots.Length, "Carrier should have 8 equipment slots");
+            Assert.AreEqual(9, carrier.equipmentSlots.Length, "Carrier should have 9 equipment slots");
             Assert.AreEqual(11, battleship.equipmentSlots.Length, "Battleship should have 11 equipment slots");
 
             // Verify Battleship slot composition

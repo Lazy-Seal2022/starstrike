@@ -78,7 +78,7 @@ namespace StarStrike.Core
             def.hullMass = 6f;
             def.baseStats = new StatValues
             {
-                shieldCapacity = 280f,
+                shieldCapacity = 320f,
                 shieldRegen = 18f,
                 hullCapacity = 400f,
                 energyCapacity = 220f,

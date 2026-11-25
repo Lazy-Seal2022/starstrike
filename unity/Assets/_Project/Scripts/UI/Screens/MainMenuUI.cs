@@ -56,6 +56,17 @@ namespace StarStrike.UI
             RefreshData();
         }
 
+        private void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+        }
+
+        public void EnsureUIBuilt()
+        {
+            if (Instance == null) Instance = this;
+            if (menuContainer == null) BuildUI();
+        }
+
         private void OnDisable()
         {
             if (ScreenManager.Instance != null)
@@ -85,6 +96,7 @@ namespace StarStrike.UI
 
         public void SetMenuVisible(bool visible)
         {
+            EnsureUIBuilt();
             if (menuContainer != null)
             {
                 menuContainer.SetActive(visible);

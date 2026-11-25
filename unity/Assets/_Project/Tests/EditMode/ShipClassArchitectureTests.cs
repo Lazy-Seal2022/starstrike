@@ -110,38 +110,38 @@ namespace StarStrike.Tests.EditMode
         [Test]
         public void ModularClassBuilders_ProperlyConfigureDedicatedShipVariants()
         {
-            var scout = new ShipDefinition();
+            var scout = ScriptableObject.CreateInstance<ShipDefinition>();
             FighterClass.ConfigureScout(scout);
             Assert.AreEqual("scout", scout.id);
             Assert.AreEqual(ShipClass.Fighter, scout.shipClass);
             Assert.AreEqual("Delta Scout", scout.shipName);
 
-            var fighter = new ShipDefinition();
+            var fighter = ScriptableObject.CreateInstance<ShipDefinition>();
             FighterClass.ConfigureFighter(fighter);
             Assert.AreEqual("fighter", fighter.id);
             Assert.AreEqual(ShipClass.Fighter, fighter.shipClass);
 
-            var frigate = new ShipDefinition();
+            var frigate = ScriptableObject.CreateInstance<ShipDefinition>();
             FrigateClass.ConfigureFrigate(frigate);
             Assert.AreEqual("frigate", frigate.id);
             Assert.AreEqual(ShipClass.Frigate, frigate.shipClass);
 
-            var destroyer = new ShipDefinition();
+            var destroyer = ScriptableObject.CreateInstance<ShipDefinition>();
             DestroyerClass.ConfigureDestroyer(destroyer);
             Assert.AreEqual("destroyer", destroyer.id);
             Assert.AreEqual(ShipClass.Destroyer, destroyer.shipClass);
 
-            var cruiser = new ShipDefinition();
+            var cruiser = ScriptableObject.CreateInstance<ShipDefinition>();
             CruiserClass.ConfigureCruiser(cruiser);
             Assert.AreEqual("cruiser", cruiser.id);
             Assert.AreEqual(ShipClass.Cruiser, cruiser.shipClass);
 
-            var carrier = new ShipDefinition();
+            var carrier = ScriptableObject.CreateInstance<ShipDefinition>();
             CarrierClass.ConfigureCarrier(carrier);
             Assert.AreEqual("carrier", carrier.id);
             Assert.AreEqual(ShipClass.Carrier, carrier.shipClass);
 
-            var battleship = new ShipDefinition();
+            var battleship = ScriptableObject.CreateInstance<ShipDefinition>();
             BattleshipClass.ConfigureBattleship(battleship);
             Assert.AreEqual("battleship", battleship.id);
             Assert.AreEqual(ShipClass.Battleship, battleship.shipClass);

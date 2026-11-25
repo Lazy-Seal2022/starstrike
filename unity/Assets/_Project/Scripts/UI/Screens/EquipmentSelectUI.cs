@@ -720,12 +720,16 @@ namespace StarStrike.UI
 
         public void SelectNextSocket()
         {
-            SelectNextSlot();
+            int count = ActiveSocketCount;
+            if (count <= 1) return;
+            SelectSocket((activeSocketIndex + 1) % count);
         }
 
         public void SelectPreviousSocket()
         {
-            SelectPreviousSlot();
+            int count = ActiveSocketCount;
+            if (count <= 1) return;
+            SelectSocket((activeSocketIndex - 1 + count) % count);
         }
 
         public void SelectNextSlot()

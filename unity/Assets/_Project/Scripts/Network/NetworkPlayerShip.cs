@@ -62,6 +62,17 @@ namespace StarStrike.Network
         private SpriteRenderer sr;
         private float lastFireTime = -999f;
         private StarStrike.Gameplay.FX.ShipThrusterEffect thrusterEffect;
+        private Camera cachedMainCamera;
+        private static readonly WaitForSeconds RespawnWait = new WaitForSeconds(3.0f);
+
+        private Camera GetMainCamera()
+        {
+            if (cachedMainCamera == null || !cachedMainCamera.isActiveAndEnabled)
+            {
+                cachedMainCamera = Camera.main;
+            }
+            return cachedMainCamera;
+        }
 
         private void Awake()
         {
@@ -108,11 +119,12 @@ namespace StarStrike.Network
             if (IsOwner)
             {
                 // Register with camera in arena
-                if (Camera.main != null)
+                Camera mainCam = GetMainCamera();
+                if (mainCam != null)
                 {
-                    Camera.main.transform.position = new Vector3(transform.position.x, transform.position.y, -10f);
-                    var camCtrl = Camera.main.GetComponent<StarStrike.Gameplay.CameraController>();
-                    if (camCtrl == null) camCtrl = Camera.main.gameObject.AddComponent<StarStrike.Gameplay.CameraController>();
+                    mainCam.transform.position = new Vector3(transform.position.x, transform.position.y, -10f);
+                    var camCtrl = mainCam.GetComponent<StarStrike.Gameplay.CameraController>();
+                    if (camCtrl == null) camCtrl = mainCam.gameObject.AddComponent<StarStrike.Gameplay.CameraController>();
                     camCtrl.SetTarget(transform);
                 }
             }
@@ -240,10 +252,14 @@ namespace StarStrike.Network
             NetworkRotation.Value = transform.eulerAngles.z;
 
             // Camera follow for local player fallback if no CameraController
-            if (StarStrike.Gameplay.CameraController.Instance == null && Camera.main != null)
+            if (StarStrike.Gameplay.CameraController.Instance == null)
             {
-                Vector3 camPos = new Vector3(transform.position.x, transform.position.y, -10f);
-                Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, camPos, 10f * Time.deltaTime);
+                Camera mainCam = GetMainCamera();
+                if (mainCam != null)
+                {
+                    Vector3 camPos = new Vector3(transform.position.x, transform.position.y, -10f);
+                    mainCam.transform.position = Vector3.Lerp(mainCam.transform.position, camPos, 10f * Time.deltaTime);
+                }
             }
 
             // Firing
@@ -305,7 +321,7 @@ namespace StarStrike.Network
 
         private IEnumerator RespawnRoutine()
         {
-            yield return new WaitForSeconds(3.0f);
+            yield return RespawnWait;
 
             Vector2 spawnPos = Vector2.zero;
             if (NetworkMatchManager.Instance != null)

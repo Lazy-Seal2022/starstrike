@@ -9,7 +9,6 @@ namespace StarStrike.Gameplay
     /// Event-driven, data-driven wave manager that coordinates enemy escalation,
     /// dynamic hazard density, and boss summoning using zero-allocation object pools.
     /// </summary>
-    [ExecuteAlways]
     public class WaveManager : MonoBehaviour
     {
         public static WaveManager Instance { get; private set; }
@@ -41,6 +40,7 @@ namespace StarStrike.Gameplay
         private readonly Dictionary<string, float> spawnTimers = new Dictionary<string, float>();
         private readonly List<GameObject> activeWaveEnemies = new List<GameObject>();
         private bool bossSummonedForCurrentWave = false;
+        private int lastBroadcastRemainingSec = -1;
 
         private void Awake()
         {
@@ -125,6 +125,7 @@ namespace StarStrike.Gameplay
             isWaveActive = true;
             isIntermission = false;
             waveTimer = 0f;
+            lastBroadcastRemainingSec = -1;
             bossSummonedForCurrentWave = false;
             spawnTimers.Clear();
             activeWaveEnemies.Clear();
@@ -165,7 +166,13 @@ namespace StarStrike.Gameplay
             if (wave == null) return;
 
             waveTimer += Time.deltaTime;
-            GameEvents.TriggerWaveTimeUpdated(WaveTimeRemaining);
+            float remaining = WaveTimeRemaining;
+            int remSec = Mathf.CeilToInt(remaining);
+            if (remSec != lastBroadcastRemainingSec)
+            {
+                lastBroadcastRemainingSec = remSec;
+                GameEvents.TriggerWaveTimeUpdated(remaining);
+            }
 
             // Process enemy spawn entries
             if (wave.enemySpawns != null)

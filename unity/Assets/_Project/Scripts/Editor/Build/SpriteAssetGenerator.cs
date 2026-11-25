@@ -89,6 +89,32 @@ namespace StarStrike.Editor
             Debug.Log($"[SpriteAssetGenerator] Successfully generated {loadedSpriteAssets.Count} sprites and compiled master atlas at {AtlasPath}");
         }
 
+        [MenuItem("StarStrike/Refresh Master Atlas (All Art Sprites)")]
+        public static void RefreshMasterAtlas()
+        {
+            EditorSettings.spritePackerMode = SpritePackerMode.SpriteAtlasV2;
+
+            string[] spriteGuids = AssetDatabase.FindAssets("t:Sprite", new[] { ArtDir });
+            var sprites = new List<UnityEngine.Object>(spriteGuids.Length);
+            foreach (string guid in spriteGuids)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                if (string.IsNullOrEmpty(assetPath) || assetPath.Contains("Ships_Imported")) continue;
+                var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
+                if (sprite != null)
+                {
+                    sprites.Add(sprite);
+                }
+            }
+
+            if (sprites.Count > 0)
+            {
+                CreateOrUpdateMasterAtlas(AtlasPath, sprites.ToArray());
+                AssetDatabase.SaveAssets();
+                Debug.Log($"[SpriteAssetGenerator] Refreshed master atlas at {AtlasPath} with {sprites.Count} sprites.");
+            }
+        }
+
         private static void ConfigureImporter(string assetPath)
         {
             var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
@@ -101,7 +127,7 @@ namespace StarStrike.Editor
                 importer.mipmapEnabled = false;
                 importer.alphaIsTransparency = true;
                 importer.isReadable = false;
-                importer.textureCompression = TextureImporterCompression.Compressed;
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
                 importer.SaveAndReimport();
             }
         }

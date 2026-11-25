@@ -7,6 +7,9 @@ namespace StarStrike.UI
     {
         private RectTransform rectTransform;
         private Rect lastSafeArea = new Rect(0, 0, 0, 0);
+        private int lastScreenWidth;
+        private int lastScreenHeight;
+        private float nextPollTime;
 
         void Awake()
         {
@@ -16,7 +19,11 @@ namespace StarStrike.UI
 
         void Update()
         {
-            if (Screen.safeArea != lastSafeArea)
+            bool resized = Screen.width != lastScreenWidth || Screen.height != lastScreenHeight;
+            if (!resized && Time.unscaledTime < nextPollTime) return;
+
+            nextPollTime = Time.unscaledTime + 0.25f;
+            if (resized || Screen.safeArea != lastSafeArea)
             {
                 ApplySafeArea();
             }
@@ -26,6 +33,8 @@ namespace StarStrike.UI
         {
             Rect safeArea = Screen.safeArea;
             lastSafeArea = safeArea;
+            lastScreenWidth = Screen.width;
+            lastScreenHeight = Screen.height;
 
             Vector2 anchorMin = safeArea.position;
             Vector2 anchorMax = safeArea.position + safeArea.size;
