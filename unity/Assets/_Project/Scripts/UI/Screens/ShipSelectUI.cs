@@ -830,36 +830,9 @@ namespace StarStrike.UI
         }
 
         private GameObject CreateText(Transform parent, string name, string text, int fontSize, FontStyle fontStyle, Color color, TextAnchor alignment, Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax, Font font = null)
-        {
-            FontStyles style = (fontStyle == FontStyle.Bold) ? FontStyles.Bold : FontStyles.Normal;
-            var tmp = UIHelper.CreateTextMeshPro(parent, name, text, fontSize, style, color, UIHelper.ConvertTextAnchor(alignment), anchorMin, anchorMax, offsetMin, offsetMax);
-            return tmp.gameObject;
-        }
+            => UIHelper.CreateText(parent, name, text, fontSize, fontStyle, color, alignment, anchorMin, anchorMax, offsetMin, offsetMax, font);
 
         private GameObject CreateButton(Transform parent, string name, string label, Vector2 anchorMin, Vector2 anchorMax, Vector2 pos, Vector2 size, Color bgColor, Font font, int fontSize = 16, bool isPrimary = false)
-        {
-            GameObject btnObj = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
-            btnObj.transform.SetParent(parent, false);
-            RectTransform rt = btnObj.GetComponent<RectTransform>();
-            rt.anchorMin = anchorMin;
-            rt.anchorMax = anchorMax;
-            rt.anchoredPosition = pos;
-            rt.sizeDelta = size;
-
-            Image img = btnObj.GetComponent<Image>();
-            img.sprite = CyberVectorTheme.GetButtonSprite();
-            img.type = Image.Type.Sliced;
-            img.color = Color.white;
-
-            Button btn = btnObj.GetComponent<Button>();
-            btn.onClick.AddListener(() =>
-            {
-                StarStrike.Gameplay.Audio.AudioService.Instance?.PlayUISound("click");
-            });
-            CyberVectorTheme.ApplyVectorButtonStyle(btn, bgColor, isPrimary);
-
-            CreateText(btnObj.transform, "Text", label, fontSize, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, font);
-            return btnObj;
-        }
+            => UIHelper.CreateButton(parent, name, label, anchorMin, anchorMax, pos, size, bgColor, font, fontSize, isPrimary);
     }
 }
