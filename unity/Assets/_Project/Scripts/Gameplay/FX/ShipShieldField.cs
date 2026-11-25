@@ -679,7 +679,7 @@ namespace StarStrike.Gameplay.FX
             }
 
             // 4. Subtle audio feedback
-            StarStrike.Gameplay.Audio.AudioService.Instance?.PlaySound("laser", 0.25f, 0.15f);
+            StarStrike.Gameplay.Audio.AudioService.Instance?.PlaySound("shield_hit", 0.25f, 0.15f);
         }
 
         private void Update()

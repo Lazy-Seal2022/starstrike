@@ -166,6 +166,9 @@ namespace StarStrike.Tests.EditMode
                 shipUI.SelectShipById("scout");
                 Assert.AreEqual("scout", shipUI.CurrentShipId);
 
+                shipUI.SelectShipById("vanguard");
+                Assert.AreEqual("carrier", shipUI.CurrentShipId);
+
                 shipUI.Show();
                 Assert.IsTrue(shipUI.IsVisible);
 

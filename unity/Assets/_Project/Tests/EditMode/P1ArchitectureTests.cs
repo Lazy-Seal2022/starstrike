@@ -41,7 +41,14 @@ namespace StarStrike.Tests.EditMode
             var audioService = testRoot.AddComponent<AudioService>();
             audioService.Initialize();
 
-            string[] expectedClips = { "laser", "enemy_laser", "gem", "explosion", "upgrade", "click", "ambient_music", "laser_fire", "upgrade_acquired" };
+            string[] expectedClips =
+            {
+                "laser", "enemy_laser", "gem", "explosion", "upgrade", "click", "ambient_music",
+                "laser_fire", "upgrade_acquired", "power_down", "power_up",
+                "menu_navigate", "ui_error", "level_up", "boss_explosion",
+                "scattergun", "missile_launch", "gatling", "shield_hit",
+                "hazard_warning", "hazard_surge"
+            };
             foreach (var clipId in expectedClips)
             {
                 Assert.IsTrue(audioService.HasClip(clipId), $"AudioService must contain clip '{clipId}'");

@@ -143,7 +143,7 @@ namespace StarStrike.Gameplay
             {
                 isWarningActive = true;
                 GameEvents.TriggerHazardWarning("ION STORM SURGE DETECTED", ionWarningDuration);
-                AudioService.Instance?.PlaySound("click", 1.2f);
+                AudioService.Instance?.PlaySound("hazard_warning", 1.1f);
             }
 
             if (!isHazardActive && hazardTimer >= ionStormInterval)
@@ -169,7 +169,7 @@ namespace StarStrike.Gameplay
             // Scramble Minimap
             GameEvents.TriggerRadarJitterChanged(ionRadarJitter);
 
-            AudioService.Instance?.PlaySound("click", 0.6f);
+            AudioService.Instance?.PlaySound("hazard_surge", 0.7f);
             FXService.Instance?.CameraShake(0.12f, 0.2f);
 
             if (cachedIonSurgeWait == null || !Mathf.Approximately(cachedIonSurgeDuration, ionSurgeDuration))
@@ -201,7 +201,7 @@ namespace StarStrike.Gameplay
             {
                 isWarningActive = true;
                 GameEvents.TriggerHazardWarning("SOLAR FLARE DETECTED - TAKE COVER BEHIND ASTEROIDS!", solarWarningDuration);
-                AudioService.Instance?.PlaySound("explosion", 0.5f);
+                AudioService.Instance?.PlaySound("hazard_warning", 1.0f);
             }
 
             if (!isHazardActive && hazardTimer >= solarFlareInterval)
@@ -219,7 +219,7 @@ namespace StarStrike.Gameplay
             GameEvents.TriggerHazardTriggered("SOLAR FLARE");
 
             FXService.Instance?.CameraShake(0.35f, 0.45f);
-            AudioService.Instance?.PlaySound("explosion", 1.1f);
+            AudioService.Instance?.PlaySound("hazard_surge", 1.1f);
 
             yield return SolarFlareSweepWait;
 

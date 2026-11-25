@@ -109,7 +109,7 @@ namespace StarStrike.Gameplay
 
             lastFiredTime = Time.time;
 
-            StarStrike.Gameplay.Audio.AudioService.Instance?.PlaySound("laser", 0.6f);
+            StarStrike.Gameplay.Audio.AudioService.Instance?.PlaySound("scattergun", 0.6f);
 
             // Recoil mechanism removed: zero shock-back impulse on weapon fire
 

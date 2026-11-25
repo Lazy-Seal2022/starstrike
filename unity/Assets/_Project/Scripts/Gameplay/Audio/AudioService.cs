@@ -303,6 +303,16 @@ namespace StarStrike.Gameplay.Audio
             LoadClipWithFallback("click", () => GenerateTone(44100, 0.05f, 600f, 900f, 0.4f, WaveType.Sine));
             LoadClipWithFallback("power_down", () => GenerateTone(44100, 0.2f, 320f, 160f, 0.45f, WaveType.Sawtooth));
             LoadClipWithFallback("power_up", () => GenerateTone(44100, 0.25f, 350f, 700f, 0.45f, WaveType.Sine));
+            LoadClipWithFallback("menu_navigate", () => GenerateTone(44100, 0.045f, 760f, 1020f, 0.25f, WaveType.Sine));
+            LoadClipWithFallback("ui_error", () => GenerateTone(44100, 0.14f, 220f, 125f, 0.42f, WaveType.Sawtooth));
+            LoadClipWithFallback("level_up", () => GenerateTone(44100, 0.35f, 440f, 1320f, 0.55f, WaveType.Sine));
+            LoadClipWithFallback("boss_explosion", () => GenerateBoom(44100, 0.7f, 160f, 38f, 0.9f));
+            LoadClipWithFallback("scattergun", () => GenerateTone(44100, 0.11f, 340f, 110f, 0.55f, WaveType.Sawtooth));
+            LoadClipWithFallback("missile_launch", () => GenerateTone(44100, 0.18f, 260f, 620f, 0.45f, WaveType.Sawtooth));
+            LoadClipWithFallback("gatling", () => GenerateTone(44100, 0.045f, 620f, 280f, 0.32f, WaveType.Square));
+            LoadClipWithFallback("shield_hit", () => GenerateTone(44100, 0.09f, 1350f, 920f, 0.32f, WaveType.Sine));
+            LoadClipWithFallback("hazard_warning", () => GenerateTone(44100, 0.28f, 880f, 660f, 0.50f, WaveType.Square));
+            LoadClipWithFallback("hazard_surge", () => GenerateBoom(44100, 0.5f, 220f, 55f, 0.7f));
 
             // Register compatibility aliases
             if (proceduralClips.TryGetValue("laser", out var laserClip))
@@ -397,7 +407,7 @@ namespace StarStrike.Gameplay.Audio
 
             if (Application.isPlaying)
             {
-                float minInterval = (id == "laser" || id == "enemy_laser" || id == "laser_fire") ? 0.045f : 0.025f;
+                float minInterval = (id == "laser" || id == "enemy_laser" || id == "laser_fire" || id == "gatling" || id == "shield_hit") ? 0.045f : 0.025f;
                 float now = Time.unscaledTime;
                 if (lastSfxPlayTimes.TryGetValue(id, out float lastPlayed) && (now - lastPlayed) < minInterval)
                 {
@@ -572,6 +582,30 @@ namespace StarStrike.Gameplay.Audio
             }
 
             AudioClip clip = AudioClip.Create("noise", sampleCount, 1, sampleRate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        private AudioClip GenerateBoom(int sampleRate, float duration, float startFreq, float endFreq, float volume)
+        {
+            int sampleCount = (int)(sampleRate * duration);
+            float[] data = new float[sampleCount];
+            float phase = 0f;
+
+            for (int i = 0; i < sampleCount; i++)
+            {
+                float t = (float)i / sampleCount;
+                float freq = Mathf.Lerp(startFreq, endFreq, t);
+                phase += freq / sampleRate;
+                if (phase > 1f) phase -= 1f;
+
+                float sub = Mathf.Sin(phase * 2f * Mathf.PI) * 0.65f;
+                float grit = Random.Range(-1f, 1f) * 0.35f;
+                float env = (1f - t) * (1f - t);
+                data[i] = Mathf.Clamp((sub + grit) * volume * env, -1f, 1f);
+            }
+
+            AudioClip clip = AudioClip.Create("boom", sampleCount, 1, sampleRate, false);
             clip.SetData(data, 0);
             return clip;
         }

@@ -145,7 +145,7 @@ namespace StarStrike.Gameplay
             spoolProgress = Mathf.Clamp01(spoolProgress + (effectiveFireRate / spoolUpTime));
 
             // Rapid mechanical audio
-            StarStrike.Gameplay.Audio.AudioService.Instance?.PlaySound(isPlayer ? "laser" : "enemy_laser", 0.35f);
+            StarStrike.Gameplay.Audio.AudioService.Instance?.PlaySound(isPlayer ? "gatling" : "enemy_laser", 0.35f);
 
             // Recoil mechanism removed: zero shock-back impulse on weapon fire
 

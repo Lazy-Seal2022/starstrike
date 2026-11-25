@@ -43,7 +43,7 @@ namespace StarStrike.UI
             get
             {
                 EnsureInitialized();
-                return Catalog[currentIndex].id;
+                return ActiveCatalog[currentIndex].id;
             }
         }
 
@@ -66,6 +66,59 @@ namespace StarStrike.UI
             public string description;
         }
 
+        private static ShipInfo[] resolvedCatalog;
+
+        private static ShipInfo[] ActiveCatalog
+        {
+            get
+            {
+                if (resolvedCatalog == null)
+                {
+                    resolvedCatalog = BuildResolvedCatalog();
+                }
+                return resolvedCatalog;
+            }
+        }
+
+        private static string NormalizeCatalogId(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return "scout";
+            if (string.Equals(id, "vanguard", System.StringComparison.OrdinalIgnoreCase)) return "carrier";
+            return id;
+        }
+
+        private static ShipInfo[] BuildResolvedCatalog()
+        {
+            var list = new ShipInfo[Catalog.Length];
+            for (int i = 0; i < Catalog.Length; i++)
+            {
+                ShipInfo info = Catalog[i];
+                ShipDefinition def = PlayerProgression.GetShipDefinitionById(info.id);
+                if (def == null || !string.Equals(def.id, info.id, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    def = ShipArchetypeFactory.CreateShipById(info.id);
+                }
+
+                if (def != null)
+                {
+                    if (!string.IsNullOrEmpty(def.shipName)) info.name = def.shipName;
+                    info.shipClass = def.shipClass;
+                    if (def.tier > 0) info.tier = def.tier;
+                    info.hull = Mathf.RoundToInt(def.baseStats.hullCapacity > 0f ? def.baseStats.hullCapacity : info.hull);
+                    info.shield = Mathf.RoundToInt(def.baseStats.shieldCapacity > 0f ? def.baseStats.shieldCapacity : info.shield);
+                    info.shieldRegen = Mathf.RoundToInt(def.baseStats.shieldRegen > 0f ? def.baseStats.shieldRegen : info.shieldRegen);
+                    info.energy = Mathf.RoundToInt(def.baseStats.energyCapacity > 0f ? def.baseStats.energyCapacity : info.energy);
+                    info.energyRegen = Mathf.RoundToInt(def.baseStats.energyRegen > 0f ? def.baseStats.energyRegen : info.energyRegen);
+                    info.speed = Mathf.RoundToInt(def.baseStats.speed > 0f ? def.baseStats.speed : info.speed);
+                    if (def.baseStats.agility > 0f) info.agility = def.baseStats.agility;
+                    int socketCount = def.SocketCount;
+                    if (socketCount > 0) info.weaponSlots = socketCount;
+                }
+                list[i] = info;
+            }
+            return list;
+        }
+
         private static readonly ShipInfo[] Catalog = new ShipInfo[]
         {
             new ShipInfo {
@@ -73,7 +126,7 @@ namespace StarStrike.UI
                 name = "Delta Scout",
                 shipClass = ShipClass.Fighter,
                 tier = 1,
-                role = "LIGHT RECON RECON // BALANCED MOBILITY",
+                role = "LIGHT RECON // BALANCED MOBILITY",
                 cost = 0,
                 hull = 80,
                 shield = 100,
@@ -143,30 +196,30 @@ namespace StarStrike.UI
                 tier = 3,
                 role = "HEAVY DREADNOUGHT // TRIPLE HARDPOINTS",
                 cost = 2000,
-                hull = 220,
-                shield = 260,
-                shieldRegen = 18,
-                energy = 180,
-                energyRegen = 22,
-                speed = 190,
-                agility = 3.0f,
+                hull = 300,
+                shield = 400,
+                shieldRegen = 25,
+                energy = 200,
+                energyRegen = 25,
+                speed = 180,
+                agility = 2.5f,
                 weaponSlots = 3,
                 description = "Fortified flying battery boasting three forward hardpoints and an impenetrable spherical kinetic shield."
             },
             new ShipInfo {
                 id = "phantom",
-                name = "Phantom Ghost",
+                name = "Shadow Phantom",
                 shipClass = ShipClass.Fighter,
                 tier = 3,
                 role = "STEALTH INFILTRATOR // RAPID RECHARGE",
                 cost = 2500,
                 hull = 110,
-                shield = 200,
-                shieldRegen = 22,
+                shield = 160,
+                shieldRegen = 16,
                 energy = 160,
                 energyRegen = 35,
-                speed = 350,
-                agility = 5.8f,
+                speed = 420,
+                agility = 7.0f,
                 weaponSlots = 2,
                 description = "Covert operations vessel engineered with rapid-cycling capacitor arrays and sensor-deflecting composites."
             },
@@ -178,24 +231,7 @@ namespace StarStrike.UI
                 role = "FLEET CARRIER // AUTONOMOUS ESCORT SQUADRON",
                 cost = 0,
                 hull = 400,
-                shield = 280,
-                shieldRegen = 18,
-                energy = 220,
-                energyRegen = 25,
-                speed = 160,
-                agility = 2.6f,
-                weaponSlots = 4,
-                description = "Command capital ship equipped with an automated drone foundry. Deploys autonomous interceptor escorts and heavy Point Defense Cannons (PDC) with independent 360° turret fire control."
-            },
-            new ShipInfo {
-                id = "vanguard",
-                name = "Vanguard Carrier",
-                shipClass = ShipClass.Carrier,
-                tier = 3,
-                role = "FLEET CARRIER // AUTONOMOUS ESCORT SQUADRON",
-                cost = 0,
-                hull = 400,
-                shield = 280,
+                shield = 320,
                 shieldRegen = 18,
                 energy = 220,
                 energyRegen = 25,
@@ -293,12 +329,12 @@ namespace StarStrike.UI
             selfRt.offsetMax = Vector2.zero;
 
             // Find current equipped ship index
-            string selectedShip = StorageService.GetLastShipEvolved();
+            string selectedShip = NormalizeCatalogId(StorageService.GetLastShipEvolved());
             if (!string.IsNullOrEmpty(selectedShip))
             {
-                for (int i = 0; i < Catalog.Length; i++)
+                for (int i = 0; i < ActiveCatalog.Length; i++)
                 {
-                    if (string.Equals(Catalog[i].id, selectedShip, System.StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(ActiveCatalog[i].id, selectedShip, System.StringComparison.OrdinalIgnoreCase))
                     {
                         currentIndex = i;
                         break;
@@ -431,7 +467,7 @@ namespace StarStrike.UI
             sRt.anchorMin = new Vector2(0.5f, 0.84f);
             sRt.anchorMax = new Vector2(0.5f, 0.84f);
             sRt.anchoredPosition = Vector2.zero;
-            sRt.sizeDelta = new Vector2(960, 48);
+            sRt.sizeDelta = new Vector2(1240, 48);
             shipStripContainer = stripObj.transform;
 
             // Center Showcase Panel (Chamfer Vector Frame)
@@ -534,7 +570,7 @@ namespace StarStrike.UI
         public void NavigateShip(int direction)
         {
             EnsureInitialized();
-            currentIndex = (currentIndex + direction + Catalog.Length) % Catalog.Length;
+            currentIndex = (currentIndex + direction + ActiveCatalog.Length) % ActiveCatalog.Length;
             StarStrike.Gameplay.Audio.AudioService.Instance?.PlaySound("menu_navigate", 0.4f);
             RefreshUI();
         }
@@ -542,9 +578,10 @@ namespace StarStrike.UI
         public void SelectShipById(string shipId)
         {
             EnsureInitialized();
-            for (int i = 0; i < Catalog.Length; i++)
+            string normalizedId = NormalizeCatalogId(shipId);
+            for (int i = 0; i < ActiveCatalog.Length; i++)
             {
-                if (string.Equals(Catalog[i].id, shipId, System.StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(ActiveCatalog[i].id, normalizedId, System.StringComparison.OrdinalIgnoreCase))
                 {
                     currentIndex = i;
                     StarStrike.Gameplay.Audio.AudioService.Instance?.PlaySound("menu_navigate", 0.4f);
@@ -556,9 +593,9 @@ namespace StarStrike.UI
 
         private void PerformShipAction()
         {
-            ShipInfo info = Catalog[currentIndex];
+            ShipInfo info = ActiveCatalog[currentIndex];
             bool isUnlocked = StorageService.Profile.unlockedShips.Contains(info.id);
-            string activeShip = StorageService.GetLastShipEvolved();
+            string activeShip = NormalizeCatalogId(StorageService.GetLastShipEvolved());
 
             if (isUnlocked)
             {
@@ -612,13 +649,13 @@ namespace StarStrike.UI
 
         public void RefreshUI()
         {
-            if (Catalog.Length == 0) return;
-            if (currentIndex < 0 || currentIndex >= Catalog.Length) currentIndex = 0;
+            var catalog = ActiveCatalog;
+            if (catalog.Length == 0) return;
+            if (currentIndex < 0 || currentIndex >= catalog.Length) currentIndex = 0;
 
-            ShipInfo info = Catalog[currentIndex];
+            ShipInfo info = catalog[currentIndex];
             bool isUnlocked = StorageService.Profile.unlockedShips.Contains(info.id);
-            string activeShip = StorageService.GetLastShipEvolved();
-            if (string.IsNullOrEmpty(activeShip)) activeShip = "scout";
+            string activeShip = NormalizeCatalogId(StorageService.GetLastShipEvolved());
             bool isSelected = string.Equals(info.id, activeShip, System.StringComparison.OrdinalIgnoreCase);
 
             if (gemsText != null)
@@ -721,12 +758,12 @@ namespace StarStrike.UI
             if (shipStatsText != null)
             {
                 shipStatsText.text =
-                    CyberVectorTheme.FormatStatMeter("HULL INTEGRITY", info.hull, 250, "HP", CyberVectorTheme.LaserGreen) + "\n" +
-                    CyberVectorTheme.FormatStatMeter("SHIELD BARRIER", info.shield, 300, $"CAP (+{info.shieldRegen}/s)", CyberVectorTheme.NeonCyan) + "\n" +
-                    CyberVectorTheme.FormatStatMeter("CAPACITOR CORE", info.energy, 250, $"ENG (+{info.energyRegen}/s)", CyberVectorTheme.VoltYellow) + "\n" +
+                    CyberVectorTheme.FormatStatMeter("HULL INTEGRITY", info.hull, 600, "HP", CyberVectorTheme.LaserGreen) + "\n" +
+                    CyberVectorTheme.FormatStatMeter("SHIELD BARRIER", info.shield, 500, $"CAP (+{info.shieldRegen}/s)", CyberVectorTheme.NeonCyan) + "\n" +
+                    CyberVectorTheme.FormatStatMeter("CAPACITOR CORE", info.energy, 300, $"ENG (+{info.energyRegen}/s)", CyberVectorTheme.VoltYellow) + "\n" +
                     CyberVectorTheme.FormatStatMeter("VELOCITY INDEX", info.speed, 450, "KTS", CyberVectorTheme.NeonMagenta) + "\n" +
                     CyberVectorTheme.FormatStatMeter("AGILITY RATING", info.agility * 10f, 80f, "RAD/S", CyberVectorTheme.NeonCyan) + "\n" +
-                    CyberVectorTheme.FormatMeterDirect("HARDPOINT SLOTS", info.weaponSlots, 3, $"{info.weaponSlots} SOCKETS", CyberVectorTheme.VoltYellow);
+                    CyberVectorTheme.FormatMeterDirect("HARDPOINT SLOTS", info.weaponSlots, 6, $"{info.weaponSlots} SOCKETS", CyberVectorTheme.VoltYellow);
             }
 
             if (shipDescText != null)
@@ -783,13 +820,13 @@ namespace StarStrike.UI
                 }
 
                 Font defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                float spacing = 130f;
-                float startX = -((Catalog.Length - 1) * spacing) / 2f;
+                float spacing = 110f;
+                float startX = -((catalog.Length - 1) * spacing) / 2f;
 
-                for (int i = 0; i < Catalog.Length; i++)
+                for (int i = 0; i < catalog.Length; i++)
                 {
                     int idx = i;
-                    ShipInfo s = Catalog[i];
+                    ShipInfo s = catalog[i];
                     bool sUnlocked = StorageService.Profile.unlockedShips.Contains(s.id);
                     bool sSelected = string.Equals(s.id, activeShip, System.StringComparison.OrdinalIgnoreCase);
                     bool isViewed = (i == currentIndex);
@@ -805,7 +842,7 @@ namespace StarStrike.UI
                     else
                         btnColor = CyberVectorTheme.NeonMagenta;
 
-                    GameObject btnObj = CreateButton(shipStripContainer, $"StripBtn_{s.id}", btnLabel, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * spacing), 0), new Vector2(120, 42), btnColor, defaultFont, 11);
+                    GameObject btnObj = CreateButton(shipStripContainer, $"StripBtn_{s.id}", btnLabel, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(startX + (i * spacing), 0), new Vector2(102, 42), btnColor, defaultFont, 11);
                     Button btn = btnObj.GetComponent<Button>();
                     btn.onClick.AddListener(() => {
                         currentIndex = idx;
